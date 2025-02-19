@@ -10,6 +10,6 @@ spring:
           enabled: true
       routes:
         - id: recaudacion
-          uri: http://localhost:8090
+          uri: http://msvc-recaudacion:8090
           predicates:
             Path=/cajas/**

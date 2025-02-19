@@ -1,0 +1,18 @@
+version: "3.9"
+services:
+  config-server:
+    build: config-service
+    image: config-service:latest
+    container_name: config-service
+    ports:
+      - "8880:8880"
+    restart: always
+    networks:
+      - epmapat-nw
+  eureka:
+    build: msvc-eureka
+    image: msvc-eureka:latest
+    container_name: msvc-eureka
+    ports:
+      - "8761:8761"
+    restart: always
