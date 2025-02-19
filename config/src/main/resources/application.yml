@@ -1,14 +1,12 @@
-  server:
-    port: 8880
-  spring:
-    application:
-      name: config-server
-    cloud:
-      config:
-        server:
-          git:
-            uri: https://github.com/ortizln/erp_epmapat_v2.0
-            default-label: master
-            search-paths: config-data
-            username: ortizln  # Solo si el repositorio es privado
-            password: Roller@086411421  #
+server:
+  port: 8880
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          default-label: master
+          uri: https://github.com/ortizln/erp_epmapat_v2.0
+          search-paths: config-data
+  application:
+    name: config-server
