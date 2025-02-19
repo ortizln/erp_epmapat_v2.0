@@ -1,5 +1,5 @@
 server:
-  port: 8888
+  port: 8880
 spring:
   application:
     name: config-server
@@ -8,5 +8,5 @@ spring:
       server:
         git:
           default-label: master
-          uri: https://github.com/ortizln/erp_epmapat
+          uri: https://github.com/ortizln/erp_epmapat_v2.0
           search-paths: config-data
