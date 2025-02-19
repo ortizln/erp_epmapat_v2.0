@@ -2,4 +2,10 @@ spring:
   application:
     name: msvc-gateway
   config:
-    import: optional:configserver:http://localhost:8888
+    import: configserver:http://localhost:8880
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:8880
+      import-check:
+        enabled: false

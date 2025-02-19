@@ -1,8 +1,15 @@
 spring:
   application:
     name: msvc-recaudacion
+
   config:
-    import: optional:configserver:http://localhost:8888
+    import: configserver:http://localhost:8880
+  cloud:
+    config:
+      enabled: true
+      uri: http://localhost:8880
+      import-check:
+        enabled: false
   datasource:
     driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://localhost:5432/ErpEpmapaT

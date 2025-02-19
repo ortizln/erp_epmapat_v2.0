@@ -4,6 +4,7 @@ spring:
   application:
     name: msvc-recaudacion
 
+
 eureka:
   instance:
     hostname: localhost
