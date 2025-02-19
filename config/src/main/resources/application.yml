@@ -8,5 +8,7 @@ spring:
   cloud:
     config:
       server:
-        native:
-          search-locations: classpath:/config-data
+        git:
+          default-label: master
+          uri: https://github.com/ortizln/erp_epmapat
+          search-paths: config-data
