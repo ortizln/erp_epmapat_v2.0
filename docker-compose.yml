@@ -5,14 +5,28 @@ services:
     image: config-service:latest
     container_name: config-service
     ports:
-      - "8880:8880"
+      - "8888:8888"
     restart: always
     networks:
       - epmapat-nw
-  eureka:
+  msvc-eureka:
     build: msvc-eureka
     image: msvc-eureka:latest
     container_name: msvc-eureka
     ports:
       - "8761:8761"
     restart: always
+  msvc-recaudacion:
+    build: msvc-recaudacion
+    image: msvc-recaudacion:latest
+    container_name: msvc-recaudacion
+    ports:
+      - "9092:9092"
+    restart: always
+    networks:
+      - epmapat-nw
+    depends_on:
+      - msvc-eureka
+networks:
+  epmapat-nw:
+    driver: bridge

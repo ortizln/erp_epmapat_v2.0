@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.erp</groupId>
 	<artifactId>login</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>login</name>
 	<description>Micro servicio login</description>
 	<url/>

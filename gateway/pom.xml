@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.erp</groupId>
 	<artifactId>gateway</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>gateway</name>
 	<description>Micro servicio gateway</description>
 	<url/>

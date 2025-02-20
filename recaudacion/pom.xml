@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.erp</groupId>
 	<artifactId>recaudacion</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>recaudacion</name>
 	<description>Micro servicio recaudacion</description>
 	<url/>

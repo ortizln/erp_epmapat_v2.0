@@ -9,7 +9,7 @@
 	</parent>
 	<groupId>com.erp</groupId>
 	<artifactId>eureka</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>eureka</name>
 	<description>Micro servicio eureka</description>
 	<url/>
