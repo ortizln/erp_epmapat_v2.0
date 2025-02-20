@@ -9,7 +9,7 @@ spring:
         locator:
           enabled: true
       routes:
-        - id: recaudacion
-          uri: http://msvc-recaudacion:8090
+        - id: msvc-recaudacion
+          uri: http://192.168.100.16:9092
           predicates:
             Path=/cajas/**

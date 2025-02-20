@@ -3,18 +3,18 @@ spring:
     name: msvc-recaudacion
 
   config:
-    import: configserver:http://localhost:8880
+    import: configserver:http://192.168.100.16:8880
   cloud:
     config:
       enabled: true
-      uri: http://localhost:8880
+      uri: http://192.168.100.16:8880
       import-check:
         enabled: false
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/ErpEpmapaT
+    url: jdbc:postgresql://192.168.100.16:5432/ErpEpmapaT
     username: postgres
-    password: 12345
+    password: 086411421
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
