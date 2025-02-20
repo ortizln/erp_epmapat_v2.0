@@ -1,5 +1,13 @@
 server:
   port: 9090
+
+eureka:
+  instance:
+    hostname: msvc-gateway  # Nombre del servicio o contenedor de Gateway
+  client:
+    service-url:
+      defaultZone: http://msvc-eureka:8761/eureka  # Eureka estará disponible como msvc-eureka dentro de Docker Compose
+
 spring:
   application:
     name: msvc-gateway
@@ -10,6 +18,6 @@ spring:
           enabled: true
       routes:
         - id: msvc-recaudacion
-          uri: http://msvc-recaudacion:9092  # Usar el nombre del servicio de Docker (contenerizado) en lugar de localhost
+          uri: http://msvc-recaudacion:9092  # Nombre del servicio en Docker Compose para msvc-recaudacion
           predicates:
-           - Path=/cajas/**
+            - Path=/cajas/**
