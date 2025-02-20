@@ -2,10 +2,10 @@ spring:
   application:
     name: msvc-gateway
   config:
-    import: configserver:http://192.168.100.16:8880
+    import: configserver:http://192.168.0.87:8880
   cloud:
     config:
       enabled: true
-      uri: http://192.168.100.16:8880
+      uri: http://192.168.0.87:8880
       import-check:
         enabled: false
