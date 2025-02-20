@@ -9,6 +9,7 @@ services:
     restart: always
     networks:
       - epmapat-nw
+
   msvc-eureka:
     build: eureka
     image: msvc-eureka:latest
@@ -16,6 +17,9 @@ services:
     ports:
       - "8761:8761"
     restart: always
+    networks:
+      - epmapat-nw
+
   msvc-gateway:
     build: gateway
     image: msvc-gateway:latest
@@ -23,6 +27,12 @@ services:
     ports:
       - "9090:9090"
     restart: always
+    networks:
+      - epmapat-nw
+    depends_on:
+      - config-server
+      - msvc-eureka
+
   msvc-recaudacion:
     build: recaudacion
     image: msvc-recaudacion:latest
@@ -34,6 +44,8 @@ services:
       - epmapat-nw
     depends_on:
       - msvc-eureka
+      - config-server
+
 networks:
   epmapat-nw:
     driver: bridge
