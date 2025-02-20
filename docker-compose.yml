@@ -16,6 +16,13 @@ services:
     ports:
       - "8761:8761"
     restart: always
+  msvc-gateway:
+    build: gateway
+    image: msvc-gateway:latest
+    container_name: msvc-gateway
+    ports:
+      - "9090:9090"
+    restart: always
   msvc-recaudacion:
     build: recaudacion
     image: msvc-recaudacion:latest
