@@ -3,11 +3,11 @@ spring:
     name: msvc-recaudacion
 
   config:
-    import: configserver:http://localhost:8888
+    import: configserver:http://host.docker.internal:8888
   cloud:
     config:
       enabled: true
-      uri: http://localhost:8888
+      uri: http://host.docker.internal:8888
       import-check:
         enabled: false
   datasource:
