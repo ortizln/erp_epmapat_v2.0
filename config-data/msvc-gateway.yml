@@ -10,6 +10,6 @@ spring:
           enabled: true
       routes:
         - id: msvc-recaudacion
-          uri: http://localhost:9092
+          uri: http://msvc-recaudacion:9092  # Usar el nombre del servicio de Docker (contenerizado) en lugar de localhost
           predicates:
             Path=/cajas/**

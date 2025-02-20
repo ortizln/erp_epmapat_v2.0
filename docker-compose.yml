@@ -16,6 +16,8 @@ services:
     container_name: msvc-eureka
     ports:
       - "8761:8761"
+    environment:
+      - EUREKA_HOSTNAME=host.docker.internal
     restart: always
     networks:
       - epmapat-nw
