@@ -1,6 +1,6 @@
 FROM openjdk:17-jdk-slim
 LABEL authors="Alexis Ortiz"
-ARG JAR_FILE=target/gateway-1.0.jar
+ARG JAR_FILE=target/gateway-0.0.1.jar
 COPY ${JAR_FILE} app_gateway.jar
 EXPOSE 9090
 
