@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   config-server:
-    build: config-service
+    build: config
     image: config-service:latest
     container_name: config-service
     ports:
@@ -10,14 +10,14 @@ services:
     networks:
       - epmapat-nw
   msvc-eureka:
-    build: msvc-eureka
+    build: eureka
     image: msvc-eureka:latest
     container_name: msvc-eureka
     ports:
       - "8761:8761"
     restart: always
   msvc-recaudacion:
-    build: msvc-recaudacion
+    build: recaudacion
     image: msvc-recaudacion:latest
     container_name: msvc-recaudacion
     ports:
@@ -29,4 +29,4 @@ services:
       - msvc-eureka
 networks:
   epmapat-nw:
-    driver: bridge
+    driver: bridges
