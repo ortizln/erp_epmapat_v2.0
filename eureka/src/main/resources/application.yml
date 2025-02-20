@@ -6,4 +6,4 @@ spring:
   cloud:
     config:
       enabled: true
-      uri: http://localhost:8888
+      uri: http://host.docker.internal:8888

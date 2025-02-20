@@ -28,6 +28,8 @@ services:
     container_name: msvc-gateway
     ports:
       - "9090:9090"
+    environment:
+      - EUREKA_HOSTNAME=host.docker.internal
     restart: always
     networks:
       - epmapat-nw
@@ -41,6 +43,8 @@ services:
     container_name: msvc-recaudacion
     ports:
       - "9092:9092"
+    environment:
+      - EUREKA_HOSTNAME=host.docker.internal
     restart: always
     networks:
       - epmapat-nw

@@ -6,6 +6,4 @@ spring:
   cloud:
     config:
       enabled: true
-      uri: http://localhost:8888
-      import-check:
-        enabled: false
+      uri: http://host.docker.internal:8888
