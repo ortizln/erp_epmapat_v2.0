@@ -2,8 +2,8 @@ version: "3.9"
 services:
   config-server:
     build: config
-    image: config-service:latest
-    container_name: config-service
+    image: config-server:latest
+    container_name: config-server
     ports:
       - "8888:8888"
     restart: always
