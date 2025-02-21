@@ -10,5 +10,3 @@ spring:
           search-paths: config-data
   application:
     name: config-server
-  aot:
-    enabled: false

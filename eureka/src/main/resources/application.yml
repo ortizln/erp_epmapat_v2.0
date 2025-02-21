@@ -2,8 +2,8 @@ spring:
   application:
     name: msvc-eureka
   config:
-    import: configserver:http://host.docker.internal:8888
+    import: configserver:http://192.168.100.16:8888
   cloud:
     config:
       enabled: true
-      uri: http://host.docker.internal:8888
+      uri: http://192.168.100.16:8888
