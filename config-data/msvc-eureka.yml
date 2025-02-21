@@ -5,9 +5,9 @@ spring:
     name: msvc-eureka
 eureka:
   instance:
-    hostname: ${EUREKA_HOSTNAME:host.docker.internal}  # Usar host.docker.internal para referirse al host desde dentro del contenedor
+    hostname: ${EUREKA_HOSTNAME:msvc-eureka}  # Cambiar "eureka" si el servicio se llama diferente en Docker
   client:
     register-with-eureka: false
     fetch-registry: false
-    server-url:
-      defaultZone: http://${EUREKA_HOSTNAME:host.docker.internal}:${server.port}/eureka/  # Uso de la variable EUREKA_HOSTNAME
+    service-url:
+      defaultZone: http://${EUREKA_HOSTNAME:msvc-eureka}:8761/eureka/

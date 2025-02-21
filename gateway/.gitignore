@@ -6,6 +6,7 @@ target/maven-archiver
 target/maven-status
 target/surefire-reports
 target/test-classes
+target/spring-aot
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/

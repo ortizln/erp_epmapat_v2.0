@@ -14,9 +14,9 @@
   <name>erp_epmapat</name>
   <packaging>pom</packaging>
 <modules>
-  <module>gateway</module>
-  <module>eureka</module>
   <module>config</module>
+  <module>eureka</module>
+  <module>gateway</module>
   <module>recaudacion</module>
   <module>login</module>
 </modules>
