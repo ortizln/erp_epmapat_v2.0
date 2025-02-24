@@ -5,9 +5,9 @@ spring:
     name: msvc-eureka
 eureka:
   instance:
-    hostname: ${EUREKA_HOSTNAME:msvc-eureka}  # Cambiar "eureka" si el servicio se llama diferente en Docker
+    hostname: localhost  # Cambiar "eureka" si el servicio se llama diferente en Docker
   client:
     register-with-eureka: false
     fetch-registry: false
     service-url:
-      defaultZone: http://${EUREKA_HOSTNAME:msvc-eureka}:8761/eureka/
+      defaultZone: http://localhost:8761/eureka/

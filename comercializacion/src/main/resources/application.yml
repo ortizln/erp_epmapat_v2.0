@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: msvc-comercializacion
+
+  config:
+    import: configserver:http://config-server:8888  # Usar el nombre del servicio de Config Server
+  cloud:
+    config:
+      enabled: true
+      uri: http://config-server:8888  # Usar el nombre del servicio de Config Server
+      import-check:
+        enabled: false
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://192.168.0.87:5432/ErpEpmapaT  # Usar el nombre del servicio de la base de datos en Docker
+    username: postgres
+    password: 086411421
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
