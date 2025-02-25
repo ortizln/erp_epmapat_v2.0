@@ -18,6 +18,6 @@ spring:
           enabled: true
       routes:
         - id: msvc-recaudacion
-          uri: http://msvc-recaudacion:9092  # Nombre del servicio en Docker Compose para msvc-recaudacion
+          uri: http://localhost:9092  # Nombre del servicio en Docker Compose para msvc-recaudacion
           predicates:
             - Path=/cajas/**
