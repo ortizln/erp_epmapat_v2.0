@@ -1,9 +1,8 @@
 spring:
   application:
     name: msvc-eureka
-  config:
-    import: configserver:http://localhost:8888
   cloud:
     config:
       enabled: true
       uri: http://localhost:8888
+      fail-fast: true
