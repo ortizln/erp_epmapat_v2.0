@@ -1,0 +1,21 @@
+package com.erp.comercializacion.models;
+
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "estadom")
+public class Estadom {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long idestadom;
+    private String descripcion;
+    private Long usucrea;
+}

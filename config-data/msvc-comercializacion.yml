@@ -1,0 +1,11 @@
+server:
+  port: 9093
+spring:
+  application:
+    name: msvc-comercializacion
+eureka:
+  instance:
+    hostname: msvc-comercializacion  # El nombre del contenedor o el servicio en Docker Compose
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka  # Reemplazar localhost con el nombre del servicio Eureka en Docker Compose
