@@ -1,16 +1,12 @@
 spring:
   application:
     name: msvc-eureka
+  config:
+    import: optional:configserver:/config-data
   cloud:
     config:
-      enabled: true
-      uri: http://config-service:8888
-      fail-fast: true
-      retry:
-        initial-interval: 1000
-        max-interval: 2000
-        multiplier: 1.1
-        max-attempts: 5
+      enabled: false
+      uri: http://localhost:8888
+      fail-fast: false  # Evita fallos si el Config Server no responde
   profiles:
-    active: local  # Fallback profile
-
+    active: default

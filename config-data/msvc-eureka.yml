@@ -1,13 +1,7 @@
 server:
   port: 8761
-spring:
-  application:
-    name: msvc-eureka
 eureka:
-  instance:
-    hostname: localhost  # Cambiar "eureka" si el servicio se llama diferente en Docker
   client:
-    register-with-eureka: false
-    fetch-registry: false
+    registry-fetch-interval-seconds: 10
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      defaultZone: http://localhost:8761/eureka
