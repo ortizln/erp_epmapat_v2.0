@@ -1,12 +1,12 @@
 spring:
   application:
-    name: msvc-eureka
-  config:
-    import: optional:configserver:/config-data
+    name: eureka
+    config:
+      import: optional:configserver:http://localhost:8888
   cloud:
     config:
-      enabled: true
-      uri: http://localhost:8888
-      fail-fast: true
+      enabled: false
+      uri: http://localhost:8888  # URL of the Config Server
+      fail-fast: true  # Set to false if you want the app to start without the Config Server
   profiles:
-    active: local
+    active: dev  # Replace with the appropriate profile
