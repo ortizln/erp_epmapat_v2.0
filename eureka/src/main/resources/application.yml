@@ -6,7 +6,7 @@ spring:
   cloud:
     config:
       enabled: true
-      uri: http://config-service:8081
+      uri: http://config-service:8888
       fail-fast: true
   profiles:
     active: default
