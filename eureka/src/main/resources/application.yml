@@ -1,11 +1,8 @@
+
 spring:
   application:
     name: msvc-eureka
-    config:
-      import: optional:configserver:http://localhost:8888
   cloud:
     config:
-      enabled: false
+      enabled: true
       uri: http://localhost:8888  # URL of the Config Server
-  profiles:
-    active: local  # Replace with the appropriate profile
