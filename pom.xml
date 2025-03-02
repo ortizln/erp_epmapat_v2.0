@@ -15,8 +15,8 @@
   <packaging>pom</packaging>
 <modules>
   <module>config</module>
-  <module>eureka</module>
   <module>gateway</module>
+  <module>eureka</module>
   <module>login</module>
   <module>recaudacion</module>
   <module>comercializacion</module>
@@ -24,6 +24,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
     <spring-cloud.version>2024.0.0</spring-cloud.version>
   </properties>
 
@@ -34,10 +36,6 @@
       <version>1.18.34</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.springframework.cloud</groupId>
-      <artifactId>spring-cloud-starter-bootstrap</artifactId>
-    </dependency>
   </dependencies>
 
   <build>
@@ -46,7 +44,7 @@
         <plugin>
           <groupId>org.springframework.boot</groupId>
           <artifactId>spring-boot-maven-plugin</artifactId>
-          <version>3.3.1</version>
+          <version>3.4.1</version>
         </plugin>
       </plugins>
     </pluginManagement>

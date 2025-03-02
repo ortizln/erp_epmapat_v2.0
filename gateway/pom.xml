@@ -7,24 +7,11 @@
 		<artifactId>erp_epmapat</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
-	<groupId>com.erp</groupId>
 	<artifactId>gateway</artifactId>
 	<version>0.0.1</version>
 	<name>gateway</name>
 	<description>Micro servicio gateway</description>
-	<url/>
-	<licenses>
-		<license/>
-	</licenses>
-	<developers>
-		<developer/>
-	</developers>
-	<scm>
-		<connection/>
-		<developerConnection/>
-		<tag/>
-		<url/>
-	</scm>
+
 	<properties>
 		<java.version>17</java.version>
 		<spring-cloud.version>2024.0.0</spring-cloud.version>
