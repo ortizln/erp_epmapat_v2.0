@@ -4,6 +4,6 @@ spring:
   cloud:
     config:
       enabled: true
-      uri: http://config-server:8888  # URL of the Config Server
+      uri: http://localhost:8888  # URL of the Config Server
 
 
