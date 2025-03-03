@@ -1,6 +1,8 @@
 spring:
   application:
     name: msvc-eureka
+  config:
+    import: configserver:http://config-server:8888
   cloud:
     config:
       enabled: true
