@@ -1,5 +1,6 @@
 package com.erp.comercializacion.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,24 +31,31 @@ public class Abonados {
     private String piso;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idresponsable")
+    @JsonIgnore
     private Clientes idresponsable;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idcategoria_categorias")
+    @JsonIgnore
     private Categorias idcategoria_categorias;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idruta_rutas")
+    @JsonIgnore
     private Rutas idruta_rutas;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idcliente_clientes")
+    @JsonIgnore
     private Clientes idcliente_clientes;
     @ManyToOne
     @JoinColumn(name = "idubicacionm_ubicacionm")
+    @JsonIgnore
     private Ubicacionm idubicacionm_ubicacionm;
     @ManyToOne
     @JoinColumn(name = "idtipopago_tipopago")
+    @JsonIgnore
     private Tipopago idtipopago_tipopago;
     @ManyToOne
     @JoinColumn(name = "idestadom_estadom")
+    @JsonIgnore
     private Estadom idestadom_estadom;
     private Long medidorprincipal;
     private Long usucrea;

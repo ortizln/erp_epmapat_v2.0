@@ -1,15 +1,8 @@
 spring:
   application:
     name: msvc-comercializacion
-
   config:
-    import: configserver:http://localhost:8888  # Usar el nombre del servicio de Config Server
-  cloud:
-    config:
-      enabled: true
-      uri: http://localhost:8888  # Usar el nombre del servicio de Config Server
-      import-check:
-        enabled: false
+    import: optional:configserver:http://localhost:8888
 
   datasource:
     driver-class-name: org.postgresql.Driver

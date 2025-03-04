@@ -1,5 +1,6 @@
 package com.erp.comercializacion.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -20,6 +21,7 @@ public class Clientes {
     private String cedula;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idtpidentifica_tpidentifica")
+    @JsonIgnore
     private Tpidentifica idtpidentifica_tpidentifica;
     private String nombre;
     private String direccion;
@@ -33,11 +35,13 @@ public class Clientes {
     private Long usucrea;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="idnacionalidad_nacionalidad")
+    @JsonIgnore
     private Nacionalidad idnacionalidad_nacionalidad;
     private LocalDate feccrea;
     private Long usumodi;
     private LocalDate fecmodi;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="idpjuridica_personeriajuridica")
+    @JsonIgnore
     private PersonJuridica idpjuridica_personeriajuridica;
 }

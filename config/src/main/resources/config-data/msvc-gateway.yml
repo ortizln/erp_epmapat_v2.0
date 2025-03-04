@@ -1,0 +1,44 @@
+server:
+  port: 8080
+
+eureka:
+  instance:
+    hostname: msvc-gateway  # Nombre del servicio o contenedor de Gateway
+  client:
+    service-url:
+      register-with-eureka: false
+      fetch-registry: false
+      defaultZone: http://localhost:8761/eureka  # Eureka estará disponible como msvc-eureka dentro de Docker Compose
+
+spring:
+  application:
+    name: msvc-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+      routes:
+        - id: msvc-recaudacion-cajas
+          uri: http://localhost:9092
+          predicates:
+            - Path=/cajas/**
+
+        - id: msvc-recaudacion-facturas
+          uri: http://localhost:9092
+          predicates:
+            - Path=/facturas/**
+        - id: msvc-recaudacion-cajas
+          uri: http://localhost:9092
+          predicates:
+            - Path=/cajas/**
+
+        - id: msvc-comercializacion-clientes
+          uri: http://localhost:9093
+          predicates:
+            - Path=/clientes/**
+
+        - id: msvc-comercializacion-abonados
+          uri: http://localhost:9093
+          predicates:
+            - Path=/abonados/**

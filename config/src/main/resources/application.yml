@@ -4,14 +4,10 @@ server:
 spring:
   application:
     name: config-server
+  profiles:
+    active: native
   cloud:
     config:
       server:
-        git:
-          default-label: master
-          uri: https://github.com/ortizln/erp_epmapat_v2.0
-          search-paths: config-data
-          #username: your-github-username # Only if the repository is private
-          #password: your-github-token    # Only if the repository is private
-          refresh-rate: 60               # Optional: Refresh every 60 seconds
-          fail-fast: false               # Optional: Disable fail-fast behavior
+        native:
+          search-locations: classpath:/config-data

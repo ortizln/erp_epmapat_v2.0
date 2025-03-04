@@ -38,7 +38,8 @@ public class AbonadosApi {
         if (idruta != null) {
             return aboServicio.findByIdruta(idruta);
         } else {
-            return aboServicio.findAll(consulta.toLowerCase(), Sort.by(Sort.Order.asc("nromedidor")));
+            System.out.println("DATOS EMPTY");
+            return aboServicio.findAll(null,Sort.by(Sort.Order.asc("nromedidor")));
         }
     }
 
