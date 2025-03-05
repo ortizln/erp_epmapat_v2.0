@@ -19,6 +19,11 @@ spring:
         locator:
           enabled: true
       routes:
+        - - id: msvc-login
+        - uri: http://localhost:9091
+        - predicates:
+        - Path=/cajas/**,/facturas/**
+        -
         - id: msvc-recaudacion
           uri: http://localhost:9092
           predicates:
