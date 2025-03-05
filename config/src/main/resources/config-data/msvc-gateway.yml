@@ -19,26 +19,12 @@ spring:
         locator:
           enabled: true
       routes:
-        - id: msvc-recaudacion-cajas
+        - id: msvc-recaudacion
           uri: http://localhost:9092
           predicates:
-            - Path=/cajas/**
+            - Path=/cajas/**,/facturas/**
 
-        - id: msvc-recaudacion-facturas
-          uri: http://localhost:9092
-          predicates:
-            - Path=/facturas/**
-        - id: msvc-recaudacion-cajas
-          uri: http://localhost:9092
-          predicates:
-            - Path=/cajas/**
-
-        - id: msvc-comercializacion-clientes
+        - id: msvc-comercializacion
           uri: http://localhost:9093
           predicates:
-            - Path=/clientes/**
-
-        - id: msvc-comercializacion-abonados
-          uri: http://localhost:9093
-          predicates:
-            - Path=/abonados/**
+            - Path=/abonados/**, /clientes/**, /nacionalidades/**, /personeriajuridica/**, /rutas/**, /tipopago/**, /tpidentifica/**, /ubicacionm/**

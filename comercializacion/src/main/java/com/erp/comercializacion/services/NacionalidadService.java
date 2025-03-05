@@ -13,6 +13,7 @@ import java.util.Optional;
 public class NacionalidadService {
     @Autowired
     private NacionalidadR dao;
+
     public List<Nacionalidad> findAll() {
         return dao.findAll();
     }
@@ -31,5 +32,13 @@ public class NacionalidadService {
 
     public void deleteById(Long id) {
         dao.deleteById(id);
+    }
+
+    public List<Nacionalidad> findByDescription(String nombre) {
+        return dao.findByDescription(nombre);
+    }
+
+    public List<Nacionalidad> used(Long id) {
+        return dao.used(id);
     }
 }

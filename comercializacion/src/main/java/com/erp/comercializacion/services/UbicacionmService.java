@@ -11,7 +11,7 @@ import java.util.Optional;
 @Service
 public class UbicacionmService {
     @Autowired
-    UbicacionmR dao;
+    private UbicacionmR dao;
 
     public <S extends Ubicacionm> S save(S entity) {
         return dao.save(entity);
