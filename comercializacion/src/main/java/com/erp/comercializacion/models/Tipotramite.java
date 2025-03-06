@@ -7,23 +7,21 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name= "suspensiones")
-public class Suspensiones {
+@Table(name="tipotramite")
+public class Tipotramite {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idsuspension;
-    private Long tipo;
-    private Long iddocumento_documentos;
-    private String numdoc;
-    private String observa;
+    private Long idtipotramite;
+    private String descripcion;
+    private Integer facturable;
     private Long usucrea;
     private LocalDate feccrea;
     private Long usumodi;
     private LocalDate fecmodi;
-    private Long total;
 }
