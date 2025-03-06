@@ -19,17 +19,17 @@ spring:
         locator:
           enabled: true
       routes:
-        - - id: msvc-login
-        - uri: http://localhost:9091
-        - predicates:
-        - Path=/cajas/**,/facturas/**
-        -
+        - id: msvc-login
+          uri: http://localhost:9091
+          predicates:
+          - Path=/acceso/**, /colores/**, /definir/**, /documentos/**, /erpmodulos/**, /tabla4/**, /usrxmodulos/**, /usuarios/**, /ventanas/**
+
         - id: msvc-recaudacion
           uri: http://localhost:9092
           predicates:
-            - Path=/cajas/**,/facturas/**
+          - Path=/cajas/**, /facturas/**
 
         - id: msvc-comercializacion
           uri: http://localhost:9093
           predicates:
-            - Path=/abonados/**, /clientes/**, /nacionalidades/**, /personeriajuridica/**, /rutas/**, /tipopago/**, /tpidentifica/**, /ubicacionm/**
+          - Path=/abonados/**, /clientes/**, /nacionalidades/**, /personeriajuridica/**, /rutas/**, /tipopago/**, /tpidentifica/**, /ubicacionm/**

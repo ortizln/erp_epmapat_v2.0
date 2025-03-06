@@ -19,7 +19,7 @@ public class Usuarios {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idusuario;
     private String identificausu;
-    private String cosusu;
+    private String codusu;
     private String nomusu;
     private String email;
     private Boolean estado;
