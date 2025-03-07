@@ -11,15 +11,18 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "aboxsuspension")
-public class Abonadosxsuspension {
+@Table(name = "emisionindividual")
+public class Emisionindividual {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idaboxsuspen;
+    private Long idemisionindividual;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idsuspesion_suspensiones")
-    private Suspensiones idsuspension_suspensiones;
+    @JoinColumn(name = "idemision")
+    private Emisiones idemision;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idabonado_abonados")
-    private Abonados idabonado_abonados;
+    @JoinColumn(name = "idlecturanueva")
+    private Lecturas idlecturanueva;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "idlecturaanterior")
+    private Lecturas idlecturaanterior;
 }
