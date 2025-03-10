@@ -32,4 +32,4 @@ spring:
         - id: msvc-comercializacion
           uri: http://localhost:9093
           predicates:
-          - Path=/abonados/**, /clientes/**, /nacionalidades/**, /personeriajuridica/**, /rutas/**, /tipopago/**, /tpidentifica/**, /ubicacionm/**
+          - Path=/abonados/**, /categorias/**, /clientes/**, /estadom/**, /nacionalidades/**, /personeriajuridica/**, /rutas/**, /tipopago/**, /tpidentifica/**, /ubicacionm/**
