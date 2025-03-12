@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: msvc-pagosonline
+  config:
+    import: optional:configserver:http://localhost:8888
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/ErpEpmapaT  # Usar el nombre del servicio de la base de datos en Docker
+    username: postgres
+    password: 12345
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
