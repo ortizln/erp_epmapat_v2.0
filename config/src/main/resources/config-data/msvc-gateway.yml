@@ -33,3 +33,8 @@ spring:
           uri: http://localhost:9093
           predicates:
           - Path=/abonados/**, /categorias/**, /clientes/**, /estadom/**, /nacionalidades/**, /personeriajuridica/**, /rutas/**, /tipopago/**, /tpidentifica/**, /ubicacionm/**
+
+        - id: msvc-pagosonline
+          uri: http://localhost:9094
+          predicates:
+            - Path=/api/facturas/**
