@@ -19,7 +19,7 @@ public class FacturasApi {
     @Autowired
     private FacturasService facturasService;
     @GetMapping("/sincobrar")
-    public ResponseEntity<List<FacturasSinCobroInter>> getFacturasSinCobro(Long cuenta){
+    public ResponseEntity<FacturaDTO> getFacturasSinCobro(Long cuenta){
         return ResponseEntity.ok(facturasService.findFacturasSinCobro(cuenta));
     }
 }
