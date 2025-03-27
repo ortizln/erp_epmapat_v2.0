@@ -70,7 +70,9 @@ public class InteresesApi {
         return ResponseEntity.ok(inteServicio.facturaid(idfactura));
     }*/
     @GetMapping("/calcularInteres")
-    public ResponseEntity<?> getInteresTotal(FacturaToInteresDTO factura){
+    public ResponseEntity<Object> getInteresTotal(FacturaToInteresDTO factura){
+        System.out.println(factura.getFeccrea());
+        System.out.println(factura.getSubtotal());
         return ResponseEntity.ok(inteServicio.interesToFactura(factura));
     }
 }

@@ -50,7 +50,6 @@ public class InteresService {
 
     public Object interesToFactura(FacturaToInteresDTO factura) {
         double totalInteres = 0.0;
-
         // Determinar fecha de inicio según forma de pago
         LocalDate fecInicio = factura.getFormapago() == 4
                 ? factura.getFectransferencia()
@@ -75,7 +74,6 @@ public class InteresService {
             double interesCalculado = (porcentaje * (factura.getSubtotal() + totalInteres)) / 100;
             totalInteres += interesCalculado;
         }
-
         return totalInteres;
     }
 
