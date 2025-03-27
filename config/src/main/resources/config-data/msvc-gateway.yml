@@ -32,7 +32,7 @@ spring:
         - id: msvc-comercializacion
           uri: http://localhost:9093
           predicates:
-          - Path=/abonados/**, /categorias/**, /clientes/**, /estadom/**, /nacionalidades/**, /personeriajuridica/**, /rutas/**, /tipopago/**, /tpidentifica/**, /ubicacionm/**
+          - Path=/abonados/**, /categorias/**, /clientes/**, /estadom/**, /intereses/**, /nacionalidades/**, /personeriajuridica/**, /rutas/**, /tipopago/**, /tpidentifica/**, /ubicacionm/**
 
         - id: msvc-pagosonline
           uri: http://localhost:9094
