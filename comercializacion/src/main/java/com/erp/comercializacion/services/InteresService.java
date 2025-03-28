@@ -1,8 +1,10 @@
 package com.erp.comercializacion.services;
 
 import com.erp.comercializacion.DTO.FacturaToInteresDTO;
+import com.erp.comercializacion.interfaces.FacturasSinCobroInter;
 import com.erp.comercializacion.models.Intereses;
 import com.erp.comercializacion.repositories.InteresesR;
+import com.erp.comercializacion.repositories.LecturasR;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,8 @@ import java.util.Optional;
 public class InteresService {
     @Autowired
     private InteresesR dao;
+    @Autowired
+    private LecturasR dao_lecturas;
     public List<Intereses> findAll() {
         return dao.findAll();
     }
@@ -48,88 +52,20 @@ public class InteresService {
         dao.delete(entity);
     }
 
-    public Object _interesToFactura(FacturaToInteresDTO factura) {
-        double totalInteres = 0.0;
-        // Determinar fecha de inicio según forma de pago
-        LocalDate fecInicio = factura.getFormapago() == 4
-                ? factura.getFectransferencia()
-                : factura.getFeccrea();
-
-        LocalDate fecFinal = LocalDate.now();
-
-        // Si las fechas son iguales o la final es anterior, no hay interés
-        if (fecFinal.isBefore(fecInicio) || fecFinal.isEqual(fecInicio)) {
-            return totalInteres;
-        }
-
-        // Caso especial: meses consecutivos en años consecutivos (dic-ene)
-        if (isConsecutiveMonthsAcrossYears(fecInicio, fecFinal)) {
-            return totalInteres;
-        }
-
-        List<Float> todosPorcentajes = calcularPorcentajesInteres(fecInicio, fecFinal);
-
-        // Calcular interés compuesto
-        for (Float porcentaje : todosPorcentajes) {
-            double interesCalculado = (porcentaje * (factura.getSubtotal() + totalInteres)) / 100;
-            totalInteres += interesCalculado;
-        }
-        return totalInteres;
-    }
-
-    private boolean isConsecutiveMonthsAcrossYears(LocalDate start, LocalDate end) {
-        return start.getMonthValue() == 12
-                && end.getMonthValue() == 1
-                && start.getYear() + 1 == end.getYear();
-    }
-
-    private List<Float> calcularPorcentajesInteres(LocalDate fecInicio, LocalDate fecFinal) {
-        List<Float> porcentajes = new ArrayList<>();
-        int anioI = fecInicio.getYear();
-        int anioF = fecFinal.getYear();
-
-        if (anioI < anioF) {
-            // Procesar años completos
-            for (int anio = anioI; anio <= anioF; anio++) {
-                int mesInicio = (anio == anioI) ? fecInicio.getMonthValue() : 1;
-                int mesFin = (anio == anioF) ? fecFinal.getMonthValue() - 2 : 12;
-
-                if (mesInicio <= mesFin) {
-                    porcentajes.addAll(dao.porcentajes(anio, mesInicio, mesFin));
-                }
-            }
-        } else {
-            // Mismo año
-            int mesInicio = fecInicio.getMonthValue();
-            int mesFin = fecFinal.getMonthValue() - 2;
-
-            if (mesInicio <= mesFin) {
-                porcentajes.addAll(dao.porcentajes(anioI, mesInicio, mesFin));
-            } else if (mesInicio == (fecFinal.getMonthValue() - 1)) {
-                porcentajes.add(0.00f);
-            }
-        }
-
-        return porcentajes;
-    }
-
-
     public Object interesToFactura(FacturaToInteresDTO factura) {
-
-        // Variable para almacenar el interés total de todas las facturas
-        final double[] totalInteres = { 0.0 };
-        // Uso de Java Streams para mapear la lista
-        //factura.stream().forEach(_factura -> {});
-        // Convertir la fecha de creación a LocalDate
+        FacturasSinCobroInter _factura = dao_lecturas.findFechaEmision(factura.getIdfactura());
         LocalDate fecInicio;
-        if (factura.getFormapago() == 4) {
-            fecInicio = factura.getFectransferencia();
 
-        } else {
-            fecInicio = (factura.getFeccrea());
+          //if(_factura == null){
+              //BUSCAR DATOS DE FACTURA EN FACTURA DE SERVICIOS
+         // }
+         if(_factura.getFormapago() == 4){
+             fecInicio = _factura.getFechatransferencia();
+         }else{
+             fecInicio = _factura.getFeccrea();
+         }
+        final double[] totalInteres = { 0.0 };
 
-        }
-        // LocalDate fecInicio = LocalDate.parse(_factura.getFeccrea());
         LocalDate fecFinal = LocalDate.now();
         int anioI = fecInicio.getYear();
         int anioF = fecFinal.getYear();

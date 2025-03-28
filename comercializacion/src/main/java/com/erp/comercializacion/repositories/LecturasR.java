@@ -87,6 +87,9 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 
     @Query(value = "select e.emision, e.feccrea from lecturas l join emisiones e on l.idemision = e.idemision where l.idfactura =  ?1", nativeQuery = true)
     public List<FecEmision> getEmisionByIdfactura(Long idfactura);
+    //BUSQUEDA PARA ENCONTRAR LA FECHA Y CALCULAR EL INTERES
+    @Query(value = "select e.feccrea, f.formapago, f.fechatransferencia from lecturas l join emisiones e on l.idemision = e.idemision join facturas f on f.idfactura = l.idfactura where l.idfactura = ?1", nativeQuery = true)
+    public FacturasSinCobroInter findFechaEmision(Long idfactura);
 
     @Query(value = "SELECT * FROM emisiones e join lecturas l on e.idemision = l.idemision join facturas f on l.idfactura = f.idfactura where not f.fechaeliminacion is null and l.idemision = ?1 order by f.idabonado", nativeQuery = true)
     List<Lecturas> findByIdEmisiones(Long idemision);

@@ -32,8 +32,6 @@ public class FacturasService {
         // Llenar la lista con los IDs de las facturas
         facturas.forEach(item -> {
             _interes[0] = _interes[0].add(getInteres(item));
-            System.out.println("-- "+_interes[0]);
-            System.out.println(getFecEmision(item.getIdfactura()));
             total[0] = total[0].add(item.getSubtotal()); // CORREGIDO
             idfacturas.add(item.getIdfactura()); // Agregar el ID a la lista
         });
@@ -50,10 +48,11 @@ public class FacturasService {
     }
 
     public BigDecimal getInteres(FacturasSinCobroInter factura){
-        return rt.getForObject(this.URL+"/intereses/calcularInteres?formapago="+factura.getFormapago()+"&subtotal="+factura.getSubtotal()+"&feccrea="+factura.getFeccrea(), BigDecimal.class);
+        //LocalDate fecEmision = getFecEmision(factura.getIdfactura());
+        return rt.getForObject(this.URL+"/intereses/calcularInteres?idfactura="+factura.getIdfactura()+"&subtotal="+factura.getSubtotal(), BigDecimal.class);
     }
-    public Object getFecEmision(Long idfactura){
-        return rt.getForObject(this.URL+"/lecturas/fecemision?idfactura="+idfactura, Object.class);
+    public LocalDate getFecEmision(Long idfactura){
+        return rt.getForObject(this.URL+"/lecturas/fecEmision?idfactura="+idfactura, LocalDate.class);
     }
 
 }

@@ -2,6 +2,7 @@ package com.erp.comercializacion.controllers;
 
 import com.erp.comercializacion.DTO.FacturaToInteresDTO;
 import com.erp.comercializacion.models.Intereses;
+import com.erp.comercializacion.repositories.LecturasR;
 import com.erp.comercializacion.services.InteresService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -71,8 +72,6 @@ public class InteresesApi {
     }*/
     @GetMapping("/calcularInteres")
     public ResponseEntity<Object> getInteresTotal(FacturaToInteresDTO factura){
-        System.out.println(factura.getFeccrea());
-        System.out.println(factura.getSubtotal());
         return ResponseEntity.ok(inteServicio.interesToFactura(factura));
     }
 }
