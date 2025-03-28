@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,9 +18,9 @@ public class FacturasService {
     private FacturasR dao;
     @Autowired
     private RestTemplate rt;
-    private List<Long> idfacturas;
-    private final String URL_INTERESES = "http://localhost:8080/intereses";
 
+    private List<Long> idfacturas;
+    private final String URL = "http://localhost:8080";
     public FacturaDTO findFacturasSinCobro(Long cuenta) {
         // Obtener la lista de facturas desde el DAO
         List<FacturasSinCobroInter> facturas = dao.findFacturasSinCobro(cuenta);
@@ -31,7 +32,8 @@ public class FacturasService {
         // Llenar la lista con los IDs de las facturas
         facturas.forEach(item -> {
             _interes[0] = _interes[0].add(getInteres(item));
-            System.out.println(_interes[0]);
+            System.out.println("-- "+_interes[0]);
+            System.out.println(getFecEmision(item.getIdfactura()));
             total[0] = total[0].add(item.getSubtotal()); // CORREGIDO
             idfacturas.add(item.getIdfactura()); // Agregar el ID a la lista
         });
@@ -40,7 +42,7 @@ public class FacturasService {
             facturaDTO.setResponsablepago(facturas.get(0).getNombre());
         }
         facturaDTO.setCuenta(cuenta);
-        facturaDTO.setTotal(total[0]); // Se asigna el total corregido
+        facturaDTO.setTotal(total[0].add(_interes[0])); // Se asigna el total corregido
         facturaDTO.setFacturas(idfacturas); // Asignar la lista al DTO
 
         // Devolver el DTO con la lista de facturas
@@ -48,7 +50,10 @@ public class FacturasService {
     }
 
     public BigDecimal getInteres(FacturasSinCobroInter factura){
-        return rt.getForObject(this.URL_INTERESES+"/calcularInteres?formapago="+factura.getFormapago()+"&subtotal="+factura.getSubtotal()+"&feccrea="+factura.getFeccrea(), BigDecimal.class);
+        return rt.getForObject(this.URL+"/intereses/calcularInteres?formapago="+factura.getFormapago()+"&subtotal="+factura.getSubtotal()+"&feccrea="+factura.getFeccrea(), BigDecimal.class);
+    }
+    public Object getFecEmision(Long idfactura){
+        return rt.getForObject(this.URL+"/lecturas/fecemision?idfactura="+idfactura, Object.class);
     }
 
 }
