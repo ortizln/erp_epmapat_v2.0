@@ -5,6 +5,7 @@ import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
 @Entity
@@ -16,7 +17,7 @@ public class Recaudacion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idrecaudacion;
-    private LocalDate fechacobro;
+    private LocalDateTime fechacobro;
     private Long recaudador;
     private BigDecimal totalpagar;
     private BigDecimal recibo;
@@ -30,5 +31,5 @@ public class Recaudacion {
     private Long ncnumero;
     private BigDecimal ncvalor;
     private Long usucrea;
-    private LocalDate feccrea;
+    private LocalDateTime feccrea;
 }

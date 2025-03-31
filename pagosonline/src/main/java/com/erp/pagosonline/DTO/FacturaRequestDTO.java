@@ -2,19 +2,14 @@ package com.erp.pagosonline.DTO;
 
 import lombok.*;
 
-import java.math.BigDecimal;
 import java.util.List;
-
 @Data
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-public class FacturaDTO {
-    private Long cuenta;
-    private BigDecimal total;
-    private String responsablepago;
+public class FacturaRequestDTO {
     private List<Long> facturas;
-
+    private Long autentification;
+    private RecaudacionDTO recaudacion;
 }

@@ -77,14 +77,17 @@ public class Cajas_ser {
         LastConection_int lconection = c_dao.getLastConection(idusuario);
         Map<String, Object> respuesta = new HashMap<>();
 
-        if(lconection != null){
+        if(lconection != null && lconection.getEstado() ==1){
             respuesta.put("estado", lconection.getEstado());
             respuesta.put("username", lconection.getNomusu());
             respuesta.put("codigo", Factura_ser.fPemiCaja( lconection.getCodigo()));
             respuesta.put("establecimiento", Factura_ser.fPemiCaja(lconection.getEstablecimiento()));
             respuesta.put("secuencial",Factura_ser.fSecuencial(lconection.getSecuencial()));
+            respuesta.put("iniciolabor", lconection.getFechainiciolabor());
+            respuesta.put("finlabor", lconection.getFechafinlabor());
         }else{
-            respuesta.put("estado", false);
+            respuesta.put("estado", 0);
+            respuesta.put("mensaje", "Caja no iniciada");
         }
         return respuesta;
 

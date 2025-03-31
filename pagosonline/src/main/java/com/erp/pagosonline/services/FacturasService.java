@@ -1,58 +1,182 @@
 package com.erp.pagosonline.services;
 
+import ch.qos.logback.classic.Logger;
 import com.erp.pagosonline.DTO.FacturaDTO;
+import com.erp.pagosonline.DTO.FacturaRequestDTO;
 import com.erp.pagosonline.interfaces.FacturasSinCobroInter;
 import com.erp.pagosonline.repositories.FacturasR;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import javax.naming.ServiceUnavailableException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class FacturasService {
+    private static final Logger log = (Logger) LoggerFactory.getLogger(FacturasService.class);
+
+    private final FacturasR dao;
+    private final RestTemplate restTemplate;
+    private final String apiBaseUrl;
+
     @Autowired
-    private FacturasR dao;
-    @Autowired
-    private RestTemplate rt;
+    public FacturasService(FacturasR dao,
+                           RestTemplate restTemplate,
+                           @Value("${app.api.base-url}") String apiBaseUrl) {
+        this.dao = dao;
+        this.restTemplate = restTemplate;
+        this.apiBaseUrl = apiBaseUrl;
+    }
+    public Object savePagos(Long user, FacturaRequestDTO datos) {
+        System.out.println(datos);
 
-    private List<Long> idfacturas;
-    private final String URL = "http://localhost:8080";
-    public FacturaDTO findFacturasSinCobro(Long cuenta) {
-        // Obtener la lista de facturas desde el DAO
-        List<FacturasSinCobroInter> facturas = dao.findFacturasSinCobro(cuenta);
-        FacturaDTO facturaDTO = new FacturaDTO(); // Crear el DTO
-        List<Long> idfacturas = new ArrayList<>(); // Inicializar lista de IDs
-        final BigDecimal[] total = {BigDecimal.ZERO};
-        final BigDecimal[] _interes = {BigDecimal.ZERO};
+        Map<String, Object> respuesta = new HashMap<>();
+        respuesta.put("mensaje", "COBRANDO...");
 
-        // Llenar la lista con los IDs de las facturas
-        facturas.forEach(item -> {
-            _interes[0] = _interes[0].add(getInteres(item));
-            total[0] = total[0].add(item.getSubtotal()); // CORREGIDO
-            idfacturas.add(item.getIdfactura()); // Agregar el ID a la lista
-        });
+        try {
+            // Send request to external API
+            restTemplate.put(apiBaseUrl + "/facturas/cobrar", datos);
 
-        if (!facturas.isEmpty()) {
-            facturaDTO.setResponsablepago(facturas.get(0).getNombre());
+            // Update response to indicate success
+            respuesta.put("status", "SUCCESS");
+            respuesta.put("detalle", "Pago realizado correctamente");
+            respuesta.put("body", datos);
+
+        } catch (RestClientException e) {
+            // Handle errors if the request fails
+            respuesta.put("status", "ERROR");
+            respuesta.put("detalle", "No se pudo realizar el pago: " + e.getMessage());
         }
-        facturaDTO.setCuenta(cuenta);
-        facturaDTO.setTotal(total[0].add(_interes[0])); // Se asigna el total corregido
-        facturaDTO.setFacturas(idfacturas); // Asignar la lista al DTO
 
-        // Devolver el DTO con la lista de facturas
-        return facturaDTO;
+        return respuesta;
     }
 
-    public BigDecimal getInteres(FacturasSinCobroInter factura){
-        //LocalDate fecEmision = getFecEmision(factura.getIdfactura());
-        return rt.getForObject(this.URL+"/intereses/calcularInteres?idfactura="+factura.getIdfactura()+"&subtotal="+factura.getSubtotal(), BigDecimal.class);
-    }
-    public LocalDate getFecEmision(Long idfactura){
-        return rt.getForObject(this.URL+"/lecturas/fecEmision?idfactura="+idfactura, LocalDate.class);
+
+    public Object findFacturasSinCobro(Long user, Long cuenta) {
+        validateInput(user, cuenta);
+        Map<String, Object> connection = getConnectionStatus(user);
+        Boolean test = validateCajaStatus(connection);
+        if(test){
+            List<FacturasSinCobroInter> facturas = dao.findFacturasSinCobro(cuenta);
+            return buildResponse(cuenta, facturas);
+
+        }else{
+            Map<String, Object> respuesta = new HashMap<>();
+            return respuesta.put("mensaje","Caja no iniciada");
+        }
+
     }
 
+    private void validateInput(Long user, Long cuenta) {
+        if (user == null || cuenta == null) {
+            throw new IllegalArgumentException("Los parámetros 'user' y 'cuenta' no pueden ser nulos");
+        }
+    }
+
+    public Map<String, Object> getConnectionStatus(Long user) {
+        try {
+            return restTemplate.getForObject(
+                    apiBaseUrl + "/cajas/test_connection?user={user}",
+                    Map.class,
+                    user);
+        } catch (RestClientException e) {
+            log.error("Error al obtener estado de conexión", e);
+            throw new ServiceUnavailableException("No se pudo verificar el estado de la caja");
+        }
+    }
+
+    public Boolean validateCajaStatus(Map<String, Object> connection) {
+        // Validación de entrada
+        Boolean respuesta= false;
+        if (connection == null || !connection.containsKey("estado")) {
+            return false;
+        }
+        Object estado = connection.get("estado");
+        // Manejo de tipos de estado
+        if (estado instanceof Boolean) {
+            respuesta = (Boolean) estado;
+        }
+        else if (estado instanceof Integer) {
+            respuesta = ((Integer) estado) == 1;
+        }
+        else if (estado instanceof String) {
+            String estadoStr = ((String) estado).toLowerCase();
+            if ("true".equals(estadoStr) || "1".equals(estadoStr)) {
+                respuesta = true;
+            }
+            if ("false".equals(estadoStr) || "0".equals(estadoStr)) {
+                respuesta = false;
+            }
+        }
+        return respuesta;
+    }
+
+    private FacturaDTO buildResponse(Long cuenta, List<FacturasSinCobroInter> facturas) {
+        if (facturas == null || facturas.isEmpty()) {
+            return createEmptyResponse(cuenta);
+        }
+
+        BigDecimal subtotal = calculateSubtotal(facturas);
+        BigDecimal interes = calculateTotalInteres(facturas);
+        List<Long> facturaIds = extractFacturaIds(facturas);
+
+        return FacturaDTO.builder()
+                .cuenta(cuenta)
+                .responsablepago(facturas.get(0).getNombre())
+                .total(subtotal.add(interes))
+                .facturas(facturaIds)
+                .build();
+    }
+
+    private BigDecimal calculateSubtotal(List<FacturasSinCobroInter> facturas) {
+        return facturas.stream()
+                .map(FacturasSinCobroInter::getSubtotal)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private BigDecimal calculateTotalInteres(List<FacturasSinCobroInter> facturas) {
+        return facturas.stream()
+                .map(this::getInteres)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    private List<Long> extractFacturaIds(List<FacturasSinCobroInter> facturas) {
+        return facturas.stream()
+                .map(FacturasSinCobroInter::getIdfactura)
+                .collect(Collectors.toList());
+    }
+
+    private FacturaDTO createEmptyResponse(Long cuenta) {
+        return FacturaDTO.builder()
+                .cuenta(cuenta)
+                .total(BigDecimal.ZERO)
+                .facturas(Collections.emptyList())
+                .build();
+    }
+
+    private BigDecimal getInteres(FacturasSinCobroInter factura) {
+        try {
+            return restTemplate.getForObject(
+                    apiBaseUrl + "/intereses/calcularInteres?idfactura={id}&subtotal={subtotal}",
+                    BigDecimal.class,
+                    factura.getIdfactura(),
+                    factura.getSubtotal());
+        } catch (RestClientException e) {
+            log.error("Error al calcular interés para factura {}", factura.getIdfactura(), e);
+            return BigDecimal.ZERO;
+        }
+    }
+    public static class ServiceUnavailableException extends RuntimeException {
+        public ServiceUnavailableException(String message) {
+            super(message);
+        }
+    }
 }

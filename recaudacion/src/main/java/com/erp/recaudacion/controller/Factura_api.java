@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class Factura_api {
         LastConection_int lastConection = s_cajas.getLastConectionByUduario(facturaRequest.getAutentification());
         //DECLARAR NUEVA RECAUDACION
         Recaudacion recaudacion = new Recaudacion();
-        LocalDate date = LocalDate.now();
+        LocalDateTime date = LocalDateTime.now();
         if(lastConection.getEstado() == 1){
             try {
                 // Imprimir las claves "facturas"
