@@ -7,9 +7,8 @@
 		<artifactId>erp_epmapat</artifactId>
 		<version>1.0-SNAPSHOT</version>
 	</parent>
-	<groupId>com.erp</groupId>
 	<artifactId>comercializacion</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>comercializacion</name>
 	<description>Microservicio de comercializacion</description>
 

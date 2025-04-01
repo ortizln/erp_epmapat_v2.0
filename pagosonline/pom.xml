@@ -8,7 +8,7 @@
 		<version>1.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>pagosonline</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.1</version>
 	<name>pagosonline</name>
 	<description>Micro servicios de pagos en online, facilitao, banco pichincha</description>
 	<properties>
