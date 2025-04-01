@@ -51,6 +51,31 @@ services:
     depends_on:
       - msvc-eureka
       - config-server
+  msvc-comercializacion:
+    build: comercializacion
+    image: msvc-comercializacion:latest
+    container_name: msvc-comercializacion
+    ports:
+      - "9093:9093"
+    restart: always
+    networks:
+      - epmapat-nw
+    depends_on:
+      - msvc-eureka
+      - config-server
+  msvc-pagosonline:
+    build: pagosonline
+    image: msvc-pagosonline:latest
+    container_name: msvc-pagosonline
+    ports:
+      - "9094:9094"
+    restart: always
+    networks:
+      - epmapat-nw
+    depends_on:
+      - msvc-eureka
+      - config-server
+
 
 networks:
   epmapat-nw:

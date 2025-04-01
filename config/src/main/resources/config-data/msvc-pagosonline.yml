@@ -5,7 +5,7 @@ spring:
     name: msvc-pagosonline
 app:
   api:
-    base-url: http://localhost:8080
+    base-url: http://192.168.100.16:8080
 eureka:
   instance:
     hostname: msvc-pagosonline  # El nombre del contenedor o el servicio en Docker Compose

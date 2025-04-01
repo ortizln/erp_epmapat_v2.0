@@ -2,6 +2,7 @@ package com.erp.recaudacion.model;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -25,7 +26,7 @@ public class Facturas {
     private BigDecimal totaltarifa;
     private Long pagado;
     private Long usuariocobro;
-    private LocalDate fechacobro;
+    private LocalDateTime fechacobro;
     private Long estado;
     private Long usuarioanulacion;
     private LocalDate fechaanulacion;
