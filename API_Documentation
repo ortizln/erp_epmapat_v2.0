@@ -1,0 +1,22 @@
+CONFIGURATION:
+-PUERTO: 8888
+EUREKA:
+-PUERTO: 8761
+GATEWAY:
+-PUERTO: 8080
+LOGIN:
+-PUERTO: 9091
+-NAME: msvc-login
+-Path=/acceso/**, /colores/**, /definir/**, /documentos/**, /erpmodulos/**, /tabla4/**, /usrxmodulos/**, /usuarios/**, /ventanas/**
+RECAUDACIÓN:
+-PUERTO: 9092
+-NAME: msvc-recaudacion
+-Path=/cajas/**, /facturas/**
+COMERCIALIZACIÓN:
+-PUERTO: 9093
+-NAME: msvc-comercializacion
+-Path=/abonados/**, /categorias/**, /clientes/**, /estadom/**, /intereses/**, /lecturas/**, /nacionalidades/**, /personeriajuridica/**, /rutas/**, /tipopago/**, /tpidentifica/**, /ubicacionm/**
+PAGOSONLINE:
+-PUERTO: 9094
+-NAME: msvc-pagosonline
+-Path=/api/facturas/**
