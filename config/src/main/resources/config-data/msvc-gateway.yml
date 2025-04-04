@@ -4,12 +4,13 @@ server:
 eureka:
   instance:
     hostname: msvc-gateway  # Nombre del servicio o contenedor de Gateway
+    prefer-ip-address: true
+
   client:
     service-url:
       register-with-eureka: false
       fetch-registry: false
-      defaultZone: http://localhost:8761/eureka  # Eureka estará disponible como msvc-eureka dentro de Docker Compose
-
+      defaultZone: http://msvc-eureka:8761/eureka/  # Usar el nombre del servicio Docker
 spring:
   application:
     name: msvc-gateway
