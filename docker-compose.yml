@@ -80,3 +80,59 @@ services:
 networks:
   epmapat-nw:
     driver: bridge
+############################################
+version: "3.9"
+services:
+  config-server:
+    build:
+      context: config
+      dockerfile: Dockerfile
+    image: config-server:latest
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+    networks:
+      epmapat-nw:
+        aliases:
+          - config-server
+
+  msvc-eureka:
+    build:
+      context: eureka
+      dockerfile: Dockerfile
+    image: msvc-eureka:latest
+    container_name: msvc-eureka
+    ports:
+      - "8761:8761"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://msvc-eureka:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=msvc-eureka
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+    networks:
+      epmapat-nw:
+        aliases:
+          - msvc-eureka
+
+  # Other services follow same pattern with:
+  # - Explicit build context
+  # - Network aliases
+  # - Health checks
+  # - Proper Eureka configuration
+
+networks:
+  epmapat-nw:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
