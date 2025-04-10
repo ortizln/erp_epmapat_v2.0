@@ -82,6 +82,27 @@ services:
       epmapat-nw:
         aliases:
           - msvc-login
+  msvc-recaudacion:
+    build:
+      context: recaudacion
+      dockerfile: Dockerfile
+    image: msvc-recaudacion:latest
+    container_name: msvc-recaudacion
+    ports:
+      - "9092:9092"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://msvc-eureka:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=msvc-eureka
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+    networks:
+      epmapat-nw:
+        aliases:
+          - msvc-recaudacion
   msvc-comercializacion:
     build:
       context: comercializacion
@@ -103,6 +124,28 @@ services:
       epmapat-nw:
         aliases:
           - msvc-comercializacion
+
+  msvc-pagosonline:
+    build:
+      context: pagosonline
+      dockerfile: Dockerfile
+    image: msvc-pagosonline:latest
+    container_name: msvc-comercializacion
+    ports:
+      - "9094:9094"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://msvc-eureka:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=msvc-eureka
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+    networks:
+      epmapat-nw:
+        aliases:
+          - msvc-pagosonline
 
 networks:
   epmapat-nw:
