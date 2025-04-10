@@ -36,6 +36,6 @@ spring:
           - Path=/abonados/**, /categorias/**, /clientes/**, /estadom/**, /intereses/**, /lecturas/**, /nacionalidades/**, /personeriajuridica/**, /rutas/**, /tipopago/**, /tpidentifica/**, /ubicacionm/**
 
         - id: msvc-pagosonline
-          uri: http://msvcpagosonline:9094
+          uri: http://msvc-pagosonline:9094
           predicates:
             - Path=/api/facturas/**
