@@ -130,7 +130,7 @@ services:
       context: pagosonline
       dockerfile: Dockerfile
     image: msvc-pagosonline:latest
-    container_name: msvc-comercializacion
+    container_name: msvc-pagosonline
     ports:
       - "9094:9094"
     environment:
