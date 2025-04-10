@@ -61,11 +61,27 @@ services:
       epmapat-nw:
         aliases:
           - msvc-gateway
-  # Other services follow same pattern with:
-  # - Explicit build context
-  # - Network aliases
-  # - Health checks
-  # - Proper Eureka configuration
+  msvc-login:
+    build:
+      context: login
+      dockerfile: Dockerfile
+    image: msvc-login:latest
+    container_name: msvc-login
+    ports:
+      - "9091:9091"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://msvc-eureka:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=msvc-eureka
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+    networks:
+      epmapat-nw:
+        aliases:
+          - msvc-login
 
 networks:
   epmapat-nw:

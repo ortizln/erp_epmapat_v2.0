@@ -12,6 +12,6 @@ eureka:
   client:
     enabled: false
     service-url:
-      defaultZone: http://msvc-eureka:8761/eureka  # Reemplazar localhost con el nombre del servicio Eureka en Docker Compose
+      defaultZone: http://192.168.0.70:8761/eureka  # Reemplazar localhost con el nombre del servicio Eureka en Docker Compose
       register-with-eureka: true
       fetch-registry: true
