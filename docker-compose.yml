@@ -47,7 +47,7 @@ services:
     image: msvc-gateway:latest
     container_name: msvc-gateway
     ports:
-      - "8761:8761"
+      - "8080:8080"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://msvc-eureka:8761/eureka/
       - EUREKA_INSTANCE_HOSTNAME=msvc-eureka
