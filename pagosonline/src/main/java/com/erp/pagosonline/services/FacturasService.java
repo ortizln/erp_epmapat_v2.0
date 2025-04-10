@@ -84,7 +84,7 @@ public class FacturasService {
     public Map<String, Object> getConnectionStatus(Long user) {
         try {
             return restTemplate.getForObject(
-                    apiBaseUrl + "/cajas/test_connection?user={user}",
+                    apiBaseUrl + "/cajas/test_connection?user="+user,
                     Map.class,
                     user);
         } catch (RestClientException e) {
