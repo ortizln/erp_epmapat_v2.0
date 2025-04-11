@@ -11,4 +11,4 @@ eureka:
       defaultZone: http://msvc-eureka:8761/eureka  # Reemplazar localhost con el nombre del servicio Eureka en Docker Compose
 app:
   api:
-    base-url: http://192.168.0.70:8080
+    base-url: http://192.168.100.16:8080
