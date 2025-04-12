@@ -19,17 +19,17 @@ services:
         aliases:
           - config-server
 
-  msvc-eureka:
+  localhost:
     build:
       context: eureka
       dockerfile: Dockerfile
-    image: msvc-eureka:latest
-    container_name: msvc-eureka
+    image: localhost:latest
+    container_name: localhost
     ports:
       - "8761:8761"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://msvc-eureka:8761/eureka/
-      - EUREKA_INSTANCE_HOSTNAME=msvc-eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=localhost
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 30s
@@ -39,7 +39,7 @@ services:
     networks:
       epmapat-nw:
         aliases:
-          - msvc-eureka
+          - localhost
   msvc-gateway:
     build:
       context: gateway
@@ -49,8 +49,8 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://msvc-eureka:8761/eureka/
-      - EUREKA_INSTANCE_HOSTNAME=msvc-eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=localhost
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 30s
@@ -70,8 +70,8 @@ services:
     ports:
       - "9091:9091"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://msvc-eureka:8761/eureka/
-      - EUREKA_INSTANCE_HOSTNAME=msvc-eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=localhost
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 30s
@@ -91,8 +91,8 @@ services:
     ports:
       - "9092:9092"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://msvc-eureka:8761/eureka/
-      - EUREKA_INSTANCE_HOSTNAME=msvc-eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=localhost
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
       interval: 30s
@@ -112,8 +112,8 @@ services:
     ports:
       - "9093:9093"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://msvc-eureka:8761/eureka/
-      - EUREKA_INSTANCE_HOSTNAME=msvc-eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=localhost
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
       interval: 30s
@@ -134,8 +134,8 @@ services:
     ports:
       - "9094:9094"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://msvc-eureka:8761/eureka/
-      - EUREKA_INSTANCE_HOSTNAME=msvc-eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=localhost
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
       interval: 30s

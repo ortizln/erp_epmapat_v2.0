@@ -10,7 +10,7 @@ eureka:
     service-url:
       register-with-eureka: false
       fetch-registry: false
-      defaultZone: http://msvc-eureka:8761/eureka/  # Usar el nombre del servicio Docker
+      defaultZone: http://localhost:8761/eureka/  # Usar el nombre del servicio Docker
 spring:
   application:
     name: msvc-gateway
@@ -21,21 +21,21 @@ spring:
           enabled: true
       routes:
         - id: msvc-login
-          uri: http://msvc-login:9091
+          uri: http://localhost:9091
           predicates:
           - Path=/acceso/**, /colores/**, /definir/**, /documentos/**, /erpmodulos/**, /tabla4/**, /usrxmodulos/**, /usuarios/**, /ventanas/**
 
         - id: msvc-recaudacion
-          uri: http://msvc-recaudacion:9092
+          uri: http://localhost:9092
           predicates:
           - Path=/cajas/**, /facturas/**
 
         - id: msvc-comercializacion
-          uri: http://msvc-comercializacion:9093
+          uri: http://localhost:9093
           predicates:
           - Path=/abonados/**, /categorias/**, /clientes/**, /estadom/**, /intereses/**, /lecturas/**, /nacionalidades/**, /personeriajuridica/**, /rutas/**, /tipopago/**, /tpidentifica/**, /ubicacionm/**
 
         - id: msvc-pagosonline
-          uri: http://msvc-pagosonline:9094
+          uri: http://localhost:9094
           predicates:
             - Path=/api/facturas/**
