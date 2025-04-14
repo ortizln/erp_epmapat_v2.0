@@ -21,9 +21,9 @@ public class ClientesApi {
     private ClientesService cliServicio;
 
     @GetMapping
-    public List<Clientes> getAllClientes(@RequestParam String identificacion,
-                                         @RequestParam String nombre, @RequestParam String nombreIdentifi,
-                                         @RequestParam Long idused) {
+    public List<Clientes> getAllClientes(@Param(value = "identificacion") String identificacion,
+                                         @Param(value = "nombre") String nombre, @Param(value = "nombreIdentifi") String nombreIdentifi,
+                                         @Param(value = "idused") Long idused) {
         if (nombreIdentifi != null) {
             return cliServicio.findByNombreIdentifi(nombreIdentifi.toLowerCase());
         }
@@ -35,11 +35,8 @@ public class ClientesApi {
         }
         if (idused != null) {
             return cliServicio.used(idused);
-        } else {
-            System.out.println("VACIO");
+        } else
             return null;
-        }
-
     }
 
     @GetMapping("/{idcliente}")

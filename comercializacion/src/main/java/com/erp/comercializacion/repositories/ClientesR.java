@@ -13,16 +13,17 @@ import java.util.List;
 import java.util.Map;
 
 public interface ClientesR extends JpaRepository<Clientes, Long> {
+
     // Clientes por Nombre o Identificacion
     @Query(value = "select * from clientes WHERE LOWER(nombre) LIKE %?1% OR cedula LIKE %?1% ORDER BY nombre", nativeQuery = true)
     List<Clientes> findByNombreIdentifi(String nombreIdentifi);
 
     // Valida Identificación del Cliente
-    @Query(value = "SELECT COUNT(c) > 0 FROM Clientes c WHERE c.cedula = :cedula", nativeQuery = true)
+    @Query("SELECT COUNT(c) > 0 FROM Clientes c WHERE c.cedula = :cedula")
     boolean valIdentificacion(@Param("cedula") String cedula);
 
     // Valida Nombre Cliente
-    @Query(value= "SELECT COUNT(c) > 0 FROM Clientes c WHERE LOWER(c.nombre) = :nombre", nativeQuery = true)
+    @Query("SELECT COUNT(c) > 0 FROM Clientes c WHERE LOWER(c.nombre) = :nombre")
     boolean valNombre(@Param("nombre") String nombre);
 
     // Cliente por Identificacion
@@ -41,7 +42,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
     @Query(value = "SELECT * FROM clientes AS c WHERE EXISTS(SELECT * FROM abonados AS a WHERE a.idcliente_clientes=c.idcliente)AND c.idcliente=?1 ", nativeQuery = true)
     List<Clientes> used(Long id);
 
-    @Query(value = "SELECT new map(c.idcliente as idcliente, c.nombre as nombre) FROM Clientes c order by idcliente", nativeQuery = true)
+    @Query("SELECT new map(c.idcliente as idcliente, c.nombre as nombre) FROM Clientes c order by idcliente")
     List<Map<String, Object>> findAllClientsFields();
 
     @Query(value = "select count(*) from clientes", nativeQuery = true)

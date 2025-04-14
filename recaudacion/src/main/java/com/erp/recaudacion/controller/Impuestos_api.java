@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 
 @RestController
-@RequestMapping("/impuestos")
+@RequestMapping("/api/rec/impuestos")
 @CrossOrigin("*")
 public class Impuestos_api {
     @Autowired

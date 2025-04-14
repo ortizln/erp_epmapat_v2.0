@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/interes")
+@RequestMapping("/api/rec/interes")
 @CrossOrigin("*")
 public class Interes_api {
     @Autowired

@@ -12,7 +12,7 @@ import com.erp.recaudacion.model.Clientes;
 import com.erp.recaudacion.service.Cliente_ser;
 
 @RestController
-@RequestMapping("/cliente")
+@RequestMapping("/api/rec/cliente")
 @CrossOrigin("*")
 public class Cliente_api {
 	@Autowired

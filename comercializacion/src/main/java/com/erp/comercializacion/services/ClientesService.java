@@ -13,6 +13,7 @@ import java.util.Optional;
 
 @Service
 public class ClientesService {
+
     @Autowired
     private ClientesR dao;
 
@@ -69,4 +70,5 @@ public class ClientesService {
     public List<CVClientes> getCVByCliente(LocalDate fecha) {
         return dao.getCVByCliente(fecha);
     }
+
 }
