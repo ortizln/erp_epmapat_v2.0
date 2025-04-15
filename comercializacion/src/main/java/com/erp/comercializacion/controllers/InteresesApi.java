@@ -1,8 +1,6 @@
 package com.erp.comercializacion.controllers;
 
-import com.erp.comercializacion.DTO.FacturaToInteresDTO;
 import com.erp.comercializacion.models.Intereses;
-import com.erp.comercializacion.repositories.LecturasR;
 import com.erp.comercializacion.services.InteresService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -16,6 +14,7 @@ import java.util.List;
 @RequestMapping("/intereses")
 @CrossOrigin("*")
 public class InteresesApi {
+
     @Autowired
     private InteresService inteServicio;
 
@@ -66,12 +65,10 @@ public class InteresesApi {
         inteServicio.deleteById(idinteres);
         return ResponseEntity.ok(!(inteServicio.findById(idinteres) != null));
     }
-   /* @GetMapping("/calcular")
+
+    @GetMapping("/calcular")
     public ResponseEntity<Object> calcularIntereses(@RequestParam Long idfactura) {
         return ResponseEntity.ok(inteServicio.facturaid(idfactura));
-    }*/
-    @GetMapping("/calcularInteres")
-    public ResponseEntity<Object> getInteresTotal(FacturaToInteresDTO factura){
-        return ResponseEntity.ok(inteServicio.interesToFactura(factura));
     }
+
 }

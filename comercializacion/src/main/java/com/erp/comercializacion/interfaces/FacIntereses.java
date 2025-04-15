@@ -1,13 +1,15 @@
 package com.erp.comercializacion.interfaces;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
+import java.time.LocalDate;
+
 public interface FacIntereses {
     Long getIdFactura();
-
     Float getSuma();
-
-    String getFeccrea();
-
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    LocalDate getFeccrea();
     Long getFormapago();
-
-    String getFechatransferencia();
+    @DateTimeFormat(pattern = "yyyy-MM-dd")
+    LocalDate getFechatransferencia();
 }

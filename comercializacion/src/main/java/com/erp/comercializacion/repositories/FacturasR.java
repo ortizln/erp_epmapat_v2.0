@@ -1,8 +1,6 @@
 package com.erp.comercializacion.repositories;
 
-import com.erp.comercializacion.interfaces.FacSinCobrar;
-import com.erp.comercializacion.interfaces.FacturasI;
-import com.erp.comercializacion.interfaces.RepFacGlobal;
+import com.erp.comercializacion.interfaces.*;
 import com.erp.comercializacion.models.Facturas;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,51 +13,50 @@ import java.util.List;
 public interface FacturasR extends JpaRepository<Facturas, Long> {
     // VALIDACION DE LA ULTIMA FACTURA DEL RECAUDADOR
     @Query(value = "select *, substring(nrofactura, 9) as nrofac from facturas where nrofactura like %?1% and not nrofactura  is null order by nrofac desc limit 1;", nativeQuery = true)
-    public Facturas validarUltimafactura(String codrecaudador);
+    Facturas validarUltimafactura(String codrecaudador);
 
     @Query(nativeQuery = true, value = "select * from facturas f where f.usuariocobro = ?1 and (f.fechacobro between ?2 and ?3)")
-    public List<Facturas> findByUsucobro(Long idusuario, Date dfecha, Date hfecha);
+    List<Facturas> findByUsucobro(Long idusuario, Date dfecha, Date hfecha);
 
     @Query(nativeQuery = true, value = "select * from facturas f where f.fechacobro = ?1 ")
-    public List<FacturasI> findByFechacobro(Date fechacobro);
+    List<FacturasI> findByFechacobro(Date fechacobro);
 
-    @SuppressWarnings("null")
     @Query(value = "SELECT * FROM facturas order by idfactura DESC LIMIT 12", nativeQuery = true)
-    public List<Facturas> findAll();
+    List<Facturas> findAll();
 
     @Query(value = "SELECT * FROM facturas AS f WHERE f.idfactura >= ?1 and f.idfactura <= ?2 ", nativeQuery = true)
-    public List<Facturas> findDesde(Long desde, Long hasta);
+    List<Facturas> findDesde(Long desde, Long hasta);
 
     // Planillas por Cliente
     @Query(value = "SELECT * FROM facturas WHERE idcliente=?1 and totaltarifa > 0 ORDER BY idfactura DESC LIMIT ?2", nativeQuery = true)
-    public List<Facturas> findByIdcliente(Long idcliente, Long limit);
+    List<Facturas> findByIdcliente(Long idcliente, Long limit);
 
     // 15 Planillas de un Abonado
     @Query(value = "SELECT * FROM facturas WHERE idabonado=?1 ORDER BY idfactura DESC LIMIT 15", nativeQuery = true)
-    public List<Facturas> findByIdabonado(Long idabonado);
+    List<Facturas> findByIdabonado(Long idabonado);
 
     @Query(value = "SELECT * FROM facturas f WHERE f.idabonado=?1 and f.fechaeliminacion is null ORDER BY idfactura DESC LIMIT ?2", nativeQuery = true)
-    public List<Facturas> findByIdabonadoLimit(Long idabonado, Long limit);
+    List<Facturas> findByIdabonadoLimit(Long idabonado, Long limit);
 
     // Una Planilla (como lista para mostrar en la misma forma que por Abonado)
-    public List<Facturas> findByIdfactura(Long idfactura);
+    List<Facturas> findByIdfactura(Long idfactura);
 
     // Planillas por Abonado y Fecha
-    @Query("SELECT f FROM Facturas f WHERE f.idabonado = :idabonado AND f.feccrea BETWEEN :fechaDesde AND :fechaHasta AND totaltarifa > 0 order by feccrea desc")
+    @Query(value = "SELECT f FROM Facturas f WHERE f.idabonado = :idabonado AND f.feccrea BETWEEN :fechaDesde AND :fechaHasta AND totaltarifa > 0 order by feccrea desc", nativeQuery = true)
     List<Facturas> findByAbonadoAndFechaCreacionRange(@Param("idabonado") Long idabonado,
                                                       @Param("fechaDesde") LocalDate fechaDesde, @Param("fechaHasta") LocalDate fechaHasta);
 
     // Planillas por Cliente (sinCobrar)
     @Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0 and idcliente=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null ORDER BY idfactura", nativeQuery = true)
-    public List<Facturas> findSinCobro(Long idcliente);
+    List<Facturas> findSinCobro(Long idcliente);
 
     // Planillas sin cobrar por cliente valor a pagar calculado por la suma de los
     // rubros
     @Query(value = "select f.idfactura, f.idmodulo, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END ) AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idcliente= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165  group by f.idfactura ORDER BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
-    public List<FacSinCobrar> findFacSincobro(Long idcliente);
+    List<FacSinCobrar> findFacSincobro(Long idcliente);
 
     @Query(value = "select f.idfactura, f.idmodulo, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END ) AS total, f.idcliente, f.idabonado , f.feccrea, f.formapago, f.estado , f.pagado, f.swcondonar from facturas f join rubroxfac rf on f.idfactura = rf.idfactura_facturas where f.totaltarifa > 0 and f.idabonado= ?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) and f.fechaeliminacion is null and fechaconvenio is null and not rf.idrubro_rubros = 165  group by f.idfactura ORDER BY f.idabonado asc, f.feccrea asc", nativeQuery = true)
-    public List<FacSinCobrar> findFacSincobroByCuetna(Long cuenta);
+    List<FacSinCobrar> findFacSincobroByCuetna(Long cuenta);
 
     // Cartera a una fecha
     @Query(value = "SELECT * FROM facturas WHERE totaltarifa > 0  and (( (estado = 1 or estado = 2) and ( fechacobro>?1 or fechacobro is null)) or estado = 3 ) and fechaconvenio is null and fechaeliminacion is null ORDER BY idabonado, idfactura", nativeQuery = true)
@@ -203,7 +200,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
                                                     @Param("d_fecha") LocalDate h_fecha, @Param("recaudador") Long idrecaudador);
 
     // Cuenta las Facturas pendientes de un Abonado
-    @Query("SELECT COUNT(*) FROM Facturas f WHERE f.totaltarifa > 0 and f.idabonado=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) AND f.fechaeliminacion IS NULL and not f.idmodulo = 27 and fechaconvenio is null")
+    @Query(value = "SELECT COUNT(*) FROM Facturas f WHERE f.totaltarifa > 0 and f.idabonado=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) AND f.fechaeliminacion IS NULL and not f.idmodulo = 27 and fechaconvenio is null", nativeQuery = true)
     long countFacturasByAbonadoAndPendientes(@Param("idabonado") Long idabonado);
 
     // Listado de facturas anuladas
@@ -227,9 +224,9 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
     @Query(value = "select f.idfactura, f.fechatransferencia, f.nrofactura, f.formapago, SUM(CASE WHEN f.swcondonar = true AND rf.idrubro_rubros = 6 THEN 0 ELSE rf.valorunitario * rf.cantidad END ) as valor, c.nombre, c.cedula, f.swiva from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura join clientes c on f.idcliente = c.idcliente where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 and not rf.idrubro_rubros = 165  group by f.idfactura, c.nombre, c.cedula order by f.nrofactura asc", nativeQuery = true)
     public List<R_transferencias> transferenciasCobradas(Date d_fecha, Date h_fecha);
 
-    /* REPORTE DE FACTURAS TRANSFERIDAS PERO NO COBRADAS */
+    /* REPORTE DE FACTURAS TRANSFERIDAS PERO NO COBRADAS
     @Query(value = "select f, sum(rf.cantidad * rf.valorunitario) from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 group by f.idfactura order by f.nrofactura asc")
-    public List<Object[]> transferenciasNoCobradas(Date d_fecha, Date h_fecha);
+    public List<Object[]> transferenciasNoCobradas(Date d_fecha, Date h_fecha);*/
 
     /* REPORTE PARA ANULACIONES Y BAJAS */
 

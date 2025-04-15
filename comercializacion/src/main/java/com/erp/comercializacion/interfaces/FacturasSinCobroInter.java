@@ -5,9 +5,20 @@ import java.time.LocalDate;
 
 public interface FacturasSinCobroInter {
     Long getIdfactura();
-    BigDecimal getSubtotal();
-    Long getFormapago();
-    LocalDate getFeccrea();
-    LocalDate getFechatransferencia();
+
+    Float getSubtotal();
+
     String getNombre();
+
+    String getCedula();
+
+    String getDireccionubicacion();
+
+    Long getCuenta();
+
+    LocalDate getFectransferencia();
+
+    Long getFormapago();
+
+    LocalDate getFeccrea();
 }
