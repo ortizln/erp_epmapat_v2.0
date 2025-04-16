@@ -30,7 +30,7 @@ public class FacturasApi {
 
     @GetMapping
     public List<Facturas> getAll(@Param(value = "desde") Long desde, @Param(value = "hasta") Long hasta,
-                                 @Param(value = "idcliente") Long idcliente, @Param(value = "limit") Long limit) {
+            @Param(value = "idcliente") Long idcliente, @Param(value = "limit") Long limit) {
         if (desde != null)
             return facServicio.findDesde(desde, hasta);
         else {
@@ -50,8 +50,8 @@ public class FacturasApi {
 
     @GetMapping("/reportes/individual")
     public ResponseEntity<List<Facturas>> getByUsucobro(@RequestParam Long idusuario,
-                                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date dfecha,
-                                                        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date hfecha) {
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date dfecha,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date hfecha) {
         List<Facturas> facturas = facServicio.findByUsucobro(idusuario, dfecha, hfecha);
         if (!facturas.isEmpty()) {
 
@@ -80,7 +80,7 @@ public class FacturasApi {
 
     @GetMapping("/abonado/{idabonado}/{limit}")
     public List<Facturas> getByIdabonadoLimit(@PathVariable long idabonado,
-                                              @PathVariable Long limit) {
+            @PathVariable Long limit) {
         return facServicio.findByIdabonadoLimit(idabonado, limit);
     }
 
@@ -140,7 +140,7 @@ public class FacturasApi {
     // Planillas sin cobrar de un Abonado
     @GetMapping("/sincobrarAbo")
     public List<Facturas> getSinCobrarAbo(@Param(value = "idmodulo") Long idmodulo,
-                                          @Param(value = "idabonado") Long idabonado) {
+            @Param(value = "idabonado") Long idabonado) {
         return facServicio.findSinCobrarAbo(idmodulo, idabonado);
     }
 
@@ -431,14 +431,14 @@ public class FacturasApi {
     // Cartera de un cliente a una fecha (Facturas)
     @GetMapping("/carteraCliente")
     public List<Facturas> carteraCliente(@Param("idcliente") Long idcliente,
-                                         @Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
+            @Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
         return facServicio.carteraCliente(idcliente, hasta);
     }
 
     // Cartera de un cliente a una fecha (Total, ya suma 1 a los del módulo 3 )
     @GetMapping("/totCarteraCliente")
     public Double totCarteraCliente(@Param("idcliente") Long idcliente,
-                                    @Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
+            @Param("hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate hasta) {
         return facServicio.totCarteraCliente(idcliente, hasta);
     }
 
@@ -497,14 +497,14 @@ public class FacturasApi {
 
     @GetMapping("/remisiones")
     public ResponseEntity<List<RemiDTO>> getFacForRemisiones(@RequestParam Long idcliente,
-                                                             @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechatope) {
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechatope) {
         return ResponseEntity.ok(facServicio.getFacForRemisiones(idcliente, fechatope));
     }
 
     @GetMapping("/remisiones/cuenta")
     public ResponseEntity<List<RemiDTO>> getFacForRemisionesAbonados(@RequestParam Long idcliente,
-                                                                     @RequestParam Long cuenta,
-                                                                     @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechatope) {
+            @RequestParam Long cuenta,
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechatope) {
         return ResponseEntity.ok(facServicio.getFacForRemisionesAbonados(idcliente, cuenta, fechatope));
     }
 
@@ -515,7 +515,7 @@ public class FacturasApi {
 
     @GetMapping("/reportes/cv_facxrubro")
     public ResponseEntity<List<CVFacturasNoConsumo>> getCvFacturasByRubro(@RequestParam Long idrubro,
-                                                                          @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha) {
         return ResponseEntity.ok(facServicio.getCvFacturasByRubro(idrubro, fecha));
     }
 
