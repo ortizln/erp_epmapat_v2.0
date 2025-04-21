@@ -46,6 +46,9 @@ public class AbonadosSevice {
     public List<Abonados> findByidentIficacionCliente(String identificacionCliente) {
         return dao.findByidentIficacionCliente(identificacionCliente);
     }
+    public List<AbonadoI> getAbonadoInterfaceIdCliente(Long idcliente) {
+        return dao.getAbonadoInterfaceIdCliente(idcliente);
+    }
 
     public List<Abonados> getAbonadoByid(Long idabonado) {
         return dao.getAbonadoByid(idabonado);

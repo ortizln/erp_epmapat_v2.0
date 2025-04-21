@@ -177,6 +177,11 @@ public class AbonadosApi {
         return aboServicio.findByidentIficacionCliente(identificacionCliente);
     }
 
+    @GetMapping("/resabonado/idcliente")
+    public ResponseEntity<List<AbonadoI>> findAbonadoInterfaceIdCliente(@RequestParam Long idcliente) {
+        return ResponseEntity.ok(aboServicio.getAbonadoInterfaceIdCliente(idcliente));
+    }
+
     /*
      * @PutMapping("/{idabonado}/s/{idservicio}")
      * public Abonados addServxAbo(@PathVariable Long idabonado, @PathVariable Long
