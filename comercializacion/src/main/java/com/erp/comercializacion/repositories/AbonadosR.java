@@ -1,5 +1,6 @@
 package com.erp.comercializacion.repositories;
 
+import com.erp.comercializacion.interfaces.AbonadoI;
 import com.erp.comercializacion.models.Abonados;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +17,17 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 
     @Query(value = "SELECT * FROM abonados where idabonado = ?1", nativeQuery = true)
     public Abonados findOne(Long idabonado);
+
+    @Query(value = "SELECT a.idabonado, c.nombre, c.cedula as identificacion, ct.descripcion as categoria, r.descripcion as ruta, a.direccionubicacion as direccion, a.estado from abonados a join clientes c on c.idcliente = a.idcliente_clientes join categorias ct on ct.idcategoria = a.idcategoria_categorias join rutas r on a.idruta_rutas = r.idruta where a.idabonado = ?1", nativeQuery = true)
+    public List<AbonadoI> getAbonadoInterface(Long idabonado);
+    @Query(value = "SELECT a.idabonado, c.nombre, c.cedula as identificacion, ct.descripcion as categoria, r.descripcion as ruta, a.direccionubicacion as direccion, a.estado from abonados a join clientes c on c.idcliente = a.idcliente_clientes join categorias ct on ct.idcategoria = a.idcategoria_categorias join rutas r on a.idruta_rutas = r.idruta where LOWER(c.nombre) LIKE %?1% ", nativeQuery = true)
+    public List<AbonadoI> getAbonadoInterfaceNombre(String nombre);
+    @Query(value = "SELECT a.idabonado, c.nombre, c.cedula as identificacion, ct.descripcion as categoria, r.descripcion as ruta, a.direccionubicacion as direccion, a.estado from abonados a join clientes c on c.idcliente = a.idcliente_clientes join categorias ct on ct.idcategoria = a.idcategoria_categorias join rutas r on a.idruta_rutas = r.idruta where LOWER(c.cedula) LIKE %?1% ", nativeQuery = true)
+    public List<AbonadoI> getAbonadoInterfaceIdentificacion(String identificacion);
+    @Query(value = "SELECT a.idabonado, c.nombre, c.cedula as identificacion, ct.descripcion as categoria, r.descripcion as ruta, a.direccionubicacion as direccion, a.estado from abonados a join clientes c on c.idcliente = a.idcliente_clientes join categorias ct on ct.idcategoria = a.idcategoria_categorias join rutas r on a.idruta_rutas = r.idruta where c.idcliente = ?1 order by a.idabonado asc", nativeQuery = true)
+    public List<AbonadoI> getAbonadoInterfaceCliente(Long idcliente);
+    @Query(value = "SELECT a.idabonado, c.nombre, c.cedula as identificacion, ct.descripcion as categoria, r.descripcion as ruta, a.direccionubicacion as direccion, a.estado from abonados a join clientes c on c.idcliente = a.idcliente_clientes join categorias ct on ct.idcategoria = a.idcategoria_categorias join rutas r on a.idruta_rutas = r.idruta where a.idresponsable = ?1 order by a.idabonado asc", nativeQuery = true)
+    public List<AbonadoI> getAbonadoInterfaceRespPago(Long idpresp);
 
     // Abonado por ID (o sea por Cuenta con abonados/id)
     @Query(value = "SELECT * FROM abonados WHERE idabonado=?1", nativeQuery = true)

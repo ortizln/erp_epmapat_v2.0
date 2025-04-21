@@ -22,9 +22,9 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
     // public List<Rubroxfac> findByFactura(Long nrofactura);
 
     // Campos específicos: Rubro y Valor de una Factura (Planilla)
-    @Query("SELECT new map(" +
+    @Query(value = "SELECT new map(" +
             "r.descripcion as descripcion, " + "rf.valorunitario as valorunitario) " +
-            "FROM Rubroxfac rf INNER JOIN Rubros r ON r.idrubro = rf.idrubro_rubros WHERE rf.idfactura_facturas=?1 order by rf.idrubro_rubros")
+            "FROM Rubroxfac rf INNER JOIN Rubros r ON r.idrubro = rf.idrubro_rubros WHERE rf.idfactura_facturas=?1 order by rf.idrubro_rubros", nativeQuery = true)
     List<Map<String, Object>> rubrosByIdfactura(Long idfactura);
 
     @Query(value = "select sum(valorunitario)  from rubroxfac r where idfactura_facturas = ?1", nativeQuery = true)

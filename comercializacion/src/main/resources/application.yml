@@ -10,7 +10,9 @@ spring:
     url: jdbc:postgresql://localhost:5432/ErpEpmapaT  # Usar el nombre del servicio de la base de datos en Docker
     username: postgres
     password: 12345
-
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false #esto sirve para evitar el jsonignore
   jpa:
     database: POSTGRESQL
     #database-platform: org.hibernate.dialect.PostgreSQLDialect

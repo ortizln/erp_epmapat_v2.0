@@ -39,10 +39,11 @@ public class ClientesApi {
             return null;
     }
 
-    @GetMapping("/{idcliente}")
-    public ResponseEntity<Clientes> getByIdCliente(@PathVariable Long idcliente) {
+    @GetMapping("/one")
+    public ResponseEntity<Clientes> getByIdCliente(@RequestParam Long idcliente) {
         Clientes clienteM = cliServicio.findById(idcliente)
                 .orElseThrow(null);
+        System.out.println(clienteM.getIdtpidentifica_tpidentifica().getCodigo());
         return ResponseEntity.ok(clienteM);
     }
 

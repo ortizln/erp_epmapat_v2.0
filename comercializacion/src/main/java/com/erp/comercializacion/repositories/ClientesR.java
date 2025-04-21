@@ -50,12 +50,13 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 
     /* CARTERA VENCIDA */
     @Query(value = "select rf.idfactura_facturas as planilla, c.nombre, sum(rf.cantidad * rf.valorunitario) as valor, c.cedula , c.direccion, c.email, m.descripcion as modulo"
-            +" from clientes c "
-            +" join facturas f on c.idcliente = f.idcliente "
-            +" join rubroxfac rf on rf.idfactura_facturas = f.idfactura  "
-            +" join modulos m on f.idmodulo = m.idmodulo "
-            +" where f.totaltarifa > 0 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro > '2024-11-20' or f.fechacobro is null)) or f.estado = 3 )"
-            +" and f.fechaconvenio is null and f.fechaeliminacion is null"
-            +" group by rf.idfactura_facturas, c.nombre, c.cedula , c.direccion , c.email, m.descripcion order by c.nombre asc", nativeQuery = true)
-    List<CVClientes>getCVByCliente(LocalDate fecha);
+            + " from clientes c "
+            + " join facturas f on c.idcliente = f.idcliente "
+            + " join rubroxfac rf on rf.idfactura_facturas = f.idfactura  "
+            + " join modulos m on f.idmodulo = m.idmodulo "
+            + " where f.totaltarifa > 0 and (( (f.estado = 1 or f.estado = 2) and ( f.fechacobro > '2024-11-20' or f.fechacobro is null)) or f.estado = 3 )"
+            + " and f.fechaconvenio is null and f.fechaeliminacion is null"
+            + " group by rf.idfactura_facturas, c.nombre, c.cedula , c.direccion , c.email, m.descripcion order by c.nombre asc", nativeQuery = true)
+    List<CVClientes> getCVByCliente(LocalDate fecha);
+
 }

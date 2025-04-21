@@ -1,5 +1,6 @@
 package com.erp.comercializacion.services;
 
+import com.erp.comercializacion.interfaces.AbonadoI;
 import com.erp.comercializacion.models.Abonados;
 import com.erp.comercializacion.repositories.AbonadosR;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,6 +87,22 @@ public class AbonadosSevice {
     }
     public Abonados findOne(Long idabonado) {
         return dao.findOne(idabonado);
+    }
+
+    public List<AbonadoI> getAbonadoInterface(Long idabonado){
+        return dao.getAbonadoInterface(idabonado);
+    }
+    public List<AbonadoI> getAbonadoInterfaceNombre(String nombre){
+        return dao.getAbonadoInterfaceNombre(nombre);
+    }
+    public List<AbonadoI> getAbonadoInterfaceIdentificacion(String identificacion){
+        return dao.getAbonadoInterfaceIdentificacion(identificacion);
+    }
+    public List<AbonadoI> getAbonadoInterfaceCliente(Long idcliente){
+        return dao.getAbonadoInterfaceCliente(idcliente);
+    }
+    public List<AbonadoI> getAbonadoInterfaceRespPago(Long idresp){
+        return dao.getAbonadoInterfaceRespPago(idresp);
     }
     //Un Abonado
     public Abonados unAbonado(Long idabonado) {

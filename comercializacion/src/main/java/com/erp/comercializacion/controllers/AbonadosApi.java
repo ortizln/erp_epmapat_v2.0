@@ -1,5 +1,6 @@
 package com.erp.comercializacion.controllers;
 
+import com.erp.comercializacion.interfaces.AbonadoI;
 import com.erp.comercializacion.models.Abonados;
 import com.erp.comercializacion.services.AbonadosSevice;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,10 +85,29 @@ public class AbonadosApi {
     }
 
     @GetMapping("/cliente")
-    public ResponseEntity<List<Abonados>> getByIdCliente(@RequestParam("idcliente") Long idcliente) {
+    public ResponseEntity<List<Abonados>> getByIdCliente(@RequestParam Long idcliente) {
         return ResponseEntity.ok(aboServicio.findByIdCliente(idcliente));
     }
-
+    @GetMapping("/resabonado")
+    public ResponseEntity<List<AbonadoI>> getAbonadoInterface(@RequestParam Long idabonado){
+        return ResponseEntity.ok( aboServicio.getAbonadoInterface(idabonado));
+    }
+    @GetMapping("/resabonado/nombre")
+    public ResponseEntity<List<AbonadoI>> getAbonadoInterfaceNombre(@RequestParam String nombre){
+        return ResponseEntity.ok(aboServicio.getAbonadoInterfaceNombre(nombre.toLowerCase()));
+    }
+    @GetMapping("/resabonado/identificacion")
+    public ResponseEntity<List<AbonadoI>> getAbonadoInterfaceIdentificacion(@RequestParam String identificacion){
+        return ResponseEntity.ok(aboServicio.getAbonadoInterfaceIdentificacion(identificacion));
+    }
+    @GetMapping("/resabonado/cliente")
+    public ResponseEntity<List<AbonadoI>> getAbonadoInterfaceCliente(@RequestParam Long idcliente){
+        return ResponseEntity.ok( aboServicio.getAbonadoInterfaceCliente(idcliente));
+    }
+    @GetMapping("/resabonado/respago")
+    public ResponseEntity<List<AbonadoI>> getAbonadoInterfaceRespPago(@RequestParam Long idresp){
+        return ResponseEntity.ok( aboServicio.getAbonadoInterfaceRespPago(idresp));
+    }
     @PutMapping("/{idabonado}")
     public ResponseEntity<Abonados> updateAbonados(@PathVariable Long idabonado, @RequestBody Abonados abonadosm) {
         Abonados abonadosM = aboServicio.findById(idabonado)
