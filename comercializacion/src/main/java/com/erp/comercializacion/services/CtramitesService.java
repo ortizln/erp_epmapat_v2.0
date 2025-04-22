@@ -7,6 +7,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +26,7 @@ public class CtramitesService {
     public List<Ctramites> findByDescripcion(String descripcion) {
         return dao.findByDescripcion(descripcion);
     }
-    public List<Ctramites> findByfeccrea(LocalDate feccrea) {
+    public List<Ctramites> findByfeccrea(Date feccrea) {
         return dao.findByfeccrea(feccrea);
     }
 

@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping
+@RequestMapping("/rubroxfac")
 @CrossOrigin("*")
 public class RubroxfacApi {
     @Autowired

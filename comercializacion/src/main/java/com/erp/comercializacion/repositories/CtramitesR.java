@@ -4,7 +4,7 @@ import com.erp.comercializacion.models.Ctramites;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 public interface CtramitesR extends JpaRepository<Ctramites, Long> {
@@ -16,7 +16,7 @@ public interface CtramitesR extends JpaRepository<Ctramites, Long> {
     public List<Ctramites> findByDescripcion(String descripcion);
 
     @Query(value = "SELECT * FROM ctramites WHERE feccrea=DATE(?1)", nativeQuery = true)
-    public List<Ctramites> findByfeccrea(LocalDate feccrea);
+    public List<Ctramites> findByfeccrea(Date feccrea);
     //Trámites por Cliente
     @Query(value = "SELECT * FROM ctramites WHERE idcliente_clientes=?1 ORDER BY idctramite DESC", nativeQuery = true)
     public List<Ctramites> findByIdcliente(Long idcliente);
