@@ -7,6 +7,7 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="gestiondocumental" />
         <module name="eureka" />
         <module name="pagosonline" />
         <module name="recaudacion" />
@@ -23,6 +24,7 @@
       <module name="config" options="-parameters" />
       <module name="eureka" options="-parameters" />
       <module name="gateway" options="-parameters" />
+      <module name="gestiondocumental" options="-parameters" />
       <module name="login" options="-parameters" />
       <module name="pagosonline" options="-parameters" />
       <module name="recaudacion" options="-parameters" />
