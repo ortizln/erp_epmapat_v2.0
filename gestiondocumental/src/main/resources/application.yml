@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: msvc-gestiondocumental
+  config:
+    import: optional:configserver:http://localhost:8888
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://192.168.0.70:5432/GestionDocumental  # Usar el nombre del servicio de la base de datos en Docker
+    username: postgres
+    password: 086411421
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
