@@ -17,5 +17,7 @@ public class Subsecciones {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nombre;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seccion_id")
     private Seccion seccion_id;
 }
