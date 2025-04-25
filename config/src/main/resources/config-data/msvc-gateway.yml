@@ -39,3 +39,8 @@ spring:
           uri: http://localhost:9094
           predicates:
             - Path=/api/facturas/**
+
+        - id: msvc-gestiondocumental
+          uri: http://localhost:9095
+          predicates:
+            - Path=/conservacion_documental/**, /gdcajas/**, /ingreso_documento/**, /inventario/**, /seccion/**, /series/**,  /subsecciones/**, /subseries/**
