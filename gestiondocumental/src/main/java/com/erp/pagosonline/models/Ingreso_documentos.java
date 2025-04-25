@@ -35,7 +35,7 @@ public class Ingreso_documentos {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "asubserie_id")
     private Subseries subserie_id;
-    private Long numero_hojas;
+    private Long numero_fojas;
     private String nombre_quien_firma;
     private String sumilla_a;
     private String estatus;

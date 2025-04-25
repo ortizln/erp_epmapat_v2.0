@@ -28,7 +28,7 @@ public class Inventario {
     private String descripcion;
     private LocalDate fecha_apertura;
     private LocalDate fecha_cierre;
-    private Long numero_hojas;
+    private Long numero_fojas;
     private String destino_final;
     private String soporte;
     private String zona;
