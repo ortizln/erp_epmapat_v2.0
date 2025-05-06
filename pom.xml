@@ -22,6 +22,7 @@
   <module>comercializacion</module>
   <module>pagosonline</module>
   <module>gestiondocumental</module>
+  <module>sri</module>
 </modules>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
