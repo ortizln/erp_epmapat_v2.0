@@ -20,3 +20,263 @@ PAGOSONLINE:
 -PUERTO: 9094
 -NAME: msvc-pagosonline
 -Path=/api/facturas/**
+
+
+
+
+https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl quiero crear un servicio de envio de archivos xml en java springboot
+Crear un servicio de envío de archivos XML en Java Spring Boot para el WSDL proporcionado
+Para crear un servicio que envíe archivos XML al servicio web de Recepción de Comprobantes Electrónicos de Ecuador en Spring Boot, puedes seguir estos pasos:
+
+1. Configuración inicial
+Primero, crea un proyecto Spring Boot con las dependencias necesarias:
+
+xml
+<dependencies>
+    <!-- Spring Boot Web -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+
+    <!-- Spring Web Services -->
+    <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-web-services</artifactId>
+    </dependency>
+
+    <!-- Apache CXF para SOAP -->
+    <dependency>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
+        <version>3.4.0</version>
+    </dependency>
+
+    <!-- Para generación de clases desde WSDL -->
+    <dependency>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-codegen-plugin</artifactId>
+        <version>3.4.0</version>
+        <scope>provided</scope>
+    </dependency>
+</dependencies>
+2. Generar clases Java desde el WSDL
+Usa el plugin cxf-codegen para generar las clases Java a partir del WSDL:
+
+xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.apache.cxf</groupId>
+            <artifactId>cxf-codegen-plugin</artifactId>
+            <version>3.4.0</version>
+            <executions>
+                <execution>
+                    <id>generate-sources</id>
+                    <phase>generate-sources</phase>
+                    <configuration>
+                        <sourceRoot>${project.build.directory}/generated-sources/cxf</sourceRoot>
+                        <wsdlOptions>
+                            <wsdlOption>
+                                <wsdl>https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl</wsdl>
+                            </wsdlOption>
+                        </wsdlOptions>
+                    </configuration>
+                    <goals>
+                        <goal>wsdl2java</goal>
+                    </goals>
+                </execution>
+            </executions>
+        </plugin>
+    </plugins>
+</build>
+3. Configurar el cliente SOAP
+Crea una clase de configuración para el cliente SOAP:
+
+java
+import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import ec.gob.sri.comprobantes.ws.RecepcionComprobantesOffline;
+
+@Configuration
+public class SoapClientConfig {
+
+    @Bean
+    public RecepcionComprobantesOffline recepcionComprobantesClient() {
+        JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+        factory.setServiceClass(RecepcionComprobantesOffline.class);
+        factory.setAddress("https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline");
+
+        // Configuración adicional para seguridad si es necesario
+        // ...
+
+        return (RecepcionComprobantesOffline) factory.create();
+    }
+}
+4. Crear el servicio para enviar comprobantes
+java
+import ec.gob.sri.comprobantes.ws.RecepcionComprobantesOffline;
+import ec.gob.sri.comprobantes.ws.RespuestaSolicitud;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class ComprobanteService {
+
+    private final RecepcionComprobantesOffline recepcionClient;
+
+    @Autowired
+    public ComprobanteService(RecepcionComprobantesOffline recepcionClient) {
+        this.recepcionClient = recepcionClient;
+    }
+
+    public RespuestaSolicitud enviarComprobante(String xmlComprobante) {
+        try {
+            // Validar el XML antes de enviar si es necesario
+
+            // Enviar el comprobante al SRI
+            RespuestaSolicitud respuesta = recepcionClient.validarComprobante(xmlComprobante);
+
+            // Procesar la respuesta
+            return respuesta;
+        } catch (Exception e) {
+            // Manejar errores
+            throw new RuntimeException("Error al enviar comprobante al SRI", e);
+        }
+    }
+
+    // Método adicional para leer archivos XML desde disco
+    public String leerArchivoXml(String rutaArchivo) {
+        try {
+            return new String(Files.readAllBytes(Paths.get(rutaArchivo)), StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException("Error al leer el archivo XML", e);
+        }
+    }
+}
+5. Crear un controlador REST
+java
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/comprobantes")
+public class ComprobanteController {
+
+    @Autowired
+    private ComprobanteService comprobanteService;
+
+    @PostMapping("/enviar")
+    public ResponseEntity<?> enviarComprobante(@RequestBody String xmlComprobante) {
+        try {
+            RespuestaSolicitud respuesta = comprobanteService.enviarComprobante(xmlComprobante);
+            return ResponseEntity.ok(respuesta);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/enviar-archivo")
+    public ResponseEntity<?> enviarComprobanteDesdeArchivo(@RequestBody String rutaArchivo) {
+        try {
+            String xmlComprobante = comprobanteService.leerArchivoXml(rutaArchivo);
+            RespuestaSolicitud respuesta = comprobanteService.enviarComprobante(xmlComprobante);
+            return ResponseEntity.ok(respuesta);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+}
+6. Configuración de seguridad (si es necesario)
+Si el servicio requiere autenticación, puedes configurarla así:
+
+java
+import org.apache.cxf.configuration.security.AuthorizationPolicy;
+import org.apache.cxf.endpoint.Client;
+import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.transport.http.HTTPConduit;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+@Configuration
+public class SecurityConfig {
+
+    @Bean
+    public RecepcionComprobantesOffline recepcionComprobantesClient() {
+        JaxWsProxyFactoryBean factory = new JaxWsProxyFactoryBean();
+        factory.setServiceClass(RecepcionComprobantesOffline.class);
+        factory.setAddress("https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline");
+
+        RecepcionComprobantesOffline client = (RecepcionComprobantesOffline) factory.create();
+
+        // Configurar autenticación básica si es necesario
+        Client proxy = ClientProxy.getClient(client);
+        HTTPConduit conduit = (HTTPConduit) proxy.getConduit();
+
+        AuthorizationPolicy authorizationPolicy = new AuthorizationPolicy();
+        authorizationPolicy.setUserName("tu_usuario");
+        authorizationPolicy.setPassword("tu_contraseña");
+        authorizationPolicy.setAuthorizationType("Basic");
+
+        conduit.setAuthorization(authorizationPolicy);
+
+        return client;
+    }
+}
+7. Manejo de certificados SSL (si es necesario)
+Si el servicio requiere certificados SSL:
+
+java
+import org.apache.cxf.configuration.jsse.TLSClientParameters;
+import org.apache.cxf.transport.http.HTTPConduit;
+import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
+import javax.net.ssl.*;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
+
+// ...
+
+private void configureSSL(RecepcionComprobantesOffline client) {
+    Client proxy = ClientProxy.getClient(client);
+    HTTPConduit conduit = (HTTPConduit) proxy.getConduit();
+
+    try {
+        // Configuración para ignorar validación SSL (NO recomendado para producción)
+        SSLContext sslContext = SSLContext.getInstance("SSL");
+        sslContext.init(null, new TrustManager[]{new X509TrustManager() {
+            public void checkClientTrusted(X509Certificate[] chain, String authType) {}
+            public void checkServerTrusted(X509Certificate[] chain, String authType) {}
+            public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+        }}, new SecureRandom());
+
+        TLSClientParameters tlsParams = new TLSClientParameters();
+        tlsParams.setSSLSocketFactory(sslContext.getSocketFactory());
+        tlsParams.setDisableCNCheck(true);
+        conduit.setTlsClientParameters(tlsParams);
+
+        // Configuración de timeout
+        HTTPClientPolicy httpClientPolicy = new HTTPClientPolicy();
+        httpClientPolicy.setConnectionTimeout(30000);
+        httpClientPolicy.setReceiveTimeout(30000);
+        conduit.setClient(httpClientPolicy);
+    } catch (Exception e) {
+        throw new RuntimeException("Error configurando SSL", e);
+    }
+}
+Consideraciones adicionales:
+Validación de XML: Antes de enviar el comprobante, valida que el XML cumpla con los esquemas XSD del SRI.
+
+Certificados digitales: Es probable que necesites configurar tu certificado digital para autenticación.
+
+Entornos: El SRI tiene diferentes entornos (pruebas, producción), asegúrate de usar el correcto.
+
+Logging: Implementa un buen sistema de logging para registrar las solicitudes y respuestas.
+
+Manejo de errores: Mejora el manejo de errores según los códigos de respuesta del SRI.
+
+Este es un esquema básico que puedes adaptar según tus necesidades específicas y los requerimientos del servicio web del SRI.
