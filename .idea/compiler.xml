@@ -11,6 +11,7 @@
         <module name="eureka" />
         <module name="pagosonline" />
         <module name="recaudacion" />
+        <module name="sri" />
         <module name="login" />
         <module name="config" />
         <module name="gateway" />
@@ -28,6 +29,7 @@
       <module name="login" options="-parameters" />
       <module name="pagosonline" options="-parameters" />
       <module name="recaudacion" options="-parameters" />
+      <module name="sri" options="-parameters" />
     </option>
   </component>
 </project>
