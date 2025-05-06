@@ -1,5 +1,10 @@
 package com.erp.sri.config;
 
+import jakarta.ws.rs.client.Client;
+import org.apache.cxf.configuration.security.AuthorizationPolicy;
+import org.apache.cxf.frontend.ClientProxy;
+import org.apache.cxf.jaxws.JaxWsProxyFactoryBean;
+import org.apache.cxf.transport.http.HTTPConduit;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ec.gob.sri.comprobantes.ws.RecepcionComprobantesOffline;
