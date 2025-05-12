@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="gestiondocumental" />
         <module name="eureka" />
+        <module name="recaudacion (1)" />
         <module name="pagosonline" />
         <module name="recaudacion" />
         <module name="login" />
@@ -31,6 +32,7 @@
       <module name="login" options="-parameters" />
       <module name="pagosonline" options="-parameters" />
       <module name="recaudacion" options="-parameters" />
+      <module name="recaudacion (1)" options="-parameters" />
       <module name="sri" options="-parameters" />
     </option>
   </component>
