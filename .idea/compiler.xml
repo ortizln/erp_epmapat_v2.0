@@ -11,13 +11,15 @@
         <module name="eureka" />
         <module name="pagosonline" />
         <module name="recaudacion" />
-        <module name="sri" />
         <module name="login" />
         <module name="config" />
         <module name="gateway" />
         <module name="comercializacion" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="sri" target="17" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
