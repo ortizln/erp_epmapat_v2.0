@@ -1,19 +1,31 @@
-package com.erp.comercializacion.controllers;
-
-import com.erp.comercializacion.models.Tpidentifica;
-import com.erp.comercializacion.services.TpidentificaService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+package com.epmapat.erp_epmapat.controlador;
 
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.modelo.Tpidentifica;
+import com.epmapat.erp_epmapat.servicio.TpidentificaServicio;
 
 @RestController
 @RequestMapping("/tpidentifica")
 @CrossOrigin("*")
+
 public class TpidentificaApi {
+
     @Autowired
-    private TpidentificaService TpidentificaServicio;
+    TpidentificaServicio TpidentificaServicio;
 
     @PostMapping
     public Tpidentifica updateOrSave(@RequestBody Tpidentifica x) {
@@ -28,14 +40,16 @@ public class TpidentificaApi {
     @GetMapping("/{idtpidentifica}")
     public ResponseEntity<Tpidentifica> getByIdNovedad(@PathVariable Long idtpidentifica) {
         Tpidentifica x = TpidentificaServicio.findById(idtpidentifica)
-                .orElseThrow(null);
+                .orElseThrow(() -> new ResourceNotFoundExcepciones(
+                        ("No existe Tipo de Identificacion Id: " + idtpidentifica)));
         return ResponseEntity.ok(x);
     }
 
     @PutMapping("/{idtpidentifica}")
     public ResponseEntity<Tpidentifica> update(@PathVariable Long idtpidentifica, @RequestBody Tpidentifica x) {
         Tpidentifica y = TpidentificaServicio.findById(idtpidentifica)
-                .orElseThrow(null);
+                .orElseThrow(() -> new ResourceNotFoundExcepciones(
+                        ("No existe Tipo de Identificacion Id: " + idtpidentifica)));
         y.setCodigo(x.getCodigo());
         y.setNombre(x.getNombre());
         y.setUsucrea(x.getUsucrea());
@@ -52,4 +66,5 @@ public class TpidentificaApi {
         TpidentificaServicio.deleteById(idtpidentifica);
         return ResponseEntity.ok(!(TpidentificaServicio.findById(idtpidentifica) != null));
     }
+
 }

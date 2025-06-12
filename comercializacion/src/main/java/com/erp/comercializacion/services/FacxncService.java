@@ -1,5 +1,6 @@
 package com.erp.comercializacion.services;
 
+import com.erp.comercializacion.interfaces.NtaCreditoCompPago;
 import com.erp.comercializacion.models.Facxnc;
 import com.erp.comercializacion.repositories.FacxncR;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,5 +18,8 @@ public class FacxncService {
     }
     public List<Facxnc> findByNc(Long idvalcn){
         return null;
+    }
+    public List<NtaCreditoCompPago> findByIdfactura(Long idfactura) {
+        return dao.findByIdfactura(idfactura);
     }
 }

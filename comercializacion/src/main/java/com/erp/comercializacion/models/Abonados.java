@@ -59,4 +59,5 @@ public class Abonados {
     private Boolean municipio;
     private Boolean swalcantarillado;
     private Long promedio;
+    private String geolocalizacion;
 }

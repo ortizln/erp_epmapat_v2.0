@@ -55,4 +55,6 @@ public class Facturas {
     private BigDecimal interescobrado;
     private BigDecimal swiva;
     private Boolean swcondonar;
+    private BigDecimal valornotacredito;
+    private String secuencialfacilito;
 }

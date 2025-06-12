@@ -1,6 +1,7 @@
 package com.erp.comercializacion.repositories;
 
 import com.erp.comercializacion.interfaces.AbonadoI;
+import com.erp.comercializacion.interfaces.EstadisticasAbonados;
 import com.erp.comercializacion.models.Abonados;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -86,4 +87,12 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
      */
     // Un Abonado
     public Abonados findByIdabonado(Long idabonado);
+    @Query(value = "SELECT * FROM abonados a where a.idruta_rutas = ?1 order by a.idabonado asc", nativeQuery = true)
+    public List<Abonados> getCuentasByRutas(Long idruta);
+
+    @Query(value = "select a.idcategoria_categorias, c.descripcion , count(*) as ncuentas from abonados a join categorias c on a.idcategoria_categorias = c.idcategoria group by a.idcategoria_categorias, c.descripcion", nativeQuery = true)
+    public List<EstadisticasAbonados> getCuentasByCategoria();
+
+    @Query(value = "select a.estado, count(*) as ncuentas from abonados a group by a.estado", nativeQuery = true)
+    public List<EstadisticasAbonados> getCuentasByEstado();
 }

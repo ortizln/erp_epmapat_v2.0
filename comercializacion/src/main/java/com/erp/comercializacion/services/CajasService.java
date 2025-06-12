@@ -41,6 +41,14 @@ public class CajasService {
     public List<Cajas> findCajasActivas() {
         return dao.findCajasActivas();
     }
-
+    public <S extends Cajas> S save(S entity) {
+        return dao.save(entity);
+    }
+    public void deleteById(Long id) {
+        dao.deleteById(id);
+    }
+    public void delete(Cajas entity) {
+        dao.delete(entity);
+    }
 
 }

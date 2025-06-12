@@ -1,5 +1,6 @@
 package com.erp.comercializacion.services;
 
+import com.erp.comercializacion.interfaces.ResEmisiones;
 import com.erp.comercializacion.models.Emisiones;
 import com.erp.comercializacion.repositories.EmisionesR;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,5 +38,8 @@ public class EmisionesService {
 
     public List<Emisiones> findByIdEmisiones(Long idemision) {
         return dao.findByIdEmisiones(idemision);
+    }
+    public List<ResEmisiones> getResEmisiones(Long limit) {
+        return dao.ResumenEmisiones(limit);
     }
 }

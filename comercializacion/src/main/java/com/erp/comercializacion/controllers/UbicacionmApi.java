@@ -1,19 +1,31 @@
-package com.erp.comercializacion.controllers;
-
-import com.erp.comercializacion.models.Ubicacionm;
-import com.erp.comercializacion.services.UbicacionmService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+package com.epmapat.erp_epmapat.controlador;
 
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
+import com.epmapat.erp_epmapat.modelo.Ubicacionm;
+import com.epmapat.erp_epmapat.servicio.UbicacionmServicio;
 
 @RestController
 @RequestMapping("/ubicacionm")
 @CrossOrigin("*")
+
 public class UbicacionmApi {
+
     @Autowired
-    private UbicacionmService ubimServicio;
+    UbicacionmServicio ubimServicio;
 
     @GetMapping
     public List<Ubicacionm> getAllUbicacionm() {
@@ -28,14 +40,16 @@ public class UbicacionmApi {
     @GetMapping("/{idubicacionm}")
     public ResponseEntity<Ubicacionm> getByIdUbicacionm(@PathVariable Long idubicacionm) {
         Ubicacionm x = ubimServicio.findById(idubicacionm)
-                .orElseThrow(null);
+                .orElseThrow(() -> new ResourceNotFoundExcepciones(
+                        ("No existe la Ubicacion de Medidor Id: " + idubicacionm)));
         return ResponseEntity.ok(x);
     }
 
     @PutMapping("/{idubicacionm}")
     public ResponseEntity<Ubicacionm> update(@PathVariable Long idubicacionm, @RequestBody Ubicacionm x) {
         Ubicacionm y = ubimServicio.findById(idubicacionm)
-                .orElseThrow(null);
+                .orElseThrow(() -> new ResourceNotFoundExcepciones(
+                        ("No existe Ubicación de Medidor Id: " + idubicacionm)));
         y.setDescripcion(x.getDescripcion());
         y.setUsucrea(x.getUsucrea());
         y.setFeccrea(x.getFeccrea());
@@ -51,4 +65,5 @@ public class UbicacionmApi {
         ubimServicio.deleteById(idubicacionm);
         return ResponseEntity.ok(!(ubimServicio.findById(idubicacionm) != null));
     }
+
 }

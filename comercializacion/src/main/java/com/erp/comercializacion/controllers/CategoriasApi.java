@@ -1,82 +1,95 @@
 package com.erp.comercializacion.controllers;
 
+import java.math.BigDecimal;
+// import java.math.BigDecimal;
+import java.util.List;
+
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
 import com.erp.comercializacion.models.Categorias;
 import com.erp.comercializacion.services.CategoriasService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
-import java.util.List;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/categorias")
-@CrossOrigin("*")
+@CrossOrigin(origins = "*")
 public class CategoriasApi {
-    @Autowired
-    private CategoriasService cateServicio;
 
-    @GetMapping
-    public List<Categorias> getAllCategorias(@RequestParam String descripcion,
-                                             @RequestParam Long idused) {
-        if (descripcion != null) {
-            return cateServicio.findByDescri(descripcion);
-        } else {
-            if (idused == null) {
-                return cateServicio.findAll(Sort.by(Sort.Order.asc("codigo")));
-            } else {
-                return cateServicio.used(idused);
-            }
-        }
-    }
+	@Autowired
+	private CategoriasService cateServicio;
 
-    // Categorias habilitadas
-    @GetMapping("/categorias")
-    public List<String> obtenerCategorias() {
-        return cateServicio.listaCategorias();
-    }
+	@GetMapping
+	public List<Categorias> getAllCategorias(@Param(value = "descripcion") String descripcion,
+											 @Param(value = "idused") Long idused) {
+		if (descripcion != null) {
+			return cateServicio.findByDescri(descripcion);
+		} else {
+			if (idused == null) {
+				return cateServicio.findAll(Sort.by(Sort.Order.asc("codigo")));
+			} else {
+				return cateServicio.used(idused);
+			}
+		}
+	}
 
-    @GetMapping("/suma-totaltarifa")
-    public ResponseEntity<BigDecimal> sumTotalTarifa() {
-        BigDecimal suma = cateServicio.sumTotalTarifa();
-        return ResponseEntity.ok(suma);
-    }
+	// Categorias habilitadas
+	@GetMapping("/categorias")
+	public List<String> obtenerCategorias() {
+		return cateServicio.listaCategorias();
+	}
 
-    @PostMapping
-    public Categorias saveCategoria(@RequestBody Categorias categoriaM) {
-        return cateServicio.save(categoriaM);
-    }
+	@GetMapping("/suma-totaltarifa")
+	public ResponseEntity<BigDecimal> sumTotalTarifa() {
+		BigDecimal suma = cateServicio.sumTotalTarifa();
+		return ResponseEntity.ok(suma);
+	}
 
-    @GetMapping("/{idcategoria}")
-    public ResponseEntity<Categorias> getByIdCategoria(@PathVariable Long idcategoria) {
-        Categorias categoriaM = cateServicio.findById(idcategoria)
-                .orElseThrow(null);
-        return ResponseEntity.ok(categoriaM);
-    }
+	@PostMapping
+	public Categorias saveCategoria(@RequestBody Categorias categoriaM) {
+		return cateServicio.save(categoriaM);
+	}
 
-    @PutMapping(value = "/{idcategoria}")
-    public ResponseEntity<Categorias> updateCategoria(@PathVariable Long idcategoria,
-                                                      @RequestBody Categorias categoriam) {
-        Categorias categoriaM = cateServicio.findById(idcategoria)
-                .orElseThrow(null);
-        categoriaM.setDescripcion(categoriam.getDescripcion());
-        categoriaM.setCodigo(categoriam.getCodigo());
-        categoriaM.setHabilitado(categoriam.getHabilitado());
-        categoriaM.setFijoagua(categoriam.getFijoagua());
-        categoriaM.setFijosanea(categoriam.getFijosanea());
-        categoriaM.setUsucrea(categoriam.getUsucrea());
-        categoriaM.setFeccrea(categoriam.getFeccrea());
-        categoriaM.setUsumodi(categoriam.getUsumodi());
-        Categorias updateCategoria = cateServicio.save(categoriaM);
-        return ResponseEntity.ok(updateCategoria);
-    }
+	@GetMapping("/{idcategoria}")
+	public ResponseEntity<Categorias> getByIdCategoria(@PathVariable Long idcategoria) {
+		Categorias categoriaM = cateServicio.findById(idcategoria)
+				.orElseThrow(
+						() -> new ResourceNotFoundExcepciones(("No existe la Categoria con el Id: " + idcategoria)));
+		return ResponseEntity.ok(categoriaM);
+	}
 
-    @DeleteMapping(value = "/{idcategoria}")
-    public ResponseEntity<Object> deleteCategoria(@PathVariable("idcategoria") Long idcategoria) {
-        cateServicio.deleteById(idcategoria);
-        return ResponseEntity.ok(Boolean.TRUE);
-    }
+	@PutMapping(value = "/{idcategoria}")
+	public ResponseEntity<Categorias> updateCategoria(@PathVariable Long idcategoria,
+			@RequestBody Categorias categoriam) {
+		Categorias categoriaM = cateServicio.findById(idcategoria)
+				.orElseThrow(
+						() -> new ResourceNotFoundExcepciones(("No existe esa categoria con ese Id: " + idcategoria)));
+		categoriaM.setDescripcion(categoriam.getDescripcion());
+		categoriaM.setCodigo(categoriam.getCodigo());
+		categoriaM.setHabilitado(categoriam.getHabilitado());
+		categoriaM.setFijoagua(categoriam.getFijoagua());
+		categoriaM.setFijosanea(categoriam.getFijosanea());
+		categoriaM.setUsucrea(categoriam.getUsucrea());
+		categoriaM.setFeccrea(categoriam.getFeccrea());
+		categoriaM.setUsumodi(categoriam.getUsumodi());
+		Categorias updateCategoria = cateServicio.save(categoriaM);
+		return ResponseEntity.ok(updateCategoria);
+	}
+
+	@DeleteMapping(value = "/{idcategoria}")
+	public ResponseEntity<Object> deleteCategoria(@PathVariable("idcategoria") Long idcategoria) {
+		cateServicio.deleteById(idcategoria);
+		return ResponseEntity.ok(Boolean.TRUE);
+	}
 
 }
