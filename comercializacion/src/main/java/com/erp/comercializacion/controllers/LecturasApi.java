@@ -1,10 +1,13 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.math.BigDecimal;
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.interfaces.*;
+import com.erp.comercializacion.models.Lecturas;
+import com.erp.comercializacion.services.LecturasService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -16,26 +19,15 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.interfaces.ConsumoxCat_int;
-import com.epmapat.erp_epmapat.interfaces.CountRubrosByEmision;
-import com.epmapat.erp_epmapat.interfaces.FecEmision;
-import com.epmapat.erp_epmapat.interfaces.RepEmisionEmi;
-import com.epmapat.erp_epmapat.interfaces.RepFacEliminadasByEmision;
-import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
-import com.epmapat.erp_epmapat.modelo.Lecturas;
-import com.epmapat.erp_epmapat.servicio.LecturaServicio;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/lecturas")
 @CrossOrigin("*")
-
 public class LecturasApi {
 
 	@Autowired
-	LecturaServicio lecServicio;
+	private LecturasService lecServicio;
 
 	// Busca por Planilla (Es una a una)
 	@GetMapping("/onePlanilla/{idfactura}")
@@ -179,9 +171,8 @@ public class LecturasApi {
 	}
 
 	@GetMapping("/fecEmision")
-	public ResponseEntity<Date> findDateByIdfactura(@RequestParam("idfactura") Long idfactura) {
+	public ResponseEntity<LocalDate> findDateByIdfactura(@RequestParam("idfactura") Long idfactura) {
 		return ResponseEntity.ok(lecServicio.findDateByIdfactura(idfactura));
-
 	}
 
 	@GetMapping("/fecemision")

@@ -1,5 +1,4 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.contabilidad.Ifinan;
-import com.epmapat.erp_epmapat.servicio.IfinanServicio;
-
 @RestController
 @RequestMapping("/ifinan")
 @CrossOrigin("*")
@@ -26,7 +21,7 @@ import com.epmapat.erp_epmapat.servicio.IfinanServicio;
 public class IfinanApi {
 
     @Autowired
-    IfinanServicio ifinanServicio;
+    private IfinanServicio ifinanServicio;
 
     @GetMapping
     public List<Ifinan> getIfinan(@Param(value = "codifinan") String codifinan,

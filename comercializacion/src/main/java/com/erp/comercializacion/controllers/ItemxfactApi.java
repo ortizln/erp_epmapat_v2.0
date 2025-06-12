@@ -1,5 +1,4 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
 import com.erp.comercializacion.models.Itemxfact;
@@ -12,9 +11,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.epmapat.erp_epmapat.modelo.Itemxfact;
-import com.epmapat.erp_epmapat.servicio.ItemxfactServicio;
 
 @RestController
 @RequestMapping("/itemxfact")

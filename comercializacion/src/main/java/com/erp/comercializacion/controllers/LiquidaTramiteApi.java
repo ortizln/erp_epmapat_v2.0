@@ -1,5 +1,4 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,14 +12,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.modelo.LiquidaTramite;
-import com.epmapat.erp_epmapat.servicio.LiquidaTramiteS;
-
 @RestController
 @RequestMapping("/liquidatramite")
 @CrossOrigin(origins = "*")
 
-public class LiquidaTramiteC {
+public class LiquidaTramiteApi {
 
 	@Autowired
 	private LiquidaTramiteS liqtramiServicio;

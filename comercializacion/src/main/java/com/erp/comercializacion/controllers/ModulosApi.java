@@ -1,7 +1,9 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Modulos;
+import com.erp.comercializacion.services.ModulosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -10,18 +12,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.Modulos;
-import com.epmapat.erp_epmapat.servicio.ModuloServicio;
 
 @RestController
 @RequestMapping("/modulos")
 @CrossOrigin(origins = "*")
-
 public class ModulosApi {
 
 	@Autowired
-	private ModuloServicio moduServicio;
+	private ModulosService moduServicio;
 
 	@GetMapping
 	public List<Modulos> findAll(){
