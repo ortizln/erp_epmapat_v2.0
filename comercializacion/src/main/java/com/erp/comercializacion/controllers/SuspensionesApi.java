@@ -1,6 +1,9 @@
 package com.erp.comercializacion.controllers;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Date;
 import java.util.List;
 
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 
 @RestController
@@ -37,29 +41,34 @@ public class SuspensionesApi {
 	@GetMapping("/susp/{desde}/{hasta}")
 	public List<Suspensiones> getByFecha(@PathVariable String desde, @PathVariable String hasta){
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		Date d = null;
-		Date h = null;		
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+		LocalDate d = null;
+		LocalDate h = null;
 		try {
-			d = (Date) dateFormat.parse(desde);
-			h = (Date) dateFormat.parse(hasta);
-		} catch (ParseException e) {
+			d = LocalDate.parse(desde, formatter);
+			h = LocalDate.parse(hasta, formatter);
+		} catch (DateTimeParseException e) {
 			e.printStackTrace();
 		}
 		return suspensionesS.findByFecha(d, h);
 	}
 	@GetMapping("/habbydate/{desde}/{hasta}")
-	public List<Suspensiones> getByFechaHabilitacion(@PathVariable String desde, @PathVariable String hasta){
-		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		Date d = null;
-		Date h = null;
+	public List<Suspensiones> getByFechaHabilitacion(@PathVariable String desde, @PathVariable String hasta) {
+		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+		LocalDate d = null;
+		LocalDate h = null;
 		try {
-			d = (Date) dateFormat.parse(desde);
-			h = (Date) dateFormat.parse(hasta);
-		} catch (ParseException e) {
+			d = LocalDate.parse(desde, formatter);
+			h = LocalDate.parse(hasta, formatter);
+		} catch (DateTimeParseException e) {
 			e.printStackTrace();
+			// Podrías lanzar una excepción HTTP adecuada
+			throw new ResponseStatusException(HttpStatus.CREATED, "Formato de fecha inválido");
 		}
 		return suspensionesS.findByFechaHabilitaciones(d, h);
 	}
+
 	@GetMapping("/susp/{numero}")
 	public List<Suspensiones> getByNumero(@PathVariable Long numero){
 		return suspensionesS.findByNumero(numero);

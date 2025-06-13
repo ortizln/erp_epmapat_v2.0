@@ -1,11 +1,12 @@
 package com.erp.comercializacion.repositories;
 
 import com.erp.comercializacion.models.Pliego24;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
-public interface Pliego24R {
+public interface Pliego24R extends JpaRepository<Pliego24, Long> {
 
     //Nuevo Pliego Trarifario
     @Query(value = "SELECT * FROM pliego24 order by idcategoria, desde", nativeQuery=true)

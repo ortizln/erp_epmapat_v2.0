@@ -10,7 +10,7 @@ import java.util.List;
 @Service
 public class Pliego24Service {
     @Autowired
-    Pliego24R dao;
+    private Pliego24R dao;
 
     //Pliego Tarifario
     public List<Pliego24> findTodos() {

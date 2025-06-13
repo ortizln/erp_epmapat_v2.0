@@ -33,7 +33,7 @@ spring:
         - id: msvc-comercializacion
           uri: http://localhost:9093
           predicates:
-          - Path=/abonados/**, /aboxsuspension/**, /aguatramite/**, /anulpagos/**, /cajas/**, /categorias/**, /clientes/**, /ctramites/** , /estadom/**, /facturas/**, /facelectro/**, /intereses/**, /lecturas/**, /nacionalidades/**, /personeriajuridica/**, /rutas/**, /rubroxfac/**, /tipopago/**, /tpidentifica/**, /ubicacionm/**
+          - Path=/abonados/**, /aboxsuspension/**, /aguatramite/**, /anulpagos/**, /cajas/**, /catalogoitems/**, /categorias/**,/ccertificaciones/**,/clasificador/**, /clientes/**, /condmultasintereses/**, /convenios/**, /ctramites/**, /cuotas/**, /emisiones/**, /emisionindividual/**, /estadom/**, /facturas/**, /facelectro/**, /facturacion/**, /facturamodificaciones/**, /facxconvenio/**, /facxnc/**, /facxrecauda/**, /facdetallesimpuestos/**, /facturadetalles/**, /facturapagos/**, /fec_factura/**, /formacobro/**, /ifinan/**, /impuestos/**, /intereses/**, /itemxfact/**, /lecturas/**, /liquidafac/**, /liquidatramite/**, /modulos/**, /novedades/**, /ntacredito/**, /nacionalidades/**, /personeriajuridica/**, /pliego24/**, /pliego/**, /ptoemision/**, /recaudacion/**, /recaudaxcaja/**, /reclamos/**, /rubroadicional/**, /rubros/**, /rutas/**, /rutasxemision/**, /rubroxfac/**, /servicios1/**, /suspensiones/**, /tipopago/**, /tipotramite/**, /tpcertifica/**, /tpidentifica/**, /tpreclamo/**, /tramites1/**, /tramitenuevo/**, /ubicacionm/**, /usoitems/**, /valoresnc/**
 
         - id: msvc-pagosonline
           uri: http://localhost:9094

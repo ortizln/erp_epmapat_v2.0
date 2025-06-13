@@ -7,19 +7,22 @@ import com.erp.comercializacion.interfaces.EstadisticasAbonados;
 import com.erp.comercializacion.models.Abonados;
 import com.erp.comercializacion.repositories.AbonadosR;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class AbonadosSevice {
     @Autowired
     private AbonadosR dao;
+    @Autowired
+    @Lazy
+    private FacturasService facturaServicio;
+
+    private static final Map<Integer, String> estados = new HashMap<>();
 
     public List<Abonados> findAll(String c, Sort sort) {
         if (c != null) {
@@ -171,4 +174,7 @@ public class AbonadosSevice {
 
         return estadisticasDTO;
     }
+
+
+
 }
