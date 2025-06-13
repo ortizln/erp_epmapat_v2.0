@@ -1,8 +1,9 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 import java.util.Optional;
 
+import com.erp.comercializacion.models.Valoresnc;
+import com.erp.comercializacion.services.ValoresncService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -13,15 +14,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.modelo.Valoresnc;
-import com.epmapat.erp_epmapat.servicio.ValoresncServicio;
-
 @RestController
 @RequestMapping("/valoresnc")
 @CrossOrigin("*")
 public class ValoresncApi {
     @Autowired
-    private ValoresncServicio valoresServicio;
+    private ValoresncService valoresServicio;
     
     
     @GetMapping

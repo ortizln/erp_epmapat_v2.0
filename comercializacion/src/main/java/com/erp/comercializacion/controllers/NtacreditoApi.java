@@ -1,8 +1,11 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 import java.util.Optional;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.interfaces.NtaCreditoSaldos;
+import com.erp.comercializacion.models.Ntacredito;
+import com.erp.comercializacion.services.NtacreditoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -16,17 +19,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.interfaces.NtaCreditoSaldos;
-import com.epmapat.erp_epmapat.modelo.Ntacredito;
-import com.epmapat.erp_epmapat.servicio.NtacreditoServicio;
 
 @RestController
 @RequestMapping("/ntacredito")
 @CrossOrigin("*")
 public class NtacreditoApi {
     @Autowired
-    private NtacreditoServicio ntacreditoServicio;
+    private NtacreditoService ntacreditoServicio;
 
     @GetMapping
     public ResponseEntity<List<Ntacredito>> getAll() {

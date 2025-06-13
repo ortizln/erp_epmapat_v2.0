@@ -1,7 +1,9 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Ptoemision;
+import com.erp.comercializacion.services.PtoemisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
@@ -16,10 +18,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.PtoEmisionM;
-import com.epmapat.erp_epmapat.servicio.PtoEmisionS;
-
 @RestController
 @RequestMapping("/ptoemision")
 @CrossOrigin(origins = "*")
@@ -27,10 +25,10 @@ import com.epmapat.erp_epmapat.servicio.PtoEmisionS;
 public class PtoEmisionApi {
 
 	@Autowired
-	private PtoEmisionS ptoServicio;
+	private PtoemisionService ptoServicio;
 
 	@GetMapping
-	public List<PtoEmisionM> getAllPtoEmision(@Param(value = "idused") Long idused){
+	public List<Ptoemision> getAllPtoEmision(@Param(value = "idused") Long idused){
 		if(idused == null) {
 			return ptoServicio.findAll(Sort.by(Sort.Order.asc("establecimiento")));
 		}else {
@@ -39,20 +37,20 @@ public class PtoEmisionApi {
 	}
 
 	@PostMapping
-	public PtoEmisionM savePtoEmision(@RequestBody PtoEmisionM ptoemisionM) {
+	public Ptoemision savePtoEmision(@RequestBody Ptoemision ptoemisionM) {
 		return ptoServicio.save(ptoemisionM);
 	}
 
 	@GetMapping("/{idptoemision}")
-	public ResponseEntity<PtoEmisionM> getByIdPtoEmision(@PathVariable Long idptoemision){
-		PtoEmisionM ptoemisionM = ptoServicio.findById(idptoemision)
+	public ResponseEntity<Ptoemision> getByIdPtoEmision(@PathVariable Long idptoemision){
+		Ptoemision ptoemisionM = ptoServicio.findById(idptoemision)
 				.orElseThrow(()-> new ResourceNotFoundExcepciones(("No extiste esta Pto Emision con el ID: "+idptoemision)));
 		return ResponseEntity.ok(ptoemisionM);
 	}
 
 	@PutMapping("/{idptoemision}")
-	public ResponseEntity<PtoEmisionM> updatePtoEmision(@PathVariable Long idptoemision, @RequestBody PtoEmisionM ptoemisionm){
-		PtoEmisionM ptoemisionM = ptoServicio.findById(idptoemision)
+	public ResponseEntity<Ptoemision> updatePtoEmision(@PathVariable Long idptoemision, @RequestBody Ptoemision ptoemisionm){
+		Ptoemision ptoemisionM = ptoServicio.findById(idptoemision)
 				.orElseThrow(()->new ResourceNotFoundExcepciones(("No existe esta Pto Emision con el Id: "+ idptoemision)));
 		ptoemisionM.setEstablecimiento(ptoemisionm.getEstablecimiento());
 		ptoemisionM.setDireccion(ptoemisionm.getDireccion());
@@ -61,7 +59,7 @@ public class PtoEmisionApi {
 		ptoemisionM.setNroautorizacion(ptoemisionm.getNroautorizacion());
 		ptoemisionM.setUsucrea(ptoemisionm.getUsucrea());
 		ptoemisionM.setFeccrea(ptoemisionm.getFeccrea());
-		PtoEmisionM updatePtoEmision = ptoServicio.save(ptoemisionM);
+		Ptoemision updatePtoEmision = ptoServicio.save(ptoemisionM);
 		return ResponseEntity.ok(updatePtoEmision);
 	}
 

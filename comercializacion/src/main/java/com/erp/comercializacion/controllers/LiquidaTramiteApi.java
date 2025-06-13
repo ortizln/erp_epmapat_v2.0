@@ -1,6 +1,8 @@
 package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.models.Liquidatramite;
+import com.erp.comercializacion.services.LiquidaTramiteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -15,26 +17,25 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/liquidatramite")
 @CrossOrigin(origins = "*")
-
 public class LiquidaTramiteApi {
 
 	@Autowired
-	private LiquidaTramiteS liqtramiServicio;
+	private LiquidaTramiteService liqtramiServicio;
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
-	public List<LiquidaTramite> getAllLiquidaTramites(){
+	public List<Liquidatramite> getAllLiquidaTramites(){
 		return liqtramiServicio.findAll();
 	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public LiquidaTramite saveLiquidaTramite(@RequestBody LiquidaTramite liquidatramiteM) {
+	public Liquidatramite saveLiquidaTramite(@RequestBody Liquidatramite liquidatramiteM) {
 		return liqtramiServicio.save(liquidatramiteM);
 	}
 
 	@GetMapping("/idtramite/{idtramite}")
-	public List<LiquidaTramite> getlitramiteById(@PathVariable Long idtramite){
+	public List<Liquidatramite> getlitramiteById(@PathVariable Long idtramite){
 		return liqtramiServicio.findByIdTramite(idtramite);
 	}
 

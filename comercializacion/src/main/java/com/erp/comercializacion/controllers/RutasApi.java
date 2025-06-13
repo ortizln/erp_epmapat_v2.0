@@ -1,7 +1,10 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.interfaces.CuentasByRutas;
+import com.erp.comercializacion.models.Rutas;
+import com.erp.comercializacion.services.RutasService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
@@ -17,19 +20,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.interfaces.CuentasByRutas;
-import com.epmapat.erp_epmapat.modelo.Rutas;
-import com.epmapat.erp_epmapat.servicio.RutaServicio;
-
 @RestController
 @RequestMapping("/rutas")
 @CrossOrigin("*")
-
 public class RutasApi {
 
 	@Autowired
-	private RutaServicio rutServicio;
+	private RutasService rutServicio;
 
 	@GetMapping
 	public List<Rutas> getAll() {

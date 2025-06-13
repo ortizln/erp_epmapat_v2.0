@@ -1,7 +1,11 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Rubros;
+import com.erp.comercializacion.models.Tramites1;
+import com.erp.comercializacion.services.RubrosService;
+import com.erp.comercializacion.services.Tramites1Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -13,44 +17,37 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.Rubros;
-import com.epmapat.erp_epmapat.modelo.Tramites1M;
-import com.epmapat.erp_epmapat.servicio.RubroServicio;
-import com.epmapat.erp_epmapat.servicio.Tramites1S;
-
 @RestController
 @RequestMapping("/tramites1")
 @CrossOrigin("*")
-
-public class Tramites1C {
+public class Tramites1Api {
 
 	@Autowired
-	private Tramites1S tramites1S;
+	private Tramites1Service tramites1S;
 	@Autowired
-	private RubroServicio rubrosS;
+	private RubrosService rubrosS;
 
 	@GetMapping
-	public List<Tramites1M> getAllTramites(){
+	public List<Tramites1> getAllTramites(){
 		return tramites1S.findAll();
 	}
 
 	@PostMapping
-	public Tramites1M saveTramites(@RequestBody Tramites1M tramites1M) {
+	public Tramites1 saveTramites(@RequestBody Tramites1 tramites1M) {
 		return tramites1S.save(tramites1M);
 	}
 
 	@PutMapping("/{idtramite}/{idrubro}")
-	public Tramites1M addRubrosxTramie(@PathVariable Long idtramite, @PathVariable Long idrubro) {
-		Tramites1M tramite1M = tramites1S.findById(idtramite).get();
+	public Tramites1 addRubrosxTramie(@PathVariable Long idtramite, @PathVariable Long idrubro) {
+		Tramites1 tramite1M = tramites1S.findById(idtramite).get();
 		Rubros rubrosM = rubrosS.findById(idrubro).get();
 		tramite1M.addRubros(rubrosM);
 		return tramites1S.save(tramite1M);	
 	}
 
 	@GetMapping("/{idtramite}")
-	public ResponseEntity<Tramites1M> getTramiteById(@PathVariable ("idtramite") Long idtramite){
-		Tramites1M tramite1M = tramites1S.findById(idtramite)
+	public ResponseEntity<Tramites1> getTramiteById(@PathVariable ("idtramite") Long idtramite){
+		Tramites1 tramite1M = tramites1S.findById(idtramite)
 				.orElseThrow(()-> new ResourceNotFoundExcepciones("No existe este tramie con este Id: "+idtramite));
 		return ResponseEntity.ok(tramite1M);
 	}

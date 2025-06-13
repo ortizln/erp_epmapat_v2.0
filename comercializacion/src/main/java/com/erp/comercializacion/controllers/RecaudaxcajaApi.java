@@ -1,9 +1,11 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Recaudaxcaja;
+import com.erp.comercializacion.services.RecaudaxcajaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,10 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.Recaudaxcaja;
-import com.epmapat.erp_epmapat.servicio.RecaudaxcajaServicio;
-
 @RestController
 @RequestMapping("/recaudaxcaja")
 @CrossOrigin("*")
@@ -28,12 +26,12 @@ import com.epmapat.erp_epmapat.servicio.RecaudaxcajaServicio;
 public class RecaudaxcajaApi {
 
 	@Autowired
-	private RecaudaxcajaServicio recaxcajaServicio;
+	private RecaudaxcajaService recaxcajaServicio;
 
 	@GetMapping
 	public List<Recaudaxcaja> getByCaja(@Param(value = "idcaja") Long idcaja,
-			@Param(value = "desde") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desde,
-			@Param(value = "hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hasta) {
+										@Param(value = "desde") @DateTimeFormat(pattern = "yyyy-MM-dd") Date desde,
+										@Param(value = "hasta") @DateTimeFormat(pattern = "yyyy-MM-dd") Date hasta) {
 		if (idcaja != null && desde != null && hasta != null) {
 			return recaxcajaServicio.findByCaja(idcaja, desde, hasta);
 		} else

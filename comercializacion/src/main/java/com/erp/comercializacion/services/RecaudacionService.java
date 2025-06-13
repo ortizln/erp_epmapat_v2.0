@@ -1,10 +1,16 @@
 package com.erp.comercializacion.services;
 
+import com.erp.comercializacion.interfaces.REcaudaFacturasI;
+import com.erp.comercializacion.interfaces.RecaudadorI;
 import com.erp.comercializacion.models.Recaudacion;
 import com.erp.comercializacion.repositories.RecaudacionR;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -34,7 +40,7 @@ public class RecaudacionService {
     public List<RecaudadorI> findListRecaudador(Date d, Date h) {
         return dao.findListRecaudador( d, h);
     }
-    public List<RecaudaFacturasI> findFacturasToReport(LocalDateTime d, LocalDateTime h){
+    public List<REcaudaFacturasI> findFacturasToReport(LocalDateTime d, LocalDateTime h){
         return dao.findFacturasToReport(d, h);
     }
     public Object[] findRubrosAnterioresToReport(LocalDateTime d, LocalDateTime h, LocalDate t){

@@ -1,7 +1,9 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Rutasxemision;
+import com.erp.comercializacion.services.RutasxemisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +17,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.Rutasxemision;
-import com.epmapat.erp_epmapat.servicio.RutasxemisionServicio;
-
 @RestController
 @RequestMapping("/rutasxemision")
 @CrossOrigin("*")
@@ -26,7 +24,7 @@ import com.epmapat.erp_epmapat.servicio.RutasxemisionServicio;
 public class RutasxemisionApi {
 
 	@Autowired
-	RutasxemisionServicio ruxemiServicio;
+	RutasxemisionService ruxemiServicio;
 
 	// Alternativa 1. Ok.
 	@GetMapping

@@ -1,7 +1,9 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Tipotramite;
+import com.erp.comercializacion.services.TipotramiteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -16,42 +18,36 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.TipoTramite;
-import com.epmapat.erp_epmapat.servicio.TipoTramiteS;
-
 @RestController
 @RequestMapping("/tipotramite")
 @CrossOrigin("*")
-
-public class TipoTramiteC {
+public class TipoTramiteApi {
 
 	@Autowired
-	private TipoTramiteS tipotramiteS;
+	private TipotramiteService tipotramiteS;
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
-	public List<TipoTramite> getAllTipoTramite(){
+	public List<Tipotramite> getAllTipoTramite(){
 		return tipotramiteS.findAll(Sort.by(Sort.Order.asc("descripcion")));
 	}
 
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public TipoTramite saveTipoTramite(@RequestBody TipoTramite tipotramiteM) {
+	public Tipotramite saveTipoTramite(@RequestBody Tipotramite tipotramiteM) {
 		return tipotramiteS.save(tipotramiteM);
 	}
 
 	@GetMapping("/{idtipotramite}")
-	public ResponseEntity<TipoTramite> getByIdTipoTramite(@PathVariable Long idtipotramite){
-		TipoTramite tipotramiteM = tipotramiteS.findById(idtipotramite)
+	public ResponseEntity<Tipotramite> getByIdTipoTramite(@PathVariable Long idtipotramite){
+		Tipotramite tipotramiteM = tipotramiteS.findById(idtipotramite)
 				.orElseThrow(()-> new ResourceNotFoundExcepciones("No se encuentra este tipo de tramite: "+ idtipotramite));
 		return ResponseEntity.ok(tipotramiteM);
 	}
 
 	@PutMapping("/{idtipotramite}")
-	public ResponseEntity<TipoTramite> updateTipoTramite(@PathVariable Long idtipotramite, @RequestBody TipoTramite tipotramitem){
-		TipoTramite tipotramiteM = tipotramiteS.findById(idtipotramite)
+	public ResponseEntity<Tipotramite> updateTipoTramite(@PathVariable Long idtipotramite, @RequestBody Tipotramite tipotramitem){
+		Tipotramite tipotramiteM = tipotramiteS.findById(idtipotramite)
 				.orElseThrow(()-> new ResourceNotFoundExcepciones("No se encuentra este tipo de tramite: "+ idtipotramite));
 		tipotramiteM.setDescripcion(tipotramitem.getDescripcion());
 		tipotramiteM.setFacturable(tipotramitem.getFacturable());
@@ -59,7 +55,7 @@ public class TipoTramiteC {
 		tipotramiteM.setFeccrea(tipotramitem.getFeccrea());
 		tipotramiteM.setUsumodi(tipotramitem.getUsumodi());
 		tipotramiteM.setFecmodi(tipotramitem.getFecmodi());
-		TipoTramite updateTipoTramite = tipotramiteS.save(tipotramiteM);
+		Tipotramite updateTipoTramite = tipotramiteS.save(tipotramiteM);
 		return ResponseEntity.ok(updateTipoTramite);
 	}
 	

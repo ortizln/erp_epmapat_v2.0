@@ -38,5 +38,8 @@ public class Ntacredito {
     private LocalDate feccrea;
     private Long usumodi;
     private LocalDate fecmodi;
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "iddocumento_documentos")
+    private Documentos iddocumento_documentos;
+    private String refdocumento;
 }

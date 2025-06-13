@@ -1,7 +1,9 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Tipopago;
+import com.erp.comercializacion.services.TipopagoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,10 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.Tipopago;
-import com.epmapat.erp_epmapat.servicio.TipopagoServicio;
-
 @RestController
 @RequestMapping("/tipopago")
 @CrossOrigin("*")
@@ -25,7 +23,7 @@ import com.epmapat.erp_epmapat.servicio.TipopagoServicio;
 public class TipopagoApi {
     
     @Autowired
-    TipopagoServicio TipopagoServicio;
+    private TipopagoService TipopagoServicio;
 
     @PostMapping
     public Tipopago updateOrSave(@RequestBody Tipopago x) {

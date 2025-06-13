@@ -5,7 +5,7 @@ import com.erp.comercializacion.repositories.SuspensionesR;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +25,7 @@ public class SuspensionesService {
     public void deleteById(Long id) {
         suspensionesR.deleteById(id);
     }
-    public List<Suspensiones> findByFecha(LocalDate desde, LocalDate hasta) {
+    public List<Suspensiones> findByFecha(Date desde, Date hasta) {
         return suspensionesR.findByFecha(desde, hasta);
     }
 
@@ -41,7 +41,7 @@ public class SuspensionesService {
         return suspensionesR.findHabilitaciones();
     }
 
-    public List<Suspensiones> findByFechaHabilitaciones(LocalDate desde, LocalDate hasta) {
+    public List<Suspensiones> findByFechaHabilitaciones(Date desde, Date hasta) {
         return suspensionesR.findByFechaHabilitaciones(desde, hasta);
     }
 

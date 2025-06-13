@@ -1,11 +1,16 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.interfaces.CarteraVencidaRubros_int;
+import com.erp.comercializacion.interfaces.RubroxfacI;
+import com.erp.comercializacion.interfaces.RubroxfacIReport;
+import com.erp.comercializacion.models.Rubroxfac;
+import com.erp.comercializacion.services.RubroxfacService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,12 +24,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.interfaces.CarteraVencidaRubros_int;
-import com.epmapat.erp_epmapat.interfaces.RubroxfacI;
-import com.epmapat.erp_epmapat.interfaces.RubroxfacIReport;
-import com.epmapat.erp_epmapat.modelo.Rubroxfac;
-import com.epmapat.erp_epmapat.servicio.RubroxfacServicio;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
@@ -34,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class RubroxfacApi {
 
    @Autowired
-   private RubroxfacServicio rxfServicio;
+   private RubroxfacService rxfServicio;
 
    @GetMapping("/sumavalores")
    public Double findRubroxfac(@RequestParam("idfactura") Long idfactura) {
@@ -48,13 +47,13 @@ public class RubroxfacApi {
 
    @GetMapping("/reportes/fechaCobro")
    public List<RubroxfacI> getByFechaCobro(@RequestParam("d") @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
-         @RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
+                                           @RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
       return rxfServicio.getByFechaCobro(d, h);
    }
 
    @GetMapping("/reportes/fecha")
    public List<Rubroxfac> getByFecha(@RequestParam("d") @DateTimeFormat(pattern = "yyyy-MM-dd") Date d,
-         @RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
+                                     @RequestParam("h") @DateTimeFormat(pattern = "yyyy-MM-dd") Date h) {
       return rxfServicio.findByFecha(d, h);
    }
 

@@ -1,8 +1,9 @@
-package com.epmapat.erp_epmapat.controlador;
-
-import java.io.FileNotFoundException;
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Nacionalidad;
+import com.erp.comercializacion.services.NacionalidadService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +18,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.Nacionalidad;
-import com.epmapat.erp_epmapat.servicio.NacionalidadServicio;
-
-import net.sf.jasperreports.engine.JRException;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.data.domain.Sort;
 
@@ -33,12 +28,12 @@ import org.springframework.data.domain.Sort;
 public class NacionalidadApi {
 
     @Autowired
-    private NacionalidadServicio nacService;
+    private NacionalidadService nacService;
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<Nacionalidad> getAllNacionalidades(@Param(value = "idused") Long idused,
-            @Param(value = "descripcion") String descripcion) {
+                                                   @Param(value = "descripcion") String descripcion) {
         if (descripcion != null) {
             return nacService.findByDescription(descripcion.toLowerCase());
 
@@ -90,11 +85,6 @@ public class NacionalidadApi {
         nacService.deleteById(idnacionalidad);
         return ResponseEntity.ok(!(nacService.findById(idnacionalidad) != null));
 
-    }
-
-    @GetMapping("/export/{format}")
-    private String exportReport(@PathVariable String format) throws FileNotFoundException, JRException {
-        return nacService.exportNacionalidades(format);
     }
 
 }

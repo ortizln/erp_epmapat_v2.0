@@ -1,7 +1,9 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Tramitenuevo;
+import com.erp.comercializacion.services.TramitenuevoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -17,47 +19,43 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.TramiteNuevo;
-import com.epmapat.erp_epmapat.servicio.TramiteNuevoS;
-
 @RestController
 @RequestMapping("/tramitenuevo")
 @CrossOrigin("*")
 
-public class TramiteNuevoC {
+public class TramiteNuevoApi {
 
    @Autowired
-   private TramiteNuevoS tramitenuevoS;
+   private TramitenuevoService tramitenuevoS;
 
    @GetMapping
    @ResponseStatus(HttpStatus.OK)
-   public List<TramiteNuevo> getAllTramiteNuevo() {
+   public List<Tramitenuevo> getAllTramiteNuevo() {
       return tramitenuevoS.findAll(Sort.by(Sort.Order.asc("idtramitenuevo")));
    }
 
    @GetMapping("aguatramite/{idaguatramite}")
-   public ResponseEntity<List<TramiteNuevo>> getByIdAguaTramite(@PathVariable("idaguatramite") Long idaguatramite) {
+   public ResponseEntity<List<Tramitenuevo>> getByIdAguaTramite(@PathVariable("idaguatramite") Long idaguatramite) {
       return ResponseEntity.ok(tramitenuevoS.findByIdAguaTramite(idaguatramite));
    }
 
    @PostMapping
    @ResponseStatus(HttpStatus.CREATED)
-   public TramiteNuevo saveTramiteNuevo(@RequestBody TramiteNuevo tramitenuevoM) {
+   public Tramitenuevo saveTramiteNuevo(@RequestBody Tramitenuevo tramitenuevoM) {
       return tramitenuevoS.save(tramitenuevoM);
    }
 
    @GetMapping("/{idtramitenuevo}")
-   public ResponseEntity<TramiteNuevo> getByIdTramiteNuevo(@PathVariable Long idtramitenuevo) {
-      TramiteNuevo tramitenuevoM = tramitenuevoS.findById(idtramitenuevo)
+   public ResponseEntity<Tramitenuevo> getByIdTramiteNuevo(@PathVariable Long idtramitenuevo) {
+      Tramitenuevo tramitenuevoM = tramitenuevoS.findById(idtramitenuevo)
             .orElseThrow(() -> new ResourceNotFoundExcepciones("No existe este tramite con este id" + idtramitenuevo));
       return ResponseEntity.ok(tramitenuevoM);
    }
 
    @PutMapping("/{idtramitenuevo}")
-   public ResponseEntity<TramiteNuevo> updateTramiteNuevo(@PathVariable Long idtramitenuevo,
-         @RequestBody TramiteNuevo tramitenuevom) {
-      TramiteNuevo tramitenuevoM = tramitenuevoS.findById(idtramitenuevo)
+   public ResponseEntity<Tramitenuevo> updateTramiteNuevo(@PathVariable Long idtramitenuevo,
+         @RequestBody Tramitenuevo tramitenuevom) {
+      Tramitenuevo tramitenuevoM = tramitenuevoS.findById(idtramitenuevo)
             .orElseThrow(() -> new ResourceNotFoundExcepciones("No existe este tramite con este id" + idtramitenuevo));
       tramitenuevoM.setDireccion(tramitenuevom.getDireccion());
       tramitenuevoM.setNrocasa(tramitenuevom.getNrocasa());
@@ -93,7 +91,7 @@ public class TramiteNuevoC {
       tramitenuevoM.setFeccrea(tramitenuevom.getFeccrea());
       tramitenuevoM.setUsumodi(tramitenuevom.getUsumodi());
       tramitenuevoM.setFecmodi(tramitenuevom.getFecmodi());
-      TramiteNuevo updatetramitenuevo = tramitenuevoS.save(tramitenuevoM);
+      Tramitenuevo updatetramitenuevo = tramitenuevoS.save(tramitenuevoM);
       return ResponseEntity.ok(updatetramitenuevo);
    }
 

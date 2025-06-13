@@ -1,7 +1,9 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Rubros;
+import com.erp.comercializacion.services.RubrosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -15,9 +17,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.Rubros;
-import com.epmapat.erp_epmapat.servicio.RubroServicio;
 
 @RestController
 @RequestMapping("/rubros")
@@ -26,11 +25,11 @@ import com.epmapat.erp_epmapat.servicio.RubroServicio;
 public class RubrosApi {
 
 	@Autowired
-	private RubroServicio rubServicio;
+	private RubrosService rubServicio;
 
 	@GetMapping
 	public List<Rubros> getAllLista(@Param(value = "idmodulo") Long idmodulo,
-			@Param(value = "descripcion") String descripcion) {
+									@Param(value = "descripcion") String descripcion) {
 		if (idmodulo != null && descripcion != null) {
 			return rubServicio.findByNombre(idmodulo, descripcion.toLowerCase());
 		} else {

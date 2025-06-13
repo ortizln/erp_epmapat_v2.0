@@ -1,5 +1,6 @@
 package com.erp.comercializacion.services;
 
+import com.erp.comercializacion.interfaces.CuentasByRutas;
 import com.erp.comercializacion.models.Rutas;
 import com.erp.comercializacion.repositories.RutasR;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,5 +41,8 @@ public class RutasService {
     }
     public boolean valCodigo(String codigo) {
         return dao.valCodigo(codigo);
+    }
+    public List<CuentasByRutas> getNcuentasByRutas() {
+        return dao.getNcuentasByRutas();
     }
 }

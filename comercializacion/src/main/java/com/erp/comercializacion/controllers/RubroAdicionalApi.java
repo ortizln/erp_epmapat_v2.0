@@ -1,7 +1,8 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.models.Rubroadicional;
+import com.erp.comercializacion.services.RubroadicionalService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,25 +10,23 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.modelo.RubroAdicionalM;
-import com.epmapat.erp_epmapat.servicio.RubroAdicionalS;
 
 @RestController
 @RequestMapping("/rubroadicional")
 @CrossOrigin(origins = "*")
 
-public class RubroAdicionalC {
+public class RubroAdicionalApi {
 
 	@Autowired
-	private RubroAdicionalS rubadiServicio;
+	private RubroadicionalService rubadiServicio;
 
 	@GetMapping
-	public List<RubroAdicionalM> getAllRubrosAdicional(){
+	public List<Rubroadicional> getAllRubrosAdicional(){
 		return rubadiServicio.findAll();
 	}
 
 	@GetMapping("/tptramite/{idtptramite}")
-	public List<RubroAdicionalM> getRubAdiByIdTpTramite(@PathVariable Long idtptramite){
+	public List<Rubroadicional> getRubAdiByIdTpTramite(@PathVariable Long idtptramite){
 		return rubadiServicio.findByIdTpTramtie(idtptramite);
 	}
 

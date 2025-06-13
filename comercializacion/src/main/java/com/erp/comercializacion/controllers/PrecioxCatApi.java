@@ -1,5 +1,4 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,18 +14,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.PrecioxCatM;
-import com.epmapat.erp_epmapat.servicio.PrecioxCatS;
-
 @RestController
 @RequestMapping("/pliego")
 @CrossOrigin(origins = "*")
-
 public class PrecioxCatApi {
 
 	@Autowired
-	private PrecioxCatS pxcatServicio;
+	private PrecioxcatService pxcatServicio;
 
 	@GetMapping
 	public List<PrecioxCatM> getAllPreciosxCat(@Param(value = "categoria") Long categoria,

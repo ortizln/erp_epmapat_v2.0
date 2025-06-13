@@ -1,7 +1,9 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Tpidentifica;
+import com.erp.comercializacion.services.TpidentificaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -14,10 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-import com.epmapat.erp_epmapat.modelo.Tpidentifica;
-import com.epmapat.erp_epmapat.servicio.TpidentificaServicio;
-
 @RestController
 @RequestMapping("/tpidentifica")
 @CrossOrigin("*")
@@ -25,7 +23,7 @@ import com.epmapat.erp_epmapat.servicio.TpidentificaServicio;
 public class TpidentificaApi {
 
     @Autowired
-    TpidentificaServicio TpidentificaServicio;
+    private TpidentificaService TpidentificaServicio;
 
     @PostMapping
     public Tpidentifica updateOrSave(@RequestBody Tpidentifica x) {

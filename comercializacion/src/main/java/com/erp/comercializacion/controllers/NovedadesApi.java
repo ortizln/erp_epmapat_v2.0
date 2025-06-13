@@ -1,7 +1,9 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.util.List;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Novedades;
+import com.erp.comercializacion.services.NovedadesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -17,10 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.excepciones.ResourceNotFoundExcepciones;
-
-import com.epmapat.erp_epmapat.modelo.Novedad;
-import com.epmapat.erp_epmapat.servicio.NovedadServicio;
 
 @RestController
 @RequestMapping("/novedades")
@@ -29,7 +27,7 @@ import com.epmapat.erp_epmapat.servicio.NovedadServicio;
 public class NovedadesApi {
 
     @Autowired
-    NovedadServicio novServicio;
+    NovedadesService novServicio;
 
     // @GetMapping
     // public List<Novedad> getAllNovedades() {
@@ -37,7 +35,7 @@ public class NovedadesApi {
     // }
 
     @GetMapping
-    public List<Novedad> getAll(@Param(value = "descripcion") String descripcion) {
+    public List<Novedades> getAll(@Param(value = "descripcion") String descripcion) {
         if (descripcion != null) {
             return novServicio.findByDescri(descripcion);
         } else {
@@ -45,45 +43,45 @@ public class NovedadesApi {
         }
     }
     @GetMapping("/estado")
-    public ResponseEntity<List<Novedad>> geyByEstado(@RequestParam("estado") Long estado){
+    public ResponseEntity<List<Novedades>> geyByEstado(@RequestParam("estado") Long estado){
     	return ResponseEntity.ok(novServicio.findByEstado(estado));
     }
 
     @PostMapping
-    public Novedad updateOrSave(@RequestBody Novedad nov) {
+    public Novedades updateOrSave(@RequestBody Novedades nov) {
         return novServicio.save(nov);
     }
 
     @GetMapping("/{idnovedad}")
-    public ResponseEntity<Novedad> getByIdNovedad(@PathVariable Long idnovedad) {
-        Novedad x = novServicio.findById(idnovedad)
+    public ResponseEntity<Novedades> getByIdNovedad(@PathVariable Long idnovedad) {
+        Novedades x = novServicio.findById(idnovedad)
                 .orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe la Novedad Id: " + idnovedad)));
         return ResponseEntity.ok(x);
     }
 
     @PutMapping("/{idnovedad}")
-    public ResponseEntity<Novedad> updateNovedad(@PathVariable Long idnovedad, @RequestBody Novedad x) {
-        Novedad y = novServicio.findById(idnovedad)
+    public ResponseEntity<Novedades> updateNovedad(@PathVariable Long idnovedad, @RequestBody Novedades x) {
+        Novedades y = novServicio.findById(idnovedad)
                 .orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe la Novedad Id: " + idnovedad)));
         y.setDescripcion(x.getDescripcion());
         y.setEstado(x.getEstado());
         y.setUsucrea(x.getUsucrea());
         // y.setFeccrea(x.getFeccrea());
 
-        Novedad xy = novServicio.save(y);
+        Novedades xy = novServicio.save(y);
         return ResponseEntity.ok(xy);
     }
 
     @PatchMapping("/{idnovedad}")
-    public ResponseEntity<Novedad> updatePartially(@PathVariable Long idnovedad, @RequestBody Novedad x) {
-        Novedad y = novServicio.findById(idnovedad)
+    public ResponseEntity<Novedades> updatePartially(@PathVariable Long idnovedad, @RequestBody Novedades x) {
+        Novedades y = novServicio.findById(idnovedad)
                 .orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe la Novedad Id: " + idnovedad)));
         y.setDescripcion(x.getDescripcion());
         if (y.getEstado() != x.getEstado()) {
             y.setEstado(x.getEstado());
         }
 
-        Novedad xy = novServicio.save(y);
+        Novedades xy = novServicio.save(y);
         return ResponseEntity.ok(xy);
     }
 

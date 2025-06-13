@@ -1,10 +1,11 @@
-package com.epmapat.erp_epmapat.controlador;
-
+package com.erp.comercializacion.controllers;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+import com.erp.comercializacion.models.Suspensiones;
+import com.erp.comercializacion.services.SuspensionesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,29 +15,27 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.epmapat.erp_epmapat.modelo.SuspensionesM;
-import com.epmapat.erp_epmapat.servicio.SuspensionesS;
 
 @RestController
 @RequestMapping("/suspensiones")
 @CrossOrigin("*")
 
-public class SuspensionesC {
+public class SuspensionesApi {
 
 	@Autowired
-	private SuspensionesS suspensionesS;
+	private SuspensionesService suspensionesS;
 
 	@GetMapping
-	public List<SuspensionesM> getAllSuspensiones(){
+	public List<Suspensiones> getAllSuspensiones(){
 		return suspensionesS.findAll();
 	}
 	
 	@PostMapping
-	public SuspensionesM saveSuspencion(@RequestBody SuspensionesM suspensionesM) {
+	public Suspensiones saveSuspencion(@RequestBody Suspensiones suspensionesM) {
 		return suspensionesS.save(suspensionesM);
 	}
 	@GetMapping("/susp/{desde}/{hasta}")
-	public List<SuspensionesM> getByFecha(@PathVariable String desde, @PathVariable String hasta){
+	public List<Suspensiones> getByFecha(@PathVariable String desde, @PathVariable String hasta){
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Date d = null;
 		Date h = null;		
@@ -49,10 +48,10 @@ public class SuspensionesC {
 		return suspensionesS.findByFecha(d, h);
 	}
 	@GetMapping("/habbydate/{desde}/{hasta}")
-	public List<SuspensionesM> getByFechaHabilitacion(@PathVariable String desde, @PathVariable String hasta){
+	public List<Suspensiones> getByFechaHabilitacion(@PathVariable String desde, @PathVariable String hasta){
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		Date d = null;
-		Date h = null;		
+		Date h = null;
 		try {
 			d = (Date) dateFormat.parse(desde);
 			h = (Date) dateFormat.parse(hasta);
@@ -62,15 +61,15 @@ public class SuspensionesC {
 		return suspensionesS.findByFechaHabilitaciones(d, h);
 	}
 	@GetMapping("/susp/{numero}")
-	public List<SuspensionesM> getByNumero(@PathVariable Long numero){
+	public List<Suspensiones> getByNumero(@PathVariable Long numero){
 		return suspensionesS.findByNumero(numero);
 	}
 	@GetMapping("/habilitaciones")
-	public List<SuspensionesM> getByHabilitaciones(){
+	public List<Suspensiones> getByHabilitaciones(){
 		return suspensionesS.findHabilitaciones();
 	}
 	@GetMapping("/ultimo")
-	public SuspensionesM getUltima(){
+	public Suspensiones getUltima(){
 		return suspensionesS.findFirstByOrderByIdsuspensionDesc();
 	}
 
