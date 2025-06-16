@@ -19,8 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/abonados")
-@CrossOrigin(origins = "*")
-
+//@CrossOrigin("*")
 public class AbonadosApi {
 
 	@Autowired

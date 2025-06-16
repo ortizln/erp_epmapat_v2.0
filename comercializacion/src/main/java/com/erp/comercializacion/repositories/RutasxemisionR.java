@@ -8,7 +8,7 @@ import java.util.List;
 
 public interface RutasxemisionR extends JpaRepository<Rutasxemision, Long> {
     // Rutas por Emision
-    @Query(value = "SELECT * FROM rutasxemision AS a JOIN rutas AS b ON a.idruta_rutas = b.idruta WHERE a.idemision_emisiones=?1 order by b.codigo", nativeQuery = true)
+    @Query(value = "SELECT a.* FROM rutasxemision AS a JOIN rutas AS b ON a.idruta_rutas = b.idruta WHERE a.idemision_emisiones=?1 order by b.codigo", nativeQuery = true)
     public List<Rutasxemision> findByIdemision(Long idemision);
 
     //Cuenta las rutas abiertas de una Emisión

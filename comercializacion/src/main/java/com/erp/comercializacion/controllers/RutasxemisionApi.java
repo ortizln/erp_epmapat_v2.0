@@ -30,6 +30,7 @@ public class RutasxemisionApi {
 	@GetMapping
 	public List<Rutasxemision> getByIdemision(@Param(value = "idemision") Long idemision) {
 		if (idemision != null) {
+			System.out.println("Entrando a rutasxemision");
 			return ruxemiServicio.findByIdemision(idemision);
 		} else {
 			return null;

@@ -23,6 +23,12 @@ public class AbonadosSevice {
     private FacturasService facturaServicio;
 
     private static final Map<Integer, String> estados = new HashMap<>();
+    static {
+        estados.put(0, "Eliminado");
+        estados.put(1, "Activo");
+        estados.put(2, "Suspendido");
+        estados.put(3, "Suspendido y retirado");
+    }
 
     public List<Abonados> findAll(String c, Sort sort) {
         if (c != null) {
