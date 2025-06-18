@@ -25,7 +25,7 @@ public class UsuariosApi {
     }
 
     @GetMapping("/usuario")
-    public Usuarios getUsuario(@Param(value = "a") String a, @Param(value = "b") String b) {
+    public Usuarios getUsuario(@RequestParam(value = "a") String a, @RequestParam(value = "b") String b) {
         if (a != null && b != null) {
             return usuServicio.findUsuario(a, b);
         } else {

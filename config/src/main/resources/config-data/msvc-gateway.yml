@@ -23,9 +23,8 @@ spring:
         - id: msvc-login
           uri: http://localhost:9091
           predicates:
-          - Path=/acceso/**, /colores/**, /definir/**, /documentos/**, /erpmodulos/**, /tabla4/**, /usrxmodulos/**, /usuarios/**, /ventanas/**
-          filters:
-            - StripPrefix=2
+          - Path=/acceso/**, /colores/**, /definir/**, /documentos/**, /erpmodulos/**, /tabla4/**, /usrxmodulos/**, /usuarios/** , /ventanas/**
+
         - id: msvc-recaudacion
           uri: http://localhost:9092
           predicates:

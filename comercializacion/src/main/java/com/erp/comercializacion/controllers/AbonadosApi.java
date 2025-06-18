@@ -19,7 +19,12 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/abonados")
-//@CrossOrigin("*")
+@CrossOrigin(
+		origins = "*", // Asegúrate de que coincide con tu URL de Angular
+		methods = {RequestMethod.PUT, RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.OPTIONS}, // Permite PUT
+		allowedHeaders = "*",
+		maxAge = 3600
+)
 public class AbonadosApi {
 
 	@Autowired
@@ -95,6 +100,7 @@ public class AbonadosApi {
 
 	@PutMapping("/{idabonado}")
 	public ResponseEntity<Abonados> updateAbonados(@PathVariable Long idabonado, @RequestBody Abonados abonadosm) {
+		System.out.println("Entré a Abonados");
 		Abonados abonadosM = aboServicio.findById(idabonado)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe ese abonado con ese Id: " + idabonado)));
 		abonadosM.setNromedidor(abonadosm.getNromedidor());
