@@ -10,7 +10,7 @@ eureka:
     service-url:
       register-with-eureka: false
       fetch-registry: false
-      defaultZone: http://localhost:8761/eureka/  # Usar el nombre del servicio Docker
+      defaultZone: http://192.168.0.69:8761/eureka/  # Usar el nombre del servicio Docker
 spring:
   application:
     name: msvc-gateway
@@ -21,26 +21,26 @@ spring:
           enabled: true
       routes:
         - id: msvc-login
-          uri: http://localhost:9091
+          uri: http://192.168.0.69:9091
           predicates:
           - Path=/acceso/**, /colores/**, /definir/**, /documentos/**, /erpmodulos/**, /tabla4/**, /usrxmodulos/**, /usuarios/** , /ventanas/**
 
         - id: msvc-recaudacion
-          uri: http://localhost:9092
+          uri: http://192.168.0.69:9092
           predicates:
           - Path=/api/rec/cajas/**, /api/rec/facturas/**
 
         - id: msvc-comercializacion
-          uri: http://localhost:9093
+          uri: http://192.168.0.69:9093
           predicates:
           - Path=/abonados/**, /aboxsuspension/**, /aguatramite/**, /anulpagos/**, /cajas/**, /catalogoitems/**, /categorias/**,/ccertificaciones/**,/clasificador/**, /clientes/**, /condmultasintereses/**, /convenios/**, /ctramites/**, /cuotas/**, /emisiones/**, /emisionindividual/**, /estadom/**, /facturas/**, /facelectro/**, /facturacion/**, /facturamodificaciones/**, /facxconvenio/**, /facxnc/**, /facxrecauda/**, /facdetallesimpuestos/**, /facturadetalles/**, /facturapagos/**, /fec_factura/**, /formacobro/**, /ifinan/**, /impuestos/**, /intereses/**, /itemxfact/**, /lecturas/**, /liquidafac/**, /liquidatramite/**, /modulos/**, /novedades/**, /ntacredito/**, /nacionalidades/**, /personeriajuridica/**, /pliego24/**, /pliego/**, /ptoemision/**, /recaudacion/**, /recaudaxcaja/**, /reclamos/**, /rubroadicional/**, /rubros/**, /rutas/**, /rutasxemision/**, /rubroxfac/**, /servicios1/**, /suspensiones/**, /tipopago/**, /tipotramite/**, /tpcertifica/**, /tpidentifica/**, /tpreclamo/**, /tramites1/**, /tramitenuevo/**, /ubicacionm/**, /usoitems/**, /valoresnc/**
 
         - id: msvc-pagosonline
-          uri: http://localhost:9094
+          uri: http://192.168.0.69:9094
           predicates:
             - Path=/api/facturas/**
 
         - id: msvc-gestiondocumental
-          uri: http://localhost:9095
+          uri: http://192.168.0.69:9095
           predicates:
             - Path=/conservacion_documental/**, /gdcajas/**, /ingreso_documento/**, /inventario/**, /seccion/**, /series/**,  /subsecciones/**, /subseries/**

@@ -5,4 +5,4 @@ eureka:
     hostname: msvc-login  # El nombre del contenedor o el servicio en Docker Compose
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka  # Reemplazar localhost con el nombre del servicio Eureka en Docker Compose
+      defaultZone: http://192.168.0.69:8761/eureka  # Reemplazar 192.168.0.69 con el nombre del servicio Eureka en Docker Compose

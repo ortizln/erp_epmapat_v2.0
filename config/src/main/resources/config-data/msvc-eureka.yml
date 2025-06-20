@@ -3,7 +3,7 @@ server:
 
 eureka:
   instance:
-    hostname: localhost  # Nombre del servicio en Docker
+    hostname: msvc-eureka  # Nombre del servicio en Docker
     prefer-ip-address: false
   client:
     register-with-eureka: false

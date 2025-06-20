@@ -9,7 +9,7 @@ services:
     ports:
       - "8888:8888"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://192.168.0.69:8888/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -19,19 +19,19 @@ services:
         aliases:
           - config-server
 
-  localhost:
+  192.168.0.69:
     build:
       context: eureka
       dockerfile: Dockerfile
-    image: localhost:latest
-    container_name: localhost
+    image: 192.168.0.69:latest
+    container_name: 192.168.0.69
     ports:
       - "8761:8761"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
-      - EUREKA_INSTANCE_HOSTNAME=localhost
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://192.168.0.69:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=192.168.0.69
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://192.168.0.69:8761/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -39,7 +39,7 @@ services:
     networks:
       epmapat-nw:
         aliases:
-          - localhost
+          - 192.168.0.69
   msvc-gateway:
     build:
       context: gateway
@@ -49,10 +49,10 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
-      - EUREKA_INSTANCE_HOSTNAME=localhost
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://192.168.0.69:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=192.168.0.69
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://192.168.0.69:8761/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -70,10 +70,10 @@ services:
     ports:
       - "9091:9091"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
-      - EUREKA_INSTANCE_HOSTNAME=localhost
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://192.168.0.69:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=192.168.0.69
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://192.168.0.69:8761/actuator/health"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -91,10 +91,10 @@ services:
     ports:
       - "9092:9092"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
-      - EUREKA_INSTANCE_HOSTNAME=localhost
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://192.168.0.69:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=192.168.0.69
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://192.168.0.69:8761/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -112,10 +112,10 @@ services:
     ports:
       - "9093:9093"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
-      - EUREKA_INSTANCE_HOSTNAME=localhost
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://192.168.0.69:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=192.168.0.69
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://192.168.0.69:8761/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -134,10 +134,10 @@ services:
     ports:
       - "9094:9094"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://localhost:8761/eureka/
-      - EUREKA_INSTANCE_HOSTNAME=localhost
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://192.168.0.69:8761/eureka/
+      - EUREKA_INSTANCE_HOSTNAME=192.168.0.69
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      test: [ "CMD", "curl", "-f", "http://192.168.0.69:8761/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
