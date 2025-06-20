@@ -1,5 +1,9 @@
 server:
   port: 9094
+spring:
+  application:
+    name: msvc-pagosonline
+eureka:
   instance:
     hostname: msvc-pagosonline  # El nombre del contenedor o el servicio en Docker Compose
   client:

@@ -38,7 +38,7 @@ spring:
         - id: msvc-pagosonline
           uri: http://msvc-pagosonline:9094
           predicates:
-            - Path=/api/facturas/**
+            - Path=/api/pagonline/facturas/**
 
         - id: msvc-gestiondocumental
           uri: http://msvc-gestiondocumental:9095
