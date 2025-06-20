@@ -8,22 +8,17 @@ services:
     container_name: config-server
     ports:
       - "8888:8888"
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://192.168.0.69:8888/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
     restart: always
     networks:
       epmapat-nw:
         aliases:
           - config-server
 
-  192.168.0.69:
+  msvc-eureka:
     build:
       context: eureka
       dockerfile: Dockerfile
-    image: 192.168.0.69:latest
+    image: msvc-eureka:latest
     container_name: msvc-eureka
     ports:
       - "8761:8761"
@@ -39,7 +34,7 @@ services:
     networks:
       epmapat-nw:
         aliases:
-          - 192.168.0.69
+          - msvc-eureka
   msvc-gateway:
     build:
       context: gateway
