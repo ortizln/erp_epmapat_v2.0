@@ -8,7 +8,4 @@ eureka:
     hostname: msvc-pagosonline  # El nombre del contenedor o el servicio en Docker Compose
   client:
     service-url:
-      defaultZone: http://192.168.0.69:8761/eureka  # Reemplazar 192.168.0.69 con el nombre del servicio Eureka en Docker Compose
-app:
-  api:
-    base-url: http://192.168.0.69:8080
+      defaultZone: http://msvc-eureka:8761/eureka/  # Usar el nombre del servicio Docker

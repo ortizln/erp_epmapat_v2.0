@@ -8,9 +8,9 @@ eureka:
 
   client:
     service-url:
-      register-with-eureka: false
-      fetch-registry: false
-      defaultZone: http://192.168.0.69:8761/eureka/  # Usar el nombre del servicio Docker
+      register-with-eureka: true
+      fetch-registry: true
+      defaultZone: http://msvc-eureka:8761/eureka/  # Usar el nombre del servicio Docker
 spring:
   application:
     name: msvc-gateway
@@ -18,7 +18,7 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true
+          enabled: false
       routes:
         - id: msvc-login
           uri: http://192.168.0.69:9091
