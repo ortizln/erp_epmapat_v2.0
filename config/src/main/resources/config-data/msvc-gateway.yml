@@ -21,7 +21,7 @@ spring:
           enabled: false
       routes:
         - id: msvc-login
-          uri: http://192.168.0.69:9091
+          uri: http://msvc-login:9091
           predicates:
           - Path=/acceso/**, /colores/**, /definir/**, /documentos/**, /erpmodulos/**, /tabla4/**, /usrxmodulos/**, /usuarios/** , /ventanas/**
 
