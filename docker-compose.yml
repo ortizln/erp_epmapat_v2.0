@@ -24,7 +24,7 @@ services:
       context: eureka
       dockerfile: Dockerfile
     image: 192.168.0.69:latest
-    container_name: 192.168.0.69
+    container_name: msvc-eureka
     ports:
       - "8761:8761"
     environment:
