@@ -1,31 +1,34 @@
 package com.erp.sri.controllers;
 
+import com.erp.sri.exceptions.FacturaElectronicaException;
+import com.erp.sri.models.Factura;
+import com.erp.sri.repositories.FacturaR;
+import com.erp.sri.services.EmailService;
+import com.erp.sri.services.FacturaSRIService;
+import com.erp.sri.services.XmlSignerService;
+import com.erp.sri.services.XmlToPdfService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.epmapat.erp_epmapat.sri.dto.EmailRequest;
-import com.epmapat.erp_epmapat.sri.exceptions.FacturaElectronicaException;
-import com.epmapat.erp_epmapat.sri.models.Factura;
-import com.epmapat.erp_epmapat.sri.repositories.FacturaR;
-import com.epmapat.erp_epmapat.sri.services.FacturaSRIService;
 
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.data.JRXmlDataSource;
-
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
+import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ContentDisposition;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+
+import org.springframework.core.io.InputStreamResource;
+
+import java.io.ByteArrayOutputStream;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/sri")
@@ -33,21 +36,43 @@ import org.springframework.http.ResponseEntity;
 public class FacturaSRIController {
     @Autowired
     private FacturaR dao;
+    @Autowired
+    private XmlSignerService xmlSignerService;
+    @Autowired
+    private DefinirService definirService;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private XmlToPdfService xmlToPdfService;
 
     private final FacturaSRIService facturaSRIService;
+    @Value("${xml.storage.path}")
+    private String xmlStoragePath;
+
+    @Autowired
+    private Fec_facturaR fec_factura;
 
     public FacturaSRIController(FacturaSRIService facturaSRIService) {
         this.facturaSRIService = facturaSRIService;
     }
 
     @GetMapping("/generar-xml")
-    public ResponseEntity<String> generarXmlFactura(@RequestParam Long idfactura) {
+    public ResponseEntity<String> generarXmlFactura(@RequestParam Long idfactura) throws Exception {
+        Definir definir = definirService.findById(1L).orElseThrow(() -> new RuntimeException("Definir no encontrado"));
         try {
-            Factura factura = dao.findById(idfactura).orElseThrow(null);
-            String xml = facturaSRIService.generarXmlFactura(factura);
-            return ResponseEntity.ok(xml);
-        } catch (FacturaElectronicaException e) {
-            System.out.println("< ========= ERROR =========>");
+            Factura factura = dao.findById(idfactura).orElseThrow(() -> new RuntimeException("Factura no encontrada"));
+            if (factura == null) {
+                return ResponseEntity.noContent().build();
+            } else {
+                String xml = facturaSRIService.generarXmlFactura(factura);
+                String xmlFirmado = xmlSignerService.signXml(xml, definir.getFirma(), "Junior2012");
+                FacturaSRIService.saveXml(xmlFirmado, ".//xmlFiles//Fac_" + factura.getEstablecimiento() + "-"
+                        + factura.getPuntoemision() + "-" + factura.getSecuencial() + ".xml");
+                return ResponseEntity.ok(xml);
+            }
+        } catch (
+
+        FacturaElectronicaException e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
     }
@@ -58,8 +83,6 @@ public class FacturaSRIController {
             @RequestParam String subject,
             @RequestParam String body,
             @RequestParam MultipartFile xmlFile) {
-        System.out.println(xmlFile);
-
         try {
             facturaSRIService.processAndSendInvoice(toEmail, subject, body, xmlFile);
             return ResponseEntity.ok("Factura convertida a PDF y enviada por email exitosamente");
@@ -69,42 +92,91 @@ public class FacturaSRIController {
         }
     }
 
-    @PostMapping("/generate-pdf-jasper")
-    public ResponseEntity<byte[]> generatePdfWithJasper(
-            @RequestParam("xmlFile") MultipartFile xmlFile,
-            @RequestParam("jrxmlTemplate") MultipartFile jrxmlTemplate) throws Exception {
+    /*
+     * @GetMapping("/firmar-xml")
+     * public ResponseEntity<Object> firmarDoc(File xmlFile, File p12File, String
+     * p12Password, String alias)
+     * throws Exception {
+     * Document doc = XmlSignerService.signXml(xmlFile, p12File, p12Password,
+     * alias);
+     * return ResponseEntity.ok(doc);
+     * }
+     */
 
-        // Cargar el diseño del reporte (.jrxml)
-        InputStream reportStream = jrxmlTemplate.getInputStream();
-        JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
+    @GetMapping("/generar-pdf")
+    public ResponseEntity<Resource> generarPdf(@RequestParam Long idfactura) {
+        fecFacturaDatos fecFactura = fec_factura.getNroFactura(idfactura);
+        if (fecFactura == null || fecFactura.getXmlautorizado() == null) {
+            return ResponseEntity.noContent().build();
+        }
+        String xmlAutorizado = fecFactura.getXmlautorizado();
+        LocalDate fehchaemision = fecFactura.getFechaemision();
+        LocalDate fechaLimite = LocalDate.of(2025, 5, 6);
 
-        // Crear datasource desde el XML
-        JRXmlDataSource xmlDataSource = new JRXmlDataSource(xmlFile.getInputStream(), "/ruta/nodo"); // Ajusta la ruta
-                                                                                                     // XPath
+        try {
+            // Generar el PDF como ByteArrayOutputStream
+            ByteArrayOutputStream pdfStream;
+            // Comparar fechas
+            if (fehchaemision.isAfter(fechaLimite)) {
+                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
 
-        // Parámetros adicionales
-        Map<String, Object> parameters = new HashMap<>();
-        /*
-         * parameters.put("CLAVE_ACCESO", obtenerClaveAcceso(xml)); // Extraer del XML
-         * parameters.put("DIRECCION_MATRIZ", obtenerDireccionMatriz(xml));
-         * parameters.put("DIRECCION_ESTABLECIMIENTO",
-         * obtenerDireccionEstablecimiento(xml));
-         * parameters.put("LOGO", "ruta/a/logo.jpg");
-         */
+            } else if (fehchaemision.isBefore(fechaLimite)) {
+                pdfStream = xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado);
 
-        // Llenar el reporte
-        JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, xmlDataSource);
+            } else if (fehchaemision.isEqual(fechaLimite)) {
+                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
+            } else {
+                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
+            }
 
-        // Exportar a PDF
-        byte[] pdfBytes = JasperExportManager.exportReportToPdf(jasperPrint);
+            if (pdfStream == null || pdfStream.size() == 0) {
+                throw new RuntimeException("No se pudo generar el PDF.");
+            }
 
-        // Configurar respuesta HTTP
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_PDF);
-        headers.setContentDisposition(ContentDisposition.builder("attachment")
-                .filename("reporte.pdf").build());
+            // Convertir el stream en un InputStreamResource
+            InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(pdfStream.toByteArray()));
 
-        return new ResponseEntity<>(pdfBytes, headers, HttpStatus.OK);
+            // Retornar el PDF como un archivo descargable
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=factura.pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .contentLength(pdfStream.size())
+                    .body(resource);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
     }
 
+    @PostMapping("/send")
+    public ResponseEntity<Map<String, Object>> sendMail(@RequestParam String emisor, @RequestParam String password,
+            @RequestParam List<String> receptores, @RequestParam String asunto, @RequestParam String mensaje) {
+        try {
+            // Configuración del correo
+            emisor = "facturacion@epmapatulcan.gob.ec";
+            password = "79DB6F2BFA7FFED2E17F16CABA197D2063EB";
+            receptores = List.of("ortizln9@gmail.com", "alexis.ortiz81@outlook.com",
+                    "saulruales@gmail.com", "ortizln9@gmail.com");
+            asunto = "Prueba mail facturas";
+            mensaje = "<h1>ANUNCIO EPMAPA-T</h1><p>Este es un correo de prueba enviado desde el sistema.</p>";
+            // Envío del correo
+            boolean resultado = emailService.envioEmail(emisor, password, receptores, asunto, mensaje);
+
+            // Respuesta estructurada
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", resultado);
+            response.put("message", resultado ? "Correo enviado exitosamente" : "Error al enviar el correo");
+            response.put("timestamp", new Date());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Error en el servidor: " + e.getMessage());
+            errorResponse.put("timestamp", new Date());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
 }

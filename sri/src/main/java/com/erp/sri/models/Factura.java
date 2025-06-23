@@ -9,7 +9,6 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Lob;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -18,6 +17,8 @@ import lombok.*;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "fec_factura")
 public class Factura {
     @Id
@@ -26,8 +27,7 @@ public class Factura {
     
     private String claveacceso;
     private String secuencial;
-    @Lob
-    private byte[] xmlautorizado;
+    private String xmlautorizado;
     private String errores;
     private String estado;
     private String establecimiento;

@@ -1,4 +1,4 @@
-package com.epmapat.erp_epmapat.sri.repositories;
+package com.erp.sri.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

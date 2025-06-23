@@ -1,4 +1,4 @@
-package com.epmapat.erp_epmapat.sri.services;
+package com.erp.sri.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,11 +24,14 @@ import com.epmapat.erp_epmapat.sri.repositories.FacturaDetalleR;
 import javax.persistence.EntityNotFoundException;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
+
+import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -48,6 +51,7 @@ public class FacturaSRIService {
     private EmailService emailService;
     @Autowired
     private FacturaDetalleR fDetalleR;
+    @Autowired
 
     private static final String VERSION = "1.1.0";
 
@@ -74,7 +78,6 @@ public class FacturaSRIService {
             comprobante.setDetalles(mapearDetalles(factura.getDetalles()));
 
             // 5. Configurar totales con impuestos
-            comprobante.setTotalConImpuestos(crearTotalConImpuestos(factura));
 
             // 6. Convertir a XML
             return convertirObjetoAXml(comprobante);
@@ -84,17 +87,30 @@ public class FacturaSRIService {
         }
     }
 
+    public static void saveXml(String xmlContent, String filePath) {
+        try {
+            Files.write(Paths.get(filePath), xmlContent.getBytes(), StandardOpenOption.CREATE);
+            System.out.println("Archivo XML guardado en: " + filePath);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private InfoTributaria crearInfoTributaria(Factura factura) {
         Definir def = getDefinir();
-        String claveAcceso = claveAccesoGenerator.generarClaveAcceso(factura, def);
-        System.out.println(claveAcceso);
-        System.out.println(factura.getClaveacceso());
+        String claveAcceso;
+        if (factura.getClaveacceso() == null) {
+            claveAcceso = claveAccesoGenerator.generarClaveAcceso(factura, def);
+        } else {
+            claveAcceso = factura.getClaveacceso();
+        }
+
         InfoTributaria infoTributaria = new InfoTributaria();
         infoTributaria.setAmbiente(def.getTipoambiente());
         infoTributaria.setTipoEmision((byte) 1);
         infoTributaria.setRazonSocial(def.getRazonsocial());
         infoTributaria.setNombreComercial(def.getNombrecomercial());
-        infoTributaria.setRuc(factura.getIdentificacioncomprador());
+        infoTributaria.setRuc(def.getRuc());
         infoTributaria.setClaveAcceso(claveAcceso);
         infoTributaria.setCodDoc("01"); // "01" para factura
         infoTributaria.setEstab(factura.getEstablecimiento());
@@ -116,6 +132,8 @@ public class FacturaSRIService {
         // infoFactura.setContribuyenteEspecial(factura.getContribuyenteEspecial());
         infoFactura.setTotalSinImpuestos(tSinImpuestos.getTotalsinimpuestos().setScale(2, RoundingMode.HALF_UP));
         infoFactura.setTotalDescuento(tSinImpuestos.getDescuento().setScale(2, RoundingMode.HALF_UP));
+        infoFactura.setTotalConImpuestos(crearTotalConImpuestos(factura));
+
         infoFactura.setPropina(BigDecimal.ZERO);
         infoFactura.setImporteTotal(tSinImpuestos.getTotalsinimpuestos().add(tSinImpuestos.getDescuento()).setScale(2,
                 RoundingMode.HALF_UP));
@@ -234,15 +252,15 @@ public class FacturaSRIService {
         byte[] xmlData = xmlFile.getBytes();
         System.out.println(xmlData);
         // Generar PDF a partir del XML
-        byte[] pdfData = PdfGenerationService.generatePdfFromXml(xmlData);
+        //byte[] pdfData = PdfGenerationService.generatePdfFromXml(xmlData);
 
         // Enviar por email
         String attachmentName = "factura_" + System.currentTimeMillis() + ".pdf";
-        emailService.sendEmailWithAttachment(
+/*         emailService.se(
                 toEmail,
                 subject,
                 body,
                 pdfData,
-                attachmentName);
+                attachmentName); */
     }
 }
