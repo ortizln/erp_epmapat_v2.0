@@ -4,11 +4,12 @@ spring:
   application:
     name: config-server
   profiles:
-    active: native
+    active: git
   cloud:
     config:
       server:
-        native:
-          #search-locations: classpath:/config-data
-          search-locations: file:../config-data
-
+        git:
+          uri: https://github.com/ortizln/erp_epmapat_v2.0
+          default-label: master  # rama por defecto
+          search-paths: config-data  # carpeta dentro del repo (opcional)
+          clone-on-start: true
