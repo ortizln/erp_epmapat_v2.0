@@ -7,18 +7,20 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
+        <module name="reportes-jr" />
         <module name="gestiondocumental" />
         <module name="eureka" />
-        <module name="recaudacion (1)" />
         <module name="pagosonline" />
         <module name="recaudacion" />
         <module name="login" />
         <module name="config" />
         <module name="gateway" />
         <module name="comercializacion" />
+        <module name="sri-files" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
+      <module name="recaudacion (1)" target="17" />
       <module name="sri" target="17" />
     </bytecodeTargetLevel>
   </component>
@@ -33,7 +35,9 @@
       <module name="pagosonline" options="-parameters" />
       <module name="recaudacion" options="-parameters" />
       <module name="recaudacion (1)" options="-parameters" />
+      <module name="reportes-jr" options="-parameters" />
       <module name="sri" options="-parameters" />
+      <module name="sri-files" options="-parameters" />
     </option>
   </component>
 </project>

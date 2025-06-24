@@ -9,8 +9,10 @@
     <file url="file://$PROJECT_DIR$/login/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/pagosonline/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/recaudacion/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/reportes-jr/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/sri-files/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/sri/src/main/java" charset="UTF-8" />
   </component>
 </project>

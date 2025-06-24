@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: msvc-reportesjs
+  config:
+    import: optional:configserver:http://config-server:8888
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT  # Usar el nombre del servicio de la base de datos en Docker
+    username: postgres
+    password: Epmapat2025
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
