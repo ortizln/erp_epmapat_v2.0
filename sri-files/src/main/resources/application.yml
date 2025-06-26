@@ -13,3 +13,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
+debug: false
+xml:
+  storage:
+    path: /path/to/your/xml/storage
