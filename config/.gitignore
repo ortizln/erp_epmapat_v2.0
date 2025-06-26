@@ -12,6 +12,8 @@ target/spring-aot
 !**/src/test/**/target/
 target/*.jar
 target/*.war
+target/*
+target
 ### STS ###
 .apt_generated
 .classpath

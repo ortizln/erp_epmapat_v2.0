@@ -22,6 +22,10 @@ PAGOSONLINE:
 -Path=/api/facturas/**
 
 
+EJECUTAR EL BUILD .JAR
+sudo chmod +x build-all.sh
+sudo ./build-all.sh
+
 
 
 https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl quiero crear un servicio de envio de archivos xml en java springboot

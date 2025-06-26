@@ -9,6 +9,8 @@ target/test-classes
 target/spring-aot
 target/*.jar
 target/*.war
+target/*
+target
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
