@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Lista de microservicios (carpetas)
+modules=("config" "sri-files" "comercializacion" "eureka" "gestiondocumental" "login" "pagosonline" "recaudacion" "sri-files")
 
 for module in "${modules[@]}"
 do
