@@ -44,3 +44,8 @@ spring:
           uri: http://msvc-gestiondocumental:9095
           predicates:
             - Path=/conservacion_documental/**, /gdcajas/**, /ingreso_documento/**, /inventario/**, /seccion/**, /series/**,  /subsecciones/**, /subseries/**
+
+        - id: msvc-sri
+          uri: http://msvc-sri:9096
+          predicates:
+            - Path=/api/sri/**

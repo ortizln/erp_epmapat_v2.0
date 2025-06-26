@@ -12,9 +12,6 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
-import com.epmapat.erp_epmapat.sri.models.YourDataModel;
-
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collections;

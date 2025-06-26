@@ -1,5 +1,6 @@
 package com.erp.sri_files.services;
 
+import com.erp.sri_files.config.AESUtil;
 import com.erp.sri_files.models.Definir;
 import com.erp.sri_files.repositories.DefinirR;
 import jakarta.persistence.EntityNotFoundException;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @Service

@@ -14,7 +14,6 @@ import org.hibernate.annotations.Type;
 @AllArgsConstructor
 @Table(name = "definir")
 public class Definir {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long iddefinir;

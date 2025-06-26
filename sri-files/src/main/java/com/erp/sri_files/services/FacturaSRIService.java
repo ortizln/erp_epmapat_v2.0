@@ -1,13 +1,14 @@
 package com.erp.sri_files.services;
 
+import com.erp.sri_files.repositories.DefinirR;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.epmapat.erp_epmapat.modelo.administracion.Definir;
-import com.epmapat.erp_epmapat.repositorio.administracion.DefinirR;
+import  com.erp.sri_files.models.Definir;
 import com.erp.sri_files.exceptions.FacturaElectronicaException;
 import com.erp.sri_files.interfaces.TotalSinImpuestos;
 import com.erp.sri_files.models.Comprobante;

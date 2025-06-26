@@ -17,14 +17,13 @@ import java.util.function.Function;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import com.erp.sri_files.repositories.Tabla15R;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-
-import com.epmapat.erp_epmapat.repositorio.contabilidad.Tabla15R;
 import com.itextpdf.html2pdf.HtmlConverter;
 
 import net.sf.jasperreports.engine.JRDataSource;

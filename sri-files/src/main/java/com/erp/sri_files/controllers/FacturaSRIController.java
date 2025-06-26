@@ -1,11 +1,11 @@
 package com.erp.sri_files.controllers;
 
-import com.erp.comercializacion.repositories.Fec_facturaR;
+import com.erp.sri_files.exceptions.FacturaElectronicaException;
+import com.erp.sri_files.interfaces.fecFacturaDatos;
+import com.erp.sri_files.models.Definir;
+import com.erp.sri_files.models.Factura;
 import com.erp.sri_files.repositories.FacturaR;
-import com.erp.sri_files.services.EmailService;
-import com.erp.sri_files.services.FacturaSRIService;
-import com.erp.sri_files.services.XmlSignerService;
-import com.erp.sri_files.services.XmlToPdfService;
+import com.erp.sri_files.services.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,7 +37,7 @@ public class FacturaSRIController {
     @Autowired
     private XmlSignerService xmlSignerService;
     @Autowired
-    private DefinirServicio definirService;
+    private DefinirService definirService;
     @Autowired
     private EmailService emailService;
     @Autowired
@@ -48,7 +48,7 @@ public class FacturaSRIController {
     private String xmlStoragePath;
 
     @Autowired
-    private Fec_facturaR fec_factura;
+    private AllMicroServices allMicroServices;
 
     public FacturaSRIController(FacturaSRIService facturaSRIService) {
         this.facturaSRIService = facturaSRIService;
@@ -58,7 +58,7 @@ public class FacturaSRIController {
     public ResponseEntity<String> generarXmlFactura(@RequestParam Long idfactura) throws Exception {
         Definir definir = definirService.findById(1L).orElseThrow(() -> new RuntimeException("Definir no encontrado"));
         try {
-            Factura factura = dao.findById(idfactura).orElseThrow(() -> new RuntimeException("Factura no encontrada"));
+            Factura factura = allMicroServices.findById(idfactura);
             if (factura == null) {
                 return ResponseEntity.noContent().build();
             } else {
@@ -69,7 +69,6 @@ public class FacturaSRIController {
                 return ResponseEntity.ok(xml);
             }
         } catch (
-
         FacturaElectronicaException e) {
             return ResponseEntity.internalServerError().body(e.getMessage());
         }
@@ -103,7 +102,7 @@ public class FacturaSRIController {
 
     @GetMapping("/generar-pdf")
     public ResponseEntity<Resource> generarPdf(@RequestParam Long idfactura) {
-        fecFacturaDatos fecFactura = fec_factura.getNroFactura(idfactura);
+        fecFacturaDatos fecFactura = allMicroServices.getNroFactura(idfactura);
         if (fecFactura == null || fecFactura.getXmlautorizado() == null) {
             return ResponseEntity.noContent().build();
         }
