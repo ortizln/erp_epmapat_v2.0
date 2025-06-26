@@ -1,16 +1,15 @@
-package com.epmapat.erp_epmapat.jasperReports.controllers;
-
+package com.erp.comercializacion.jasperReports.controllers;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.sql.Connection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
 import java.util.Map.Entry;
 
 import javax.sql.DataSource;
 
+import com.erp.comercializacion.jasperReports.DTO.JasperDTO;
+import com.erp.comercializacion.jasperReports.services.BuildReports;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -23,9 +22,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.epmapat.erp_epmapat.jasperReports.DTO.JasperDTO;
-import com.epmapat.erp_epmapat.jasperReports.services.BuildReports;
 
 @RestController
 @RequestMapping("/jasperReports")
