@@ -2,7 +2,7 @@ spring:
   application:
     name: msvc-gestiondocumental
   config:
-    import: optional:configserver:http://192.168.1.16:8888
+    import: optional:configserver:http://192.168.1.17:8888
 
   datasource:
     driver-class-name: org.postgresql.Driver

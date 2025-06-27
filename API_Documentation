@@ -27,6 +27,11 @@ sudo chmod +x build-all.sh
 sudo ./build-all.sh
 
 
+sudo git add build-all.sh
+sudo git commit -m "Mis cambios en build-all.sh"
+sudo git pull
+
+
 
 https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline?wsdl quiero crear un servicio de envio de archivos xml en java springboot
 Crear un servicio de envío de archivos XML en Java Spring Boot para el WSDL proporcionado
