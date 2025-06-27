@@ -128,7 +128,7 @@ services:
     ports:
       - "9094:9094"
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://192.168.1.17:8761/eureka/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://192.168.0.69:8761/eureka/
       - EUREKA_INSTANCE_HOSTNAME=msvc-eureka  # ✅ Usa el nombre del servicio Docker
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]

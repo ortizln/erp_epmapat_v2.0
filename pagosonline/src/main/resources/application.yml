@@ -6,9 +6,9 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://192.168.1.17:5432/ErpEpmapaT  # Usar el nombre del servicio de la base de datos en Docker
+    url: jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT  # Usar el nombre del servicio de la base de datos en Docker
     username: postgres
-    password: 086411421
+    password: Epmapat2025
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
