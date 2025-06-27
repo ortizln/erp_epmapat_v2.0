@@ -3,6 +3,7 @@ import java.util.List;
 import java.util.Optional;
 
 import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.interfaces.fecFacturaDatos;
 import com.erp.comercializacion.models.Fec_factura;
 import com.erp.comercializacion.services.Fec_facturaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,5 +96,10 @@ public class Fec_facturaApi {
       factura.setRecaudador(fecfactura.getRecaudador());
       Fec_factura upfecfactura = fecfacServicio.save(factura);
       return ResponseEntity.ok(upfecfactura);
+   }
+   @GetMapping("/fecFacturaDatos")
+   public fecFacturaDatos getDatosFecFactura(@RequestParam Long idfactura) {
+      fecFacturaDatos fecFactura = fecfacServicio.getNroFactura(idfactura);
+      return fecFactura;
    }
 }

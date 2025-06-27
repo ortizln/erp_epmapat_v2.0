@@ -1,5 +1,6 @@
 package com.erp.comercializacion.services;
 
+import com.erp.comercializacion.interfaces.fecFacturaDatos;
 import com.erp.comercializacion.models.Fec_factura;
 import com.erp.comercializacion.repositories.Fec_facturaR;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,5 +35,9 @@ public class Fec_facturaService {
     }
     public Optional<Fec_factura> findById(Long id){
         return dao.findById(id);
+    }
+
+    public fecFacturaDatos getNroFactura(Long idfactura) {
+        return dao.getNroFactura(idfactura);
     }
 }

@@ -20,7 +20,7 @@ public class AllMicroServices {
         return  factura;
     }
     public fecFacturaDatos getNroFactura(Long idfactura){
-        fecFacturaDatos fec_factura = restTemplate.restTemplate().getForObject(URL_COMERCIALIZACION_FEC_FACTURAS+"/fecFacturaDatos"+idfactura, fecFacturaDatos.class);
+        fecFacturaDatos fec_factura = restTemplate.restTemplate().getForObject(URL_COMERCIALIZACION_FEC_FACTURAS+"/fecFacturaDatos?idfactura="+idfactura, fecFacturaDatos.class);
         return  fec_factura;
     }
 }
