@@ -13,8 +13,8 @@ public class AllMicroServices {
     //private RestTemplate restTemplate;
     @Autowired
     private AppConfig restTemplate;
-    private final String URL_COMERCIALIZACION_FACTURAS = "http://192.168.0.69:8080/facturas";
-    private final String URL_COMERCIALIZACION_FEC_FACTURAS = "http://192.168.0.69:8080/fec_factura";
+    private final String URL_COMERCIALIZACION_FACTURAS = "http://192.168.1.16:8080/facturas";
+    private final String URL_COMERCIALIZACION_FEC_FACTURAS = "http://192.168.1.16:8080/fec_factura";
     public Factura findById(Long idFactura){
         Factura factura = restTemplate.restTemplate().getForObject(URL_COMERCIALIZACION_FACTURAS+"/"+idFactura, Factura.class);
         return  factura;
