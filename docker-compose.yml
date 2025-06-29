@@ -25,7 +25,7 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.1.17:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=086411421
     healthcheck:
@@ -49,7 +49,7 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.1.17/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=086411421
     healthcheck:
@@ -73,7 +73,7 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.1.17:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=086411421
     healthcheck:
@@ -97,7 +97,7 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.1.17:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=086411421
     healthcheck:
@@ -121,7 +121,7 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://1192.168.1.17:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=086411421
     healthcheck:
@@ -145,7 +145,7 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.1.17:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=086411421
     healthcheck:
@@ -169,7 +169,7 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.1.17:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=086411421
     healthcheck:
