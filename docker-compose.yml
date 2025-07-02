@@ -182,12 +182,12 @@ services:
       epmapat-nw:
         aliases:
           - msvc-sri
-  msvc-reportesjs:
+  msvc-reportesjr:
     build:
       context: reportes-jr
       dockerfile: Dockerfile
-    image: msvc-reportesjs:latest
-    container_name: msvc-reportesjs
+    image: msvc-reportesjr:latest
+    container_name: msvc-reportesjr
     ports:
       - "9097:9097"
     environment:
@@ -205,7 +205,7 @@ services:
     networks:
       epmapat-nw:
         aliases:
-          - msvc-reportesjs
+          - msvc-reportesjr
 networks:
   epmapat-nw:
     driver: bridge
