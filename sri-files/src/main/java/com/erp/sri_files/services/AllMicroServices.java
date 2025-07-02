@@ -5,7 +5,6 @@ import com.erp.sri_files.interfaces.fecFacturaDatos;
 import com.erp.sri_files.models.Factura;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -19,11 +18,10 @@ public class AllMicroServices {
     private final String comercializacionBaseUrl;
     private final String fecFacturaBaseUrl;
 
-    @Autowired
     public AllMicroServices(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.comercializacionBaseUrl = "http://192.168.1.100:8080/facturas";
-        this.fecFacturaBaseUrl = "http://192.168.1.100:8080/fec_factura";
+        this.comercializacionBaseUrl = "http://192.168.0.69:8080/facturas";
+        this.fecFacturaBaseUrl = "http://192.168.0.69:8080/fec_factura";
     }
 
     public Factura findById(Long idFactura) {
