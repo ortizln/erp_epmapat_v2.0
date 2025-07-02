@@ -50,7 +50,7 @@ spring:
           predicates:
             - Path=/api/sri/**
 
-        - id: msvc-reportesjs
-          uri: http://msvc-reportesjs:9097
+        - id: msvc-reportesjr
+          uri: http://msvc-reportesjr:9097
           predicates:
             - Path=/jasperReports/**
