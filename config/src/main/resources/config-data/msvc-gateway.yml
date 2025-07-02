@@ -49,3 +49,8 @@ spring:
           uri: http://msvc-sri:9096
           predicates:
             - Path=/api/sri/**
+
+        - id: msvc-reportesjs
+          uri: http://msvc-reportesjs:9097
+          predicates:
+            - Path=/jasperReports/**
