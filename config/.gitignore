@@ -12,6 +12,7 @@ target/spring-aot
 !**/src/test/**/target/
 target/*.jar
 target/*.war
+target/*.original
 target/*
 target
 ### STS ###

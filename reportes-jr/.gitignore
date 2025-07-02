@@ -6,6 +6,7 @@ target/maven-status
 target/surefire-reports
 target/test-classes
 target/spring-aot
+target/*.original
 *.jar
 *.war
 target/*.jar

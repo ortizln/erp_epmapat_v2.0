@@ -6,11 +6,12 @@ target/maven-status
 target/surefire-reports
 target/test-classes
 target/spring-aot
+target/*
+target/*.original
 *.jar
 *.war
 target/*.jar
 target/*.war
-target/*
 target
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/

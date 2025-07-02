@@ -22,7 +22,7 @@ target
 .settings
 .springBeans
 .sts4-cache
-
+target/*.original
 ### IntelliJ IDEA ###
 .idea
 *.iws
