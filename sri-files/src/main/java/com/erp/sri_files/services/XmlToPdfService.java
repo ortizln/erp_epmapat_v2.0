@@ -68,6 +68,9 @@ public class XmlToPdfService {
 
     public ByteArrayOutputStream generarFacturaPDF(String xmlAutorizado) {
         try {
+            String basePath = System.getProperty("os.name").toLowerCase().contains("win")
+                    ? "C:/reportsEpmapat/"
+                    : "/home/epmapaadmin/reportsEpmapat/";
             // 1. Limpiar XML antes de parsear
             Function<String, BigDecimal> safeBigDecimal = value -> {
                 try {
@@ -223,7 +226,8 @@ public class XmlToPdfService {
 
 
             // Compilar y llenar reporte
-            InputStream reportStream = getClass().getResourceAsStream("/reports/factura_template.jrxml");
+            String path = basePath + "factura_template.jrxml";
+            InputStream reportStream = getClass().getResourceAsStream(path);
             if (reportStream == null) {
                 throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
             }
@@ -260,6 +264,9 @@ public class XmlToPdfService {
 
     public ByteArrayOutputStream generarFacturaPDF_v2(String xmlAutorizado) {
         try {
+            String basePath = System.getProperty("os.name").toLowerCase().contains("win")
+                    ? "C:/reportsEpmapat/"
+                    : "/home/epmapaadmin/reportsEpmapat/";
             // Utilidad para manejo seguro de BigDecimal
             Function<String, BigDecimal> safeBigDecimal = value -> {
                 try {
@@ -403,9 +410,9 @@ public class XmlToPdfService {
             parameters.put("TotalIVA12", totalIVA12);
             parameters.put("TotalICE", totalICE);
             parameters.put("TotalIRBPNR", totalIRBPNR);
-
+            String path = basePath + "factura_template.jrxml";
             // Compilar y llenar reporte
-            InputStream reportStream = getClass().getResourceAsStream("/reports/factura_template.jrxml");
+            InputStream reportStream = getClass().getResourceAsStream(path);
             if (reportStream == null) {
                 throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
             }
