@@ -8,7 +8,8 @@ target/surefire-reports
 target/test-classes
 target/spring-aot
 target/*.jar
-
+# .gitignore
+**/target/
 target/*
 target
 !.mvn/wrapper/maven-wrapper.jar
