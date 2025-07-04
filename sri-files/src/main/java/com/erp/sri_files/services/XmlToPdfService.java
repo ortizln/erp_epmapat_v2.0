@@ -72,10 +72,6 @@ public class XmlToPdfService {
                     ? "C:/reportsEpmapat/"
                     : "/home/epmapaadmin/reportsEpmapat/";
 
-            File file = new File("/home/server/reportes/factura_template.jrxml");
-            if (!file.exists()) {
-                throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
-            }
             // 1. Limpiar XML antes de parsear
             Function<String, BigDecimal> safeBigDecimal = value -> {
                 try {
@@ -230,13 +226,12 @@ public class XmlToPdfService {
             parameters.put("Referencia", "--------");
             // Compilar y llenar reporte
             File path = new File(basePath + "factura_template.jrxml");
+            System.out.println("======================"+path.exists()+"=========================");
             // Compilar y llenar reporte
-            InputStream reportStream = new FileInputStream(file);
+            InputStream reportStream = new FileInputStream(path);
             if (reportStream == null) {
                 throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
             }
-            System.out.println("===> 1 <===" + reportStream.getClass());
-
             JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
             JRDataSource itemsDataSource = new JRBeanCollectionDataSource(itemsList);
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, itemsDataSource);
@@ -271,11 +266,6 @@ public class XmlToPdfService {
             String basePath = System.getProperty("os.name").toLowerCase().contains("win")
                     ? "C:/reportsEpmapat/"
                     : "/home/epmapaadmin/reportsEpmapat/";
-
-            File file = new File("/home/server/reportes/factura_template.jrxml");
-            if (!file.exists()) {
-                throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
-            }
             // Utilidad para manejo seguro de BigDecimal
             Function<String, BigDecimal> safeBigDecimal = value -> {
                 try {
@@ -421,7 +411,7 @@ public class XmlToPdfService {
             parameters.put("TotalIRBPNR", totalIRBPNR);
             File path = new File(basePath + "factura_template.jrxml");
             // Compilar y llenar reporte
-            InputStream reportStream = new FileInputStream(file);
+            InputStream reportStream = new FileInputStream(path);
             if (reportStream == null) {
                 throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
             }
