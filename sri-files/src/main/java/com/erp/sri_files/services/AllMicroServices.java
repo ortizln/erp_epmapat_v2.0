@@ -43,7 +43,19 @@ public class AllMicroServices {
                     .toUriString();
 
             LOGGER.debug("Llamando a endpoint FEC: {}", url);
+
+            // Opción 1: Usando getForObject directamente
             return restTemplate.getForObject(url, fecFacturaDatos.class);
+
+            /* Opción 2: Más detallada con verificación
+            ResponseEntity<fecFacturaDatos> response = restTemplate.getForEntity(
+                url, fecFacturaDatos.class);
+
+            if (response.getStatusCode().is2xxSuccessful() && response.hasBody()) {
+                return response.getBody();
+            }
+            throw new MicroserviceException("Respuesta inválida del servicio FEC");
+            */
         } catch (RestClientException e) {
             LOGGER.error("Error al obtener datos FEC para factura: {}", idfactura, e);
             throw new MicroserviceException("Error al consultar datos FEC", e);

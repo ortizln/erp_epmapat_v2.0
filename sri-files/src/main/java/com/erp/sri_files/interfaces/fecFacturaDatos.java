@@ -1,9 +1,14 @@
 package com.erp.sri_files.interfaces;
 
+import lombok.*;
+
 import java.time.LocalDate;
-
-public interface fecFacturaDatos {
-    String getXmlautorizado();
-
-    LocalDate getFechaemision();
+@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class fecFacturaDatos {
+    private Long id;
+    private String numeroFactura;
 }
