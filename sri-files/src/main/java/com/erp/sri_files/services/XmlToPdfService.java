@@ -71,6 +71,11 @@ public class XmlToPdfService {
             String basePath = System.getProperty("os.name").toLowerCase().contains("win")
                     ? "C:/reportsEpmapat/"
                     : "/home/epmapaadmin/reportsEpmapat/";
+
+            File file = new File("/home/server/reportes/factura_template.jrxml");
+            if (!file.exists()) {
+                throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
+            }
             // 1. Limpiar XML antes de parsear
             Function<String, BigDecimal> safeBigDecimal = value -> {
                 try {
@@ -223,12 +228,10 @@ public class XmlToPdfService {
             parameters.put("TotalICE", totalICE);
             parameters.put("TotalIRBPNR", totalIRBPNR);
             parameters.put("Referencia", "--------");
-
-
             // Compilar y llenar reporte
             File path = new File(basePath + "factura_template.jrxml");
             // Compilar y llenar reporte
-            InputStream reportStream = new FileInputStream(path);
+            InputStream reportStream = new FileInputStream(file);
             if (reportStream == null) {
                 throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
             }
@@ -268,6 +271,11 @@ public class XmlToPdfService {
             String basePath = System.getProperty("os.name").toLowerCase().contains("win")
                     ? "C:/reportsEpmapat/"
                     : "/home/epmapaadmin/reportsEpmapat/";
+
+            File file = new File("/home/server/reportes/factura_template.jrxml");
+            if (!file.exists()) {
+                throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
+            }
             // Utilidad para manejo seguro de BigDecimal
             Function<String, BigDecimal> safeBigDecimal = value -> {
                 try {
@@ -413,7 +421,7 @@ public class XmlToPdfService {
             parameters.put("TotalIRBPNR", totalIRBPNR);
             File path = new File(basePath + "factura_template.jrxml");
             // Compilar y llenar reporte
-            InputStream reportStream = new FileInputStream(path);
+            InputStream reportStream = new FileInputStream(file);
             if (reportStream == null) {
                 throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
             }
