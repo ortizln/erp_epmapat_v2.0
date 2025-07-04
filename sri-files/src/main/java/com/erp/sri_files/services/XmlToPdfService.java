@@ -19,6 +19,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import com.erp.sri_files.repositories.Tabla15R;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -40,6 +41,8 @@ public class XmlToPdfService {
     FacturaSRIService facturaSRIService;
     @Autowired
     private Tabla15R tabla15r;
+    @Value("${app.reports.path}")
+    private String reportsPath;
 
     public void generarPdfDesdeXml(String xmlContent, String pdfPath) throws Exception {
         // Ruta temporal para el HTML generado
@@ -225,8 +228,11 @@ public class XmlToPdfService {
             parameters.put("TotalIRBPNR", totalIRBPNR);
             parameters.put("Referencia", "--------");
             // Compilar y llenar reporte
-            File path = new File(basePath + "factura_template.jrxml");
+            File path = new File(basePath, "factura_template.jrxml");
             System.out.println("======================"+path.exists()+"=========================");
+            if(path.exists() == false){
+                path = new File("/resources/reports/factura_template.jrxml");
+            }
             // Compilar y llenar reporte
             InputStream reportStream = new FileInputStream(path);
             if (reportStream == null) {

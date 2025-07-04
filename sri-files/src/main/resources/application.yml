@@ -17,3 +17,6 @@ debug: false
 xml:
   storage:
     path: /path/to/your/xml/storage
+app:
+  reports:
+    path: /home/epmapaadmin/reportsEpmapat
