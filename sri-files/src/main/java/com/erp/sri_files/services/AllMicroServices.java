@@ -20,8 +20,8 @@ public class AllMicroServices {
 
     public AllMicroServices(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.comercializacionBaseUrl = "http://192.168.1.100:8080/facturas";
-        this.fecFacturaBaseUrl = "http://192.168.1.100:8080/fec_factura";
+        this.comercializacionBaseUrl = "http://msvc-comercializacion:9093/facturas";
+        this.fecFacturaBaseUrl = "http://msvc-comercializacion:9093/fec_factura";
     }
 
     public Factura findById(Long idFactura) {
