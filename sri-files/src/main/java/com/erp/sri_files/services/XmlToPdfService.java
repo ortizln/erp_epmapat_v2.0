@@ -71,9 +71,10 @@ public class XmlToPdfService {
 
     public ByteArrayOutputStream generarFacturaPDF(String xmlAutorizado) {
         try {
-            String basePath = System.getProperty("os.name").toLowerCase().contains("win")
+            /*String basePath = System.getProperty("os.name").toLowerCase().contains("win")
                     ? "C:/reportsEpmapat/"
-                    : "/home/epmapaadmin/reportsEpmapat/";
+                    : "/home/epmapaadmin/reportsEpmapat/";*/
+            String basePath = "/home/epmapaadmin/reportsEpmapat/";
 
             // 1. Limpiar XML antes de parsear
             Function<String, BigDecimal> safeBigDecimal = value -> {
@@ -228,13 +229,9 @@ public class XmlToPdfService {
             parameters.put("TotalIRBPNR", totalIRBPNR);
             parameters.put("Referencia", "--------");
             // Compilar y llenar reporte
-            File path = new File(basePath, "factura_template.jrxml");
-            System.out.println("======================"+path.exists()+"=========================");
-            if(path.exists() == false){
-                path = new File("/resources/reports/factura_template.jrxml");
-            }
+            String path = (basePath+ "factura_template.jrxml");
             // Compilar y llenar reporte
-            InputStream reportStream = new FileInputStream(path);
+            InputStream reportStream = getClass().getResourceAsStream(path);
             if (reportStream == null) {
                 throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
             }
