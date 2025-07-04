@@ -410,9 +410,10 @@ public class XmlToPdfService {
             parameters.put("TotalIVA12", totalIVA12);
             parameters.put("TotalICE", totalICE);
             parameters.put("TotalIRBPNR", totalIRBPNR);
-            File path = new File(basePath + "factura_template.jrxml");
+            String path = basePath + "factura_template.jrxml";
+
             // Compilar y llenar reporte
-            InputStream reportStream = new FileInputStream(path);
+            InputStream reportStream = getClass().getResourceAsStream(path);
             if (reportStream == null) {
                 throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
             }
