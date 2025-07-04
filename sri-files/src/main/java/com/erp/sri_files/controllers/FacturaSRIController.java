@@ -115,14 +115,18 @@ public class FacturaSRIController {
             ByteArrayOutputStream pdfStream;
             // Comparar fechas
             if (fehchaemision.isAfter(fechaLimite)) {
+                System.out.println("===> 1 <===");
                 pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
 
             } else if (fehchaemision.isBefore(fechaLimite)) {
+                System.out.println("===> 2 <===");
                 pdfStream = xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado);
 
             } else if (fehchaemision.isEqual(fechaLimite)) {
+                System.out.println("===> 3 <===");
                 pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
             } else {
+                System.out.println("===> 4 <===");
                 pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
             }
 
