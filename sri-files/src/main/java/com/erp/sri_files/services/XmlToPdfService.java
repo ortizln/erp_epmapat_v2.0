@@ -74,7 +74,7 @@ public class XmlToPdfService {
             /*String basePath = System.getProperty("os.name").toLowerCase().contains("win")
                     ? "C:/reportsEpmapat/"
                     : "/home/epmapaadmin/reportsEpmapat/";*/
-            String basePath = "/home/epmapaadmin/reportsEpmapat/";
+            String basePath = "/reports/";
 
             // 1. Limpiar XML antes de parsear
             Function<String, BigDecimal> safeBigDecimal = value -> {
@@ -266,9 +266,7 @@ public class XmlToPdfService {
 
     public ByteArrayOutputStream generarFacturaPDF_v2(String xmlAutorizado) {
         try {
-            String basePath = System.getProperty("os.name").toLowerCase().contains("win")
-                    ? "C:/reportsEpmapat/"
-                    : "/home/epmapaadmin/reportsEpmapat/";
+            String basePath = "/reports/";
             // Utilidad para manejo seguro de BigDecimal
             Function<String, BigDecimal> safeBigDecimal = value -> {
                 try {
