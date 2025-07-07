@@ -49,8 +49,11 @@ WHERE
 	<parameter name="desde" class="java.util.Date"/>
 	<parameter name="hasta" class="java.util.Date"/>
 	<parameter name="idusuario" class="java.lang.Integer"/>
+	<parameter name="hdesde" class="java.sql.Time"/>
+	<parameter name="hhasta" class="java.sql.Time"/>
 	<queryString language="SQL">
-		<![CDATA[WITH recaudo_unico AS (
+		<![CDATA[
+WITH recaudo_unico AS (
     SELECT DISTINCT ON (fr.idfactura)
         fr.idfactura,
         fr.idrecaudacion
@@ -61,16 +64,15 @@ SELECT
     f.idfactura,
     c.nombre,
     f.nrofactura,
-    r.fechacobro,
+    f.fechacobro,
     fc.descripcion AS formacobro,
     m.descripcion AS modulo, 
-    CAST(SUM((rf.cantidad * rf.valorunitario)) AS DECIMAL(19,2)) AS valor, 
+    CAST(SUM(rf.cantidad * rf.valorunitario) AS DECIMAL(19,2)) AS valor, 
     f.swiva, 
     f.interescobrado,
     u.nomusu
 FROM
     recaudo_unico fr
-    INNER JOIN recaudacion r ON r.idrecaudacion = fr.idrecaudacion
     INNER JOIN facturas f ON fr.idfactura = f.idfactura
     INNER JOIN rubroxfac rf ON rf.idfactura_facturas = f.idfactura
     INNER JOIN clientes c ON c.idcliente = f.idcliente
@@ -78,13 +80,14 @@ FROM
     INNER JOIN usuarios u ON f.usuariocobro = u.idusuario
     INNER JOIN modulos m ON f.idmodulo = m.idmodulo
 WHERE
-    r.fechacobro BETWEEN $P{desde} AND $P{hasta}
+    f.fechacobro BETWEEN $P{desde} AND $P{hasta}
+    AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
     AND rf.idrubro_rubros NOT IN (5, 165)
 GROUP BY
     f.idfactura,
     c.nombre,
     f.nrofactura,
-    r.fechacobro,
+    f.fechacobro,
     fc.descripcion,
     u.nomusu, 
     m.descripcion,
