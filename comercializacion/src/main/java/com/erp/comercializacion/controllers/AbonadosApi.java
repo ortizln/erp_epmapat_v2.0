@@ -100,7 +100,6 @@ public class AbonadosApi {
 
 	@PutMapping("/{idabonado}")
 	public ResponseEntity<Abonados> updateAbonados(@PathVariable Long idabonado, @RequestBody Abonados abonadosm) {
-		System.out.println("Entré a Abonados");
 		Abonados abonadosM = aboServicio.findById(idabonado)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe ese abonado con ese Id: " + idabonado)));
 		abonadosM.setNromedidor(abonadosm.getNromedidor());
@@ -213,5 +212,4 @@ public class AbonadosApi {
 	public List<EstadisticasAbonadosDTO> getCuentasByEstado() {
 		return aboServicio.getCuentasByEstado();
 	}
-
 }

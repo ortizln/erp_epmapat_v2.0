@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/estadom")
 @CrossOrigin(origins = "*")
-
 public class EstadomApi {
        
     @Autowired
