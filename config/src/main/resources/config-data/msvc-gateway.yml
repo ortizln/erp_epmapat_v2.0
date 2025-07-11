@@ -28,7 +28,7 @@ spring:
         - id: msvc-recaudacion
           uri: http://msvc-recaudacion:9092
           predicates:
-          - Path=/api/rec/cajas/**, /api/rec/facturas/**
+          - Path=/api/rec/cajas/**, /api/rec/facturas/**, /api/rec/interes/**, /api/rec/impuestos/**
 
         - id: msvc-comercializacion
           uri: http://msvc-comercializacion:9093
