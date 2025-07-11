@@ -1,6 +1,7 @@
 package com.erp.sri.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 public class Factura_interes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

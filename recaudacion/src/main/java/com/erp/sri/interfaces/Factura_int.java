@@ -28,5 +28,7 @@ public interface Factura_int {
 	Long getUsuariocobro();
 	String getNrofactura();
 	String getNombre();
+	BigDecimal getIva();
+	BigDecimal getInteres();
 
 }

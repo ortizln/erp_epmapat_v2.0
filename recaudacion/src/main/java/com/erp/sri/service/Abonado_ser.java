@@ -9,10 +9,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,77 +25,65 @@ public class Abonado_ser {
     @Autowired
     private Impuestos_ser s_impuestos;
 
-   public List<Factura_interes> findSinCobrarByAbonado(Long idabonado) {
-       // Buscamos el cliente en la entidad Abonado_int.
-       Abonado_int abonado = a_dao.findClienteInAbonado(idabonado);
-       List<Factura_int> facturas = new ArrayList<>();
-       List<Factura_interes> _f = new ArrayList<>();
-       if (abonado != null) {
-           // Si el cliente y el responsable son la misma persona
-           if (Objects.equals(abonado.getCliente(), abonado.getResponsable())) {
-               List<Factura_int> facturaConsumo = f_dao.findSinCobrarByCuenta(idabonado) ;
-               List<Factura_int> facturaNotConsumo = f_dao.findSincobroNotConsumo(abonado.getResponsable());
-               facturas.addAll(facturaNotConsumo);
-               facturas.addAll(facturaConsumo);
-              _f = addInteresToFactura(facturas);
+    public List<Factura_interes> findSinCobrarByAbonado(Long idabonado) {
+        Abonado_int abonado = a_dao.findClienteInAbonado(idabonado);
+        if (abonado == null) {
+            System.out.println("Abonado no encontrado con el ID: " + idabonado);
+            return Collections.emptyList();
+        }
 
-           } else {
-               // Si el cliente y el responsable son diferentes
-               List<Factura_int> facturasCliente = f_dao.findSinCobrar(abonado.getCliente());
-               List<Factura_int> facturasResponsable = f_dao.findSinCobrar(abonado.getResponsable());
-               // Agregar las facturas de ambos
-               facturas.addAll(facturasCliente);
-               facturas.addAll(facturasResponsable);
-              _f = addInteresToFactura(facturas);
+        List<Factura_int> facturas = new ArrayList<>();
 
-           }
-       } else {
-           System.out.println("Abonado no encontrado con el ID: " + idabonado);
-       }
-       return _f;
-   }
+        if (Objects.equals(abonado.getCliente(), abonado.getResponsable())) {
+            facturas.addAll(f_dao.findSinCobrarByCuenta(idabonado));
+            facturas.addAll(f_dao.findSincobroNotConsumo(abonado.getResponsable()));
+        } else {
+            facturas.addAll(f_dao.findSinCobrar(abonado.getCliente()));
+            facturas.addAll(f_dao.findSinCobrar(abonado.getResponsable()));
+        }
+
+        return addInteresToFactura(facturas);
+    }
+
     public List<Factura_interes> addInteresToFactura(List<Factura_int> facturas) {
+        Map<Long, BigDecimal> interesesMap = s_interes.interesesOfFacturas(facturas);
+        Map<Long, BigDecimal> ivaMap = s_impuestos.calcularIvas(facturas);
+
         return facturas.stream()
                 .map(f -> {
-                    Long idFactura = f.getIdfactura();
-                    BigDecimal _iva = s_impuestos.calcularIva(idFactura);
-                    BigDecimal interes = BigDecimal.valueOf(0.00);
-                    Factura_interes _facInteres = new Factura_interes();
-                    if(f.getSwcondonar()==null|| !f.getSwcondonar()){
-                        interes = (s_interes.interesOfFactura(idFactura));  // Asegúrate que este método devuelve double
-                        BigDecimal interesRounded = interes.setScale(2, BigDecimal.ROUND_HALF_UP);
-                        _facInteres.setInteresacobrar(interesRounded);  // Convertir double a BigDecimal
-                    }else{
-                        _facInteres.setInteresacobrar(BigDecimal.valueOf(0.00));  // Convertir double a BigDecimal
+                    Long id = f.getIdfactura();
+                    BigDecimal interes = (!Boolean.TRUE.equals(f.getSwcondonar()))
+                            ? interesesMap.getOrDefault(id, BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP)
+                            : BigDecimal.ZERO;
 
-                    }
+                    BigDecimal iva = ivaMap.getOrDefault(id, BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
+                    BigDecimal total = f.getTotal().setScale(2, RoundingMode.HALF_UP);
 
-                    DecimalFormat df = new DecimalFormat("#.##"); // Round to 2 decimal places
-                    BigDecimal totalRounded = f.getTotal().setScale(2, BigDecimal.ROUND_HALF_UP);
-                    BigDecimal impuestoRounded = _iva.setScale(2, BigDecimal.ROUND_HALF_UP);
-                    // Obtener el interés relacionado con la factura
-                    _facInteres.setIdfactura(idFactura);
-                    _facInteres.setFeccrea(f.getFeccrea());
-                    _facInteres.setEstado(f.getEstado());
-                    _facInteres.setIdmodulo(f.getIdmodulo());
-                    _facInteres.setTotal(totalRounded);
-                    _facInteres.setIdcliente(f.getIdCliente());
-                    _facInteres.setIdabonado(f.getIdAbonado());
-                    _facInteres.setFormapago(f.getFormaPago());
-                    _facInteres.setPagado(f.getPagado());
-                    _facInteres.setSwcondonar(f.getSwcondonar());
-                    _facInteres.setFechacobro(f.getfechacobro());
-                    _facInteres.setUsuariocobro(f.getUsuariocobro());
-                    _facInteres.setNrofactura(f.getNrofactura());
-                    _facInteres.setSwiva(impuestoRounded);
-                    _facInteres.setNombre(f.getNombre());
-                    return _facInteres;  // Transformamos la Factura_int en Factura_interes
+                    return new Factura_interes(
+                            f.getIdfactura(),
+                            f.getIdmodulo(),
+                            total,
+                            f.getIdCliente(),
+                            f.getIdAbonado(),
+                            f.getFeccrea(),
+                            f.getFormaPago(),
+                            f.getEstado(),
+                            f.getPagado(),
+                            f.getSwcondonar(),
+                            interes,
+                            f.getfechacobro(),
+                            f.getUsuariocobro(),
+                            f.getNrofactura(),
+                            iva,
+                            f.getNombre()
+                    );
                 })
-                .collect(Collectors.toList());  // Recolectamos el resultado en una lista
+                .collect(Collectors.toList());
     }
+
+
     public static double round(double value, int places) {
         double factor = Math.pow(10, places);
         return Math.round(value * factor) / factor;
     }
-
 }
