@@ -30,5 +30,6 @@ public interface Factura_int {
 	String getNombre();
 	BigDecimal getIva();
 	BigDecimal getInteres();
+	String getDireccion();
 
 }

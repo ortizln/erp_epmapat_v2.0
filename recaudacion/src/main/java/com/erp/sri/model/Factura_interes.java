@@ -18,29 +18,20 @@ public class Factura_interes {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long idfactura;
-
     Long idmodulo;
-
     BigDecimal total;
-
     Long idcliente;
-
     Long idabonado;
-
     LocalDate feccrea;
-
     Long formapago;
-
     Long estado;
-
     Long pagado;
-
     Boolean swcondonar;
-
     BigDecimal interesacobrar;
     LocalDate fechacobro;
     Long usuariocobro;
     String nrofactura;
     BigDecimal swiva;
     String nombre;
+    String direccion;
 }
