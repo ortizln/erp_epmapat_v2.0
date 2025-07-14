@@ -76,7 +76,7 @@ public class Abonado_ser {
                             f.getNrofactura(),
                             iva,
                             f.getNombre(),
-                            f.get
+                            f.getDireccion()
                     );
                 })
                 .collect(Collectors.toList());
