@@ -4,6 +4,9 @@ import com.erp.comercializacion.interfaces.CVClientes;
 import com.erp.comercializacion.models.Clientes;
 import com.erp.comercializacion.repositories.ClientesR;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -69,6 +72,20 @@ public class ClientesService {
 
     public List<CVClientes> getCVByCliente(LocalDate fecha) {
         return dao.getCVByCliente(fecha);
+    }
+    public Page<CVClientes> getCVOfClientes(LocalDate fecha, String name, int page, int size) {
+        // Validación defensiva para evitar índices negativos
+        if (page < 0) {
+            page = 0;
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        if (name == null || name.isEmpty()) {
+            return dao.getCVOfClientes(fecha, pageable);
+        } else {
+            return dao.getCVOfNCliente(fecha, name, pageable);
+        }
     }
 
 }

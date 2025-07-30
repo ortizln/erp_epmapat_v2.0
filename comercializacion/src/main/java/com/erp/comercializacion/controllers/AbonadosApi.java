@@ -212,4 +212,9 @@ public class AbonadosApi {
 	public List<EstadisticasAbonadosDTO> getCuentasByEstado() {
 		return aboServicio.getCuentasByEstado();
 	}
+
+	@GetMapping("/estado/{estado}")
+	public ResponseEntity<List<Abonados>> getAbonadosByEstado(@PathVariable Long estado) {
+		return ResponseEntity.ok(aboServicio.findByEstado(estado));
+	}
 }

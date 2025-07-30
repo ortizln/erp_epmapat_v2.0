@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/catalogoitems")
 @CrossOrigin(origins = "*")
-
 public class CatalogoitemsApi {
 
 	@Autowired

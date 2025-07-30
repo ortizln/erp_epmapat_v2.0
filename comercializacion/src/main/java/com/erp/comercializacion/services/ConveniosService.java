@@ -1,8 +1,12 @@
 package com.erp.comercializacion.services;
 
+import com.erp.comercializacion.interfaces.EstadoConvenios;
 import com.erp.comercializacion.models.Convenios;
 import com.erp.comercializacion.repositories.ConveniosR;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -42,27 +46,33 @@ public class ConveniosService {
         return dao.valNroconvenio(nroconvenio);
     }
 
-    @SuppressWarnings("null")
     public <S extends Convenios> boolean existsByNroconvenio() {
         return dao.exists(null);
     }
 
-    @SuppressWarnings("null")
     public <S extends Convenios> S save(S entity) {
         return dao.save(entity);
     }
 
-    @SuppressWarnings("null")
     public Optional<Convenios> findById(Long id) {
         return dao.findById(id);
     }
 
-    @SuppressWarnings("null")
     public void deleteById(Long id) {
         dao.deleteById(id);
     }
 
     public List<Convenios> findByReferencia(Long referencia){
         return dao.findByReferencia(referencia);
+    }
+    public List<EstadoConvenios> getEstadoByConvenios(){
+        return dao.getEstadoByConvenios();
+    }
+    public Page<EstadoConvenios> getByFacPendientes(Long d, Long h, int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        return dao.getByFacPendientes(d, h, pageable);
+    }
+    public List<EstadoConvenios> gePendienteByConvenio(Long idconvenio){
+        return dao.gePendienteByConvenio(idconvenio);
     }
 }

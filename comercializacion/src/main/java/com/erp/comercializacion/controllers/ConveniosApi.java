@@ -3,9 +3,11 @@ package com.erp.comercializacion.controllers;
 import java.util.List;
 
 import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.interfaces.EstadoConvenios;
 import com.erp.comercializacion.models.Convenios;
 import com.erp.comercializacion.services.ConveniosService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -98,6 +100,21 @@ public class ConveniosApi {
    private ResponseEntity<List<Convenios>> getByReferencia(@RequestParam("referencia") Long referencia) {
       List<Convenios> convenios = convServicio.findByReferencia(referencia);
       return ResponseEntity.ok(convenios);
+   }
+   @GetMapping("/estados")
+   public ResponseEntity<List<EstadoConvenios>> getEstadoByConvenios() {
+      return ResponseEntity.ok(convServicio.getEstadoByConvenios());
+   }
+
+   @GetMapping("/pendientesPago")
+   public ResponseEntity<Page<EstadoConvenios>> getByFacPendientes(@RequestParam Long d, @RequestParam Long h,
+                                                                   @RequestParam int page, @RequestParam int size) {
+      return ResponseEntity.ok(convServicio.getByFacPendientes(d, h, page, size));
+   }
+
+   @GetMapping("/pendiente")
+   public ResponseEntity<List<EstadoConvenios>> gePendienteByConvenio(@RequestParam Long idconvenio) {
+      return ResponseEntity.ok(convServicio.gePendienteByConvenio(idconvenio));
    }
 
 }

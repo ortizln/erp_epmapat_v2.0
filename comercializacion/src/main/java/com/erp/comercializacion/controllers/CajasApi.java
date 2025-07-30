@@ -83,15 +83,14 @@ public class CajasApi {
 	public ResponseEntity<Cajas> getByIdUsuario(@PathVariable("idusuario") Long idusuario){
 		Cajas caja = cajaServicio.findCajaByIdUsuario(idusuario);
 		if(caja != null) {
-			return ResponseEntity.ok(caja);			
+			return ResponseEntity.ok(caja);
 		}else {
-			return ResponseEntity.noContent().build(); 
+			return ResponseEntity.noContent().build();
 		}
 	}
 	@GetMapping("/reportes/cajasxestado")
 	public List<Cajas> getMethodName() {
 		return cajaServicio.findCajasActivas();
 	}
-	
 
 }
