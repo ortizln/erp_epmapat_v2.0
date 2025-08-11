@@ -12,6 +12,9 @@ import com.erp.comercializacion.repositories.AbonadosxsuspensionR;
 import com.erp.comercializacion.repositories.FacturasR;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import javax.management.RuntimeErrorException;
@@ -286,6 +289,15 @@ public class FacturasService {
 
     public List<CVFacturasNoConsumo> getCVByFacturasNoConsumo(LocalDate fecha) {
         return dao.getCVByFacturasNoConsumo(fecha);
+    }
+    public Page<CarteraVencidaFacturas> getCVByConsumo(LocalDate fecha, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return dao.getCVByConsumo(fecha, pageable);
+    }
+
+    public Page<CVFacturasNoConsumo> getCVByNoConsumo(LocalDate fecha, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return dao.getCVByNoConsumo(fecha, pageable);
     }
 
     public List<RemiDTO> getFacForRemisiones(Long idcliente, LocalDate topefecha) {

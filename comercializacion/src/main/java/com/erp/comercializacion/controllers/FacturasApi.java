@@ -1,16 +1,9 @@
 package com.erp.comercializacion.controllers;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.erp.comercializacion.DTO.RemiDTO;
 import com.erp.comercializacion.DTO.ValorFactDTO;
@@ -19,8 +12,8 @@ import com.erp.comercializacion.interfaces.*;
 import com.erp.comercializacion.models.Facturas;
 import com.erp.comercializacion.services.FacturasService;
 import com.erp.comercializacion.services.RubroxfacService;
-import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -35,10 +28,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
-
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/facturas")
@@ -435,7 +424,24 @@ public class FacturasApi {
 		return ResponseEntity.ok(facServicio.getCVByFacturasNoConsumo(fecha));
 	}
 
-	@GetMapping("/remisiones")
+    @GetMapping("/CV_consumo")
+    public ResponseEntity<Page<CarteraVencidaFacturas>> findCVByFacturas(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam int size) {
+        return ResponseEntity.ok(facServicio.getCVByConsumo(fecha, page, size));
+    }
+
+    @GetMapping("/CV_noconsumo")
+    public ResponseEntity<Page<CVFacturasNoConsumo>> getCVByFacturasNoConsumo(
+            @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha,
+            @RequestParam(defaultValue = "20") int page,
+            @RequestParam int size) {
+        return ResponseEntity.ok(facServicio.getCVByNoConsumo(fecha, page, size));
+    }
+
+
+    @GetMapping("/remisiones")
 	public ResponseEntity<List<RemiDTO>> getFacForRemisiones(@RequestParam Long idcliente,
 															 @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fechatope) {
 		return ResponseEntity.ok(facServicio.getFacForRemisiones(idcliente, fechatope));

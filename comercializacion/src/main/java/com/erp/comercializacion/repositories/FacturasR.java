@@ -2,6 +2,8 @@ package com.erp.comercializacion.repositories;
 
 import com.erp.comercializacion.interfaces.*;
 import com.erp.comercializacion.models.Facturas;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -266,6 +268,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
     public List<FacTransferencias> getFacNoPagadasTransferidas(LocalDate d, LocalDate h);
 
     /* CARTERA VENCIDA POR FACTURAS */
+    /* CARTERA VENCIDA POR FACTURAS */
     @Query(value = "SELECT" +
             "    rf.idfactura_facturas as factura," +
             "    c.nombre," +
@@ -283,16 +286,49 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
             " JOIN lecturas l ON f.idfactura = l.idfactura " +
             " join emisiones e on l.idemision = e.idemision " +
             " WHERE" +
-            "    f.totaltarifa > 0" +
+            "    f.totaltarifa > 0 and f.feccrea <= ?1 " +
             "    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
             +
             "    AND f.fechaconvenio IS NULL" +
-            "    AND f.fechaeliminacion IS NULL" +
+            "    AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)" +
             " GROUP BY" +
             "     rf.idfactura_facturas, c.nombre, m.descripcion, l.idlectura, l.idabonado_abonados , e.emision" +
             " ORDER BY" +
-            " c.nombre ASC;", nativeQuery = true)
+            " total DESC;", nativeQuery = true)
     public List<CarteraVencidaFacturas> getCVByFacturasConsumo(LocalDate fecha);
+
+    @Query(value = "SELECT" +
+            "    rf.idfactura_facturas as factura," +
+            "    c.nombre, c.idcliente," +
+            "    m.descripcion as modulo," +
+            "    SUM(rf.cantidad * rf.valorunitario) AS total," +
+            "    l.idabonado_abonados as cuenta," +
+            "    e.emision," +
+            "    l.lecturaactual - l.lecturaanterior as m3" +
+            " FROM rubroxfac rf" +
+            " JOIN facturas f ON rf.idfactura_facturas = f.idfactura" +
+            " JOIN rubros r ON rf.idrubro_rubros = r.idrubro" +
+            " JOIN clientes c ON f.idcliente = c.idcliente" +
+            " JOIN modulos m ON f.idmodulo = m.idmodulo" +
+            " JOIN lecturas l ON f.idfactura = l.idfactura" +
+            " JOIN emisiones e ON l.idemision = e.idemision" +
+            " WHERE f.totaltarifa > 0 AND f.feccrea <= ?1" +
+            " AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL) OR f.estado = 3)" +
+            " AND f.fechaconvenio IS NULL" +
+            " AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)" +
+            " GROUP BY rf.idfactura_facturas, c.nombre, c.idcliente, m.descripcion, l.idlectura, l.idabonado_abonados, e.emision ORDER BY total DESC",
+            countQuery = "SELECT COUNT(DISTINCT rf.idfactura_facturas) " +
+                    "FROM rubroxfac rf " +
+                    "JOIN facturas f ON rf.idfactura_facturas = f.idfactura " +
+                    "JOIN lecturas l ON f.idfactura = l.idfactura " +
+                    "WHERE f.totaltarifa > 0 AND f.feccrea <= ?1 " +
+                    "AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?1 OR f.fechacobro IS NULL) OR f.estado = 3) "
+                    +
+                    "AND f.fechaconvenio IS NULL " +
+                    "AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)",
+
+            nativeQuery = true)
+    Page<CarteraVencidaFacturas> getCVByConsumo(LocalDate fecha, Pageable pageable);
 
     @Query(value = "SELECT" + //
             "    rf.idfactura_facturas as factura," + //
@@ -307,17 +343,50 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
             " JOIN clientes c ON f.idcliente = c.idcliente" + //
             " JOIN modulos m ON f.idmodulo = m.idmodulo" + //
             " WHERE" + //
-            "    f.totaltarifa > 0" + //
+            "    f.totaltarifa > 0 and f.feccrea <= ?1 " + //
             "    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro > ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
             +
             "    and not ( (f.idmodulo = 3 and f.idabonado > 0) or f.idmodulo = 4 )" + //
             "    AND f.fechaconvenio IS NULL" + //
-            "    AND f.fechaeliminacion IS NULL" + //
+            "    AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)" + //
             " GROUP BY" + //
             "     rf.idfactura_facturas, c.nombre, m.descripcion, f.idabonado  " + //
             " ORDER BY" + //
-            " c.nombre ASC;", nativeQuery = true)
+            " total desc;", nativeQuery = true)
     public List<CVFacturasNoConsumo> getCVByFacturasNoConsumo(LocalDate fecha);
+
+    @Query(value = "SELECT" + //
+            "    rf.idfactura_facturas as factura," + //
+            "    c.nombre, c.idcliente," + //
+            "    m.descripcion as modulo," + //
+            "    SUM(rf.cantidad * rf.valorunitario) AS total, " + //
+            "    f.idabonado as cuenta " + //
+            " FROM" + //
+            "    rubroxfac rf" + //
+            " JOIN facturas f ON rf.idfactura_facturas = f.idfactura" + //
+            " JOIN rubros r ON rf.idrubro_rubros = r.idrubro" + //
+            " JOIN clientes c ON f.idcliente = c.idcliente" + //
+            " JOIN modulos m ON f.idmodulo = m.idmodulo" + //
+            " WHERE" + //
+            "    f.totaltarifa > 0 and f.feccrea < ?1 " + //
+            "    AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?1 OR f.fechacobro IS NULL ) or f.estado = 3)"
+            +
+            "    and not ( (f.idmodulo = 3 and f.idabonado > 0) or f.idmodulo = 4 )" + //
+            "    AND f.fechaconvenio IS NULL" + //
+            "    AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)" + //
+            " GROUP BY" + //
+            "     rf.idfactura_facturas, c.nombre, c.idcliente, m.descripcion, f.idabonado  " + //
+            " ORDER BY" + //
+            " total DESC", countQuery = "SELECT COUNT(DISTINCT rf.idfactura_facturas) " + //
+            "FROM rubroxfac rf " + //
+            "JOIN facturas f ON rf.idfactura_facturas = f.idfactura " + //
+            "WHERE f.totaltarifa > 0 and f.feccrea <= ?1 " + //
+            "AND ((f.estado = 1 OR f.estado = 2) AND (f.fechacobro >= ?1 OR f.fechacobro IS NULL ) or f.estado = 3) "
+            + //
+            "AND not ( (f.idmodulo = 3 and f.idabonado > 0) or f.idmodulo = 4 ) " + //
+            "AND f.fechaconvenio IS NULL " + //
+            "AND f.fechaeliminacion IS NULL AND rf.idrubro_rubros NOT IN (79, 5, 165)", nativeQuery = true)
+    public Page<CVFacturasNoConsumo> getCVByNoConsumo(LocalDate fecha, Pageable pageable);
 
     /* CONSULTA PARA LAS REMISIONES DE MULTAS HE INTERESES */
     @Query(value = "SELECT f.idfactura, m.descripcion, f.feccrea, SUM(rf.valorunitario * rf.cantidad) AS total " +

@@ -1,5 +1,6 @@
 package com.erp.comercializacion.controllers;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
 import com.erp.comercializacion.models.Ctramites;
 import com.erp.comercializacion.services.CtramitesService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,14 +66,14 @@ public class CtramitesApi {
     @GetMapping("/{idtramite}")
     public ResponseEntity<Ctramites> getByIdTramite(@PathVariable Long idtramite) {
         Ctramites tramitesM = tramitesS.findById(idtramite)
-                .orElseThrow(null);
+                .orElseThrow(() -> new ResourceNotFoundExcepciones("No existe este tamite con este Id"));
         return ResponseEntity.ok(tramitesM);
     }
 
     @PutMapping("/{idtramite}")
     public ResponseEntity<Ctramites> updateTramite(@PathVariable Long idtramite, @RequestBody Ctramites tramitesm) {
         Ctramites tramitesM = tramitesS.findById(idtramite)
-                .orElseThrow(null);
+                .orElseThrow(() -> new ResourceNotFoundExcepciones("No existe este tamite con este Id"));
         tramitesM.setEstado(tramitesm.getEstado());
         tramitesM.setTotal(tramitesm.getTotal());
         tramitesM.setDescripcion(tramitesm.getDescripcion());
@@ -93,4 +94,5 @@ public class CtramitesApi {
         tramitesS.deleteById(idtramite);
         return ResponseEntity.ok(!(tramitesS.findById(idtramite) != null));
     }
+
 }
