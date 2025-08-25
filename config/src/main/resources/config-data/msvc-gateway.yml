@@ -53,4 +53,4 @@ spring:
         - id: msvc-reportesjr
           uri: http://msvc-reportesjr:9097
           predicates:
-            - Path=/jasperReports/**
+            - Path=/jasperReports/**, /api/jasper/**
