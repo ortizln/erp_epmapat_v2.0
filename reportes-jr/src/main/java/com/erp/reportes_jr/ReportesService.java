@@ -24,13 +24,12 @@ public class ReportesService {
     private ReportesR reportesR;
     @Autowired
     private DataSource dataSource;
-    public Reportes guardarReporte(String nombre, MultipartFile archivo) throws IOException {
-        Reportes reporte = new Reportes();
+    public Reportes guardarOActualizarReporte(String nombre, MultipartFile archivo) throws IOException {
+        Reportes reporte = reportesR.findByNombre(nombre).orElse(new Reportes());
         reporte.setNombre(nombre);
         reporte.setArchivo(archivo.getBytes());
         return reportesR.save(reporte);
     }
-
 
     public byte[] generarReporte(String nombreReporte, Map<String, Object> parametros) throws Exception {
         // Buscar el reporte
