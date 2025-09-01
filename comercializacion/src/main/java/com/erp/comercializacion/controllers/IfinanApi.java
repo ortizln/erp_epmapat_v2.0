@@ -1,9 +1,7 @@
 package com.erp.comercializacion.controllers;
+
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Ifinan;
-import com.erp.comercializacion.services.IfinanService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.contabilidad.Ifinan;
+import com.erp.comercializacion.services.IfinanServicio;
+
 @RestController
 @RequestMapping("/ifinan")
 @CrossOrigin("*")
@@ -24,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class IfinanApi {
 
     @Autowired
-    private IfinanService ifinanServicio;
+    IfinanServicio ifinanServicio;
 
     @GetMapping
     public List<Ifinan> getIfinan(@Param(value = "codifinan") String codifinan,

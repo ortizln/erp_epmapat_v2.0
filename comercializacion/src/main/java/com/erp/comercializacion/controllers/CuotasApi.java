@@ -2,8 +2,6 @@ package com.erp.comercializacion.controllers;
 
 import java.util.List;
 
-import com.erp.comercializacion.models.Cuotas;
-import com.erp.comercializacion.services.CuotasService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -13,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.models.Cuotas;
+import com.erp.comercializacion.services.CuotaServicio;
 
 @RestController
 @RequestMapping("/cuotas")
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class CuotasApi {
 
 	@Autowired
-	private CuotasService cuotaServicio;
+	private CuotaServicio cuotaServicio;
 
 	@GetMapping
 	public List<Cuotas> get(@Param(value = "idconvenio") Long idconvenio) {

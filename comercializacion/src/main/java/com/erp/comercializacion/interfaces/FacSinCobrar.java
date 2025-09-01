@@ -1,26 +1,30 @@
-package com.erp.comercializacion.interfaces;
+package com.erp.comercializacion
+.interfaces;
 
 import java.math.BigDecimal;
 import java.util.Date;
 
 public interface FacSinCobrar {
-    Long getIdfactura();
+	Long getIdfactura();
 
-    Long getIdmodulo();
+	Long getIdmodulo();
 
-    BigDecimal getTotal();
+	BigDecimal getTotal();
 
-    Long getIdCliente();
+	Long getIdCliente();
 
-    Long getIdAbonado();
+	Long getIdAbonado();
 
-    Date getFeccrea();
+	Date getFeccrea();
 
-    Long getFormaPago();
+	Long getFormaPago();
 
-    Long getEstado();
+	Long getEstado();
 
-    Long getPagado();
+	Long getPagado();
 
-    Boolean getSwcondonar();
+	Boolean getSwcondonar();
+	
+	String getModulo();
+
 }

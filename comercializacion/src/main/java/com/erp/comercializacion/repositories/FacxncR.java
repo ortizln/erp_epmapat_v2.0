@@ -1,16 +1,18 @@
-package com.erp.comercializacion.repositories;
-
-import com.erp.comercializacion.interfaces.NtaCreditoCompPago;
-import com.erp.comercializacion.models.Facxnc;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+package com.erp.comercializacion
+.repositories;
 
 import java.util.List;
 
-public interface FacxncR extends JpaRepository<Facxnc, Long> {
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import com.erp.comercializacion.interfaces.NtaCreditoCompPago;
+import com.erp.comercializacion.models.Facxnc;
+
+public interface FacxncR extends JpaRepository<Facxnc, Long>{
     @Query(value = "SELECT * FROM facxnc fnc WHERE fnc.idvaloresnc_valoresnc ",nativeQuery = true)
     List<Facxnc> findByIdvalnc(Long idvalnc);
-    @Query(value = """
+@Query(value = """
 select
 	vnc.fechaaplicado,
 	vnc.valor,
@@ -24,5 +26,5 @@ join valoresnc vnc on
 join facturas f on
 	f.idfactura = fnc.idfactura_facturas
 where fnc.idfactura_facturas  = ?1""", nativeQuery = true)
-    List <NtaCreditoCompPago> findByIdfactura(Long idfactura);
+List <NtaCreditoCompPago> findByIdfactura(Long idfactura);
 }

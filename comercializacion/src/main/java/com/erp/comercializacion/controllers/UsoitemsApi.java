@@ -1,9 +1,7 @@
 package com.erp.comercializacion.controllers;
+
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Usoitems;
-import com.erp.comercializacion.services.UsoitemsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Usoitems;
+import com.erp.comercializacion.services.UsoitemsServicio;
+
 @RestController
 @RequestMapping("/usoitems")
 @CrossOrigin(origins = "*")
@@ -23,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UsoitemsApi {
 
    @Autowired
-   private UsoitemsService usoServicio;
+   UsoitemsServicio usoServicio;
 
    @GetMapping
    public List<Usoitems> getAllLista(@Param(value = "idmodulo") Long idmodulo,

@@ -12,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "emisionindividual")
-public class Emisionindividual {
+public class EmisionIndividual {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idemisionindividual;
@@ -25,4 +25,5 @@ public class Emisionindividual {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idlecturaanterior")
     private Lecturas idlecturaanterior;
+
 }

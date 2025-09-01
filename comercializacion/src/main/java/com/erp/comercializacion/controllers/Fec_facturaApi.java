@@ -1,11 +1,8 @@
 package com.erp.comercializacion.controllers;
+
 import java.util.List;
 import java.util.Optional;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.interfaces.fecFacturaDatos;
-import com.erp.comercializacion.models.Fec_factura;
-import com.erp.comercializacion.services.Fec_facturaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,6 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Fec_factura;
+import com.erp.comercializacion.services.Fec_facturaService;
+import com.erp.comercializacion.sri.interfaces.fecFacturaDatos;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -48,9 +50,10 @@ public class Fec_facturaApi {
    public List<Fec_factura> getByNombreCliente(@RequestParam("cliente") String cliente) {
       return fecfacServicio.findByNombreCliente(cliente);
    }
+
    @GetMapping("/factura")
-   public ResponseEntity<Optional<Fec_factura>> getByIdFactura(@RequestParam("idfactura") Long idfactura){
-      return ResponseEntity.ok(fecfacServicio.findById(idfactura)); 
+   public ResponseEntity<Optional<Fec_factura>> getByIdFactura(@RequestParam("idfactura") Long idfactura) {
+      return ResponseEntity.ok(fecfacServicio.findById(idfactura));
    }
 
    @PostMapping
@@ -97,6 +100,7 @@ public class Fec_facturaApi {
       Fec_factura upfecfactura = fecfacServicio.save(factura);
       return ResponseEntity.ok(upfecfactura);
    }
+
    @GetMapping("/fecFacturaDatos")
    public fecFacturaDatos getDatosFecFactura(@RequestParam Long idfactura) {
       fecFacturaDatos fecFactura = fecfacServicio.getNroFactura(idfactura);

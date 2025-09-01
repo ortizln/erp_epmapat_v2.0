@@ -1,7 +1,11 @@
-package com.erp.comercializacion.repositories;
+package com.erp.comercializacion
+.repositories;
 
-import com.erp.comercializacion.models.Tpcertifica;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TpcertificaR extends JpaRepository<Tpcertifica, Long> {
+import com.erp.comercializacion.models.TpCertifica;
+
+// public class TpCertificaR {
+public interface TpCertificaR extends JpaRepository<TpCertifica, Long> {
+
 }

@@ -1,9 +1,7 @@
 package com.erp.comercializacion.controllers;
+
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Rutasxemision;
-import com.erp.comercializacion.services.RutasxemisionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Rutasxemision;
+import com.erp.comercializacion.services.RutasxemisionServicio;
+
 @RestController
 @RequestMapping("/rutasxemision")
 @CrossOrigin("*")
@@ -24,13 +26,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class RutasxemisionApi {
 
 	@Autowired
-	RutasxemisionService ruxemiServicio;
+	RutasxemisionServicio ruxemiServicio;
 
 	// Alternativa 1. Ok.
 	@GetMapping
 	public List<Rutasxemision> getByIdemision(@Param(value = "idemision") Long idemision) {
 		if (idemision != null) {
-			System.out.println("Entrando a rutasxemision");
 			return ruxemiServicio.findByIdemision(idemision);
 		} else {
 			return null;

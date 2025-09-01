@@ -11,10 +11,12 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "personeriajuridica")
+@Table(name ="personeriajuridica")
 public class PersonJuridica {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idpjuridica;
-    private String descripcion;
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long idpjuridica;
+	private String descripcion;
+
 }

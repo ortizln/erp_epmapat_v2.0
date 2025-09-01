@@ -1,4 +1,5 @@
-package com.erp.comercializacion.interfaces;
+package com.erp.comercializacion
+.interfaces;
 
 import java.util.Date;
 
@@ -18,4 +19,5 @@ public interface FacturasI {
     Long getFormapago();
 
     Long getIdcliente();
+
 }

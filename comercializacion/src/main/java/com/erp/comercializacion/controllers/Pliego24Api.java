@@ -1,14 +1,17 @@
 package com.erp.comercializacion.controllers;
+
 import java.util.List;
 
-import com.erp.comercializacion.models.Pliego24;
-import com.erp.comercializacion.services.Pliego24Service;
 import org.springframework.beans.factory.annotation.Autowired;
+// import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.erp.comercializacion.models.Pliego24;
+import com.erp.comercializacion.services.Pliego24Servicio;
 
 @RestController
 @RequestMapping("/pliego24")
@@ -17,7 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class Pliego24Api {
 
    @Autowired
-   private Pliego24Service pli24Servicio;
+   Pliego24Servicio pli24Servicio;
 
    //Pliego Tarifario
    @GetMapping

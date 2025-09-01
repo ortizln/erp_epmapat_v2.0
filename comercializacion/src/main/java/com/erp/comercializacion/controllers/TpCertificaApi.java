@@ -1,14 +1,15 @@
 package com.erp.comercializacion.controllers;
+
 import java.util.List;
 
-import com.erp.comercializacion.models.Tpcertifica;
-import com.erp.comercializacion.services.TpcertificaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.models.TpCertifica;
+import com.erp.comercializacion.services.TpCertificaServicio;
 
 @RestController
 @RequestMapping("/tpcertifica")
@@ -17,10 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class TpCertificaApi {
 
    @Autowired
-   private TpcertificaService tpServicio;
+   private TpCertificaServicio tpServicio;
 
    @GetMapping
-   public List<Tpcertifica> getAll() {
+   public List<TpCertifica> getAll() {
       return tpServicio.findAll();
    }
 

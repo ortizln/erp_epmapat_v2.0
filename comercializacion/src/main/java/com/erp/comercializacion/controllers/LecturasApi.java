@@ -1,13 +1,10 @@
 package com.erp.comercializacion.controllers;
+
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.interfaces.*;
-import com.erp.comercializacion.models.Lecturas;
-import com.erp.comercializacion.services.LecturasService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -19,15 +16,27 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.erp.comercializacion.DTO.EmisionOfCuentaDTO;
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.interfaces.ConsumoxCat_int;
+import com.erp.comercializacion.interfaces.CountRubrosByEmision;
+import com.erp.comercializacion.interfaces.FecEmision;
+import com.erp.comercializacion.interfaces.RepEmisionEmi;
+import com.erp.comercializacion.interfaces.RepFacEliminadasByEmision;
+import com.erp.comercializacion.interfaces.RubroxfacIReport;
+import com.erp.comercializacion.models.Lecturas;
+import com.erp.comercializacion.services.LecturaServicio;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/lecturas")
 @CrossOrigin("*")
+
 public class LecturasApi {
 
 	@Autowired
-	private LecturasService lecServicio;
+	LecturaServicio lecServicio;
 
 	// Busca por Planilla (Es una a una)
 	@GetMapping("/onePlanilla/{idfactura}")
@@ -171,7 +180,7 @@ public class LecturasApi {
 	}
 
 	@GetMapping("/fecEmision")
-	public ResponseEntity<LocalDate> findDateByIdfactura(@RequestParam("idfactura") Long idfactura) {
+	public ResponseEntity<Date> findDateByIdfactura(@RequestParam("idfactura") Long idfactura) {
 		return ResponseEntity.ok(lecServicio.findDateByIdfactura(idfactura));
 	}
 
@@ -184,6 +193,7 @@ public class LecturasApi {
 	public ResponseEntity<List<Lecturas>> getByIdEmisiones(@RequestParam Long idemision) {
 		return ResponseEntity.ok(lecServicio.findByIdEmisiones(idemision));
 	}
+
 	@GetMapping("reporte/emision")
 	public ResponseEntity<List<RepFacEliminadasByEmision>> getByIdEmisionesR(@RequestParam Long idemision) {
 		return ResponseEntity.ok(lecServicio.findByIdEmisionesR(idemision));
@@ -227,5 +237,11 @@ public class LecturasApi {
 	@GetMapping("/reportes/rubrozero")
 	public ResponseEntity<List<CountRubrosByEmision>> getCuentaRubrosByEmision(@RequestParam Long idemision) {
 		return ResponseEntity.ok(lecServicio.getCuentaRubrosByEmision(idemision));
+	}
+
+	@PostMapping("/valoresEmisiones")
+	public ResponseEntity<BigDecimal> getValoresEmision(@RequestBody EmisionOfCuentaDTO datos) {
+		return ResponseEntity.ok(lecServicio.calcularValores(datos.getCuenta(), datos.getIdfactura(), datos.getM3(),
+				datos.getCategoria(), datos.isSwMunicipio(), datos.isSwAdultoMayor(), datos.isSwAguapotable()));
 	}
 }

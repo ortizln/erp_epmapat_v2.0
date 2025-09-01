@@ -1,9 +1,7 @@
 package com.erp.comercializacion.controllers;
 
 import java.util.List;
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Facelectro;
-import com.erp.comercializacion.services.FacelectroService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -13,17 +11,22 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Facelectro;
+import com.erp.comercializacion.services.FacelectroServicio;
+
 @RestController
 @RequestMapping("/facelectro")
 @CrossOrigin(origins = "*")
+
 public class FacelectroApi {
 
 	@Autowired
-	private FacelectroService faceleServicio;
+	private FacelectroServicio faceleServicio;
 
 	@GetMapping
 	public List<Facelectro> get(@Param(value = "nrofac") String nrofac,
-								@Param(value = "idcliente") Long idcliente) {
+			@Param(value = "idcliente") Long idcliente) {
 		if (nrofac != null)
 			return faceleServicio.findByNrofac(nrofac);
 		else {

@@ -2,9 +2,6 @@ package com.erp.comercializacion.controllers;
 
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Facturacion;
-import com.erp.comercializacion.services.FacturacionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -17,6 +14,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Facturacion;
+import com.erp.comercializacion.services.FacturacionServicio;
 import java.util.Date;
 
 @RestController
@@ -25,13 +26,13 @@ import java.util.Date;
 public class FacturacionApi {
 
    @Autowired
-   private FacturacionService factuServicio;
+   private FacturacionServicio factuServicio;
 
    @GetMapping
    public List<Facturacion> getFacturacion(@Param(value = "desde") Long desde, @Param(value = "hasta") Long hasta,
-                                           @Param(value = "del") @DateTimeFormat(pattern = "yyyy-MM-dd") Date del,
-                                           @Param(value = "al") @DateTimeFormat(pattern = "yyyy-MM-dd") Date al,
-                                           @Param(value = "cliente") String cliente) {
+         @Param(value = "del") @DateTimeFormat(pattern = "yyyy-MM-dd") Date del,
+         @Param(value = "al") @DateTimeFormat(pattern = "yyyy-MM-dd") Date al,
+         @Param(value = "cliente") String cliente) {
       if (cliente != null) {
          return factuServicio.findByCliente(cliente.toLowerCase(), del, al);
       } else
@@ -56,9 +57,15 @@ public class FacturacionApi {
       return ResponseEntity.ok(factuServicio.save(facturacion));
    }
 
+   // @PostMapping //Alternativa 2: También funciona
+   // public Facturacion save(@RequestBody Facturacion facturacion) {
+   // return factuServicio.save( facturacion );
+   // }
+
    @DeleteMapping(value = "/{idfacturacion}")
    private ResponseEntity<Boolean> delete(@PathVariable("idfacturacion") Long idfacturacion) {
       factuServicio.deleteById(idfacturacion);
       return ResponseEntity.ok(!(factuServicio.findById(idfacturacion) != null));
    }
+
 }

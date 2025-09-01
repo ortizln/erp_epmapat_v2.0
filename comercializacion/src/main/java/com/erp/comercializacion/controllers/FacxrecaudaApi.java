@@ -3,9 +3,6 @@ package com.erp.comercializacion.controllers;
 import java.util.Date;
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Facxrecauda;
-import com.erp.comercializacion.services.FacxrecaudaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Facxrecauda;
+import com.erp.comercializacion.services.FacxrecaudaServicio;
+
 @RestController
 @RequestMapping("/facxrecauda")
 @CrossOrigin(origins = "*")
@@ -25,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class FacxrecaudaApi {
 
    @Autowired
-   private FacxrecaudaService facxrServicio;
+   private FacxrecaudaServicio facxrServicio;
 
    @GetMapping("/{idfacxrecauda}")
    public ResponseEntity<Facxrecauda> getById(@PathVariable Long idfacxrecauda) {

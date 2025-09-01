@@ -1,9 +1,10 @@
-package com.erp.comercializacion.interfaces;
+package com.erp.comercializacion
+.interfaces;
 
-import java.time.LocalDate;
+import java.sql.Date;
 
 public interface FecEmision {
     Long getemision();
 
-    LocalDate getFeccrea();
+    Date getFeccrea();
 }

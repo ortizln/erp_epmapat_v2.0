@@ -6,16 +6,17 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.io.Serializable;
 import java.time.ZonedDateTime;
-
+import java.util.Date;
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "emisiones")
-public class Emisiones {
+public class Emisiones implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idemision;
@@ -27,7 +28,10 @@ public class Emisiones {
     private ZonedDateTime fechacierre;
     Long m3;
     Long usucrea;
-    LocalDate feccrea;
+    Date feccrea;
     Long usumodi;
-    LocalDate fecmodi;
+    Date fecmodi;
+
+
+
 }

@@ -1,9 +1,7 @@
 package com.erp.comercializacion.controllers;
+
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Estadom;
-import com.erp.comercializacion.services.EstadomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -16,14 +14,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Estadom;
+import com.erp.comercializacion.services.EstadomServicio;
 
 @RestController
 @RequestMapping("/estadom")
 @CrossOrigin(origins = "*")
+
 public class EstadomApi {
        
     @Autowired
-    private EstadomService EstmServicio;
+    EstadomServicio EstmServicio;
 
     @GetMapping
     public List<Estadom> getAllEstadoms() {

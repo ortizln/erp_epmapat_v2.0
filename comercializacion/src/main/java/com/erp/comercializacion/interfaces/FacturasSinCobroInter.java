@@ -1,7 +1,8 @@
-package com.erp.comercializacion.interfaces;
+package com.erp.comercializacion
+.interfaces;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+
 
 public interface FacturasSinCobroInter {
     Long getIdfactura();

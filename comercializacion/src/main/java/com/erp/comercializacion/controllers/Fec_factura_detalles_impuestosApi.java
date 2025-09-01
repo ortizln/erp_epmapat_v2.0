@@ -1,12 +1,13 @@
 package com.erp.comercializacion.controllers;
+
 import java.util.List;
 
-import com.erp.comercializacion.models.Fec_factura_detalles_impuestos;
-import com.erp.comercializacion.services.Fec_factura_detalles_impuestosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.erp.comercializacion.models.Fec_factura_detalles_impuestos;
+import com.erp.comercializacion.services.Fec_factura_detalles_impuestosService;
 
 @RestController
 @RequestMapping("/facdetallesimpuestos")

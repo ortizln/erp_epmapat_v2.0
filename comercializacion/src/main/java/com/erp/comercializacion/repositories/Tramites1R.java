@@ -1,7 +1,12 @@
-package com.erp.comercializacion.repositories;
+package com.erp.comercializacion
+.repositories;
 
-import com.erp.comercializacion.models.Tramites1;
 import org.springframework.data.jpa.repository.JpaRepository;
+// import org.springframework.stereotype.Repository;
 
-public interface Tramites1R extends JpaRepository<Tramites1, Long> {
+import com.erp.comercializacion.models.Tramites1M;
+
+// @Repository
+public interface Tramites1R extends JpaRepository<Tramites1M, Long>{
+
 }

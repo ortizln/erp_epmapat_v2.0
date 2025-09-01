@@ -2,12 +2,7 @@ package com.erp.comercializacion.controllers;
 
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.interfaces.EstadoConvenios;
-import com.erp.comercializacion.models.Convenios;
-import com.erp.comercializacion.services.ConveniosService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,22 +13,27 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.data.domain.Page;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
+
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.interfaces.ConvenioOneData;
+import com.erp.comercializacion.interfaces.EstadoConvenios;
+import com.erp.comercializacion.models.Convenios;
+import com.erp.comercializacion.services.ConvenioServicio;
 
 @RestController
 @RequestMapping("/convenios")
 @CrossOrigin("*")
-
 public class ConveniosApi {
 
    @Autowired
-   private ConveniosService convServicio;
+   private ConvenioServicio convServicio;
 
    @GetMapping("/DesdeHasta")
    public List<Convenios> conveniosDesdeHasta(@Param(value = "desde") Integer desde,
-                                                @Param(value = "hasta") Integer hasta) {
+         @Param(value = "hasta") Integer hasta) {
       return convServicio.conveniosDesdeHasta(desde, hasta);
    }
 
@@ -101,6 +101,7 @@ public class ConveniosApi {
       List<Convenios> convenios = convServicio.findByReferencia(referencia);
       return ResponseEntity.ok(convenios);
    }
+
    @GetMapping("/estados")
    public ResponseEntity<List<EstadoConvenios>> getEstadoByConvenios() {
       return ResponseEntity.ok(convServicio.getEstadoByConvenios());
@@ -108,13 +109,18 @@ public class ConveniosApi {
 
    @GetMapping("/pendientesPago")
    public ResponseEntity<Page<EstadoConvenios>> getByFacPendientes(@RequestParam Long d, @RequestParam Long h,
-                                                                   @RequestParam int page, @RequestParam int size) {
+         @RequestParam int page, @RequestParam int size) {
       return ResponseEntity.ok(convServicio.getByFacPendientes(d, h, page, size));
    }
 
    @GetMapping("/pendiente")
    public ResponseEntity<List<EstadoConvenios>> gePendienteByConvenio(@RequestParam Long idconvenio) {
       return ResponseEntity.ok(convServicio.gePendienteByConvenio(idconvenio));
+   }
+
+   @GetMapping("/datosOne")
+   public ResponseEntity<List<ConvenioOneData>> getDatosConvenio(@RequestParam Long idconvenio) {
+      return ResponseEntity.ok(convServicio.findDatosConvenio(idconvenio));
    }
 
 }

@@ -1,14 +1,17 @@
-package com.erp.comercializacion.DTO;
-
-import lombok.*;
+package com.erp.comercializacion
+.DTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 @Data
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class RemiDTO {
     private Long idfactura;
     private String descripcion;
@@ -16,4 +19,5 @@ public class RemiDTO {
     private BigDecimal total;
     private BigDecimal intereses;
     private String nrofactura;
+
 }

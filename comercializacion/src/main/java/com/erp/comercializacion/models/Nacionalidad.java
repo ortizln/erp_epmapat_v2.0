@@ -13,8 +13,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @Table(name = "nacionalidad")
 public class Nacionalidad {
+    
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idnacionalidad;
     private String descripcion;
+
 }

@@ -1,13 +1,13 @@
 package com.erp.comercializacion.controllers;
 
-import com.erp.comercializacion.models.Condmultasintereses;
-import com.erp.comercializacion.services.CondmultasinteresesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.models.CondMultasIntereses;
+import com.erp.comercializacion.services.CondMultasInteresesServicio;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -16,10 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 @CrossOrigin("*")
 public class CondMultasInteresesApi {
     @Autowired
-   private CondmultasinteresesService codservice;
+    CondMultasInteresesServicio codservice;
 
     @PostMapping
-    public ResponseEntity<Condmultasintereses> SaveCondonacion(@RequestBody Condmultasintereses entity) {
+    public ResponseEntity<CondMultasIntereses> SaveCondonacion(@RequestBody CondMultasIntereses entity) {
         return ResponseEntity.ok(codservice.save(entity));
     }
 

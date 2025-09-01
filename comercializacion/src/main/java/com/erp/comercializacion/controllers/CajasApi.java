@@ -1,16 +1,25 @@
 package com.erp.comercializacion.controllers;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Cajas;
-import com.erp.comercializacion.services.CajasService;
+import java.net.URI;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URI;
-import java.util.List;
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Cajas;
+import com.erp.comercializacion.services.CajaServicio;
 
 @RestController
 @RequestMapping("/cajas")
@@ -19,11 +28,11 @@ import java.util.List;
 public class CajasApi {
 
 	@Autowired
-	private CajasService cajaServicio;
+	private CajaServicio cajaServicio;
 
 	@GetMapping
 	public List<Cajas> getAll(@Param(value = "descripcion") String descripcion,
-							  @Param(value = "idptoemision_ptoemision") Long idptoemision, @Param(value = "codigo") String codigo) {
+			@Param(value = "idptoemision_ptoemision") Long idptoemision, @Param(value = "codigo") String codigo) {
 		if (descripcion != null) {
 			return cajaServicio.findByDescri(descripcion);
 		} else {
@@ -79,18 +88,19 @@ public class CajasApi {
 		cajaServicio.deleteById(idcaja);
 		return ResponseEntity.ok(!(cajaServicio.findById(idcaja) != null));
 	}
-	@GetMapping("usuario/{idusuario}")
+	@GetMapping("/usuario/{idusuario}")
 	public ResponseEntity<Cajas> getByIdUsuario(@PathVariable("idusuario") Long idusuario){
 		Cajas caja = cajaServicio.findCajaByIdUsuario(idusuario);
 		if(caja != null) {
-			return ResponseEntity.ok(caja);
+			return ResponseEntity.ok(caja);			
 		}else {
-			return ResponseEntity.noContent().build();
+			return ResponseEntity.noContent().build(); 
 		}
 	}
 	@GetMapping("/reportes/cajasxestado")
 	public List<Cajas> getMethodName() {
 		return cajaServicio.findCajasActivas();
 	}
+	
 
 }

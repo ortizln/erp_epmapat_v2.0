@@ -16,20 +16,22 @@ import java.util.Date;
 @AllArgsConstructor
 @Table(name = "recaudaxcaja")
 public class Recaudaxcaja {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idrecaudaxcaja;
-    private Integer estado;
-    private Long facinicio;
-    private Long facfin;
-    private Date fechainiciolabor;
-    private Date fechafinlabor;
-    private LocalTime horainicio;
-    private LocalTime horafin;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idcaja_cajas")
-    private Cajas idcaja_cajas;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idusuario_usuarios")
-    private Usuarios idusuario_usuarios;
+
+   @Id
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   private Long idrecaudaxcaja;
+   private Integer estado;
+   private Long facinicio;
+   private Long facfin;
+   private Date fechainiciolabor;
+   private Date fechafinlabor;
+   private LocalTime horainicio;
+   private LocalTime horafin;
+   @ManyToOne(fetch = FetchType.LAZY)
+   @JoinColumn(name = "idcaja_cajas")
+   private Cajas idcaja_cajas;
+   @ManyToOne(fetch = FetchType.LAZY)
+   @JoinColumn(name = "idusuario_usuarios")
+   private Usuarios idusuario_usuarios;
+
 }

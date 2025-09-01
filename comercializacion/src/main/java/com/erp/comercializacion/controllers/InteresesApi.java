@@ -1,9 +1,7 @@
 package com.erp.comercializacion.controllers;
+
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Intereses;
-import com.erp.comercializacion.services.InteresService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
@@ -19,6 +17,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Intereses;
+import com.erp.comercializacion.services.InteresServicio;
+
 @RestController
 @RequestMapping("/intereses")
 @CrossOrigin(origins = "*")
@@ -26,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class InteresesApi {
 
 	@Autowired
-	private InteresService inteServicio;
+	private InteresServicio inteServicio;
 
 	@GetMapping
 	public List<Intereses> getAllLista(@Param(value = "anio") Number anio, @Param(value = "mes") Number mes) {

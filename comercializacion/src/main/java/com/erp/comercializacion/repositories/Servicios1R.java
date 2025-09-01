@@ -1,12 +1,16 @@
-package com.erp.comercializacion.repositories;
-
-import com.erp.comercializacion.models.Servicios1;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+package com.erp.comercializacion
+.repositories;
 
 import java.util.List;
 
-public interface Servicios1R extends JpaRepository<Servicios1, Long> {
-    @Query(value="SELECT * FROM servicios1 AS s WHERE idmodulo_modulos=?1",nativeQuery = true)
-    public List<Servicios1> findByIdModulos(Long idmodulo);
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+// import org.springframework.stereotype.Repository;
+
+import com.erp.comercializacion.models.Servicios1M;
+
+// @Repository
+public interface Servicios1R extends JpaRepository<Servicios1M, Long>{
+	@Query(value="SELECT * FROM servicios1 AS s WHERE idmodulo_modulos=?1",nativeQuery = true)
+	public List<Servicios1M> findByIdModulos(Long idmodulo);
 }

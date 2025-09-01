@@ -1,18 +1,20 @@
 package com.erp.comercializacion.controllers;
+
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.interfaces.CVClientes;
-import com.erp.comercializacion.models.Clientes;
-import com.erp.comercializacion.services.ClientesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.interfaces.CVClientes;
+import com.erp.comercializacion.models.Clientes;
+import com.erp.comercializacion.services.ClienteServicio;
 
 @RestController
 @RequestMapping("/clientes")
@@ -21,12 +23,12 @@ import org.springframework.web.bind.annotation.*;
 public class ClientesApi {
 
 	@Autowired
-	private ClientesService cliServicio;
+	private ClienteServicio cliServicio;
 
 	@GetMapping
 	public List<Clientes> getAllClientes(@Param(value = "identificacion") String identificacion,
-										 @Param(value = "nombre") String nombre, @Param(value = "nombreIdentifi") String nombreIdentifi,
-										 @Param(value = "idused") Long idused) {
+			@Param(value = "nombre") String nombre, @Param(value = "nombreIdentifi") String nombreIdentifi,
+			@Param(value = "idused") Long idused) {
 		if (nombreIdentifi != null) {
 			return cliServicio.findByNombreIdentifi(nombreIdentifi.toLowerCase());
 		}

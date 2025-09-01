@@ -2,9 +2,6 @@ package com.erp.comercializacion.controllers;
 
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Clasificador;
-import com.erp.comercializacion.services.ClasificadorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.data.repository.query.Param;
@@ -18,6 +15,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Clasificador;
+import com.erp.comercializacion.services.ClasificadorServicio;
+
 @RestController
 @RequestMapping("/clasificador")
 @CrossOrigin(origins = "*")
@@ -25,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ClasificadorApi {
 
    @Autowired
-   private ClasificadorService clasifServicio;
+   ClasificadorServicio clasifServicio;
 
    @PostMapping
    public Clasificador updateOrSave(@RequestBody Clasificador x) {

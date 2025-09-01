@@ -1,15 +1,16 @@
-package com.erp.comercializacion.interfaces;
+package com.erp.comercializacion
+.interfaces;
 
 import java.math.BigDecimal;
 
 public interface RepFacEliminadas {
-    Long getIdfactura();
+	Long getIdfactura();
 
-    String getNomusu();
+	String getNomusu();
 
-    String getRazoneliminacion();
+	String getRazoneliminacion();
 
-    String getModulo();
+	String getModulo();
 
-    BigDecimal getTotal();
+	BigDecimal getTotal();
 }

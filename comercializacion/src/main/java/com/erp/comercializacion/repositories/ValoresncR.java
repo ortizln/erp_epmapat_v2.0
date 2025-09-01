@@ -1,7 +1,10 @@
-package com.erp.comercializacion.repositories;
+package com.erp.comercializacion
+.repositories;
 
-import com.erp.comercializacion.models.Valoresnc;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.erp.comercializacion.models.Valoresnc;
+
 public interface ValoresncR extends JpaRepository<Valoresnc, Long> {
+
 }

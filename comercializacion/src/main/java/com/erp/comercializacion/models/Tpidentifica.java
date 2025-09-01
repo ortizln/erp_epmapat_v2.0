@@ -1,27 +1,96 @@
 package com.erp.comercializacion.models;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.io.Serializable;
+import java.sql.Date;
 
-import java.time.LocalDate;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "tpidentifica")
-public class Tpidentifica {
-    @Id
+
+public class Tpidentifica implements Serializable {
+
+    @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idtpidentifica;
-    private String codigo;
-    private String nombre;
-    private Long usucrea;
-    private LocalDate feccrea;
-    private Long usumodi;
-    private LocalDate fecmodi;
+    String codigo;
+    String nombre;
+    Long usucrea;
+    Date feccrea;
+    Long usumodi;
+    Date fecmodi;
+    
+    public Tpidentifica() {
+    }
+
+    public Tpidentifica(Long idtpidentifica, String codigo, String nombre, Long usucrea, Date feccrea, Long usumodi, Date fecmodi ) {
+        this.idtpidentifica = idtpidentifica;
+        this.codigo = codigo;
+        this.nombre = nombre;
+        this.usucrea = usucrea;
+        this.feccrea = feccrea;
+        this.usumodi = usumodi;
+        this.fecmodi = fecmodi;
+    }
+
+    public Long getIdtpidentifica() {
+        return idtpidentifica;
+    }
+
+    public void setIdtpidentifica(Long idtpidentifica) {
+        this.idtpidentifica = idtpidentifica;
+    }
+
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public Long getUsucrea() {
+        return usucrea;
+    }
+
+    public void setUsucrea(Long usucrea) {
+        this.usucrea = usucrea;
+    }
+
+    public Date getFeccrea() {
+        return feccrea;
+    }
+
+    public void setFeccrea(Date feccrea) {
+        this.feccrea = feccrea;
+    }
+
+    public Long getUsumodi() {
+        return usumodi;
+    }
+
+    public void setUsumodi(Long usumodi) {
+        this.usumodi = usumodi;
+    }
+
+    public Date getFecmodi() {
+        return fecmodi;
+    }
+
+    public void setFecmodi(Date fecmodi) {
+        this.fecmodi = fecmodi;
+    }
 
 }

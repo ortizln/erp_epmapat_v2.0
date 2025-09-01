@@ -1,10 +1,12 @@
-package com.erp.comercializacion.repositories;
+package com.erp.comercializacion
+.repositories;
 
-import com.erp.comercializacion.models.Fec_factura_pagos;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.List;
+import com.erp.comercializacion.models.Fec_factura_pagos;
 
 public interface Fec_factura_pagosR extends JpaRepository<Fec_factura_pagos, Long> {
     @Query(value = "select * from fec_factura_pagos where idfactura = ?1", nativeQuery = true)

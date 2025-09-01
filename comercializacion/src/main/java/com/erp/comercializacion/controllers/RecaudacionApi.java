@@ -1,14 +1,10 @@
 package com.erp.comercializacion.controllers;
+
 import java.util.Date;
 import java.util.List;
 import java.time.LocalDateTime;
 import java.time.LocalDate;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.interfaces.REcaudaFacturasI;
-import com.erp.comercializacion.interfaces.RecaudadorI;
-import com.erp.comercializacion.models.Recaudacion;
-import com.erp.comercializacion.services.RecaudacionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +16,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.interfaces.RecaudaFacturasI;
+import com.erp.comercializacion.interfaces.RecaudadorI;
+import com.erp.comercializacion.models.Recaudacion;
+import com.erp.comercializacion.services.RecaudacionServicio;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 
@@ -30,7 +31,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 public class RecaudacionApi {
 
    @Autowired
-   private RecaudacionService recaServicio;
+   private RecaudacionServicio recaServicio;
 
    @GetMapping("/{idrecaudacion}")
    public ResponseEntity<Recaudacion> getByIdrecaudacion(@PathVariable Long idrecaudacion) {
@@ -93,7 +94,7 @@ public class RecaudacionApi {
       return ResponseEntity.ok(updateRecaudacion);
    }
    @GetMapping("/reportes/facturas")
-   public ResponseEntity<List<REcaudaFacturasI>>findFacturasToReport(@RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime d, @RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime h){
+   public ResponseEntity<List<RecaudaFacturasI>>findFacturasToReport(@RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime d, @RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime h){
       return ResponseEntity.ok(recaServicio.findFacturasToReport(d, h));
    }
    @GetMapping("/reportes/rubanteriores")

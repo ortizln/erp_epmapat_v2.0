@@ -1,30 +1,96 @@
 package com.erp.comercializacion.models;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.util.Date;
 
-import java.time.LocalDate;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "usoitems")
+
 public class Usoitems {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idusoitems;
-    private String descripcion;
-    private Boolean estado;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="idmodulo_modulos")
-    private Modulos idmodulo_modulos;
-    private Long usucrea;
-    private LocalDate feccrea;
-    private Long usumodi;
-    private LocalDate fecmodi;
+
+   @Id
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   private Long idusoitems;
+   private String descripcion;
+   private Boolean estado;
+   @ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name="idmodulo_modulos")
+	private Modulos idmodulo_modulos;
+   private Long usucrea;
+   private Date feccrea;
+   private Long usumodi;
+   private Date fecmodi;
+
+   public Long getIdusoitems() {
+      return idusoitems;
+   }
+
+   public void setIdusoitems(Long idusoitems) {
+      this.idusoitems = idusoitems;
+   }
+
+   public String getDescripcion() {
+      return descripcion;
+   }
+
+   public void setDescripcion(String descripcion) {
+      this.descripcion = descripcion;
+   }
+
+   public Boolean getEstado() {
+      return estado;
+   }
+
+   public void setEstado(Boolean estado) {
+      this.estado = estado;
+   }
+
+   public Modulos getIdmodulo_modulos() {
+      return idmodulo_modulos;
+   }
+
+   public void setIdmodulo_modulos(Modulos idmodulo_modulos) {
+      this.idmodulo_modulos = idmodulo_modulos;
+   }
+
+   public Long getUsucrea() {
+      return usucrea;
+   }
+
+   public void setUsucrea(Long usucrea) {
+      this.usucrea = usucrea;
+   }
+
+   public Date getFeccrea() {
+      return feccrea;
+   }
+
+   public void setFeccrea(Date feccrea) {
+      this.feccrea = feccrea;
+   }
+
+   public Long getUsumodi() {
+      return usumodi;
+   }
+
+   public void setUsumodi(Long usumodi) {
+      this.usumodi = usumodi;
+   }
+
+   public Date getFecmodi() {
+      return fecmodi;
+   }
+
+   public void setFecmodi(Date fecmodi) {
+      this.fecmodi = fecmodi;
+   }
+
 }

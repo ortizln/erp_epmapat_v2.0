@@ -6,16 +6,22 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+
+
+
+
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name="convenios")
-public class Convenios {
+@Table(name = "convenios")
+
+public class Convenios implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -40,4 +46,5 @@ public class Convenios {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idabonado")
     private Abonados idabonado;
+
 }

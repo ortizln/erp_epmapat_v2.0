@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.time.ZonedDateTime;
 
+
 @Entity
 @Getter
 @Setter
@@ -16,20 +17,21 @@ import java.time.ZonedDateTime;
 @Table(name = "facxrecauda")
 public class Facxrecauda {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idfacxrecauda;
+   @Id
+   @GeneratedValue(strategy = GenerationType.IDENTITY)
+   private Long idfacxrecauda;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idrecaudacion")
-    private Recaudacion idrecaudacion;
+   @ManyToOne(fetch = FetchType.LAZY)
+   @JoinColumn(name = "idrecaudacion")
+   private Recaudacion idrecaudacion;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "idfactura")
-    private Facturas idfactura;
+   @ManyToOne(fetch = FetchType.LAZY)
+   @JoinColumn(name = "idfactura")
+   private Facturas idfactura;
 
-    private Integer estado;
-    @Column(name = "fechaeliminacion")
-    private ZonedDateTime fechaeliminacion;
-    private Long usuarioeliminacion;
+   private Integer estado;
+   @Column(name = "fechaeliminacion")
+   private ZonedDateTime fechaeliminacion;
+   private Long usuarioeliminacion;
+
 }

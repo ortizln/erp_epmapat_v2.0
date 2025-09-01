@@ -4,9 +4,6 @@ import java.math.BigDecimal;
 // import java.math.BigDecimal;
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Categorias;
-import com.erp.comercializacion.services.CategoriasService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
@@ -21,17 +18,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Categorias;
+import com.erp.comercializacion.services.CategoriaServicio;
+
 @RestController
 @RequestMapping("/categorias")
 @CrossOrigin(origins = "*")
+
 public class CategoriasApi {
 
 	@Autowired
-	private CategoriasService cateServicio;
+	private CategoriaServicio cateServicio;
 
 	@GetMapping
 	public List<Categorias> getAllCategorias(@Param(value = "descripcion") String descripcion,
-											 @Param(value = "idused") Long idused) {
+			@Param(value = "idused") Long idused) {
 		if (descripcion != null) {
 			return cateServicio.findByDescri(descripcion);
 		} else {

@@ -1,7 +1,8 @@
-package com.erp.comercializacion.interfaces;
+package com.erp.comercializacion
+.interfaces;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.math.BigDecimal;
 
 public interface FacTransferencias {
     Long getIdfactura();
@@ -13,4 +14,5 @@ public interface FacTransferencias {
     Long getIdmodulo();
 
     String getNombre();
+    String getNrofactura();
 }

@@ -1,8 +1,7 @@
 package com.erp.comercializacion.controllers;
+
 import java.util.List;
 
-import com.erp.comercializacion.models.Itemxfact;
-import com.erp.comercializacion.services.ItemxfactService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,6 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.models.Itemxfact;
+import com.erp.comercializacion.services.ItemxfactServicio;
+
 @RestController
 @RequestMapping("/itemxfact")
 @CrossOrigin("*")
@@ -19,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ItemxfactApi {
 
    @Autowired
-   private ItemxfactService ixfServicio;
+   private ItemxfactServicio ixfServicio;
 
    @GetMapping
    public List<Itemxfact> get(@Param(value = "idfacturacion") Long idfacturacion, @Param(value = "idcatalogoitems") Long idcatalogoitems) {

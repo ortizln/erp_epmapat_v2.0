@@ -6,7 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.util.Date;
+
 
 @Entity
 @Getter
@@ -15,6 +16,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Table(name = "catalogoitems")
 public class Catalogoitems {
+   
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idcatalogoitems;
@@ -29,7 +31,10 @@ public class Catalogoitems {
     @JoinColumn(name="idrubro_rubros")
     private Rubros idrubro_rubros;
     private Long usucrea;
-    private LocalDate feccrea;
+    private Date feccrea;
     private Long usumodi;
-    private LocalDate fecmodi;
+    private Date fecmodi;
+
+
+   
 }

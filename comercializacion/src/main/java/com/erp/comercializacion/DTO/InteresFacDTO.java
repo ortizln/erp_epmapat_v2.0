@@ -1,10 +1,13 @@
-package com.erp.comercializacion.DTO;
-
-import lombok.*;
-import org.springframework.format.annotation.DateTimeFormat;
+package com.erp.comercializacion
+.DTO;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import org.springframework.format.annotation.DateTimeFormat;
+
+import lombok.*;
+
 @Data
 @Getter
 @Setter

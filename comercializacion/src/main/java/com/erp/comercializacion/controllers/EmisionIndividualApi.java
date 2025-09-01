@@ -1,11 +1,9 @@
 package com.erp.comercializacion.controllers;
+
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
-import com.erp.comercializacion.interfaces.*;
-import com.erp.comercializacion.models.Emisionindividual;
-import com.erp.comercializacion.services.EmisionindividualService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -14,6 +12,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import com.erp.comercializacion.interfaces.EmisionIndividualRI;
+import com.erp.comercializacion.interfaces.EmisionIndividualRia;
+import com.erp.comercializacion.interfaces.EmisionIndividualRin;
+import com.erp.comercializacion.interfaces.FacEliminadas;
+import com.erp.comercializacion.interfaces.IemiIndividual;
+import com.erp.comercializacion.interfaces.R_refacturacion_int;
+import com.erp.comercializacion.interfaces.RubroxfacI;
+import com.erp.comercializacion.models.EmisionIndividual;
+import com.erp.comercializacion.services.EmisionIndividualServicio;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -22,15 +29,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 @CrossOrigin("*")
 public class EmisionIndividualApi {
     @Autowired
-    private EmisionindividualService sei;
+    private EmisionIndividualServicio sei;
 
     @PostMapping
-    public ResponseEntity<Emisionindividual> postMethodName(@RequestBody Emisionindividual emiIndi) {
+    public ResponseEntity<EmisionIndividual> postMethodName(@RequestBody EmisionIndividual emiIndi) {
         return ResponseEntity.ok(sei.save(emiIndi));
     }
 
     @GetMapping("/idemision")
-    public ResponseEntity<List<Emisionindividual>> getByIdEmision(@RequestParam("idemision") Long idemision) {
+    public ResponseEntity<List<EmisionIndividual>> getByIdEmision(@RequestParam("idemision") Long idemision) {
         return ResponseEntity.ok(sei.findByIdEmision(idemision));
     }
 

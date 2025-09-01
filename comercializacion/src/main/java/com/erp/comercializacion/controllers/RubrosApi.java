@@ -1,9 +1,7 @@
 package com.erp.comercializacion.controllers;
+
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Rubros;
-import com.erp.comercializacion.services.RubrosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -17,22 +15,25 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Rubros;
+import com.erp.comercializacion.services.RubroServicio;
+
 @RestController
 @RequestMapping("/rubros")
-@CrossOrigin("*")
+@CrossOrigin(origins = "*")
+
 public class RubrosApi {
 
 	@Autowired
-	private RubrosService rubServicio;
+	private RubroServicio rubServicio;
 
 	@GetMapping
 	public List<Rubros> getAllLista(@Param(value = "idmodulo") Long idmodulo,
-									@Param(value = "descripcion") String descripcion) {
+			@Param(value = "descripcion") String descripcion) {
 		if (idmodulo != null && descripcion != null) {
-			System.out.println("FIND");
 			return rubServicio.findByNombre(idmodulo, descripcion.toLowerCase());
 		} else {
-			System.out.println("FIND ALL RUBROS");
 			return rubServicio.findAll();
 		}
 	}
@@ -40,8 +41,6 @@ public class RubrosApi {
 	// Rubros por módulo (Sección)
 	@GetMapping("/modulo/{idmodulo}")
 	public List<Rubros> findByIdmodulo(@PathVariable Long idmodulo) {
-		System.out.println("FIND MÓDULOS");
-
 		return rubServicio.findByIdmodulo(idmodulo);
 	}
 
@@ -49,8 +48,6 @@ public class RubrosApi {
 	public ResponseEntity<Rubros> getByIdRubros(@PathVariable("idrubro") Long idrubro) {
 		Rubros rubros = rubServicio.findById(idrubro)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe el rubro con Id: " + idrubro));
-		System.out.println("FIND BY ID_RUBRO");
-
 		return ResponseEntity.ok(rubros);
 	}
 
@@ -75,9 +72,8 @@ public class RubrosApi {
 		return ResponseEntity.ok(rubServicio.save(rubros));
 	}
 
-	@PutMapping("/update")
-	public ResponseEntity<Rubros> update(@RequestParam Long idrubro, @RequestBody Rubros x) {
-		System.out.println(idrubro);
+	@PutMapping("/{idrubro}")
+	public ResponseEntity<Rubros> update(@PathVariable Long idrubro, @RequestBody Rubros x) {
 		Rubros y = rubServicio.findById(idrubro)
 				.orElseThrow(() -> new ResourceNotFoundExcepciones(
 						("No existe el Rubro con Id: " + idrubro)));

@@ -2,9 +2,6 @@ package com.erp.comercializacion.controllers;
 
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Facxconvenio;
-import com.erp.comercializacion.services.FacxconvenioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Facxconvenio;
+import com.erp.comercializacion.services.FacxconvenioServicio;
+
 @RestController
 @RequestMapping("/facxconvenio")
 @CrossOrigin("*")
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class FacxconvenioApi {
 
    @Autowired
-   private FacxconvenioService fxconvServicio;
+   FacxconvenioServicio fxconvServicio;
 
    @GetMapping()
    public List<Facxconvenio> findByConvenio(@Param(value = "idconvenio") Long idconvenio) {

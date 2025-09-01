@@ -6,7 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
+import java.util.Date;
+
 
 @Entity
 @Getter
@@ -14,7 +15,9 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "facelectro")
+
 public class Facelectro {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idfacelectro;
@@ -41,12 +44,11 @@ public class Facelectro {
     private Float impuestoretener;
     private Float porciva;
     private Long usucrea;
-    private LocalDate feccrea;
+    private Date feccrea;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "idfactura_facturas")
     private Facturas idfactura_facturas;
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "idcaja_cajas")
     private Long idcaja_cajas;
     private String nrofac;
+
 }

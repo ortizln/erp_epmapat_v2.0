@@ -1,7 +1,10 @@
-package com.erp.comercializacion.repositories;
+package com.erp.comercializacion
+.repositories;
 
-import com.erp.comercializacion.models.Tptramite;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TptramiteR extends JpaRepository<Tptramite, Long> {
+import com.erp.comercializacion.models.TpTramiteM;
+
+public interface TpTramiteR extends JpaRepository<TpTramiteM, Long >{
+
 }

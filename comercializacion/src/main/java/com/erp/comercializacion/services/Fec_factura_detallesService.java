@@ -1,10 +1,13 @@
-package com.erp.comercializacion.services;
+package com.erp.comercializacion
+.services;
+
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.erp.comercializacion.models.Fec_factura_detalles;
 import com.erp.comercializacion.repositories.Fec_factura_detallesR;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 
 @Service
 public class Fec_factura_detallesService {

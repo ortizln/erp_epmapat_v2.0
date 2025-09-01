@@ -1,9 +1,7 @@
 package com.erp.comercializacion.controllers;
+
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Reclamos;
-import com.erp.comercializacion.services.ReclamosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +16,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Reclamos;
+import com.erp.comercializacion.services.ReclamosS;
+
 @RestController
 @RequestMapping("/reclamos")
 @CrossOrigin(origins = "*")
@@ -25,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ReclamosApi {
 
 	@Autowired
-	private ReclamosService reclamosS;
+	private ReclamosS reclamosS;
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)

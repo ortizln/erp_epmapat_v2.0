@@ -1,7 +1,12 @@
-package com.erp.comercializacion.repositories;
+package com.erp.comercializacion
+.repositories;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+// import org.springframework.stereotype.Repository;
 
 import com.erp.comercializacion.models.Reclamos;
-import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface ReclamosR extends JpaRepository<Reclamos, Long> {
+// @Repository
+public interface ReclamosR extends JpaRepository<Reclamos, Long>{
+
 }

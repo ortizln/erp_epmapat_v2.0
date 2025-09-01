@@ -1,13 +1,17 @@
-package com.erp.comercializacion.repositories;
+package com.erp.comercializacion
+.repositories;
 
-import com.erp.comercializacion.models.Facturacion;
+import java.io.Serializable;
+import java.util.List;
+import java.util.Date;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import java.util.Date;
-import java.util.List;
+import com.erp.comercializacion.models.Facturacion;
 
-public interface FacturacionR extends JpaRepository<Facturacion, Long> {
+public interface FacturacionR extends JpaRepository<Facturacion, Serializable> {
+
     // @Query(value = "SELECT * FROM facturacion order by idfacturacion DESC LIMIT
     // 10", nativeQuery = true)
     // public List<Facturacion> findAll();
@@ -20,4 +24,5 @@ public interface FacturacionR extends JpaRepository<Facturacion, Long> {
 
     // Ultima Facturación
     Facturacion findFirstByOrderByIdfacturacionDesc();
+
 }

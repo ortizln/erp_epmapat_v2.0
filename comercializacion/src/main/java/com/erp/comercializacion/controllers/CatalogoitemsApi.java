@@ -2,9 +2,6 @@ package com.erp.comercializacion.controllers;
 
 import java.util.List;
 
-import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.models.Catalogoitems;
-import com.erp.comercializacion.services.CatalogoitemsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -17,18 +14,23 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
+import com.erp.comercializacion.models.Catalogoitems;
+import com.erp.comercializacion.services.CatalogoitemServicio;
+
 @RestController
 @RequestMapping("/catalogoitems")
 @CrossOrigin(origins = "*")
+
 public class CatalogoitemsApi {
 
 	@Autowired
-	private CatalogoitemsService catiServicio;
+	private CatalogoitemServicio catiServicio;
 
 	// Productos por Seccion y/o Descripcion
 	@GetMapping
 	public List<Catalogoitems> getProductos(@Param(value = "idmodulo1") Long idmodulo1,
-											@Param(value = "idmodulo2") Long idmodulo2, @Param(value = "descripcion") String descripcion) {
+			@Param(value = "idmodulo2") Long idmodulo2, @Param(value = "descripcion") String descripcion) {
 		if (idmodulo1 != null && idmodulo2 != null && descripcion != null) {
 			return catiServicio.findProductos(idmodulo1, idmodulo2, descripcion);
 		} else

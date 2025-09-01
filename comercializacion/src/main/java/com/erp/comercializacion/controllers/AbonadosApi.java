@@ -1,34 +1,41 @@
 package com.erp.comercializacion.controllers;
 
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.query.Param;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.erp.comercializacion.DTO.EstadisticasAbonadosDTO;
 import com.erp.comercializacion.DTO.ValorFactDTO;
 import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
 import com.erp.comercializacion.interfaces.AbonadoI;
 import com.erp.comercializacion.interfaces.EstadisticasAbonados;
 import com.erp.comercializacion.models.Abonados;
-import com.erp.comercializacion.services.AbonadosSevice;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.repository.query.Param;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
-import java.util.Map;
+import com.erp.comercializacion.services.AbonadoServicio;
 
 @RestController
 @RequestMapping("/abonados")
-@CrossOrigin(
-		origins = "*", // Asegúrate de que coincide con tu URL de Angular
-		methods = {RequestMethod.PUT, RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE, RequestMethod.OPTIONS}, // Permite PUT
-		allowedHeaders = "*",
-		maxAge = 3600
-)
+@CrossOrigin(origins = "*")
+
 public class AbonadosApi {
 
 	@Autowired
-	private AbonadosSevice aboServicio;
+	private AbonadoServicio aboServicio;
 
 	/*
 	 * @Autowired
@@ -38,8 +45,8 @@ public class AbonadosApi {
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
 	public List<Abonados> getAllAbonados(@Param(value = "consulta") String consulta,
-										 @Param(value = "idcliente") Long idcliente, @Param(value = "idabonado") Long idabonado,
-										 @Param(value = "idruta") Long idruta) {
+			@Param(value = "idcliente") Long idcliente, @Param(value = "idabonado") Long idabonado,
+			@Param(value = "idruta") Long idruta) {
 		if (idabonado != null) {
 			return aboServicio.getAbonadoByid(idabonado);
 		}
