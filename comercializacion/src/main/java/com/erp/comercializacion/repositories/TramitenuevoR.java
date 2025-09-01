@@ -1,12 +1,5 @@
-// package com.erp.comercializacion
-.repositories;
+package com.erp.comercializacion.repositories;
 
-// public class TramiteNuevoR {
-   
-// }
-
-package com.erp.comercializacion
-.repositories;
 
 import java.util.List;
 
