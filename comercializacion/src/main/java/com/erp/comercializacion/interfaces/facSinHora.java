@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.interfaces;
+package com.erp.comercializacion.interfaces;
 
 import java.security.Timestamp;
 import java.sql.Time;

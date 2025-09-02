@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.interfaces;
+package com.erp.comercializacion.interfaces;
 
 public interface AbonadoI {
     Long getIdabonado();

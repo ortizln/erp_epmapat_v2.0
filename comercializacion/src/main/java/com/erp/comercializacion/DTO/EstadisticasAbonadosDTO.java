@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.DTO;
+package com.erp.comercializacion.DTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

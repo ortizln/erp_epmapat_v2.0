@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.interfaces;
+package com.erp.comercializacion.interfaces;
 
 public interface R_refacturacion_rubros {
     float getSum();

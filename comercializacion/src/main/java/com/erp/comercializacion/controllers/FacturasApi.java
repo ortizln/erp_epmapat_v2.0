@@ -1,24 +1,13 @@
 package com.erp.comercializacion.controllers;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.erp.comercializacion.interfaces.*;
-import org.springframework.core.io.Resource;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.data.domain.Page;
 import org.springframework.data.repository.query.Param;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -34,29 +23,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.erp.comercializacion.DTO.RemiDTO;
 import com.erp.comercializacion.DTO.ValorFactDTO;
-import com.erp.comercializacion.config.jasperConfig.ReportRequest;
 import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
 import com.erp.comercializacion.models.Facturas;
-import com.erp.comercializacion.models.administracion.ReporteModelDTO;
-import com.erp.comercializacion.reportes.facturas.interfaces.i_ReporteFacturasCobradas_G;
 import com.erp.comercializacion.services.FacturaServicio;
 import com.erp.comercializacion.services.RubroxfacServicio;
-
-import net.sf.jasperreports.engine.JRException;
-import net.sf.jasperreports.engine.JasperCompileManager;
-import net.sf.jasperreports.engine.JasperExportManager;
-import net.sf.jasperreports.engine.JasperFillManager;
-import net.sf.jasperreports.engine.JasperPrint;
-import net.sf.jasperreports.engine.JasperReport;
-import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
-
-import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.MediaType;
-
 @RestController
 @RequestMapping("/facturas")
 @CrossOrigin(origins = "*")
@@ -66,8 +39,7 @@ public class FacturasApi {
 	private FacturaServicio facServicio;
 	@Autowired
 	private RubroxfacServicio rxfServicio;
-	@Autowired
-	private i_ReporteFacturasCobradas_G i_reportefacturascobradas_g;
+
 
 	@GetMapping
 	public List<Facturas> getAll(@Param(value = "desde") Long desde, @Param(value = "hasta") Long hasta,
@@ -353,152 +325,6 @@ public class FacturasApi {
 	 * ==============================
 	 */
 
-	@PostMapping(value = "/generate-custom", produces = MediaType.APPLICATION_PDF_VALUE)
-	public ResponseEntity<InputStreamResource> generateCustomReport(@RequestBody ReportRequest request) {
-
-		if (request.getReportName() == null || request.getReportName().isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nombre de reporte requerido");
-		}
-
-		try (InputStream jrxmlStream = getClass()
-				.getResourceAsStream("/reports/" + request.getReportName() + ".jrxml")) {
-
-			if (jrxmlStream == null) {
-				throw new FileNotFoundException("Reporte no encontrado: " + request.getReportName());
-			}
-
-			JasperReport report = JasperCompileManager.compileReport(jrxmlStream);
-
-			JasperPrint jasperPrint = JasperFillManager.fillReport(
-					report,
-					request.getParameters() != null ? request.getParameters() : new HashMap<>(),
-					new JRBeanCollectionDataSource(request.getData() != null ? request.getData() : List.of()));
-
-			ByteArrayOutputStream pdfStream = new ByteArrayOutputStream();
-			JasperExportManager.exportReportToPdfStream(jasperPrint, pdfStream);
-
-			return ResponseEntity.ok()
-					.header("Content-Disposition", "attachment; filename=\"" + request.getReportName() + ".pdf\"")
-					.contentType(MediaType.APPLICATION_PDF)
-					.body(new InputStreamResource(new ByteArrayInputStream(pdfStream.toByteArray())));
-
-		} catch (Exception e) {
-			throw new ResponseStatusException(
-					HttpStatus.INTERNAL_SERVER_ERROR,
-					"Error generando reporte: " + e.getMessage(),
-					e);
-		}
-	}
-
-	@GetMapping("/reportes/facturascobradas")
-	public ResponseEntity<Resource> reporteFacturasCobradas(
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha)
-			throws JRException, IOException, SQLException {
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("v_dfecha", v_dfecha);
-		params.put("v_hfecha", v_hfecha);
-		params.put("fileName", "facturasCobradas");
-
-		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
-		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
-		MediaType mediaType = null;
-		mediaType = MediaType.APPLICATION_PDF;
-
-		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
-				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
-	}
-
-	@GetMapping("/reportes/facturascobradascaja")
-	public ResponseEntity<Resource> reporteFacturasCobradasCaja(
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
-			@RequestParam Long usuariocobro) throws JRException, IOException, SQLException {
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("v_dfecha", v_dfecha);
-		params.put("v_hfecha", v_hfecha);
-		params.put("usuariocobro", usuariocobro);
-		params.put("fileName", "facturasCobradasCaja");
-
-		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
-		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
-		MediaType mediaType = null;
-		mediaType = MediaType.APPLICATION_PDF;
-
-		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
-				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
-	}
-
-	@GetMapping("/reportes/facturasrubros")
-	public ResponseEntity<Resource> reporteFacturaRubros(
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_feccrea)
-			throws JRException, IOException, SQLException {
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("v_dfecha", v_dfecha);
-		params.put("v_hfecha", v_hfecha);
-		params.put("c_feccrea", c_feccrea);
-		params.put("fileName", "facturasCobradasRubros");
-		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
-		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
-		MediaType mediaType = MediaType.APPLICATION_PDF;
-		;
-		/*
-		 * if (tipo == "excel") { mediaType = MediaType.APPLICATION_OCTET_STREAM; } else
-		 * { }
-		 */
-		// mediaType = MediaType.APPLICATION_PDF;
-
-		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
-				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
-	}
-
-	@GetMapping("/reportes/facturasrubroscaja")
-	public ResponseEntity<Resource> reporteFacturaRubrosCaja(
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_dfecha,
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date v_hfecha,
-			@RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd") Date c_feccrea,
-			@RequestParam Long usuariocobro) throws JRException, IOException, SQLException {
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("v_dfecha", v_dfecha);
-		params.put("v_hfecha", v_hfecha);
-		params.put("c_feccrea", c_feccrea);
-		params.put("usuariocobro", usuariocobro);
-		params.put("fileName", "facturasCobradasRubrosCaja");
-		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
-		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
-		MediaType mediaType = MediaType.APPLICATION_PDF;
-		;
-		/*
-		 * if (tipo == "excel") { mediaType = MediaType.APPLICATION_OCTET_STREAM; } else
-		 * { }
-		 */
-		// mediaType = MediaType.APPLICATION_PDF;
-
-		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
-				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
-	}
-
-	@GetMapping("/comprobante/pago")
-	public ResponseEntity<Resource> comprobantePago(
-			@RequestParam Long idfactura) throws JRException, IOException, SQLException {
-		Map<String, Object> params = new HashMap<String, Object>();
-		params.put("idfactura", idfactura);
-		params.put("fileName", "ComprobantePago");
-		ReporteModelDTO dto = i_reportefacturascobradas_g.obtenerFacturasCobradas_G(params);
-		InputStreamResource streamResource = new InputStreamResource(dto.getStream());
-		MediaType mediaType = MediaType.APPLICATION_PDF;
-		;
-		/*
-		 * if (tipo == "excel") { mediaType = MediaType.APPLICATION_OCTET_STREAM; } else
-		 * { }
-		 */
-		// mediaType = MediaType.APPLICATION_PDF;
-
-		return ResponseEntity.ok().header("Content-Disposition", "inline; filename=\"" + dto.getFileName() + "\"")
-				.contentLength(dto.getLength()).contentType(mediaType).body(streamResource);
-	}
 
 	// FACTURAS ANULACIÓN
 	@GetMapping("/anulaciones")
