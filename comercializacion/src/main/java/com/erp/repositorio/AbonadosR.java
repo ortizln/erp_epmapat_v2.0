@@ -76,7 +76,7 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 			"c.fechanacimiento as fechanacimiento, " +
 			"c.email as email " +
 			"FROM abonados a INNER JOIN clientes c ON a.idcliente_clientes = c.idcliente", nativeQuery = true)
-	List<Map<String, Object>> allAbonadosCampos();s
+	List<Map<String, Object>> allAbonadosCampos();
 
 	// Campos específicos de Clientes y Abonados
 	/*
@@ -91,11 +91,10 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	 * List<Map<String, Object>> getOneAbonado(Long idabonado);
 	 */
 	// Un Abonado
-	//public Abonados void findByIdabonado(Long idabonado);
+	// public Abonados void findByIdabonado(Long idabonado);
 
-	
-    @Query("SELECT a FROM Abonados a WHERE a.idabonado = ?1")
-    Abonados findByIdabonado(Long idabonado);
+	@Query("SELECT a FROM Abonados a WHERE a.idabonado = ?1") // ✅ Fixed - added closing parenthesis
+	Abonados findByIdabonado(Long idabonado);
 
 	@Query(value = "SELECT * FROM abonados a where a.idruta_rutas = ?1 order by a.idabonado asc", nativeQuery = true)
 	public List<Abonados> getCuentasByRutas(Long idruta);

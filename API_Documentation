@@ -1,3 +1,16 @@
+erp-epmapat-v2.0/
+│── config-server/              # Servidor de configuración centralizado
+│── eureka-server/              # Discovery server (Eureka o Consul)
+│── gateway/                    # API Gateway (Spring Cloud Gateway)
+│── msvc-comercializacion/      # Microservicio de comercialización
+│── msvc-facturacion/           # Microservicio de facturación
+│── msvc-abonados/              # Microservicio de abonados
+│── docker/                     # Archivos Dockerfiles y scripts de build comunes
+│── k8s/                        # Manifiestos de Kubernetes (opcional)
+│── .gitlab-ci.yml / .github/   # Pipelines de CI/CD
+│── docker-compose.yml          # Orquestación local de todos los servicios
+└── README.md
+
 CONFIGURATION:
 -PUERTO: 8888
 EUREKA:
