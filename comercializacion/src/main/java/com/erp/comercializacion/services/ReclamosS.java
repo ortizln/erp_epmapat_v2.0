@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,8 +16,8 @@ import com.erp.comercializacion.models.Reclamos;
 import com.erp.comercializacion.repositories.ReclamosR;
 
 @Service
-public class ReclamosS implements ReclamosR{
-	
+public class ReclamosS implements ReclamosR {
+
 	@Autowired
 	private ReclamosR reclamosR;
 
@@ -164,5 +163,5 @@ public class ReclamosS implements ReclamosR{
 	public <S extends Reclamos, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
 		return null;
 	}
-	
+
 }

@@ -23,7 +23,7 @@ public class AboxSuspensionC {
 	private AboxSuspensionS aboxsuspensionS;
 
 	@GetMapping
-	public List<AboxSuspensionM> getAllAboxSuspension(){
+	public List<AboxSuspensionM> getAllAboxSuspension() {
 		return aboxsuspensionS.findAll();
 	}
 
@@ -33,7 +33,7 @@ public class AboxSuspensionC {
 	}
 
 	@GetMapping("suspension/{idsuspension}")
-	public List<AboxSuspensionM> getByIdsuspension(@PathVariable Long idsuspension){
+	public List<AboxSuspensionM> getByIdsuspension(@PathVariable Long idsuspension) {
 		return aboxsuspensionS.findByIdsuspension(idsuspension);
 	}
 }

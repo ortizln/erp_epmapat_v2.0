@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -28,13 +27,11 @@ import com.erp.comercializacion.models.Lecturas;
 import com.erp.comercializacion.models.Pliego24;
 import com.erp.comercializacion.models.Rubros;
 import com.erp.comercializacion.models.Rubroxfac;
-import com.erp.comercializacion.models.administracion.Definir;
 import com.erp.comercializacion.repositories.CategoriaR;
 import com.erp.comercializacion.repositories.FacturasR;
 import com.erp.comercializacion.repositories.LecturasR;
 import com.erp.comercializacion.repositories.Pliego24R;
 import com.erp.comercializacion.repositories.RubroxfacR;
-import com.erp.comercializacion.repositories.administracion.DefinirR;
 
 @Service
 public class LecturaServicio {
@@ -47,8 +44,8 @@ public class LecturaServicio {
 	private CategoriaR dao_categoria;
 	@Autowired
 	private FacturasR dao_facturas;
-	@Autowired
-	private DefinirR dao_definir;
+/* 	@Autowired
+	private DefinirR dao_definir; */
 	@Autowired
 	private RubroxfacR dao_rubroxfac;
 

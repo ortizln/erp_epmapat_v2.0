@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,12 +29,14 @@ public class NtacreditoServicio {
     public Optional<Ntacredito> findById(Long idntacredito) {
         return dao.findById(idntacredito);
     }
-    public Page<Ntacredito> findAllNtaCredito(int page, int size){
+
+    public Page<Ntacredito> findAllNtaCredito(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return dao.findAllNtaCreditos(pageable);
-        //return null;
+        // return null;
     }
-    public List<NtaCreditoSaldos> findSaldosByCuenta(Long cuenta){
+
+    public List<NtaCreditoSaldos> findSaldosByCuenta(Long cuenta) {
         return dao.findSaldosByCuenta(cuenta);
     }
 }

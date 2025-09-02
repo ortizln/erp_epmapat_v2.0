@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.repositories;
+package com.erp.comercializacion.repositories;
 
 import java.util.List;
 
@@ -11,12 +10,12 @@ import com.erp.comercializacion.models.Facxconvenio;
 
 //@Repository
 
-public interface FacxconvenioR extends JpaRepository<Facxconvenio, Long>{
+public interface FacxconvenioR extends JpaRepository<Facxconvenio, Long> {
 
    @Query(value = "SELECT * FROM facxconvenio LIMIT 10", nativeQuery = true)
-	public List<Facxconvenio> find10();
+   public List<Facxconvenio> find10();
 
    @Query(value = "SELECT * FROM facxconvenio WHERE idconvenio_convenios=?1", nativeQuery = true)
-	List<Facxconvenio> findByConvenio(Long idconvenio);
-   
+   List<Facxconvenio> findByConvenio(Long idconvenio);
+
 }

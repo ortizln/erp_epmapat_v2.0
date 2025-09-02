@@ -23,7 +23,7 @@ import com.erp.comercializacion.services.TipopagoServicio;
 @CrossOrigin("*")
 
 public class TipopagoApi {
-    
+
     @Autowired
     TipopagoServicio TipopagoServicio;
 

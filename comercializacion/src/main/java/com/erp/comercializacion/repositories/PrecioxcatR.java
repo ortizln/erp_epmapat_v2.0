@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.repositories;
+package com.erp.comercializacion.repositories;
 
 import java.util.List;
 
@@ -17,6 +16,6 @@ public interface PrecioxCatR extends JpaRepository<PrecioxCatM, Long> {
 	public List<PrecioxCatM> findAll(Long idcategoria_categorias, Long dm3, Long hm3);
 
 	@Query(value = "SELECT * FROM precioxcat AS p WHERE p.idcategoria_categorias=?1 AND p.m3=?2", nativeQuery = true)
-	public List<PrecioxCatM> findConsumo(Long idcategoria, Long m3 );
+	public List<PrecioxCatM> findConsumo(Long idcategoria, Long m3);
 
 }

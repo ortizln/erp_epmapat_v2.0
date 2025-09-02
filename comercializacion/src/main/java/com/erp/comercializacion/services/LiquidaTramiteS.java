@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +16,7 @@ import com.erp.comercializacion.models.LiquidaTramite;
 import com.erp.comercializacion.repositories.LiquidaTramiteR;
 
 @Service
-public class LiquidaTramiteS implements LiquidaTramiteR{
+public class LiquidaTramiteS implements LiquidaTramiteR {
 
 	@Autowired
 	private LiquidaTramiteR liquidatramiteR;
@@ -105,7 +104,7 @@ public class LiquidaTramiteS implements LiquidaTramiteR{
 
 	@Override
 	public Optional<LiquidaTramite> findById(Long id) {
-		
+
 		return liquidatramiteR.findById(id);
 	}
 

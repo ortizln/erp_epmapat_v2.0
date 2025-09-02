@@ -17,7 +17,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
 import com.erp.comercializacion.models.Fec_factura;
 import com.erp.comercializacion.services.Fec_facturaService;
-import com.erp.comercializacion.sri.interfaces.fecFacturaDatos;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -101,9 +100,11 @@ public class Fec_facturaApi {
       return ResponseEntity.ok(upfecfactura);
    }
 
-   @GetMapping("/fecFacturaDatos")
-   public fecFacturaDatos getDatosFecFactura(@RequestParam Long idfactura) {
-      fecFacturaDatos fecFactura = fecfacServicio.getNroFactura(idfactura);
-      return fecFactura;
-   }
+   /*
+    * @GetMapping("/fecFacturaDatos")
+    * public fecFacturaDatos getDatosFecFactura(@RequestParam Long idfactura) {
+    * fecFacturaDatos fecFactura = fecfacServicio.getNroFactura(idfactura);
+    * return fecFactura;
+    * }
+    */
 }

@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -25,14 +24,15 @@ public class RutasxemisionServicio {
     }
 
     public <S extends Rutasxemision> S save(S entity) {
-            return dao.save(entity);
-        
+        return dao.save(entity);
+
     }
 
     public Long contarPorEstadoYEmision(Long idemision_emisiones) {
-        return dao.contarPorEstadoYIdemision( idemision_emisiones );
+        return dao.contarPorEstadoYIdemision(idemision_emisiones);
     }
-    public Rutasxemision findByEmisionRuta(Long idemision, Long idruta){
+
+    public Rutasxemision findByEmisionRuta(Long idemision, Long idruta) {
         return dao.findByEmisionRuta(idemision, idruta);
     }
 

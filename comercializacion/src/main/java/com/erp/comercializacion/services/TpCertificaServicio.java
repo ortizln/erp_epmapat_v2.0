@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 
@@ -11,11 +10,11 @@ import com.erp.comercializacion.repositories.TpCertificaR;
 
 @Service
 public class TpCertificaServicio {
-   
-   @Autowired
+
+	@Autowired
 	TpCertificaR dao;
 
-   public List<TpCertifica> findAll() {
+	public List<TpCertifica> findAll() {
 		return dao.findAll();
 	}
 }

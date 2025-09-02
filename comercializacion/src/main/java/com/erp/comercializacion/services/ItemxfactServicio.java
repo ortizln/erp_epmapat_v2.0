@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 
@@ -20,7 +19,7 @@ public class ItemxfactServicio {
       return dao.findByIdfacturacion(idfacturacion);
    }
 
-   //Movimientos de un Producto
+   // Movimientos de un Producto
    public List<Itemxfact> getByIdcatalogoitems(Long idcatalogoitems) {
       return dao.findByIdcatalogoitems(idcatalogoitems);
    }

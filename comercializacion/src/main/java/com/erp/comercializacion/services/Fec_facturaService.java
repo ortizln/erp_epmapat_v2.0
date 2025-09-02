@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,7 +8,6 @@ import org.springframework.stereotype.Service;
 
 import com.erp.comercializacion.models.Fec_factura;
 import com.erp.comercializacion.repositories.Fec_facturaR;
-import com.erp.comercializacion.sri.interfaces.fecFacturaDatos;
 
 @Service
 public class Fec_facturaService {
@@ -41,7 +39,7 @@ public class Fec_facturaService {
       return dao.findById(id);
    }
 
-   public fecFacturaDatos getNroFactura(Long idfactura) {
+/*    public fecFacturaDatos getNroFactura(Long idfactura) {
       return dao.getNroFactura(idfactura);
-   }
+   } */
 }

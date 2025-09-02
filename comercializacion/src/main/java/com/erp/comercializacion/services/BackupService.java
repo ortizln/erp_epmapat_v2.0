@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -17,7 +16,6 @@ import java.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 @Service
 public class BackupService {
 
@@ -25,7 +23,6 @@ public class BackupService {
     public void generarBackupProgramado() throws IOException, InterruptedException {
         generarBackup(); // Reutiliza tu método de backup
     }
-
 
     private static final Logger logger = LoggerFactory.getLogger(BackupService.class);
 
@@ -79,8 +76,7 @@ public class BackupService {
                 "-h", dbHost,
                 "-p", dbPort,
                 "-d", dbName,
-                "-f", archivoBackup
-        );
+                "-f", archivoBackup);
 
         // Variables de entorno
         pb.environment().put("PGPASSWORD", dbPassword);

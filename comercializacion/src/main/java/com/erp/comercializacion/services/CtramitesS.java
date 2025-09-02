@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.Date;
 import java.util.List;
@@ -18,8 +17,8 @@ import com.erp.comercializacion.models.CtramitesM;
 import com.erp.comercializacion.repositories.CtramitesR;
 
 @Service
-public class CtramitesS implements CtramitesR{
-	
+public class CtramitesS implements CtramitesR {
+
 	@Autowired
 	private CtramitesR tramitesR;
 
@@ -47,7 +46,8 @@ public class CtramitesS implements CtramitesR{
 	public List<CtramitesM> findAll(Sort sort) {
 		return tramitesR.findAll(sort);
 	}
-	//Trámites por Cliente
+
+	// Trámites por Cliente
 	@Override
 	public List<CtramitesM> findByIdcliente(Long idcliente) {
 		return tramitesR.findByIdcliente(idcliente);
@@ -184,5 +184,5 @@ public class CtramitesS implements CtramitesR{
 	public <S extends CtramitesM, R> R findBy(Example<S> example, Function<FetchableFluentQuery<S>, R> queryFunction) {
 		return null;
 	}
-	
+
 }

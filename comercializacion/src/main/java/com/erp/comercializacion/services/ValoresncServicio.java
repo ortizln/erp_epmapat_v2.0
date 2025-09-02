@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,8 +13,8 @@ import com.erp.comercializacion.repositories.ValoresncR;
 public class ValoresncServicio {
     @Autowired
     private ValoresncR dao;
-    
-        public List<Valoresnc> findAll() {
+
+    public List<Valoresnc> findAll() {
         return dao.findAll();
     }
 

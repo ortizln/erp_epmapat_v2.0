@@ -31,7 +31,7 @@ public class Tramites1C {
 	private RubroServicio rubrosS;
 
 	@GetMapping
-	public List<Tramites1M> getAllTramites(){
+	public List<Tramites1M> getAllTramites() {
 		return tramites1S.findAll();
 	}
 
@@ -45,13 +45,13 @@ public class Tramites1C {
 		Tramites1M tramite1M = tramites1S.findById(idtramite).get();
 		Rubros rubrosM = rubrosS.findById(idrubro).get();
 		tramite1M.addRubros(rubrosM);
-		return tramites1S.save(tramite1M);	
+		return tramites1S.save(tramite1M);
 	}
 
 	@GetMapping("/{idtramite}")
-	public ResponseEntity<Tramites1M> getTramiteById(@PathVariable ("idtramite") Long idtramite){
+	public ResponseEntity<Tramites1M> getTramiteById(@PathVariable("idtramite") Long idtramite) {
 		Tramites1M tramite1M = tramites1S.findById(idtramite)
-				.orElseThrow(()-> new ResourceNotFoundExcepciones("No existe este tramie con este Id: "+idtramite));
+				.orElseThrow(() -> new ResourceNotFoundExcepciones("No existe este tramie con este Id: " + idtramite));
 		return ResponseEntity.ok(tramite1M);
 	}
 

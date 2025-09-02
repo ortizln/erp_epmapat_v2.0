@@ -1,9 +1,7 @@
-package com.erp.comercializacion
-.repositories;
+package com.erp.comercializacion.repositories;
 
 import java.util.List;
 
-import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -12,8 +10,10 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.erp.comercializacion.models.PtoEmisionM;
 
+import jakarta.transaction.Transactional;
+
 // @Repository
-public interface PtoEmisionR extends JpaRepository<PtoEmisionM, Long>{
+public interface PtoEmisionR extends JpaRepository<PtoEmisionM, Long> {
 
 	@Transactional
 	@Modifying(clearAutomatically = true)
@@ -22,5 +22,5 @@ public interface PtoEmisionR extends JpaRepository<PtoEmisionM, Long>{
 
 	@Query(value = "SELECT * FROM ptoemision AS p WHERE EXISTS(SELECT * FROM cajas AS c WHERE c.idptoemision_ptoemision=p.idptoemision)AND p.idptoemision=?1 ", nativeQuery = true)
 	List<PtoEmisionM> used(Long id);
-	
+
 }

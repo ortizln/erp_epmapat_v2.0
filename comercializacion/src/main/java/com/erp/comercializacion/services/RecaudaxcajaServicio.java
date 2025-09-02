@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.Date;
 import java.util.List;
@@ -29,7 +28,8 @@ public class RecaudaxcajaServicio {
 	public <S extends Recaudaxcaja> S save(S entity) {
 		return dao.save(entity);
 	}
-	public Optional<Recaudaxcaja> findByIdrecaudaxcaja(Long idrecaudaxcaja){
+
+	public Optional<Recaudaxcaja> findByIdrecaudaxcaja(Long idrecaudaxcaja) {
 		return dao.findById(idrecaudaxcaja);
 	}
 

@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 
@@ -12,11 +11,11 @@ import com.erp.comercializacion.repositories.FormacobroR;
 @Service
 public class FormacobroServicio {
 
-   @Autowired
-	private FormacobroR dao;
+    @Autowired
+    private FormacobroR dao;
 
     public List<Formacobro> findAll() {
         return dao.findAll();
     }
-    
+
 }

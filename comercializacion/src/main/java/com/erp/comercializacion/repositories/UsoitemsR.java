@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.repositories;
+package com.erp.comercializacion.repositories;
 
 import java.util.List;
 
@@ -9,14 +8,14 @@ import org.springframework.data.jpa.repository.Query;
 import com.erp.comercializacion.models.Usoitems;
 
 public interface UsoitemsR extends JpaRepository<Usoitems, Long> {
-   
-   List<Usoitems> findByOrderByDescripcionAsc();
 
-   @Query(value="SELECT * FROM usoitems WHERE idmodulo_modulos=?1 order by descripcion", nativeQuery = true)
+	List<Usoitems> findByOrderByDescripcionAsc();
+
+	@Query(value = "SELECT * FROM usoitems WHERE idmodulo_modulos=?1 order by descripcion", nativeQuery = true)
 	public List<Usoitems> findByIdmodulo(Long idmodulo);
-   
- 	//Validar por Nombre y Sección
-	@Query(value="SELECT * FROM usoitems WHERE idmodulo_modulos=?1 and LOWER(descripcion)=?2", nativeQuery = true)
+
+	// Validar por Nombre y Sección
+	@Query(value = "SELECT * FROM usoitems WHERE idmodulo_modulos=?1 and LOWER(descripcion)=?2", nativeQuery = true)
 	public List<Usoitems> findByNombre(Long idmodulo, String descripcion);
 
 }

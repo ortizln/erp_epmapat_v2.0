@@ -32,7 +32,7 @@ public class TipoTramiteC {
 
 	@GetMapping
 	@ResponseStatus(HttpStatus.OK)
-	public List<TipoTramite> getAllTipoTramite(){
+	public List<TipoTramite> getAllTipoTramite() {
 		return tipotramiteS.findAll(Sort.by(Sort.Order.asc("descripcion")));
 	}
 
@@ -43,16 +43,19 @@ public class TipoTramiteC {
 	}
 
 	@GetMapping("/{idtipotramite}")
-	public ResponseEntity<TipoTramite> getByIdTipoTramite(@PathVariable Long idtipotramite){
+	public ResponseEntity<TipoTramite> getByIdTipoTramite(@PathVariable Long idtipotramite) {
 		TipoTramite tipotramiteM = tipotramiteS.findById(idtipotramite)
-				.orElseThrow(()-> new ResourceNotFoundExcepciones("No se encuentra este tipo de tramite: "+ idtipotramite));
+				.orElseThrow(() -> new ResourceNotFoundExcepciones(
+						"No se encuentra este tipo de tramite: " + idtipotramite));
 		return ResponseEntity.ok(tipotramiteM);
 	}
 
 	@PutMapping("/{idtipotramite}")
-	public ResponseEntity<TipoTramite> updateTipoTramite(@PathVariable Long idtipotramite, @RequestBody TipoTramite tipotramitem){
+	public ResponseEntity<TipoTramite> updateTipoTramite(@PathVariable Long idtipotramite,
+			@RequestBody TipoTramite tipotramitem) {
 		TipoTramite tipotramiteM = tipotramiteS.findById(idtipotramite)
-				.orElseThrow(()-> new ResourceNotFoundExcepciones("No se encuentra este tipo de tramite: "+ idtipotramite));
+				.orElseThrow(() -> new ResourceNotFoundExcepciones(
+						"No se encuentra este tipo de tramite: " + idtipotramite));
 		tipotramiteM.setDescripcion(tipotramitem.getDescripcion());
 		tipotramiteM.setFacturable(tipotramitem.getFacturable());
 		tipotramiteM.setUsucrea(tipotramitem.getUsucrea());
@@ -62,11 +65,11 @@ public class TipoTramiteC {
 		TipoTramite updateTipoTramite = tipotramiteS.save(tipotramiteM);
 		return ResponseEntity.ok(updateTipoTramite);
 	}
-	
+
 	@DeleteMapping(value = "/{idtipotramite}")
-	public ResponseEntity<Object> deleteTipoTramite(@PathVariable("idtipotramite") Long idtipotramite){
+	public ResponseEntity<Object> deleteTipoTramite(@PathVariable("idtipotramite") Long idtipotramite) {
 		tipotramiteS.deleteById(idtipotramite);
 		return ResponseEntity.ok(Boolean.TRUE);
 	}
-	
+
 }

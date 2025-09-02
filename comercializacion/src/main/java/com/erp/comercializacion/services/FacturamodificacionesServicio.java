@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 
@@ -12,7 +11,7 @@ import com.erp.comercializacion.repositories.FacturamodificacionesR;
 @Service
 public class FacturamodificacionesServicio {
     @Autowired
-    private FacturamodificacionesR dao; 
+    private FacturamodificacionesR dao;
 
     public List<Facturamodificaciones> findAll_modi() {
         return dao.findAll();

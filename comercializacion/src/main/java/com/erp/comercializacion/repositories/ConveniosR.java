@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.repositories;
+package com.erp.comercializacion.repositories;
 
 import java.io.Serializable;
 import java.util.List;

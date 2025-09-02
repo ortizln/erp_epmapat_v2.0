@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.repositories;
+package com.erp.comercializacion.repositories;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -28,12 +27,13 @@ public interface RecaudacionR extends JpaRepository<Recaudacion, Long> {
         public List<RecaudadorI> findListRecaudador(Date d, Date h);
 
         //
-        @Query(value = "select f.idfactura,c.nombre,f.nrofactura,f.estado,f.formapago, f.fechacobro, u.nomusu, f.idabonado," +
+        @Query(value = "select f.idfactura,c.nombre,f.nrofactura,f.estado,f.formapago, f.fechacobro, u.nomusu, f.idabonado,"
+                        +
                         "sum((rf.cantidad * rf.valorunitario)+f.swiva ) as valor " +
                         "from recaudacion r " +
                         "join facxrecauda fr on r.idrecaudacion = fr.idrecaudacion " +
                         "join facturas f on fr.idfactura = f.idfactura " +
-                        "join usuarios u on f.usuariocobro = u.idusuario "+
+                        "join usuarios u on f.usuariocobro = u.idusuario " +
                         "join rubroxfac rf on rf.idfactura_facturas = f.idfactura " +
                         "join clientes c on c.idcliente = f.idcliente " +
                         "where r.fechacobro between ?1 and ?2 and not rf.idrubro_rubros = 165 " +

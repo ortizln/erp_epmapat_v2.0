@@ -38,7 +38,7 @@ public class UsuarioServicio {
       return dao.save(entity);
    }
 
-   public UsuarioI findDatosById(Long idusuario){
+   public UsuarioI findDatosById(Long idusuario) {
       return dao.findDatosById(idusuario);
    }
 

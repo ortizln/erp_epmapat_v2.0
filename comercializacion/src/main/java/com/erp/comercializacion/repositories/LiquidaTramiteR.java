@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.repositories;
+package com.erp.comercializacion.repositories;
 
 import java.util.List;
 
@@ -10,7 +9,7 @@ import com.erp.comercializacion.models.LiquidaTramite;
 
 public interface LiquidaTramiteR extends JpaRepository<LiquidaTramite, Long> {
 
-	@Query(value = "SELECT * FROM liquidatrami WHERE idtramite_tramites=?1",nativeQuery = true)
+	@Query(value = "SELECT * FROM liquidatrami WHERE idtramite_tramites=?1", nativeQuery = true)
 	public List<LiquidaTramite> findByIdTramite(Long idtramite);
-	
+
 }

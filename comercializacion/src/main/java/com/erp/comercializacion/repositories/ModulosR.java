@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.repositories;
+package com.erp.comercializacion.repositories;
 
 import java.util.List;
 
@@ -8,11 +7,11 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.erp.comercializacion.models.Modulos;
 
-public interface ModulosR extends JpaRepository<Modulos, Long>{
-	
+public interface ModulosR extends JpaRepository<Modulos, Long> {
+
 	List<Modulos> findByOrderByDescripcionAsc();
 
-	@Query(value="SELECT * FROM modulos WHERE idmodulo = 23 OR idmodulo = 50", nativeQuery = true)
+	@Query(value = "SELECT * FROM modulos WHERE idmodulo = 23 OR idmodulo = 50", nativeQuery = true)
 	public List<Modulos> getTwoModulos();
 
 }

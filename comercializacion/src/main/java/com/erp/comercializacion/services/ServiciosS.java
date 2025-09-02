@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +37,8 @@ public class ServiciosS {
 
 		return serviciosR.save(entity);
 	}
-	public List<ServiciosM> used(Long id){
+
+	public List<ServiciosM> used(Long id) {
 		return serviciosR.used(id);
 	}
 

@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -12,24 +11,22 @@ import com.erp.comercializacion.repositories.PrecioxCatR;
 
 @Service
 public class PrecioxCatS {
-	
+
 	@Autowired
 	private PrecioxCatR dao;
 
 	public List<PrecioxCatM> findAll(Long c, Long dm, Long hm) {
-		if(c != null && dm != null || hm != null) {
-			return dao.findAll(c, dm,hm);
-		}
-		else {
+		if (c != null && dm != null || hm != null) {
+			return dao.findAll(c, dm, hm);
+		} else {
 			return dao.findAll();
 		}
 	}
 
-	public List<PrecioxCatM> findConsumo(Long idcategoria, Long m3 ) {
-		if(idcategoria != null && m3 != null ) {
+	public List<PrecioxCatM> findConsumo(Long idcategoria, Long m3) {
+		if (idcategoria != null && m3 != null) {
 			return dao.findConsumo(idcategoria, m3);
-		}
-		else {
+		} else {
 			return null;
 		}
 	}
@@ -47,6 +44,6 @@ public class PrecioxCatS {
 	}
 
 	public void delete(PrecioxCatM entity) {
-		dao.delete(entity);		
+		dao.delete(entity);
 	}
 }

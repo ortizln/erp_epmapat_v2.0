@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 
@@ -29,7 +28,8 @@ public class Fec_factura_detalles_impuestosService {
     public void deleteById(Long idimpuesto) {
         dao.deleteById(idimpuesto);
     }
-    public Fec_factura_detalles_impuestos findById(Long idimpuesto){
-    return dao.findBy_id(idimpuesto);
+
+    public Fec_factura_detalles_impuestos findById(Long idimpuesto) {
+        return dao.findBy_id(idimpuesto);
     }
 }

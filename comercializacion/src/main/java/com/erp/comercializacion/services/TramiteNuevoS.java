@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,7 +16,7 @@ import com.erp.comercializacion.models.TramiteNuevo;
 import com.erp.comercializacion.repositories.TramiteNuevoR;
 
 @Service
-public class TramiteNuevoS implements TramiteNuevoR{
+public class TramiteNuevoS implements TramiteNuevoR {
 
 	@Autowired
 	private TramiteNuevoR dao;
@@ -29,7 +28,7 @@ public class TramiteNuevoS implements TramiteNuevoR{
 
 	@Override
 	public List<TramiteNuevo> findAll(Sort sort) {
-		
+
 		return dao.findAll(sort);
 	}
 
@@ -106,7 +105,7 @@ public class TramiteNuevoS implements TramiteNuevoR{
 
 	@Override
 	public Optional<TramiteNuevo> findById(Long id) {
-		
+
 		return dao.findById(id);
 	}
 

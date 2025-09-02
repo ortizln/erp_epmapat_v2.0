@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.Date;
 import java.util.List;
@@ -39,11 +38,11 @@ public class AguaTramiteServicio {
    }
 
    public <S extends AguaTramite> S save(S entity) {
-		return dao.save(entity);
-	}
+      return dao.save(entity);
+   }
 
    public void deleteById(Long id) {
-		dao.deleteById(id);
-	}
+      dao.deleteById(id);
+   }
 
 }

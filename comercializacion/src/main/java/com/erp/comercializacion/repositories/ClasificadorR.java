@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.repositories;
+package com.erp.comercializacion.repositories;
 
 import org.springframework.data.jpa.repository.Query;
 
@@ -22,6 +21,6 @@ public interface ClasificadorR extends JpaRepository<Clasificador, Long> {
 
    // Partidas de Gastos por Código o Nombre (En un solo campo)
    @Query(value = "SELECT * FROM clasificador where codpar > '4' and nivpar=4 and (codpar like %?1% or LOWER(nompar) like %?1%) order by codpar", nativeQuery = true)
-   List<Clasificador> findPartidasG( String codigoNombre );
+   List<Clasificador> findPartidasG(String codigoNombre);
 
 }

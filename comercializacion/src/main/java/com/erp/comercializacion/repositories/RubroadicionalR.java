@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.repositories;
+package com.erp.comercializacion.repositories;
 
 import java.util.List;
 
@@ -8,9 +7,9 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.erp.comercializacion.models.RubroAdicionalM;
 
-public interface RubroAdicionalR extends JpaRepository<RubroAdicionalM, Long>{
-	
+public interface RubroAdicionalR extends JpaRepository<RubroAdicionalM, Long> {
+
 	@Query(value = "SELECT * FROM rubroadicional r2 INNER JOIN rubros r3 ON r2.idrubro_rubros = r3.idrubro WHERE r2.idtptramite_tptramite=?1", nativeQuery = true)
 	public List<RubroAdicionalM> findByIdTpTramtie(Long idtptramite);
-		
+
 }

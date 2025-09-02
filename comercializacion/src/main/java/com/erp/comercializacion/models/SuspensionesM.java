@@ -7,7 +7,6 @@ import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
-import com.erp.comercializacion.models.administracion.Documentos;
 
 @Entity
 @Table(name = "suspensiones")

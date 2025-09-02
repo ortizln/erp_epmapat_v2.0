@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 import java.util.Optional;
@@ -27,15 +26,15 @@ public class ClasificadorServicio {
       return dao.buscaByNombre(nombre);
    }
 
-   //Partidas de Ingresos
-   public List<Clasificador> buscaParingreso(String codpar, String nompar){
-		return dao.buscaParingreso(codpar, nompar);
-	}
+   // Partidas de Ingresos
+   public List<Clasificador> buscaParingreso(String codpar, String nompar) {
+      return dao.buscaParingreso(codpar, nompar);
+   }
 
-   //Partidas de Gastos, por Código o Nombre (en un mismo campo)
-   public List<Clasificador> findPartidasG(String codigoNombre ){
-		return dao.findPartidasG( codigoNombre );
-	}
+   // Partidas de Gastos, por Código o Nombre (en un mismo campo)
+   public List<Clasificador> findPartidasG(String codigoNombre) {
+      return dao.findPartidasG(codigoNombre);
+   }
 
    public <S extends Clasificador> S save(S entity) {
       return dao.save(entity);

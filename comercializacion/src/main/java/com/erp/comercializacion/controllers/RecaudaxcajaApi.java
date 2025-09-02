@@ -45,18 +45,22 @@ public class RecaudaxcajaApi {
 		Recaudaxcaja recxcaja = recaxcajaServicio.findLastConexion(idcaja);
 		return ResponseEntity.ok(recxcaja);
 	}
+
 	@PostMapping
-	public ResponseEntity<Recaudaxcaja> saveRecaudaxcaja(@RequestBody Recaudaxcaja recxcaja){
-		LocalTime ahora= LocalTime.now();
+	public ResponseEntity<Recaudaxcaja> saveRecaudaxcaja(@RequestBody Recaudaxcaja recxcaja) {
+		LocalTime ahora = LocalTime.now();
 		recxcaja.setHorainicio(ahora);
 		return ResponseEntity.ok(recaxcajaServicio.save(recxcaja));
 	}
+
 	@PutMapping("/{idrecaudaxcaja}")
-	public ResponseEntity<Recaudaxcaja> updateRecaudaxCaja(@PathVariable("idrecaudaxcaja")Long idrecaudaxcaja, @RequestBody Recaudaxcaja recaudaxcaja){
-		LocalTime ahora= LocalTime.now();
+	public ResponseEntity<Recaudaxcaja> updateRecaudaxCaja(@PathVariable("idrecaudaxcaja") Long idrecaudaxcaja,
+			@RequestBody Recaudaxcaja recaudaxcaja) {
+		LocalTime ahora = LocalTime.now();
 		Recaudaxcaja recxcaja = recaxcajaServicio.findByIdrecaudaxcaja(idrecaudaxcaja)
-				.orElseThrow(() -> new ResourceNotFoundExcepciones(("No existe ese abonado con ese Id: " + idrecaudaxcaja)));
-		recxcaja.setEstado(recaudaxcaja.getEstado()); 
+				.orElseThrow(
+						() -> new ResourceNotFoundExcepciones(("No existe ese abonado con ese Id: " + idrecaudaxcaja)));
+		recxcaja.setEstado(recaudaxcaja.getEstado());
 		recxcaja.setFacinicio(recaudaxcaja.getFacinicio());
 		recxcaja.setFacfin(recaudaxcaja.getFacfin());
 		recxcaja.setFechainiciolabor(recaudaxcaja.getFechainiciolabor());
@@ -66,14 +70,15 @@ public class RecaudaxcajaApi {
 		recxcaja.setIdcaja_cajas(recaudaxcaja.getIdcaja_cajas());
 		recxcaja.setIdusuario_usuarios(recaudaxcaja.getIdusuario_usuarios());
 		Recaudaxcaja update = recaxcajaServicio.save(recxcaja);
-		
+
 		return ResponseEntity.ok(update);
 	}
+
 	@GetMapping("/caja/{idcaja}")
-	public ResponseEntity<Object[]> obtenerConexion(@PathVariable("idcaja") Long idcaja){
+	public ResponseEntity<Object[]> obtenerConexion(@PathVariable("idcaja") Long idcaja) {
 		Recaudaxcaja recxcaja = recaxcajaServicio.findLastConexion(idcaja);
-		return null; 
-		
+		return null;
+
 	}
 
 }

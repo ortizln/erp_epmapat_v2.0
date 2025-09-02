@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.Date;
 import java.util.List;
@@ -18,190 +17,183 @@ import com.erp.comercializacion.models.SuspensionesM;
 import com.erp.comercializacion.repositories.SuspensionesR;
 
 @Service
-public class SuspensionesS implements SuspensionesR{
+public class SuspensionesS implements SuspensionesR {
 	@Autowired
 	private SuspensionesR suspensionesR;
 
 	@Override
 	public List<SuspensionesM> findAll() {
-		
+
 		return suspensionesR.findAll();
 	}
 
 	@Override
 	public List<SuspensionesM> findAll(Sort sort) {
-		
+
 		return null;
 	}
 
 	@Override
 	public List<SuspensionesM> findAllById(Iterable<Long> ids) {
-		
+
 		return null;
 	}
 
 	@Override
 	public <S extends SuspensionesM> List<S> saveAll(Iterable<S> entities) {
-		
+
 		return null;
 	}
 
 	@Override
 	public void flush() {
-		
-		
+
 	}
 
 	@Override
 	public <S extends SuspensionesM> S saveAndFlush(S entity) {
-		
+
 		return null;
 	}
 
 	@Override
 	public <S extends SuspensionesM> List<S> saveAllAndFlush(Iterable<S> entities) {
-		
+
 		return null;
 	}
 
 	@Override
 	public void deleteAllInBatch(Iterable<SuspensionesM> entities) {
-		
-		
+
 	}
 
 	@Override
 	public void deleteAllByIdInBatch(Iterable<Long> ids) {
-		
-		
+
 	}
 
 	@Override
 	public void deleteAllInBatch() {
-		
-		
+
 	}
 
 	@Override
 	public SuspensionesM getOne(Long id) {
-		
+
 		return null;
 	}
 
 	@Override
 	public SuspensionesM getById(Long id) {
-		
+
 		return null;
 	}
 
 	@Override
 	public SuspensionesM getReferenceById(Long id) {
-		
+
 		return null;
 	}
 
 	@Override
 	public <S extends SuspensionesM> List<S> findAll(Example<S> example) {
-		
+
 		return null;
 	}
 
 	@Override
 	public <S extends SuspensionesM> List<S> findAll(Example<S> example, Sort sort) {
-		
+
 		return null;
 	}
 
 	@Override
 	public Page<SuspensionesM> findAll(Pageable pageable) {
-		
+
 		return null;
 	}
 
 	@Override
 	public <S extends SuspensionesM> S save(S entity) {
-		
+
 		return suspensionesR.save(entity);
 	}
 
 	@Override
 	public Optional<SuspensionesM> findById(Long id) {
-		
+
 		return suspensionesR.findById(id);
 	}
 
 	@Override
 	public boolean existsById(Long id) {
-		
+
 		return false;
 	}
 
 	@Override
 	public long count() {
-		
+
 		return 0;
 	}
 
 	@Override
 	public void deleteById(Long id) {
-		
+
 		suspensionesR.deleteById(id);
 	}
 
 	@Override
 	public void delete(SuspensionesM entity) {
-		
-		
+
 	}
 
 	@Override
 	public void deleteAllById(Iterable<? extends Long> ids) {
-		
-		
+
 	}
 
 	@Override
 	public void deleteAll(Iterable<? extends SuspensionesM> entities) {
-		
-		
+
 	}
 
 	@Override
 	public void deleteAll() {
-		
-		
+
 	}
 
 	@Override
 	public <S extends SuspensionesM> Optional<S> findOne(Example<S> example) {
-		
+
 		return Optional.empty();
 	}
 
 	@Override
 	public <S extends SuspensionesM> Page<S> findAll(Example<S> example, Pageable pageable) {
-		
+
 		return null;
 	}
 
 	@Override
 	public <S extends SuspensionesM> long count(Example<S> example) {
-		
+
 		return 0;
 	}
 
 	@Override
 	public <S extends SuspensionesM> boolean exists(Example<S> example) {
-		
+
 		return false;
 	}
 
 	@Override
 	public <S extends SuspensionesM, R> R findBy(Example<S> example,
 			Function<FetchableFluentQuery<S>, R> queryFunction) {
-		
+
 		return null;
 	}
+
 	@Override
 	public List<SuspensionesM> findByFecha(Date desde, Date hasta) {
 		return suspensionesR.findByFecha(desde, hasta);
@@ -209,17 +201,18 @@ public class SuspensionesS implements SuspensionesR{
 
 	@Override
 	public List<SuspensionesM> findLastTen() {
-		
+
 		return suspensionesR.findLastTen();
 	}
 
 	@Override
 	public List<SuspensionesM> findByNumero(Long numero) {
-		
+
 		return suspensionesR.findByNumero(numero);
 	}
+
 	@Override
-	public List<SuspensionesM> findHabilitaciones(){
+	public List<SuspensionesM> findHabilitaciones() {
 		return suspensionesR.findHabilitaciones();
 	}
 
@@ -230,9 +223,8 @@ public class SuspensionesS implements SuspensionesR{
 
 	@Override
 	public SuspensionesM findFirstByOrderByIdsuspensionDesc() {
-		
+
 		return suspensionesR.findFirstByOrderByIdsuspensionDesc();
 	}
-	
 
 }

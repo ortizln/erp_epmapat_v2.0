@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
 @RestController
 @RequestMapping("/usuarios")
 @CrossOrigin(origins = "*")
@@ -92,12 +91,12 @@ public class UsuariosApi {
    @PostMapping
    public ResponseEntity<Object> saveUsuario(@RequestBody Usuarios user) {
       Map<String, Object> response = new HashMap<>();
-      Usuarios _user= usuServicio.save(user);
-      if(_user != null ){
+      Usuarios _user = usuServicio.save(user);
+      if (_user != null) {
          response.put("status", ResponseEntity.ok());
          response.put("message", "Usuario creado");
-         
-      }else{
+
+      } else {
          response.put("status", ResponseEntity.ok());
          response.put("message", "Usuario no creado");
       }

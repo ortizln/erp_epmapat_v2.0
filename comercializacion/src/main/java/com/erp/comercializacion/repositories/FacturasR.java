@@ -121,7 +121,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "SELECT idfactura FROM facturas WHERE totaltarifa > 0 and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
 	public List<Long> findSinCobroAbo(Long idabonado);
 
-		@Query(value = "SELECT idfactura FROM facturas WHERE totaltarifa > 0 and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
+	@Query(value = "SELECT idfactura FROM facturas WHERE totaltarifa > 0 and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
 	public List<Long> coutPendientes(Long idabonado);
 
 	// Planillas Sin cobrar por modulo y Abonado (para Convenios)
@@ -523,6 +523,5 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 				and f.fechaeliminacion is null
 			""", nativeQuery = true)
 	public List<FacSinCobrar> getIdsFromFacturasSincobrar();
-
 
 }

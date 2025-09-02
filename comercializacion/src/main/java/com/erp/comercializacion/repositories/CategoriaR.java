@@ -1,17 +1,16 @@
-package com.erp.comercializacion
-.repositories;
+package com.erp.comercializacion.repositories;
 
 import java.math.BigDecimal;
 // import java.math.BigDecimal;
 import java.util.List;
-
-import javax.transaction.Transactional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import com.erp.comercializacion.models.Categorias;
+
+import jakarta.transaction.Transactional;
 
 public interface CategoriaR extends JpaRepository<Categorias, Long> {
 

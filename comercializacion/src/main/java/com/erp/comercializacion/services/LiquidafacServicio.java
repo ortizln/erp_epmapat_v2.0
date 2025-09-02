@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 
@@ -11,7 +10,7 @@ import com.erp.comercializacion.repositories.LiquidafacR;
 
 @Service
 public class LiquidafacServicio {
-   
+
    @Autowired
    private LiquidafacR dao;
 
@@ -22,5 +21,5 @@ public class LiquidafacServicio {
    public <S extends Liquidafac> S save(S entity) {
       return dao.save(entity);
    }
-   
+
 }

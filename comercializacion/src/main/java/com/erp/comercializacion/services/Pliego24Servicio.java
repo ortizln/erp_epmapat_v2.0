@@ -1,5 +1,4 @@
-package com.erp.comercializacion
-.services;
+package com.erp.comercializacion.services;
 
 import java.util.List;
 
@@ -15,12 +14,13 @@ public class Pliego24Servicio {
    @Autowired
    Pliego24R dao;
 
-   //Pliego Tarifario
+   // Pliego Tarifario
    public List<Pliego24> findTodos() {
       return dao.findTodos();
    }
 
-   // Tarifas de todas las categorias de un determinado consumo (m3) Se usa solo en la simulación
+   // Tarifas de todas las categorias de un determinado consumo (m3) Se usa solo en
+   // la simulación
    public List<Pliego24> findConsumos(Long m3) {
       return dao.findConsumos(m3);
    }
