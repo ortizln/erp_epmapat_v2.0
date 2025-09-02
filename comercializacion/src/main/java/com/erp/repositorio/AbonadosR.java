@@ -91,7 +91,7 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	 * List<Map<String, Object>> getOneAbonado(Long idabonado);
 	 */
 	// Un Abonado
-	Abonados findByIdabonado(Long idabonado);
+	//public Abonados void findByIdabonado(Long idabonado);
 
 	@Query(value = "SELECT * FROM abonados a where a.idruta_rutas = ?1 order by a.idabonado asc", nativeQuery = true)
 	public List<Abonados> getCuentasByRutas(Long idruta);
