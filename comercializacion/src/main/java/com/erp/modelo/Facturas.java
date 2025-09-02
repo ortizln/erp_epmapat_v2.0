@@ -9,12 +9,16 @@ import jakarta.persistence.*;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "facturas")
 public class Facturas implements Serializable {
 
@@ -77,10 +81,11 @@ public class Facturas implements Serializable {
 	// @Column(name = "fecmodi")
 	private LocalDate fecmodi;
 	private BigDecimal valorbase;
+	@Column(name = "idabonado")
 	private Long idabonado;
 	private BigDecimal interescobrado;
 	private BigDecimal swiva;
-	private Boolean swcondonar; 
+	private Boolean swcondonar;
 	private BigDecimal valornotacredito;
 	private String secuencialfacilito;
 

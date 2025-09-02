@@ -66,14 +66,17 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	@Query(value = "SELECT * FROM abonados a JOIN clientes c ON a.idcliente_clientes = c.idcliente WHERE c.idcliente = ?1", nativeQuery = true)
 	public List<Abonados> findByIdCliente(Long idcliente);
 
-	// Campos específicos de Clientes y Abonados
-	@Query("SELECT new map(" +
+	@Query(value = "SELECT " +
 			"a.idabonado as idabonado, " +
-			"c.nombre as nombre, " + "c.cedula as cedula, " + "c.direccion as direccion, " +
-			"a.direccionubicacion as direccionubicacion, " + "c.telefono as telefono, "
-			+ "c.fechanacimiento as fechanacimiento, " + "c.email as email) " +
-			"FROM Clientes c INNER JOIN Abonados a ON c.idcliente = a.idcliente_clientes")
-	List<Map<String, Object>> allAbonadosCampos();
+			"c.nombre as nombre, " +
+			"c.cedula as cedula, " +
+			"c.direccion as direccion, " +
+			"a.direccionubicacion as direccionubicacion, " +
+			"c.telefono as telefono, " +
+			"c.fechanacimiento as fechanacimiento, " +
+			"c.email as email " +
+			"FROM abonados a INNER JOIN clientes c ON a.idcliente_clientes = c.idcliente", nativeQuery = true)
+	List<Map<String, Object>> allAbonadosCampos();s
 
 	// Campos específicos de Clientes y Abonados
 	/*

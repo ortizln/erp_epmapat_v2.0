@@ -8,14 +8,11 @@ import com.erp.pagosonline.repositories.FacturasR;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import jakarta.naming.ServiceUnavailableException;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -29,12 +26,13 @@ public class FacturasService {
 
     @Autowired
     public FacturasService(FacturasR dao,
-                           RestTemplate restTemplate,
-                           @Value("${app.api.base-url}") String apiBaseUrl) {
+            RestTemplate restTemplate,
+            @Value("${app.api.base-url}") String apiBaseUrl) {
         this.dao = dao;
         this.restTemplate = restTemplate;
         this.apiBaseUrl = apiBaseUrl;
     }
+
     public Object savePagos(Long user, FacturaRequestDTO datos) {
         System.out.println(datos);
 
@@ -59,18 +57,17 @@ public class FacturasService {
         return respuesta;
     }
 
-
     public Object findFacturasSinCobro(Long user, Long cuenta) {
         validateInput(user, cuenta);
         Map<String, Object> connection = getConnectionStatus(user);
         Boolean test = validateCajaStatus(connection);
-        if(test){
+        if (test) {
             List<FacturasSinCobroInter> facturas = dao.findFacturasSinCobro(cuenta);
             return buildResponse(cuenta, facturas);
 
-        }else{
+        } else {
             Map<String, Object> respuesta = new HashMap<>();
-            return respuesta.put("mensaje","Caja no iniciada");
+            return respuesta.put("mensaje", "Caja no iniciada");
         }
 
     }
@@ -84,7 +81,7 @@ public class FacturasService {
     public Map<String, Object> getConnectionStatus(Long user) {
         try {
             return restTemplate.getForObject(
-                    apiBaseUrl + "/cajas/test_connection?user="+user,
+                    apiBaseUrl + "/cajas/test_connection?user=" + user,
                     Map.class,
                     user);
         } catch (RestClientException e) {
@@ -95,7 +92,7 @@ public class FacturasService {
 
     public Boolean validateCajaStatus(Map<String, Object> connection) {
         // Validación de entrada
-        Boolean respuesta= false;
+        Boolean respuesta = false;
         if (connection == null || !connection.containsKey("estado")) {
             return false;
         }
@@ -103,11 +100,9 @@ public class FacturasService {
         // Manejo de tipos de estado
         if (estado instanceof Boolean) {
             respuesta = (Boolean) estado;
-        }
-        else if (estado instanceof Integer) {
+        } else if (estado instanceof Integer) {
             respuesta = ((Integer) estado) == 1;
-        }
-        else if (estado instanceof String) {
+        } else if (estado instanceof String) {
             String estadoStr = ((String) estado).toLowerCase();
             if ("true".equals(estadoStr) || "1".equals(estadoStr)) {
                 respuesta = true;
@@ -174,6 +169,7 @@ public class FacturasService {
             return BigDecimal.ZERO;
         }
     }
+
     public static class ServiceUnavailableException extends RuntimeException {
         public ServiceUnavailableException(String message) {
             super(message);

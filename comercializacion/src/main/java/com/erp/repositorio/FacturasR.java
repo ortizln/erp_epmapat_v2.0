@@ -6,7 +6,6 @@ import java.util.List;
 
 import com.erp.interfaces.*;
 
-import com.erp.interfaces.*;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -28,7 +27,6 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(nativeQuery = true, value = "select * from facturas f where f.fechacobro = ?1 ")
 	public List<FacturasI> findByFechacobro(Date fechacobro);
 
-	
 	@Query(value = "SELECT * FROM facturas order by idfactura DESC LIMIT 12", nativeQuery = true)
 	public List<Facturas> findAll();
 
@@ -132,7 +130,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	@Query(value = "SELECT idfactura FROM facturas WHERE totaltarifa > 0 and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
 	public List<Long> findSinCobroAbo(Long idabonado);
 
-		@Query(value = "SELECT idfactura FROM facturas WHERE totaltarifa > 0 and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
+	@Query(value = "SELECT idfactura FROM facturas WHERE totaltarifa > 0 and idabonado=?1 and (( (estado = 1 or estado = 2) and fechacobro is null) or estado = 3 ) and fechaconvenio is null and fechaanulacion is null and fechaeliminacion is null and fechaconvenio is null ORDER BY idfactura", nativeQuery = true)
 	public List<Long> coutPendientes(Long idabonado);
 
 	// Planillas Sin cobrar por modulo y Abonado (para Convenios)
@@ -246,7 +244,15 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 			@Param("d_fecha") LocalDate h_fecha, @Param("recaudador") Long idrecaudador);
 
 	// Cuenta las Facturas pendientes de un Abonado
-	@Query("SELECT COUNT(*) FROM Facturas f WHERE f.totaltarifa > 0 and f.idabonado=?1 and (( (f.estado = 1 or f.estado = 2) and f.fechacobro is null) or f.estado = 3 ) AND f.fechaeliminacion IS NULL and not f.idmodulo = 27 and fechaconvenio is null")
+	@Query("SELECT COUNT(f) FROM Facturas f WHERE f.totaltarifa > 0 " +
+			"AND f.idabonado = :idabonado " +
+			"AND ( " +
+			"   (f.estado IN (1, 2) AND f.fechacobro IS NULL) " +
+			"   OR f.estado = 3 " +
+			") " +
+			"AND f.fechaeliminacion IS NULL " +
+			"AND f.idmodulo.id <> 27 " +
+			"AND f.fechaconvenio IS NULL")
 	long countFacturasByAbonadoAndPendientes(@Param("idabonado") Long idabonado);
 
 	// Listado de facturas anuladas
@@ -271,8 +277,14 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	public List<R_transferencias> transferenciasCobradas(Date d_fecha, Date h_fecha);
 
 	/* REPORTE DE FACTURAS TRANSFERIDAS PERO NO COBRADAS */
-	@Query(value = "select f, sum(rf.cantidad * rf.valorunitario) from Rubroxfac rf join Facturas f on rf.idfactura_facturas = f.idfactura where f.formapago = 4 and date(f.fechacobro) between ?1 and ?2 and f.pagado = 1 and f.estado = 1 group by f.idfactura order by f.nrofactura asc")
-	public List<Object[]> transferenciasNoCobradas(Date d_fecha, Date h_fecha);
+	@Query(value = "SELECT f.*, SUM(rf.cantidad * rf.valorunitario) " +
+			"FROM rubroxfac rf " +
+			"JOIN facturas f ON rf.idfactura_facturas = f.idfactura " +
+			"WHERE f.formapago = 4 AND f.fechacobro BETWEEN ?1 AND ?2 " +
+			"AND f.pagado = 1 AND f.estado = 1 " +
+			"GROUP BY f.idfactura " +
+			"ORDER BY f.nrofactura ASC", nativeQuery = true)
+	List<Object[]> transferenciasNoCobradas(Date d_fecha, Date h_fecha);
 
 	/* REPORTE PARA ANULACIONES Y BAJAS */
 
