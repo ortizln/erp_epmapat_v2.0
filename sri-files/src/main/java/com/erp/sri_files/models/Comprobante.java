@@ -1,7 +1,9 @@
 package com.erp.sri_files.models;
 
 import jakarta.xml.bind.annotation.*;
-import lombok.*;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
 package com.erp.sri_files.models;
 
 import jakarta.xml.bind.annotation.*;
-import lombok.*;
+import lombok.Data;
 import java.math.BigDecimal;
 import java.util.List;
 

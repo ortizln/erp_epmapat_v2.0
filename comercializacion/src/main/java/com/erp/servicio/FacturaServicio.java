@@ -12,7 +12,7 @@ import com.erp.DTO.RemiDTO;
 import com.erp.DTO.ValorFactDTO;
 import com.erp.controlador.AbonadosApi;
 import com.erp.controlador.AboxSuspensionC;
-import com.epmapat.erp_epmapat.interfaces.*;
+import com.erp.interfaces.*;
 
 import com.erp.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;

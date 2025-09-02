@@ -15,9 +15,10 @@ public class SriFilesApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SriFilesApplication.class, args);
 	}
-	@Bean
-	@LoadBalanced
-	public RestTemplate restTemplate(RestTemplateBuilder builder) {
+
+    @Bean
+    @LoadBalanced
+    RestTemplate restTemplate(RestTemplateBuilder builder) {
 		return builder.build();
 	}
 

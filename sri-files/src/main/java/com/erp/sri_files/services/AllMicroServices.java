@@ -26,7 +26,7 @@ public class AllMicroServices {
 
     public Factura findById(Long idFactura) {
         try {
-            String url = String.format("%s/%d", comercializacionBaseUrl, idFactura);
+            String url = "%s/%d".formatted(comercializacionBaseUrl, idFactura);
             LOGGER.debug("Llamando a endpoint: {}", url);
             return restTemplate.getForObject(url, Factura.class);
         } catch (RestClientException e) {

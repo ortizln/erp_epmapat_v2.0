@@ -28,7 +28,7 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -87,7 +87,7 @@ public class FacturaSRIService {
 
     public static void saveXml(String xmlContent, String filePath) {
         try {
-            Files.write(Paths.get(filePath), xmlContent.getBytes(), StandardOpenOption.CREATE);
+            Files.write(Path.of(filePath), xmlContent.getBytes(), StandardOpenOption.CREATE);
             System.out.println("Archivo XML guardado en: " + filePath);
         } catch (IOException e) {
             e.printStackTrace();

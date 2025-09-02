@@ -15,12 +15,12 @@ import java.util.Optional;
 public class DefinirService {
     @Autowired
     private DefinirR dao;
-    @SuppressWarnings("null")
+
     public Optional<Definir> findById(Long id) {
         return dao.findById(id);
     }
 
-    @SuppressWarnings("null")
+
     public <S extends Definir> S save(S entity) {
         return dao.save(entity);
     }

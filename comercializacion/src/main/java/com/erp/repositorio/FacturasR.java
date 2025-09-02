@@ -4,7 +4,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 
-import com.epmapat.erp_epmapat.interfaces.*;
+import com.erp.interfaces.*;
 
 import com.erp.interfaces.*;
 import org.springframework.data.domain.*;

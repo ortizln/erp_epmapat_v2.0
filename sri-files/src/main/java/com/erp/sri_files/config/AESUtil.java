@@ -1,8 +1,9 @@
 package com.erp.sri_files.config;
 
+import java.util.Base64;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
-import java.util.Base64;
 
 public class AESUtil {
     private static final String CLAVE_SECRETA = "1234567890123456"; // 16 caracteres (AES-128)

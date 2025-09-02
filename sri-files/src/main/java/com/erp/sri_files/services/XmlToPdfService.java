@@ -14,8 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import jakarta.xml.parsers.DocumentBuilder;
+import jakarta.xml.parsers.DocumentBuilderFactory;
 
 import com.erp.sri_files.repositories.Tabla15R;
 import org.springframework.beans.factory.annotation.Autowired;

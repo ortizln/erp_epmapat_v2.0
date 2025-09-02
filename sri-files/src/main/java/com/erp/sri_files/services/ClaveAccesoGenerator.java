@@ -19,7 +19,7 @@ public class ClaveAccesoGenerator {
         System.out.println("fecha emision" + fechaEmision);
 
         // 2. Tipo de comprobante (2 dígitos)
-        String tipoComprobante = String.format("%02d", 1);
+        String tipoComprobante = "%02d".formatted(1);
         System.out.println("tipocomprobante: " + tipoComprobante);
 
         // 3. RUC del emisor (13 dígitos)

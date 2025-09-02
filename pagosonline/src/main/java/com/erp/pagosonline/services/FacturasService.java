@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
-import javax.naming.ServiceUnavailableException;
+import jakarta.naming.ServiceUnavailableException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;

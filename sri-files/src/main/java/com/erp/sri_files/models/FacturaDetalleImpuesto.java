@@ -4,7 +4,8 @@ import java.math.BigDecimal;
 
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Getter

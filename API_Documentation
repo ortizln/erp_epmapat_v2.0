@@ -244,7 +244,7 @@ java
 import org.apache.cxf.configuration.jsse.TLSClientParameters;
 import org.apache.cxf.transport.http.HTTPConduit;
 import org.apache.cxf.transports.http.configuration.HTTPClientPolicy;
-import javax.net.ssl.*;
+import jakarta.net.ssl.*;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 

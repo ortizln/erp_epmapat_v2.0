@@ -854,8 +854,8 @@ instanceKlass  @bci org/eclipse/jdt/internal/compiler/ProcessTaskManager <init> 
 instanceKlass  @bci org/eclipse/jdt/internal/compiler/ProcessTaskManager <clinit> ()V 10 <appendix> argL0 ; # org/eclipse/jdt/internal/compiler/ProcessTaskManager$$Lambda+0x00000208266420e8
 instanceKlass org/eclipse/jdt/internal/compiler/ProcessTaskManager
 instanceKlass org/eclipse/jdt/internal/compiler/apt/model/NameImpl
-instanceKlass javax/annotation/processing/SupportedAnnotationTypes
-instanceKlass javax/annotation/processing/SupportedOptions
+instanceKlass jakarta/annotation/processing/SupportedAnnotationTypes
+instanceKlass jakarta/annotation/processing/SupportedOptions
 instanceKlass org/eclipse/jdt/internal/compiler/apt/dispatch/ProcessorInfo
 instanceKlass lombok/launch/AnnotationProcessorHider$AstModificationNotifierData
 instanceKlass lombok/core/AnnotationProcessor$ProcessorDescriptor
@@ -863,9 +863,9 @@ instanceKlass org/eclipse/jdt/internal/compiler/apt/dispatch/RoundDispatcher
 instanceKlass org/eclipse/jdt/internal/compiler/lookup/ParameterizedMethodBinding$1
 instanceKlass org/eclipse/jdt/internal/compiler/ast/NullAnnotationMatching
 instanceKlass org/eclipse/jdt/internal/compiler/lookup/Scope$NullDefaultRange
-instanceKlass javax/lang/model/element/VariableElement
-instanceKlass javax/lang/model/element/AnnotationValue
-instanceKlass javax/lang/model/element/ExecutableElement
+instanceKlass jakarta/lang/model/element/VariableElement
+instanceKlass jakarta/lang/model/element/AnnotationValue
+instanceKlass jakarta/lang/model/element/ExecutableElement
 instanceKlass org/eclipse/jdt/internal/compiler/lookup/ImplicitNullAnnotationVerifier$InheritedNonNullnessInfo
 instanceKlass org/eclipse/jdt/internal/compiler/lookup/ParameterNonNullDefaultProvider$2
 instanceKlass org/eclipse/jdt/internal/compiler/lookup/ParameterNonNullDefaultProvider$1
@@ -875,7 +875,7 @@ instanceKlass org/eclipse/jdt/internal/compiler/apt/model/IElementInfo
 instanceKlass org/eclipse/jdt/internal/compiler/apt/util/ManyToMany
 instanceKlass org/eclipse/jdt/internal/compiler/apt/dispatch/RoundEnvImpl
 instanceKlass org/eclipse/jdt/apt/core/internal/ClassServiceFactory
-instanceKlass javax/annotation/processing/AbstractProcessor
+instanceKlass jakarta/annotation/processing/AbstractProcessor
 instanceKlass org/eclipse/jdt/apt/core/internal/LoadFailureHandler
 instanceKlass org/eclipse/jdt/apt/core/internal/AnnotationProcessorFactoryLoader$ResourceListener
 instanceKlass org/eclipse/jdt/apt/core/internal/IServiceFactory
@@ -1189,38 +1189,38 @@ instanceKlass  @bci org/eclipse/core/internal/resources/MarkerManager visitorRem
 instanceKlass  @cpi org/eclipse/core/internal/resources/MarkerManager 677 form vmentry <vmtarget> ; # java/lang/invoke/LambdaForm$DMH+0x00000208265b8000
 instanceKlass org/eclipse/jdt/internal/core/builder/WorkQueue
 instanceKlass org/eclipse/jdt/internal/apt/pluggable/core/dispatch/IdeMessagerImpl
-instanceKlass javax/tools/JavaFileManager$Location
+instanceKlass jakarta/tools/JavaFileManager$Location
 instanceKlass org/eclipse/jdt/internal/apt/pluggable/core/filer/IdeFilerImpl
-instanceKlass javax/lang/model/type/NoType
-instanceKlass javax/lang/model/element/TypeParameterElement
-instanceKlass javax/lang/model/element/PackageElement
-instanceKlass javax/lang/model/type/ErrorType
-instanceKlass javax/lang/model/type/DeclaredType
-instanceKlass javax/lang/model/type/ReferenceType
-instanceKlass javax/lang/model/element/AnnotationMirror
+instanceKlass jakarta/lang/model/type/NoType
+instanceKlass jakarta/lang/model/element/TypeParameterElement
+instanceKlass jakarta/lang/model/element/PackageElement
+instanceKlass jakarta/lang/model/type/ErrorType
+instanceKlass jakarta/lang/model/type/DeclaredType
+instanceKlass jakarta/lang/model/type/ReferenceType
+instanceKlass jakarta/lang/model/element/AnnotationMirror
 instanceKlass org/eclipse/jdt/internal/compiler/apt/model/Factory
 instanceKlass org/eclipse/jdt/internal/compiler/apt/model/TypesImpl$MemberInTypeFinder
-instanceKlass javax/lang/model/type/PrimitiveType
-instanceKlass javax/lang/model/type/WildcardType
-instanceKlass javax/lang/model/type/TypeMirror
+instanceKlass jakarta/lang/model/type/PrimitiveType
+instanceKlass jakarta/lang/model/type/WildcardType
+instanceKlass jakarta/lang/model/type/TypeMirror
 instanceKlass org/eclipse/jdt/internal/compiler/apt/model/TypesImpl
-instanceKlass javax/lang/model/element/ModuleElement
-instanceKlass javax/tools/JavaFileObject
-instanceKlass javax/tools/FileObject
-instanceKlass javax/lang/model/element/TypeElement
-instanceKlass javax/lang/model/element/QualifiedNameable
-instanceKlass javax/lang/model/element/Parameterizable
-instanceKlass javax/lang/model/element/Element
-instanceKlass javax/lang/model/AnnotatedConstruct
-instanceKlass javax/lang/model/element/Name
+instanceKlass jakarta/lang/model/element/ModuleElement
+instanceKlass jakarta/tools/JavaFileObject
+instanceKlass jakarta/tools/FileObject
+instanceKlass jakarta/lang/model/element/TypeElement
+instanceKlass jakarta/lang/model/element/QualifiedNameable
+instanceKlass jakarta/lang/model/element/Parameterizable
+instanceKlass jakarta/lang/model/element/Element
+instanceKlass jakarta/lang/model/AnnotatedConstruct
+instanceKlass jakarta/lang/model/element/Name
 instanceKlass org/eclipse/jdt/internal/compiler/apt/model/ElementsImpl
-instanceKlass javax/annotation/processing/Messager
-instanceKlass javax/annotation/processing/Filer
-instanceKlass javax/lang/model/util/Types
-instanceKlass javax/lang/model/util/Elements
+instanceKlass jakarta/annotation/processing/Messager
+instanceKlass jakarta/annotation/processing/Filer
+instanceKlass jakarta/lang/model/util/Types
+instanceKlass jakarta/lang/model/util/Elements
 instanceKlass org/eclipse/jdt/internal/compiler/apt/dispatch/BaseProcessingEnvImpl
-instanceKlass javax/annotation/processing/ProcessingEnvironment
-instanceKlass javax/annotation/processing/RoundEnvironment
+instanceKlass jakarta/annotation/processing/ProcessingEnvironment
+instanceKlass jakarta/annotation/processing/RoundEnvironment
 instanceKlass org/eclipse/jdt/internal/compiler/apt/dispatch/IProcessorProvider
 instanceKlass org/eclipse/jdt/internal/core/JavaModelManager$9
 instanceKlass org/eclipse/jdt/internal/compiler/AbstractAnnotationProcessorManager
@@ -1316,7 +1316,7 @@ instanceKlass org/eclipse/jdt/apt/core/util/AptPreferenceConstants
 instanceKlass org/eclipse/jdt/apt/core/internal/generatedfile/GeneratedResourceChangeListener
 instanceKlass org/eclipse/jdt/apt/core/util/IFactoryPath
 instanceKlass org/eclipse/jdt/apt/core/util/AptConfig
-instanceKlass javax/annotation/processing/Processor
+instanceKlass jakarta/annotation/processing/Processor
 instanceKlass org/eclipse/jdt/apt/core/internal/AptCompilationParticipantExtensionFactory
 instanceKlass org/eclipse/jdt/internal/core/JavaModelManager$CompilationParticipants$1
 instanceKlass org/eclipse/jdt/core/compiler/CompilationParticipant
@@ -1515,7 +1515,7 @@ instanceKlass org/apache/maven/settings/io/xpp3/SettingsXpp3Writer
 instanceKlass org/codehaus/plexus/util/StringUtils
 instanceKlass org/eclipse/sisu/inject/LazyBeanEntry$JsrNamed
 instanceKlass org/eclipse/sisu/inject/LazyBeanEntry
-instanceKlass javax/annotation/Priority
+instanceKlass jakarta/annotation/Priority
 instanceKlass org/eclipse/sisu/inject/Implementations
 instanceKlass org/eclipse/sisu/plexus/LazyPlexusBean
 instanceKlass org/eclipse/sisu/inject/RankedSequence$Itr
@@ -2715,7 +2715,7 @@ instanceKlass com/google/inject/spi/InjectionPoint$OverrideIndex
 instanceKlass org/eclipse/sisu/Mediator
 instanceKlass org/eclipse/sisu/inject/RankedBindings
 instanceKlass com/google/inject/Inject
-instanceKlass javax/inject/Inject
+instanceKlass jakarta/inject/Inject
 instanceKlass  @bci com/google/inject/internal/DeclaredMembers getDeclaredFields (Ljava/lang/Class;)[Ljava/lang/reflect/Field; 38 <appendix> argL0 ; # com/google/inject/internal/DeclaredMembers$$Lambda+0x0000020826433048
 instanceKlass  @bci com/google/inject/internal/DeclaredMembers getDeclaredFields (Ljava/lang/Class;)[Ljava/lang/reflect/Field; 20 <appendix> argL0 ; # com/google/inject/internal/DeclaredMembers$$Lambda+0x0000020826432e18
 instanceKlass  @bci com/google/inject/internal/DeclaredMembers getDeclaredFields (Ljava/lang/Class;)[Ljava/lang/reflect/Field; 15 <appendix> argL0 ; # com/google/inject/internal/DeclaredMembers$$Lambda+0x0000020826432be8
@@ -2743,12 +2743,12 @@ instanceKlass com/google/common/util/concurrent/ListenableFuture
 instanceKlass jdk/internal/jimage/ImageBufferCache$2
 instanceKlass jdk/internal/jimage/ImageBufferCache
 instanceKlass  @bci sun/reflect/annotation/AnnotationParser parseEnumArray (ILjava/lang/Class;Ljava/nio/ByteBuffer;Ljdk/internal/reflect/ConstantPool;Ljava/lang/Class;)Ljava/lang/Object; 16 <appendix> member <vmtarget> ; # sun/reflect/annotation/AnnotationParser$$Lambda+0x00000208263694f0
-instanceKlass javax/inject/Named
+instanceKlass jakarta/inject/Named
 instanceKlass  @bci jdk/internal/jimage/ImageReader$SharedImageReader handlePackages (Ljava/lang/String;Ljdk/internal/jimage/ImageLocation;)Ljdk/internal/jimage/ImageReader$Node; 20 <appendix> member <vmtarget> ; # jdk/internal/jimage/ImageReader$SharedImageReader$$Lambda+0x0000020826434290
-instanceKlass javax/inject/Qualifier
+instanceKlass jakarta/inject/Qualifier
 instanceKlass jdk/internal/jimage/ImageReader$SharedImageReader$LocationVisitor
 instanceKlass com/google/inject/BindingAnnotation
-instanceKlass javax/inject/Scope
+instanceKlass jakarta/inject/Scope
 instanceKlass com/google/inject/ScopeAnnotation
 instanceKlass jdk/internal/jimage/ImageLocation
 instanceKlass com/google/inject/internal/Annotations$AnnotationChecker
@@ -2834,7 +2834,7 @@ instanceKlass com/google/inject/multibindings/ProvidesIntoOptional
 instanceKlass com/google/inject/multibindings/ProvidesIntoMap
 instanceKlass com/google/inject/multibindings/ProvidesIntoSet
 instanceKlass com/google/inject/Provides
-instanceKlass javax/inject/Singleton
+instanceKlass jakarta/inject/Singleton
 instanceKlass com/google/inject/spi/ElementSource
 instanceKlass com/google/inject/spi/ScopeBinding
 instanceKlass com/google/inject/Scopes$2
@@ -2981,8 +2981,8 @@ instanceKlass org/codehaus/plexus/logging/LogEnabled
 instanceKlass org/eclipse/sisu/bean/PropertyBinding
 instanceKlass org/eclipse/equinox/internal/app/EclipseAppHandle$1
 instanceKlass org/eclipse/equinox/internal/app/EclipseAppHandle$2
-instanceKlass javax/annotation/PreDestroy
-instanceKlass javax/annotation/PostConstruct
+instanceKlass jakarta/annotation/PreDestroy
+instanceKlass jakarta/annotation/PostConstruct
 instanceKlass org/eclipse/sisu/bean/LifecycleBuilder
 instanceKlass org/eclipse/sisu/bean/BeanScheduler$1
 instanceKlass com/google/inject/spi/DefaultBindingScopingVisitor
@@ -3059,7 +3059,7 @@ instanceKlass org/codehaus/plexus/context/Context
 instanceKlass org/eclipse/sisu/inject/BindingPublisher
 instanceKlass org/eclipse/sisu/inject/RankingFunction
 instanceKlass org/eclipse/sisu/space/ClassSpace
-instanceKlass javax/inject/Provider
+instanceKlass jakarta/inject/Provider
 instanceKlass org/eclipse/jdt/core/IProblemRequestor
 instanceKlass org/eclipse/sisu/bean/BeanManager
 instanceKlass org/eclipse/sisu/plexus/PlexusBeanLocator
@@ -3633,7 +3633,7 @@ instanceKlass org/eclipse/equinox/security/storage/ISecurePreferences
 instanceKlass org/eclipse/equinox/internal/security/storage/SecurePreferencesContainer
 instanceKlass org/eclipse/equinox/internal/security/storage/PersistedPath
 instanceKlass  @bci org/eclipse/equinox/internal/security/storage/SecurePreferencesRoot load ()V 241 <appendix> member <vmtarget> ; # org/eclipse/equinox/internal/security/storage/SecurePreferencesRoot$$Lambda+0x00000208263289b8
-instanceKlass javax/crypto/spec/PBEKeySpec
+instanceKlass jakarta/crypto/spec/PBEKeySpec
 instanceKlass org/eclipse/equinox/internal/security/storage/PasswordExt
 instanceKlass org/eclipse/equinox/internal/security/storage/JavaEncryption
 instanceKlass org/eclipse/equinox/security/storage/provider/IPreferencesContainer
@@ -3679,9 +3679,9 @@ instanceKlass org/eclipse/jdt/ls/core/internal/framework/IFrameworkSupport
 instanceKlass org/eclipse/text/templates/TemplateStoreCore
 instanceKlass com/sun/org/apache/xml/internal/serializer/WriterChain
 instanceKlass com/sun/org/apache/xalan/internal/xsltc/trax/DOM2TO
-instanceKlass javax/xml/transform/stax/StAXSource
-instanceKlass javax/xml/transform/sax/SAXSource
-instanceKlass javax/xml/transform/stream/StreamSource
+instanceKlass jakarta/xml/transform/stax/StAXSource
+instanceKlass jakarta/xml/transform/sax/SAXSource
+instanceKlass jakarta/xml/transform/stream/StreamSource
 instanceKlass com/sun/org/apache/xml/internal/serializer/NamespaceMappings$MappingRecord
 instanceKlass com/sun/org/apache/xml/internal/serializer/NamespaceMappings
 instanceKlass sun/nio/cs/DelegatableDecoder
@@ -3711,34 +3711,34 @@ instanceKlass com/sun/org/apache/xml/internal/serializer/XSLOutputAttributes
 instanceKlass com/sun/org/apache/xml/internal/serializer/ExtendedLexicalHandler
 instanceKlass org/xml/sax/ext/LexicalHandler
 instanceKlass com/sun/org/apache/xml/internal/serializer/ExtendedContentHandler
-instanceKlass javax/xml/transform/dom/DOMResult
-instanceKlass javax/xml/transform/stax/StAXResult
-instanceKlass javax/xml/transform/sax/SAXResult
+instanceKlass jakarta/xml/transform/dom/DOMResult
+instanceKlass jakarta/xml/transform/stax/StAXResult
+instanceKlass jakarta/xml/transform/sax/SAXResult
 instanceKlass com/sun/org/apache/xalan/internal/xsltc/runtime/output/TransletOutputHandlerFactory
-instanceKlass javax/xml/transform/dom/DOMSource
+instanceKlass jakarta/xml/transform/dom/DOMSource
 instanceKlass com/sun/org/apache/xml/internal/utils/XMLReaderManager
 instanceKlass com/sun/org/apache/xml/internal/serializer/OutputPropertiesFactory
-instanceKlass javax/xml/transform/Transformer
+instanceKlass jakarta/xml/transform/Transformer
 instanceKlass com/sun/org/apache/xalan/internal/xsltc/DOMCache
-instanceKlass  @bci javax/xml/catalog/CatalogFeatures setProperties (Ljavax/xml/catalog/CatalogFeatures$Builder;)V 5 <appendix> member <vmtarget> ; # javax/xml/catalog/CatalogFeatures$$Lambda+0x0000020826343fb0
-instanceKlass javax/xml/catalog/CatalogMessages
-instanceKlass javax/xml/catalog/Util
-instanceKlass  @bci javax/xml/transform/FactoryFinder newInstance (Ljava/lang/Class;Ljava/lang/String;Ljava/lang/ClassLoader;Z)Ljava/lang/Object; 107 <appendix> member <vmtarget> ; # javax/xml/transform/FactoryFinder$$Lambda+0x0000020826343588
+instanceKlass  @bci jakarta/xml/catalog/CatalogFeatures setProperties (Ljakarta/xml/catalog/CatalogFeatures$Builder;)V 5 <appendix> member <vmtarget> ; # jakarta/xml/catalog/CatalogFeatures$$Lambda+0x0000020826343fb0
+instanceKlass jakarta/xml/catalog/CatalogMessages
+instanceKlass jakarta/xml/catalog/Util
+instanceKlass  @bci jakarta/xml/transform/FactoryFinder newInstance (Ljava/lang/Class;Ljava/lang/String;Ljava/lang/ClassLoader;Z)Ljava/lang/Object; 107 <appendix> member <vmtarget> ; # jakarta/xml/transform/FactoryFinder$$Lambda+0x0000020826343588
 instanceKlass jdk/xml/internal/JdkProperty
 instanceKlass jdk/xml/internal/XMLSecurityManager
 instanceKlass com/sun/org/apache/xalan/internal/utils/FeaturePropertyBase
 instanceKlass jdk/xml/internal/JdkXmlFeatures
-instanceKlass javax/xml/catalog/CatalogFeatures$Builder
-instanceKlass javax/xml/catalog/CatalogFeatures
+instanceKlass jakarta/xml/catalog/CatalogFeatures$Builder
+instanceKlass jakarta/xml/catalog/CatalogFeatures
 instanceKlass jdk/xml/internal/TransformErrorListener
-instanceKlass javax/xml/transform/ErrorListener
+instanceKlass jakarta/xml/transform/ErrorListener
 instanceKlass com/sun/org/apache/xalan/internal/xsltc/compiler/SourceLoader
-instanceKlass  @bci javax/xml/transform/FactoryFinder find (Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Object; 123 <appendix> member <vmtarget> ; # javax/xml/transform/FactoryFinder$$Lambda+0x00000208262ffb80
-instanceKlass javax/xml/transform/FactoryFinder$1
-instanceKlass  @bci javax/xml/transform/FactoryFinder find (Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Object; 24 <appendix> member <vmtarget> ; # javax/xml/transform/FactoryFinder$$Lambda+0x00000208262ff748
-instanceKlass javax/xml/transform/FactoryFinder
-instanceKlass javax/xml/transform/TransformerFactory
-instanceKlass javax/xml/transform/stream/StreamResult
+instanceKlass  @bci jakarta/xml/transform/FactoryFinder find (Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Object; 123 <appendix> member <vmtarget> ; # jakarta/xml/transform/FactoryFinder$$Lambda+0x00000208262ffb80
+instanceKlass jakarta/xml/transform/FactoryFinder$1
+instanceKlass  @bci jakarta/xml/transform/FactoryFinder find (Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Object; 24 <appendix> member <vmtarget> ; # jakarta/xml/transform/FactoryFinder$$Lambda+0x00000208262ff748
+instanceKlass jakarta/xml/transform/FactoryFinder
+instanceKlass jakarta/xml/transform/TransformerFactory
+instanceKlass jakarta/xml/transform/stream/StreamResult
 instanceKlass org/eclipse/text/templates/TemplateReaderWriter
 instanceKlass  @bci java/util/stream/Collectors toList ()Ljava/util/stream/Collector; 14 <appendix> argL0 ; # java/util/stream/Collectors$$Lambda+0x00000208262febf0
 instanceKlass  @bci java/util/stream/Collectors toList ()Ljava/util/stream/Collector; 9 <appendix> argL0 ; # java/util/stream/Collectors$$Lambda+0x00000208262fe9d0
@@ -4065,8 +4065,8 @@ instanceKlass org/eclipse/aether/util/graph/transformer/ConflictResolver$Version
 instanceKlass org/eclipse/aether/util/graph/transformer/ConflictResolver$ScopeSelector
 instanceKlass org/eclipse/aether/util/graph/transformer/ConflictResolver$OptionalitySelector
 instanceKlass org/eclipse/aether/util/graph/transformer/ConflictResolver$ScopeDeriver
-instanceKlass javax/xml/transform/Source
-instanceKlass javax/xml/transform/Result
+instanceKlass jakarta/xml/transform/Source
+instanceKlass jakarta/xml/transform/Result
 instanceKlass org/w3c/dom/Node
 instanceKlass org/eclipse/m2e/core/embedder/MavenModelManager
 instanceKlass org/eclipse/m2e/core/project/configurator/ILifecycleMappingConfiguration
@@ -4703,8 +4703,8 @@ instanceKlass org/eclipse/core/internal/filesystem/local/NativeHandler
 instanceKlass org/eclipse/core/internal/filesystem/local/LocalFileNativesManager
 instanceKlass org/eclipse/core/resources/FileInfoMatcherDescription
 instanceKlass org/eclipse/core/internal/resources/FilterDescription
-instanceKlass javax/xml/parsers/DocumentBuilder
-instanceKlass javax/xml/parsers/DocumentBuilderFactory
+instanceKlass jakarta/xml/parsers/DocumentBuilder
+instanceKlass jakarta/xml/parsers/DocumentBuilderFactory
 instanceKlass org/eclipse/core/internal/runtime/XmlProcessorFactory
 instanceKlass org/eclipse/core/internal/resources/IModelObjectConstants
 instanceKlass org/eclipse/core/filesystem/URIUtil
@@ -5295,20 +5295,20 @@ instanceKlass org/xml/sax/XMLReader
 instanceKlass org/xml/sax/Parser
 instanceKlass com/sun/org/apache/xerces/internal/utils/XMLSecurityPropertyManager
 instanceKlass com/sun/org/apache/xerces/internal/utils/XMLSecurityManager
-instanceKlass javax/xml/parsers/SAXParser
+instanceKlass jakarta/xml/parsers/SAXParser
 instanceKlass com/sun/org/apache/xerces/internal/xs/PSVIProvider
 instanceKlass com/sun/org/apache/xerces/internal/jaxp/JAXPConstants
-instanceKlass  @bci javax/xml/parsers/FactoryFinder newInstance (Ljava/lang/Class;Ljava/lang/String;Ljava/lang/ClassLoader;ZZ)Ljava/lang/Object; 104 <appendix> member <vmtarget> ; # javax/xml/parsers/FactoryFinder$$Lambda+0x00000208260dd858
+instanceKlass  @bci jakarta/xml/parsers/FactoryFinder newInstance (Ljava/lang/Class;Ljava/lang/String;Ljava/lang/ClassLoader;ZZ)Ljava/lang/Object; 104 <appendix> member <vmtarget> ; # jakarta/xml/parsers/FactoryFinder$$Lambda+0x00000208260dd858
 instanceKlass  @bci jdk/xml/internal/SecuritySupport getContextClassLoader ()Ljava/lang/ClassLoader; 0 <appendix> argL0 ; # jdk/xml/internal/SecuritySupport$$Lambda+0x00000208260dd3f0
-instanceKlass  @bci javax/xml/parsers/FactoryFinder find (Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Object; 104 <appendix> member <vmtarget> ; # javax/xml/parsers/FactoryFinder$$Lambda+0x00000208260dd1d8
-instanceKlass javax/xml/parsers/FactoryFinder$1
+instanceKlass  @bci jakarta/xml/parsers/FactoryFinder find (Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Object; 104 <appendix> member <vmtarget> ; # jakarta/xml/parsers/FactoryFinder$$Lambda+0x00000208260dd1d8
+instanceKlass jakarta/xml/parsers/FactoryFinder$1
 instanceKlass  @bci jdk/xml/internal/SecuritySupport getFileInputStream (Ljava/io/File;)Ljava/io/FileInputStream; 1 <appendix> member <vmtarget> ; # jdk/xml/internal/SecuritySupport$$Lambda+0x00000208260dcda0
 instanceKlass  @bci jdk/xml/internal/SecuritySupport doesFileExist (Ljava/io/File;)Z 1 <appendix> member <vmtarget> ; # jdk/xml/internal/SecuritySupport$$Lambda+0x00000208260dcb88
-instanceKlass  @bci javax/xml/parsers/FactoryFinder find (Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Object; 6 <appendix> member <vmtarget> ; # javax/xml/parsers/FactoryFinder$$Lambda+0x00000208260dc970
+instanceKlass  @bci jakarta/xml/parsers/FactoryFinder find (Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Object; 6 <appendix> member <vmtarget> ; # jakarta/xml/parsers/FactoryFinder$$Lambda+0x00000208260dc970
 instanceKlass  @bci jdk/xml/internal/SecuritySupport getSystemProperty (Ljava/lang/String;)Ljava/lang/String; 1 <appendix> member <vmtarget> ; # jdk/xml/internal/SecuritySupport$$Lambda+0x00000208260dc758
 instanceKlass jdk/xml/internal/SecuritySupport
-instanceKlass javax/xml/parsers/FactoryFinder
-instanceKlass javax/xml/parsers/SAXParserFactory
+instanceKlass jakarta/xml/parsers/FactoryFinder
+instanceKlass jakarta/xml/parsers/SAXParserFactory
 instanceKlass org/xml/sax/helpers/DefaultHandler
 instanceKlass org/xml/sax/ErrorHandler
 instanceKlass org/xml/sax/ContentHandler
@@ -6289,7 +6289,7 @@ instanceKlass sun/security/util/ManifestEntryVerifier$SunProviderHolder
 instanceKlass java/util/Base64$Encoder
 instanceKlass java/util/Base64$Decoder
 instanceKlass java/util/Base64
-instanceKlass javax/crypto/SecretKey
+instanceKlass jakarta/crypto/SecretKey
 instanceKlass sun/security/util/Length
 instanceKlass sun/security/util/KeyUtil
 instanceKlass java/security/interfaces/XECKey
@@ -6309,7 +6309,7 @@ instanceKlass sun/security/pkcs/PKCS8Key
 instanceKlass sun/security/util/InternalPrivateKey
 instanceKlass java/security/interfaces/RSAPrivateKey
 instanceKlass java/security/PrivateKey
-instanceKlass javax/security/auth/Destroyable
+instanceKlass jakarta/security/auth/Destroyable
 instanceKlass jdk/internal/icu/util/CodePointTrie$Data
 instanceKlass jdk/internal/icu/util/CodePointMap
 instanceKlass jdk/internal/icu/util/VersionInfo
@@ -6461,7 +6461,7 @@ instanceKlass sun/util/calendar/CalendarSystem
 instanceKlass sun/security/x509/CertificateValidity
 instanceKlass sun/security/x509/AVA
 instanceKlass sun/security/x509/RDN
-instanceKlass javax/security/auth/x500/X500Principal
+instanceKlass jakarta/security/auth/x500/X500Principal
 instanceKlass  @bci sun/security/x509/X500Name <clinit> ()V 153 <appendix> argL0 ; # sun/security/x509/X500Name$$Lambda+0x000002082605b4f0
 instanceKlass sun/security/x509/X500Name
 instanceKlass sun/security/x509/GeneralNameInterface
@@ -6516,7 +6516,7 @@ instanceKlass jdk/internal/math/FloatingDecimal$BinaryToASCIIBuffer
 instanceKlass jdk/internal/math/FloatingDecimal$ExceptionalBinaryToASCIIBuffer
 instanceKlass jdk/internal/math/FloatingDecimal$BinaryToASCIIConverter
 instanceKlass jdk/internal/math/FloatingDecimal
-instanceKlass javax/security/auth/login/Configuration$Parameters
+instanceKlass jakarta/security/auth/login/Configuration$Parameters
 instanceKlass java/security/Policy$Parameters
 instanceKlass java/security/cert/CertStoreParameters
 instanceKlass java/security/SecureRandomParameters
@@ -7314,7 +7314,7 @@ instanceKlass org/codehaus/plexus/interpolation/InterpolationException
 instanceKlass org/apache/maven/cli/MavenCli$ExitException
 instanceKlass sun/nio/fs/WindowsException
 instanceKlass org/eclipse/equinox/security/storage/StorageException
-instanceKlass javax/xml/transform/TransformerException
+instanceKlass jakarta/xml/transform/TransformerException
 instanceKlass org/eclipse/jface/text/templates/TemplateException
 instanceKlass lombok/eclipse/agent/PatchDelegate$CantMakeDelegates
 instanceKlass org/eclipse/jface/text/BadLocationException
@@ -7355,7 +7355,7 @@ instanceKlass org/apache/felix/scr/impl/inject/methods/SuitableMethodNotAccessib
 instanceKlass org/xml/sax/SAXException
 instanceKlass java/util/concurrent/ExecutionException
 instanceKlass java/lang/CloneNotSupportedException
-instanceKlass javax/xml/parsers/ParserConfigurationException
+instanceKlass jakarta/xml/parsers/ParserConfigurationException
 instanceKlass org/osgi/service/resolver/ResolutionException
 instanceKlass java/security/GeneralSecurityException
 instanceKlass org/eclipse/osgi/container/ModuleContainer$ResolutionLockException
@@ -7409,7 +7409,7 @@ instanceKlass java/util/zip/ZipError
 ciInstanceKlass java/lang/InternalError 1 1 34 10 7 12 1 1 1 10 12 1 10 12 1 10 12 1 100 1 1 1 1 5 0 1 1 1 1 1 1 1 1 1 1 1
 instanceKlass java/io/IOError
 instanceKlass org/apache/maven/BuildAbort
-instanceKlass javax/xml/parsers/FactoryConfigurationError
+instanceKlass jakarta/xml/parsers/FactoryConfigurationError
 instanceKlass com/google/common/util/concurrent/ExecutionError
 instanceKlass java/util/ServiceConfigurationError
 instanceKlass java/lang/ThreadDeath
@@ -7704,7 +7704,7 @@ instanceKlass lombok/core/configuration/CallSuperType
 instanceKlass lombok/core/configuration/FlagUsageType
 instanceKlass org/eclipse/jdt/internal/compiler/impl/JavaFeature
 instanceKlass org/eclipse/jdt/internal/compiler/parser/Scanner$ScanContext
-instanceKlass javax/lang/model/SourceVersion
+instanceKlass jakarta/lang/model/SourceVersion
 instanceKlass org/eclipse/osgi/container/Module$StopOptions
 instanceKlass org/eclipse/jdt/internal/compiler/env/IUpdatableModule$UpdateKind
 instanceKlass org/eclipse/jdt/internal/compiler/lookup/LookupEnvironment$CompleteTypeBindingsSteps
@@ -7756,7 +7756,7 @@ instanceKlass ch/qos/logback/core/spi/FilterReply
 instanceKlass org/eclipse/buildship/core/internal/util/gradle/PublishedGradleVersions$LookupStrategy
 instanceKlass org/eclipse/buildship/core/internal/CoreTraceScopes
 instanceKlass org/eclipse/jdt/ls/core/internal/DiagnosticsState$ErrorLevel
-instanceKlass javax/xml/catalog/CatalogFeatures$State
+instanceKlass jakarta/xml/catalog/CatalogFeatures$State
 instanceKlass jdk/xml/internal/XMLSecurityManager$NameMap
 instanceKlass jdk/xml/internal/XMLSecurityManager$Processor
 instanceKlass jdk/xml/internal/XMLSecurityManager$Limit
@@ -7802,7 +7802,7 @@ instanceKlass org/apache/felix/scr/impl/metadata/ServiceMetadata$Scope
 instanceKlass org/apache/felix/scr/impl/metadata/DSVersion
 instanceKlass com/sun/org/apache/xerces/internal/impl/XMLScanner$NameType
 instanceKlass com/sun/org/apache/xerces/internal/util/Status
-instanceKlass javax/xml/catalog/CatalogFeatures$Feature
+instanceKlass jakarta/xml/catalog/CatalogFeatures$Feature
 instanceKlass com/sun/org/apache/xerces/internal/utils/XMLSecurityPropertyManager$Property
 instanceKlass com/sun/org/apache/xerces/internal/utils/XMLSecurityPropertyManager$State
 instanceKlass com/sun/org/apache/xerces/internal/utils/XMLSecurityManager$NameMap
