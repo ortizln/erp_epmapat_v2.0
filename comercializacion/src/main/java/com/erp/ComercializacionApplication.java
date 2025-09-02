@@ -1,0 +1,15 @@
+package com.erp;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+@EnableDiscoveryClient
+@SpringBootApplication
+public class ComercializacionApplication extends SpringBootServletInitializer {
+	public static void main(String[] args) {
+		SpringApplication.run(ComercializacionApplication.class, args);
+	}
+
+
+}
