@@ -9,7 +9,7 @@ import java.time.LocalDate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.erp.comercializacion.interfaces.RecaudaFacturasI;
+import com.erp.comercializacion.interfaces.RecaudafacturasI;
 import com.erp.comercializacion.interfaces.RecaudadorI;
 import com.erp.comercializacion.models.Recaudacion;
 import com.erp.comercializacion.repositories.RecaudacionR;
@@ -44,7 +44,7 @@ public class RecaudacionServicio {
       return dao.findListRecaudador(d, h);
    }
 
-   public List<RecaudaFacturasI> findFacturasToReport(LocalDateTime d, LocalDateTime h) {
+   public List<RecaudafacturasI> findFacturasToReport(LocalDateTime d, LocalDateTime h) {
       return dao.findFacturasToReport(d, h);
    }
 

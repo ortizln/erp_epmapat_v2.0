@@ -59,7 +59,7 @@ public class TramiteNuevo {
 	private Categorias idcategoria_categorias;
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name ="idaguatramite_aguatramite")
-	private AguaTramite idaguatramite_aguatramite;
+	private Aguatramite idaguatramite_aguatramite;
 	private Long usucrea;
 	@Temporal(TemporalType.DATE)
 	@DateTimeFormat(iso = ISO.DATE)
@@ -80,7 +80,7 @@ public class TramiteNuevo {
 			String medidormarca, String medidornumero, Long medidornroesferas, String tuberiaprincipal, Long tipovia,
 			Long codmedidor, Long codmedidorvecino, Long secuencia, String inspector, Long areaconstruccion,
 			String notificado, Date fechanotificacion, String observaciones, Long estado, Date fechafinalizacion,
-			Long medidordiametro, Categorias idcategoria_categorias, AguaTramite idaguatramite_aguatramite,
+			Long medidordiametro, Categorias idcategoria_categorias, Aguatramite idaguatramite_aguatramite,
 			Long usucrea, Date feccrea, Long usumodi, Date fecmodi) {
 		super();
 		this.idtramitenuevo = idtramitenuevo;
@@ -307,10 +307,10 @@ public class TramiteNuevo {
 	public void setIdcategoria_categorias(Categorias idcategoria_categorias) {
 		this.idcategoria_categorias = idcategoria_categorias;
 	}
-	public AguaTramite getIdaguatramite_aguatramite() {
+	public Aguatramite getIdaguatramite_aguatramite() {
 		return idaguatramite_aguatramite;
 	}
-	public void setIdaguatramite_aguatramite(AguaTramite idaguatramite_aguatramite) {
+	public void setIdaguatramite_aguatramite(Aguatramite idaguatramite_aguatramite) {
 		this.idaguatramite_aguatramite = idaguatramite_aguatramite;
 	}
 	public Long getUsucrea() {

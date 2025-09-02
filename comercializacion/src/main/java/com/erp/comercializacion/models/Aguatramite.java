@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name="aguatramite")
-public class AguaTramite {
+public class Aguatramite {
    
    @Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)

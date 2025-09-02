@@ -8,7 +8,7 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import com.erp.comercializacion.interfaces.RecaudaFacturasI;
+import com.erp.comercializacion.interfaces.RecaudafacturasI;
 import com.erp.comercializacion.interfaces.RecaudadorI;
 import com.erp.comercializacion.models.Recaudacion;
 
@@ -39,7 +39,7 @@ public interface RecaudacionR extends JpaRepository<Recaudacion, Long> {
                         "where r.fechacobro between ?1 and ?2 and not rf.idrubro_rubros = 165 " +
                         "group by f.idfactura, c.nombre, f.nrofactura, f.estado, f.formapago, f.fechacobro, u.nomusu " +
                         "order by f.nrofactura asc", nativeQuery = true)
-        public List<RecaudaFacturasI> findFacturasToReport(LocalDateTime d, LocalDateTime h);
+        public List<RecaudafacturasI> findFacturasToReport(LocalDateTime d, LocalDateTime h);
 
         @Query(value = "select rf.idrubro_rubros, rb.descripcion, COUNT(f.idfactura) as nfacturas, sum((rf.cantidad * rf.valorunitario)+f.swiva) as valor "
                         +

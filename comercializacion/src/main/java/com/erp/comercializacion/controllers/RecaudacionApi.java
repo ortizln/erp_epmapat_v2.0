@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.erp.comercializacion.excepciones.ResourceNotFoundExcepciones;
-import com.erp.comercializacion.interfaces.RecaudaFacturasI;
+import com.erp.comercializacion.interfaces.RecaudafacturasI;
 import com.erp.comercializacion.interfaces.RecaudadorI;
 import com.erp.comercializacion.models.Recaudacion;
 import com.erp.comercializacion.services.RecaudacionServicio;
@@ -94,7 +94,7 @@ public class RecaudacionApi {
       return ResponseEntity.ok(updateRecaudacion);
    }
    @GetMapping("/reportes/facturas")
-   public ResponseEntity<List<RecaudaFacturasI>>findFacturasToReport(@RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime d, @RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime h){
+   public ResponseEntity<List<RecaudafacturasI>>findFacturasToReport(@RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime d, @RequestParam  @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime h){
       return ResponseEntity.ok(recaServicio.findFacturasToReport(d, h));
    }
    @GetMapping("/reportes/rubanteriores")
