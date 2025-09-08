@@ -8,4 +8,4 @@ eureka:
     hostname: msvc-reportesjr  # El nombre del contenedor o el servicio en Docker Compose
   client:
     service-url:
-      defaultZone: http://msvc-eureka:8761/eureka/  # Usar el nombre del servicio Docker
+      defaultZone: ${EUREKA_SERVICEURL}:8761/eureka/  # Usar el nombre del servicio Docker
