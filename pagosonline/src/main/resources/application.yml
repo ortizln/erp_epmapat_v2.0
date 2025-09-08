@@ -16,4 +16,4 @@ spring:
       ddl-auto: none
 app:
   api:
-    base-url: /facturas
+    base-url: "http://msvc-facturas:9092/api/rec/"
