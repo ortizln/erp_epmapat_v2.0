@@ -27,7 +27,7 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=12345
+      - DB_PASS=Epmapat2025
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s
@@ -51,7 +51,7 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=12345
+      - DB_PASS=Epmapat2025
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s
@@ -75,7 +75,7 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=12345
+      - DB_PASS=Epmapat2025
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s
@@ -99,7 +99,7 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=12345
+      - DB_PASS=Epmapat2025
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s
@@ -123,7 +123,7 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=12345
+      - DB_PASS=Epmapat2025
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s
@@ -147,7 +147,7 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=12345
+      - DB_PASS=Epmapat2025
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s
@@ -171,7 +171,7 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=12345
+      - DB_PASS=Epmapat2025
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s
@@ -195,7 +195,7 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=12345
+      - DB_PASS=Epmapat2025
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health" ]
       interval: 30s
