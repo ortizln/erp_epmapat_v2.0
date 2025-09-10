@@ -8,6 +8,8 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
+
 @Entity
 @Getter
 @Setter
@@ -39,7 +41,7 @@ public class Facturas {
     private Long estadoconvenio;
     private Long formapago;
     private String refeformapago;
-    private String horacobro;
+    private LocalTime horacobro;
     private Long usuariotransferencia;
     private LocalDate fechatransferencia;
     private Long usucrea;

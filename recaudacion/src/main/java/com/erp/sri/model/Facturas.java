@@ -3,6 +3,7 @@ package com.erp.sri.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -39,7 +40,7 @@ public class Facturas {
     private Long estadoconvenio;
     private Long formapago;
     private String refeformapago;
-    private String horacobro;
+    private LocalTime horacobro;
     private Long usuariotransferencia;
     private LocalDate fechatransferencia;
     private Long usucrea;

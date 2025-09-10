@@ -20,9 +20,7 @@ public class Cajas_ser {
     private Factura_ser s_factura;
 
     public Object cajasSingIn(String username, String password){
-        System.out.println(password);
         String pass = s_usuario.convertPassword(password);
-        System.out.println(pass);
         LastConection_int l_conecction = c_dao.getLConectionByUserPass(username, pass);
             Map<String, Object> respuesta = new HashMap<>();
         if (l_conecction == null){

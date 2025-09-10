@@ -6,7 +6,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 @SpringBootApplication
-public class ComercializacionApplication extends SpringBootServletInitializer {
+public class ComercializacionApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(ComercializacionApplication.class, args);
 	}

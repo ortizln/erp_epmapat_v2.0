@@ -5,9 +5,11 @@ import com.erp.pagosonline.DTO.FacturaDTO;
 import com.erp.pagosonline.DTO.FacturaRequestDTO;
 import com.erp.pagosonline.interfaces.FacturasSinCobroInter;
 import com.erp.pagosonline.repositories.FacturasR;
+import com.erp.pagosonline.repositories.TmpinteresxfacR;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
@@ -23,7 +25,8 @@ public class FacturasService {
     private final FacturasR dao;
     private final RestTemplate restTemplate;
     private final String apiBaseUrl;
-
+    @Autowired
+    private TmpinteresxfacR tmpinteresxfacR;
     @Autowired
     public FacturasService(FacturasR dao,
             RestTemplate restTemplate,
@@ -40,18 +43,25 @@ public class FacturasService {
         respuesta.put("mensaje", "COBRANDO...");
 
         try {
-            // Send request to external API
-            restTemplate.put(apiBaseUrl + "/facturas/cobrar", datos);
+            // Verificar conexión antes de cobrar
+            String healthUrl = apiBaseUrl + "/actuator/health"; // o cualquier endpoint disponible
+            ResponseEntity<String> healthResponse = restTemplate.getForEntity(healthUrl, String.class);
+            System.out.println(healthResponse);
+            if (healthResponse.getStatusCode().is2xxSuccessful()) {
+                // Si hay conexión, procedemos con el pago
+                restTemplate.put(apiBaseUrl + "/api/rec/facturas/cobrar", datos);
 
-            // Update response to indicate success
-            respuesta.put("status", "SUCCESS");
-            respuesta.put("detalle", "Pago realizado correctamente");
-            respuesta.put("body", datos);
+                respuesta.put("status", "SUCCESS");
+                respuesta.put("detalle", "Pago realizado correctamente");
+                respuesta.put("body", datos);
+            } else {
+                respuesta.put("status", "ERROR");
+                respuesta.put("detalle", "No hay conexión con el servicio de recaudación");
+            }
 
         } catch (RestClientException e) {
-            // Handle errors if the request fails
             respuesta.put("status", "ERROR");
-            respuesta.put("detalle", "No se pudo realizar el pago: " + e.getMessage());
+            respuesta.put("detalle", "Error de conexión con recaudación: " + e.getMessage());
         }
 
         return respuesta;
@@ -81,7 +91,7 @@ public class FacturasService {
     public Map<String, Object> getConnectionStatus(Long user) {
         try {
             return restTemplate.getForObject(
-                    apiBaseUrl + "/cajas/test_connection?user=" + user,
+                    apiBaseUrl + "/api/rec/cajas/test_connection?user=" + user,
                     Map.class,
                     user);
         } catch (RestClientException e) {
@@ -115,12 +125,18 @@ public class FacturasService {
     }
 
     private FacturaDTO buildResponse(Long cuenta, List<FacturasSinCobroInter> facturas) {
+        BigDecimal interes = BigDecimal.ZERO;
         if (facturas == null || facturas.isEmpty()) {
             return createEmptyResponse(cuenta);
         }
+        for(FacturasSinCobroInter f: facturas){
+            System.out.println("factura " + f.getInteres());
+            interes = interes.add(f.getInteres() != null ? f.getInteres() : BigDecimal.ZERO);
+            System.out.println("INTERES: " + interes);
+        }
 
         BigDecimal subtotal = calculateSubtotal(facturas);
-        BigDecimal interes = calculateTotalInteres(facturas);
+        //BigDecimal interes = calculateTotalInteres(facturas);
         List<Long> facturaIds = extractFacturaIds(facturas);
 
         return FacturaDTO.builder()
@@ -128,18 +144,14 @@ public class FacturasService {
                 .responsablepago(facturas.get(0).getNombre())
                 .total(subtotal.add(interes))
                 .facturas(facturaIds)
+                .interes(interes)
+                .subtotal(subtotal)
                 .build();
     }
 
     private BigDecimal calculateSubtotal(List<FacturasSinCobroInter> facturas) {
         return facturas.stream()
                 .map(FacturasSinCobroInter::getSubtotal)
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    private BigDecimal calculateTotalInteres(List<FacturasSinCobroInter> facturas) {
-        return facturas.stream()
-                .map(this::getInteres)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
@@ -155,19 +167,6 @@ public class FacturasService {
                 .total(BigDecimal.ZERO)
                 .facturas(Collections.emptyList())
                 .build();
-    }
-
-    private BigDecimal getInteres(FacturasSinCobroInter factura) {
-        try {
-            return restTemplate.getForObject(
-                    apiBaseUrl + "/intereses/calcularInteres?idfactura={id}&subtotal={subtotal}",
-                    BigDecimal.class,
-                    factura.getIdfactura(),
-                    factura.getSubtotal());
-        } catch (RestClientException e) {
-            log.error("Error al calcular interés para factura {}", factura.getIdfactura(), e);
-            return BigDecimal.ZERO;
-        }
     }
 
     public static class ServiceUnavailableException extends RuntimeException {

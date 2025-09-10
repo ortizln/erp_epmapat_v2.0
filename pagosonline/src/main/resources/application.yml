@@ -16,4 +16,4 @@ spring:
       ddl-auto: none
 app:
   api:
-    base-url: "http://msvc-recaudacion:9092/api/rec/"
+    base-url: "http://localhost:9092"

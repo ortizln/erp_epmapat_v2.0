@@ -3,13 +3,16 @@ package com.erp.sri.controller;
 import com.erp.sri.interfaces.Interes_int;
 import com.erp.sri.interfaces.LastConection_int;
 import com.erp.sri.model.*;
+import com.erp.sri.repository.TmpinteresxfacR;
 import com.erp.sri.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.env.OriginTrackedMapPropertySource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +35,8 @@ public class Factura_api {
     private Recaudacion_ser s_recaudacion;
     @Autowired
     private Impuestos_ser s_impuesto;
+    @Autowired
+    private TmpinteresxfacR tmpinteresxfacR;
 
     @GetMapping("/sincobro/cliente")
     public ResponseEntity<List<Factura_interes>> getSinCobro(@RequestParam Long idcliente) {
@@ -55,6 +60,7 @@ public class Factura_api {
         //DECLARAR NUEVA RECAUDACION
         Recaudacion recaudacion = new Recaudacion();
         LocalDateTime date = LocalDateTime.now();
+        LocalTime hora = LocalTime.now();
         if(lastConection.getEstado() == 1){
             try {
                 // Imprimir las claves "facturas"
@@ -85,8 +91,9 @@ public class Factura_api {
                             }
                             _factura.setPagado(1L);
                             _factura.setFechacobro(date);
+                            _factura.setHoracobro(hora);
                             _factura.setUsuariocobro(facturaRequest.getAutentification());
-                            _factura.setInterescobrado(s_interes.interesOfFactura(facturaId));
+                            _factura.setInterescobrado(tmpinteresxfacR.interesapagar(facturaId));
                             _factura.setSwiva(s_impuesto.calcularIva(facturaId));
                             Facturas facCobrada = s_factura.cobrarFactura(_factura);
                             facxrecauda.setEstado(1L);

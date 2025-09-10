@@ -10,35 +10,37 @@ import java.util.List;
 public interface FacturasR extends JpaRepository<Facturas, Long> {
     @Query(value = """
             select
-            	f.idfactura,
-            	sum(rf.cantidad * rf.valorunitario) as subtotal,
-            	f.formapago,
-            	f.feccrea,
-            	f.fechatransferencia,
-            	c.nombre,
-            	ti.interesapagar as interes
-            from
-            	facturas f
-            join clientes c on
-            	f.idcliente = c.idcliente
-            join rubroxfac rf on
-            	f.idfactura = rf.idfactura_facturas
-            join tmpinteresxfac ti on\s
-            ti.idfactura= f.idfactura
+                f.idfactura,
+                sum(rf.cantidad * rf.valorunitario) as subtotal,
+                f.formapago,
+                f.feccrea,
+                f.fechatransferencia,
+                c.nombre,
+                coalesce(ti.interesapagar, 0) as interes
+            from facturas f
+            join abonados a\s
+                on f.idabonado = a.idabonado
+            join clientes c\s
+                on a.idresponsable = c.idcliente
+            join rubroxfac rf\s
+                on f.idfactura = rf.idfactura_facturas
+            left join tmpinteresxfac ti\s
+                on ti.idfactura = f.idfactura
             where
-            	f.idabonado = ?1
-            	and (( (f.estado = 1
-            		or f.estado = 2)
-            	and f.fechacobro is null)
-            	or f.estado = 3 )
-            	and f.fechaconvenio is null
-            	and f.fechaeliminacion is null
+                f.idabonado = ?1
+                and (((f.estado = 1 or f.estado = 2) and f.fechacobro is null)
+                     or f.estado = 3)
+                and f.fechaconvenio is null
+                and f.fechaeliminacion is null
             group by
-            	f.idfactura,
-            	c.nombre,
-            	ti.interesapagar\s
+                f.idfactura,
+                f.formapago,
+                f.feccrea,
+                f.fechatransferencia,
+                c.nombre,
+                ti.interesapagar
             order by
-            	f.idfactura
+                f.idfactura;
             """, nativeQuery = true)
     public List<FacturasSinCobroInter> findFacturasSinCobro(Long cuenta);
 
