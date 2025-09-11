@@ -2,11 +2,11 @@ package com.erp.pagosonline.controllers;
 
 import com.erp.pagosonline.DTO.FacturaRequestDTO;
 import com.erp.pagosonline.DTO.RecaudacionDTO;
+import com.erp.pagosonline.DTO.ReportdataDTO;
+import com.erp.pagosonline.interfaces.FacturasCobradas;
 import com.erp.pagosonline.interfaces.LastConection_int;
-import com.erp.pagosonline.models.Facturas;
-import com.erp.pagosonline.models.Facxrecauda;
-import com.erp.pagosonline.models.Recaudacion;
-import com.erp.pagosonline.models.Usuarios;
+import com.erp.pagosonline.models.*;
+import com.erp.pagosonline.repositories.RubroxfacR;
 import com.erp.pagosonline.repositories.TmpinteresxfacR;
 import com.erp.pagosonline.services.CajasService;
 import com.erp.pagosonline.services.FacturasService;
@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashMap;
@@ -40,6 +41,8 @@ public class FacturasApi {
     private TmpinteresxfacR tmpinteresxfacR;
     @Autowired
     private ImpuestoService impuestoService;
+    @Autowired
+    private RubroxfacR rubroxfacR;
     @GetMapping("/sincobrar")
     public ResponseEntity<Object> getFacturasSinCobro(@RequestParam Long user,@RequestParam Long cuenta){
         Object datos = facturasService.findFacturasSinCobro(user, cuenta);
@@ -52,63 +55,6 @@ public class FacturasApi {
 
         }
     }
-    @PutMapping
-    public ResponseEntity<Object> postCobrar(@RequestParam Long user, @RequestBody Map<String, Object> datos) {
-        Map<String, Object> connection = facturasService.getConnectionStatus(user);
-        Boolean test = facturasService.validateCajaStatus(connection);
-        if(test){
-            // Create and populate DTOs
-            FacturaRequestDTO facturaRequestDTO = new FacturaRequestDTO();
-            RecaudacionDTO recaudacionDTO = new RecaudacionDTO();
-            facturaRequestDTO.setAutentification(user);
-
-            // Safely convert "total" to BigDecimal
-            if (datos.containsKey("total")) {
-                try {
-                    Object totalObj = datos.get("total");
-                    BigDecimal total = new BigDecimal(totalObj.toString()); // Convert safely
-                    recaudacionDTO.setTotalpagar(total);
-                    recaudacionDTO.setFormapago(1L);
-                    recaudacionDTO.setRecibo(total);
-                    recaudacionDTO.setValor(total);
-                    recaudacionDTO.setCambio(BigDecimal.ZERO);
-                } catch (NumberFormatException e) {
-                    return ResponseEntity.badRequest().body("Invalid format for 'total'");
-                }
-            } else {
-                return ResponseEntity.badRequest().body("Missing 'total' field");
-            }
-
-            // Safely extract "facturas" list
-            if (datos.containsKey("facturas") && datos.get("facturas") instanceof List<?>) {
-                try {
-                    List<?> facturasRaw = (List<?>) datos.get("facturas");
-                    List<Long> facturas = facturasRaw.stream()
-                            .filter(Objects::nonNull)
-                            .map(f -> Long.parseLong(f.toString()))
-                            .collect(Collectors.toList());
-
-                    facturaRequestDTO.setFacturas(facturas);
-                    facturaRequestDTO.setRecaudacion(recaudacionDTO);
-                } catch (Exception e) {
-                    return ResponseEntity.badRequest().body("Invalid format for 'facturas' field");
-                }
-            } else {
-                return ResponseEntity.badRequest().body("Missing or invalid 'facturas' field");
-            }
-
-            // Call service method
-            Object putPagos = facturasService.savePagos(user, facturaRequestDTO);
-
-            return ResponseEntity.ok(putPagos);
-        }else{
-            Map<String, Object> respuesta = new HashMap<>();
-            respuesta.put("mensaje","Caja no iniciada");
-            return ResponseEntity.ok(respuesta);
-        }
-
-    }
-
 
     @PutMapping("/cobrar")
     public ResponseEntity<Map<String, Object>> cobrarFactura(@RequestBody FacturaRequestDTO facturaRequest) {
@@ -146,12 +92,25 @@ public class FacturasApi {
                             if (_factura.getEstado() == 3) {
                                 _factura.setEstado(1L);
                             }
+                            BigDecimal interesapagar = (tmpinteresxfacR.interesapagar(facturaId));
                             _factura.setPagado(1);
                             _factura.setFechacobro(date);
                             _factura.setHoracobro(hora);
                             _factura.setUsuariocobro(facturaRequest.getAutentification());
-                            _factura.setInterescobrado(tmpinteresxfacR.interesapagar(facturaId));
+                            _factura.setInterescobrado(interesapagar);
                             _factura.setSwiva(impuestoService.calcularIva(facturaId));
+                            if (interesapagar.compareTo(BigDecimal.ZERO) > 0) {
+                                Rubros rubro = new Rubros();
+                                Facturas factura = new Facturas();
+                                factura.setIdfactura(facturaId);
+                                Rubroxfac  rxf = new Rubroxfac();
+                                rubro.setIdrubro(6L);
+                                rxf.setIdfactura_facturas(factura);
+                                rxf.setCantidad(BigDecimal.ONE);
+                                rxf.setValorunitario(interesapagar);
+                                rxf.setIdrubro_rubros(rubro);
+                                rubroxfacR.save(rxf);
+                            }
                             Facturas facCobrada = facturasService.cobrarFactura(_factura);
                             facxrecauda.setEstado(1L);
                             facxrecauda.setIdfactura(facCobrada);
@@ -174,6 +133,16 @@ public class FacturasApi {
             respuesta.put("mensaje", "Caja cerrada no se puede cobrar");
             return ResponseEntity.ok(respuesta);
         }
+    }
+
+    @PostMapping("/reporte")
+    public ResponseEntity<List<FacturasCobradas>> getReporteFacturasCobradas(@RequestBody ReportdataDTO datos){
+        Long idusuario = datos.getIdusuario();
+        LocalDate df = datos.getDf();
+        LocalTime dh = datos.getDh();
+        LocalDate hf = datos.getHf();
+        LocalTime hh = datos.getHh();
+        return ResponseEntity.ok(facturasService.getReporteFacturasCobradas(idusuario,df,hf,dh, hh));
     }
 
 }

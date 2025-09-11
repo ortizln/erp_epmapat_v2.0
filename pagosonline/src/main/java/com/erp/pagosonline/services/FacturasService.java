@@ -3,6 +3,7 @@ package com.erp.pagosonline.services;
 import ch.qos.logback.classic.Logger;
 import com.erp.pagosonline.DTO.FacturaDTO;
 import com.erp.pagosonline.DTO.FacturaRequestDTO;
+import com.erp.pagosonline.interfaces.FacturasCobradas;
 import com.erp.pagosonline.interfaces.FacturasSinCobroInter;
 import com.erp.pagosonline.interfaces.NroFactura_int;
 import com.erp.pagosonline.models.Facturas;
@@ -19,6 +20,8 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -27,8 +30,6 @@ public class FacturasService {
     private static final Logger log = (Logger) LoggerFactory.getLogger(FacturasService.class);
 
     private final FacturasR dao;
-    private final RestTemplate restTemplate;
-    private final String apiBaseUrl;
     @Autowired
     private TmpinteresxfacR tmpinteresxfacR;
     @Autowired
@@ -38,43 +39,8 @@ public class FacturasService {
     @Autowired
     private CajasService cajasService;
     @Autowired
-    public FacturasService(FacturasR dao,
-            RestTemplate restTemplate,
-            @Value("${app.api.base-url}") String apiBaseUrl) {
+    public FacturasService(FacturasR dao) {
         this.dao = dao;
-        this.restTemplate = restTemplate;
-        this.apiBaseUrl = apiBaseUrl;
-    }
-
-    public Object savePagos(Long user, FacturaRequestDTO datos) {
-        System.out.println(datos);
-
-        Map<String, Object> respuesta = new HashMap<>();
-        respuesta.put("mensaje", "COBRANDO...");
-
-        try {
-            // Verificar conexión antes de cobrar
-            String healthUrl = apiBaseUrl + "/actuator/health"; // o cualquier endpoint disponible
-            ResponseEntity<String> healthResponse = restTemplate.getForEntity(healthUrl, String.class);
-            System.out.println(healthResponse);
-            if (healthResponse.getStatusCode().is2xxSuccessful()) {
-                // Si hay conexión, procedemos con el pago
-                restTemplate.put(apiBaseUrl + "/api/rec/facturas/cobrar", datos);
-
-                respuesta.put("status", "SUCCESS");
-                respuesta.put("detalle", "Pago realizado correctamente");
-                respuesta.put("body", datos);
-            } else {
-                respuesta.put("status", "ERROR");
-                respuesta.put("detalle", "No hay conexión con el servicio de recaudación");
-            }
-
-        } catch (RestClientException e) {
-            respuesta.put("status", "ERROR");
-            respuesta.put("detalle", "Error de conexión con recaudación: " + e.getMessage());
-        }
-
-        return respuesta;
     }
 
     public Object findFacturasSinCobro(Long user, Long cuenta) {
@@ -98,17 +64,6 @@ public class FacturasService {
         }
     }
 
-    public Map<String, Object> getConnectionStatus(Long user) {
-        try {
-            return restTemplate.getForObject(
-                    apiBaseUrl + "/api/rec/cajas/test_connection?user=" + user,
-                    Map.class,
-                    user);
-        } catch (RestClientException e) {
-            log.error("Error al obtener estado de conexión", e);
-            throw new ServiceUnavailableException("No se pudo verificar el estado de la caja");
-        }
-    }
     public Optional<Facturas> findFacturaById(Long idfactura){
         return dao.findById(idfactura);
     }
@@ -206,6 +161,10 @@ public class FacturasService {
     public static String fPemiCaja(Long numero) {
         String formato = "%03d";
         return String.format(formato, numero);
+    }
+
+    public List<FacturasCobradas> getReporteFacturasCobradas(Long idusuario, LocalDate df, LocalDate hf, LocalTime dh, LocalTime hh){
+        return dao.getReporteFacturasCobradas(idusuario,df,hf,dh, hh);
     }
 
 }
