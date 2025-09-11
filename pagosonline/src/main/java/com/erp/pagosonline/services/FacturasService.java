@@ -4,7 +4,11 @@ import ch.qos.logback.classic.Logger;
 import com.erp.pagosonline.DTO.FacturaDTO;
 import com.erp.pagosonline.DTO.FacturaRequestDTO;
 import com.erp.pagosonline.interfaces.FacturasSinCobroInter;
+import com.erp.pagosonline.interfaces.NroFactura_int;
+import com.erp.pagosonline.models.Facturas;
+import com.erp.pagosonline.repositories.CajasR;
 import com.erp.pagosonline.repositories.FacturasR;
+import com.erp.pagosonline.repositories.RecaudaxcajaR;
 import com.erp.pagosonline.repositories.TmpinteresxfacR;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +31,12 @@ public class FacturasService {
     private final String apiBaseUrl;
     @Autowired
     private TmpinteresxfacR tmpinteresxfacR;
+    @Autowired
+    private CajasR cajasR;
+    @Autowired
+    private RecaudaxcajaService rxc_service;
+    @Autowired
+    private CajasService cajasService;
     @Autowired
     public FacturasService(FacturasR dao,
             RestTemplate restTemplate,
@@ -69,7 +79,7 @@ public class FacturasService {
 
     public Object findFacturasSinCobro(Long user, Long cuenta) {
         validateInput(user, cuenta);
-        Map<String, Object> connection = getConnectionStatus(user);
+        Map<String, Object> connection = (Map<String, Object>) cajasService.testIfLogin(user);
         Boolean test = validateCajaStatus(connection);
         if (test) {
             List<FacturasSinCobroInter> facturas = dao.findFacturasSinCobro(cuenta);
@@ -99,7 +109,9 @@ public class FacturasService {
             throw new ServiceUnavailableException("No se pudo verificar el estado de la caja");
         }
     }
-
+    public Optional<Facturas> findFacturaById(Long idfactura){
+        return dao.findById(idfactura);
+    }
     public Boolean validateCajaStatus(Map<String, Object> connection) {
         // Validación de entrada
         Boolean respuesta = false;
@@ -174,4 +186,26 @@ public class FacturasService {
             super(message);
         }
     }
+    public <S extends Facturas> Facturas cobrarFactura(S factura){
+        if(factura.getNrofactura() == null){
+            NroFactura_int _nroFactura = cajasR.buildNroFactura(factura.getUsuariocobro());
+            String secuencial = fSecuencial(_nroFactura.getSecuencial());
+            String puntoEmision = fPemiCaja(_nroFactura.getEstablecimiento());
+            String codigo = fPemiCaja(_nroFactura.getCodigo());
+            String nrofactura = puntoEmision + '-' + codigo +'-'+ secuencial;
+            rxc_service.updateLastfactFinFac(factura.getUsuariocobro(), Long.valueOf(secuencial));
+            factura.setNrofactura(nrofactura);
+        }
+        return dao.save(factura);
+    }
+
+    public static String fSecuencial(Long numero) {
+        String formato = "%09d";
+        return String.format(formato, numero);
+    }
+    public static String fPemiCaja(Long numero) {
+        String formato = "%03d";
+        return String.format(formato, numero);
+    }
+
 }

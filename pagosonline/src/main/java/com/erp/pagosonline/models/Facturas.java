@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 @Entity
@@ -28,7 +29,7 @@ public class Facturas {
     private BigDecimal totaltarifa;
     private Integer pagado;
     private Long usuariocobro;
-    private LocalDate fechacobro;
+    private LocalDateTime fechacobro;
     private Long estado;
     private Long usuarioanulacion;
     private LocalDate fechaanulacion;
