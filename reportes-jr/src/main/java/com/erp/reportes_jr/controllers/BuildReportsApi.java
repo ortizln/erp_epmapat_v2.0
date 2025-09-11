@@ -1,9 +1,6 @@
 package com.erp.reportes_jr.controllers;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 import java.sql.Connection;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -13,6 +10,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import com.erp.reportes_jr.DTO.JasperDTO;
+import com.erp.reportes_jr.services.BuildReports;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -20,11 +19,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import com.erp.reportes_jr.DTO.JasperDTO;
-import com.erp.reportes_jr.services.BuildReports;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/jasperReports")
@@ -35,124 +35,6 @@ public class BuildReportsApi {
     @Autowired
     private DataSource dataSource;
 
-    @PostMapping("/__reportes")
-    public ResponseEntity<Resource> __generarPdfFactura(@RequestBody JasperDTO jasperDTO) {
-        try {
-            // Creamos un nuevo DTO donde meteremos valores ya convertidos
-            JasperDTO dto = new JasperDTO();
-            dto.setReportName(jasperDTO.getReportName());
-
-            // Formato para parsear cadenas “yyyy-MM-dd” a java.sql.Date
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
-            // Recorremos cada par <clave, valor> que nos llegó en el JSON
-            for (Map.Entry<String, Object> entry : jasperDTO.getParameters().entrySet()) {
-                String key = entry.getKey();
-                Object value = entry.getValue();
-                System.out.println("desde".equals(key) + " : desde");
-                System.out.println("hasta".equals(key) + " : hasta");
-
-                // Si la clave es “desde” o “hasta”, asumimos que viene como String “yyyy-MM-dd”
-                if ("desde".equals(key) || "hasta".equals(key) || "tope".equals(key)) {
-                    try {
-                        // Primero intentamos parsear como fecha con hora (formato completo)
-                        String[] dateFormats = {
-                                "yyyy-MM-dd HH:mm:ss", // Formato con hora completa
-                                "yyyy-MM-dd HH:mm", // Formato con hora y minutos
-                                "yyyy-MM-dd" // Formato solo fecha
-                        };
-
-                        java.util.Date parsed = null;
-                        ParseException lastException = null;
-                        // Intentamos con cada formato hasta que uno funcione
-                        for (String format : dateFormats) {
-                            try {
-                                SimpleDateFormat tempFormat = new SimpleDateFormat(format);
-                                tempFormat.setLenient(false); // Validación estricta
-                                parsed = tempFormat.parse(value.toString());
-                                System.out.println(parsed);
-                                break; // Si tiene éxito, salimos del bucle
-                            } catch (ParseException e) {
-                                lastException = e;
-                            }
-                        }
-
-                        if (parsed == null) {
-                            throw new IllegalArgumentException(
-                                    "La fecha '" + value + "' no tiene un formato válido. " +
-                                            "Formatos aceptados: yyyy-MM-dd, yyyy-MM-dd HH:mm, yyyy-MM-dd HH:mm:ss",
-                                    lastException);
-                        }
-
-                        // Almacenamos como java.sql.Timestamp si tiene hora, o java.sql.Date si es solo
-                        // fecha
-                        if (value.toString().trim().length() > 10) { // Tiene hora
-                            dto.getParameters().put(key, new java.sql.Timestamp(parsed.getTime()));
-                            System.out.println("CON HORA");
-                        } else {
-                            dto.getParameters().put(key, new java.sql.Date(parsed.getTime()));
-                        }
-
-                    } catch (Exception e) {
-                        throw new IllegalArgumentException("Error procesando fecha '" + value + "'", e);
-                    }
-                } else {
-                    /*
-                     * Para cualquier otro parámetro numérico (por ejemplo un id), puede venir como:
-                     * • Integer (189)
-                     * • Long (189L)
-                     * • String ("189")
-                     *
-                     * Lo normal para Jasper es que, si la consulta SQL espera un LONG,
-                     * debemos convertirlo a Long en todos los casos.
-                     */
-                    if (value instanceof Integer) {
-                        // de Integer a Long
-                        // dto.getParameters().put(key, ((Integer) value).longValue());
-                        dto.getParameters().put(key, (value));
-
-                    } else if (value instanceof Long) {
-                        System.out.println("Long");
-                        dto.getParameters().put(key, (Long) value);
-                    } else if (value instanceof String) {
-                        // intentamos parsear el String a Long
-                        try {
-                            dto.getParameters().put(key, Long.valueOf((String) value));
-                        } catch (NumberFormatException ex) {
-                            throw new IllegalArgumentException("El parámetro '" + key +
-                                    "' con valor '" + value + "' no es un Long válido", ex);
-                        }
-                    } else {
-                        // Si fuese otro tipo (por ejemplo List<?> u Object), lo dejamos tal cual,
-                        // o bien podrías lanzar un error indicando tipo no esperado.
-                        dto.getParameters().put(key, value);
-                    }
-                }
-            }
-
-            // Ahora invocamos a buildReport pasándole la conexión y el dto ya “limpio”
-            ByteArrayOutputStream pdfStream;
-            try (Connection conn = dataSource.getConnection()) {
-                pdfStream = buildReports.buildReport(dto, conn);
-            }
-
-            // Envolvemos el resultado en un Resource para devolverlo al cliente
-            InputStreamResource resource = new InputStreamResource(
-                    new ByteArrayInputStream(pdfStream.toByteArray()));
-
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=" + jasperDTO.getReportName() + ".pdf")
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .contentLength(pdfStream.size())
-                    .body(resource);
-
-        } catch (Exception e) {
-            // Aquí podrías registrar el error con un logger y devolver 500
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-    }
-
     @GetMapping("/reportes")
     public ResponseEntity<String> reportesGetNotAllowed() {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
@@ -160,19 +42,18 @@ public class BuildReportsApi {
     }
 
     @PostMapping("/reportes")
-    public ResponseEntity<Resource> generarPdfFactura(@RequestBody JasperDTO jasperDTO) {
+    public ResponseEntity<Resource> generarReporte(@RequestBody JasperDTO jasperDTO) {
         try {
             JasperDTO dto = new JasperDTO();
             dto.setReportName(jasperDTO.getReportName());
+            dto.setExtencion(jasperDTO.getExtencion());
 
             Map<String, Object> params = new HashMap<>();
 
             for (Map.Entry<String, Object> entry : jasperDTO.getParameters().entrySet()) {
                 String key = entry.getKey();
                 Object value = entry.getValue();
-
-                if (value == null)
-                    continue;
+                if (value == null) continue;
 
                 if ("desde".equalsIgnoreCase(key) || "hasta".equalsIgnoreCase(key) || "tope".equalsIgnoreCase(key)) {
                     params.put(key, parseDateToSQLType(value.toString()));
@@ -181,23 +62,41 @@ public class BuildReportsApi {
                 } else {
                     params.put(key, normalizeParameterValue(key, value));
                 }
-
             }
 
             dto.setParameters(params);
 
-            ByteArrayOutputStream outputStream;
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             try (Connection conn = dataSource.getConnection()) {
-                outputStream = buildReports.buildReport(dto, conn);
+                if (".xlsx".equalsIgnoreCase(dto.getExtencion())) {
+                    outputStream = buildReports.buildXlsxReport(dto, conn);
+                } else if (".csv".equalsIgnoreCase(dto.getExtencion())) {
+                    outputStream = buildReports.buildCsvReport(dto, conn);
+                } else { // por defecto PDF
+                    outputStream = buildReports.buildPdfReport(dto, conn);
+                }
             }
 
-            ByteArrayInputStream pdfStream = new ByteArrayInputStream(outputStream.toByteArray());
-            InputStreamResource resource = new InputStreamResource(pdfStream);
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+            InputStreamResource resource = new InputStreamResource(inputStream);
+
+            String fileName = jasperDTO.getReportName() + jasperDTO.getExtencion();
+            MediaType mediaType;
+
+            switch (dto.getExtencion().toLowerCase()) {
+                case ".xlsx":
+                    mediaType = MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                    break;
+                case ".csv":
+                    mediaType = MediaType.parseMediaType("text/csv");
+                    break;
+                default:
+                    mediaType = MediaType.APPLICATION_PDF;
+            }
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=" + jasperDTO.getReportName() + ".pdf")
-                    .contentType(MediaType.APPLICATION_PDF)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + fileName)
+                    .contentType(mediaType)
                     .contentLength(outputStream.size())
                     .body(resource);
 
@@ -206,6 +105,7 @@ public class BuildReportsApi {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+
 
     private Object parseDateToSQLType(String value) throws ParseException {
         String[] formats = {
@@ -269,45 +169,10 @@ public class BuildReportsApi {
         } else if (value instanceof java.util.Date) {
             return value; // Devuelve la fecha tal cual
         } else if (value instanceof String) {
-            try {
-                Integer intVal = Integer.valueOf((String) value);
-                return intVal;
-            } catch (NumberFormatException e) {
-                return value; // o lanza excepción si sabes que debe ser Integer
-            }
+            // 🔥 Mantener como String, no convertir a Integer
+            return value;
         }
         return value;
-    }
-
-    @PostMapping("/comprobante")
-    public ResponseEntity<String> imprimirPDF(@RequestParam("pdf") MultipartFile pdfFile) {
-        try {
-            // Guardar archivo temporal
-            File tempFile = File.createTempFile("comprobante_", ".pdf");
-            pdfFile.transferTo(tempFile);
-
-            // Llamar función de impresión
-            imprimirArchivoPDF(tempFile);
-
-            return ResponseEntity.ok("Impresión enviada correctamente.");
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Error al imprimir: " + e.getMessage());
-        }
-    }
-
-    private void imprimirArchivoPDF(File pdf) throws IOException {
-        String os = System.getProperty("os.name").toLowerCase();
-
-        if (os.contains("win")) {
-            // Windows: usar comando nativo para imprimir
-            String comando = "cmd /c start /min acrord32 /p /h \"" + pdf.getAbsolutePath() + "\"";
-            Runtime.getRuntime().exec(comando);
-        } else {
-            // Linux o macOS: usar lpr
-            String[] comando = { "lp", "-d", "nombre_impresora", pdf.getAbsolutePath() };
-            Process process = new ProcessBuilder(comando).start();
-        }
     }
 
 }
