@@ -23,7 +23,7 @@ services:
     ports:
       - "8761:8761"
     environment:
-      - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
+      - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
@@ -47,7 +47,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
+      - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69/ErpEpmapaT
       - DB_USER=postgres
@@ -71,7 +71,7 @@ services:
     ports:
       - "9091:9091"
     environment:
-      - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
+      - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
@@ -95,7 +95,7 @@ services:
     ports:
       - "9092:9092"
     environment:
-      - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
+      - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
@@ -119,7 +119,7 @@ services:
     ports:
       - "9093:9093"
     environment:
-      - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
+      - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
@@ -143,7 +143,7 @@ services:
     ports:
       - "9094:9094"
     environment:
-      - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
+      - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
@@ -167,7 +167,7 @@ services:
     ports:
       - "9096:9096"
     environment:
-      - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
+      - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
@@ -191,7 +191,7 @@ services:
     ports:
       - "9097:9097"
     environment:
-      - EUREKA_SERVICEURL=http://msvc-eureka:8761/eureka/
+      - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
       - DB_USER=postgres
