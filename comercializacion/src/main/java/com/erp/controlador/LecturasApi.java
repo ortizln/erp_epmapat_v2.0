@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import com.erp.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.erp.DTO.EmisionOfCuentaDTO;
 import com.erp.excepciones.ResourceNotFoundExcepciones;
-import com.erp.interfaces.ConsumoxCat_int;
-import com.erp.interfaces.CountRubrosByEmision;
-import com.erp.interfaces.FecEmision;
-import com.erp.interfaces.RepEmisionEmi;
-import com.erp.interfaces.RepFacEliminadasByEmision;
-import com.erp.interfaces.RubroxfacIReport;
 import com.erp.modelo.Lecturas;
 import com.erp.servicio.LecturaServicio;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -244,4 +239,8 @@ public class LecturasApi {
 		return ResponseEntity.ok(lecServicio.calcularValores(datos.getCuenta(), datos.getIdfactura(), datos.getM3(),
 				datos.getCategoria(), datos.isSwMunicipio(), datos.isSwAdultoMayor(), datos.isSwAguapotable()));
 	}
+    @GetMapping("/swalcantarillado")
+    public List<EmisionesInterface> getSWalcatarillados(@RequestParam Long idemision) {
+        return lecServicio.getSWalcatarillados(idemision);
+    }
 }

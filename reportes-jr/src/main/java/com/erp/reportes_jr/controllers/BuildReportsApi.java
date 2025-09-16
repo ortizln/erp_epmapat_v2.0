@@ -40,7 +40,6 @@ public class BuildReportsApi {
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED)
                 .body("El método GET no está permitido en este endpoint. Usa POST.");
     }
-
     @PostMapping("/reportes")
     public ResponseEntity<Resource> generarReporte(@RequestBody JasperDTO jasperDTO) {
         try {

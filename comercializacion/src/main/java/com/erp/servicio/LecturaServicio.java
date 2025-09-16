@@ -7,17 +7,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+
+import com.erp.interfaces.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.erp.DTO.EmisionOfCuentaDTO;
-import com.erp.interfaces.ConsumoxCat_int;
-import com.erp.interfaces.CountRubrosByEmision;
-import com.erp.interfaces.FacIntereses;
-import com.erp.interfaces.FecEmision;
-import com.erp.interfaces.RepEmisionEmi;
-import com.erp.interfaces.RepFacEliminadasByEmision;
-import com.erp.interfaces.RubroxfacIReport;
 import com.erp.modelo.Categorias;
 import com.erp.modelo.Facturas;
 import com.erp.modelo.Lecturas;
@@ -602,5 +597,23 @@ public class LecturaServicio {
 			return dao_rubroxfac.save(rxf);
 		}
 	}
+
+    public List<EmisionesInterface> getSWalcatarillados(Long idemision) {
+        List<EmisionesInterface> emiI = dao.GetCuentasCeros(idemision);
+
+        emiI.forEach(e -> {
+            calcularValores(
+                    e.getCuenta(),
+                    e.getIdfactura(),
+                    e.getM3(),  // Mejor si es Integer
+                    e.getCategoria(),
+                    e.getSwMunicipio(),
+                    e.getSwAdultoMayor(),
+                    e.getSwAguapotable()
+            );
+        });
+
+        return emiI; // devolvemos la lista ya procesada
+    }
 
 }

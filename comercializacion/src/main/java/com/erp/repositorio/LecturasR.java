@@ -5,17 +5,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import com.erp.interfaces.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.scheduling.annotation.Async;
 
-import com.erp.interfaces.ConsumoxCat_int;
-import com.erp.interfaces.CountRubrosByEmision;
-import com.erp.interfaces.FacIntereses;
-import com.erp.interfaces.FecEmision;
-import com.erp.interfaces.RepEmisionEmi;
-import com.erp.interfaces.RepFacEliminadasByEmision;
-import com.erp.interfaces.RubroxfacIReport;
 import com.erp.modelo.Lecturas;
 
 public interface LecturasR extends JpaRepository<Lecturas, Long> {
@@ -235,5 +229,27 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
 " GROUP BY a.idabonado_abonados,l.idfactura, l.lecturaanterior, l.lecturaactual " +
 "HAVING COUNT(rf.idrubro_rubros) = 0 ", nativeQuery = true)
 public List<CountRubrosByEmision>getCuentaRubrosByEmision(long idemision );
+
+
+    @Query(value = """
+			SELECT
+			    l.idfactura,
+			    SUM(l.lecturaactual - l.lecturaanterior) AS m3,
+			    a.idabonado as cuenta,
+			    l.idcategoria AS categoria,
+			    a.swalcantarillado AS swAguapotable,
+			    a.municipio AS swMunicipio,
+			    a.adultomayor AS swAdultoMayor
+			FROM lecturas l
+			JOIN abonados a ON l.idabonado_abonados = a.idabonado
+			LEFT JOIN rubroxfac rf ON l.idfactura = rf.idfactura_facturas
+			WHERE l.idemision = ?1
+			GROUP BY
+			    l.idfactura, a.idabonado, l.idcategoria,
+			    a.swalcantarillado, a.municipio, a.adultomayor
+			HAVING SUM(l.lecturaactual - l.lecturaanterior) >= 0
+			   AND COUNT(rf.idrubro_rubros) = 0
+			""", nativeQuery = true)
+    List<EmisionesInterface> GetCuentasCeros(Long idemision);
 
 }

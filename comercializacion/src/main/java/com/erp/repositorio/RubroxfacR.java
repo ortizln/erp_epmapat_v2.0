@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import com.erp.interfaces.EmisionesInterface;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -248,5 +249,27 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			"\t\tgroup by r.descripcion\r\n" + //
 			"", nativeQuery = true)
 	public List<RubroxfacI> getRubrosForRemisiones(Long idcliente, LocalDate topefecha);
+
+
+    @Query(value = """
+			SELECT
+			    l.idfactura,
+			    SUM(l.lecturaactual - l.lecturaanterior) AS m3,
+			    a.idabonado as cuenta,
+			    l.idcategoria AS categoria,
+			    a.swalcantarillado AS swAguapotable,
+			    a.municipio AS swMunicipio,
+			    a.adultomayor AS swAdultoMayor
+			FROM lecturas l
+			JOIN abonados a ON l.idabonado_abonados = a.idabonado
+			LEFT JOIN rubroxfac rf ON l.idfactura = rf.idfactura_facturas
+			WHERE l.idemision = ?1
+			GROUP BY
+			    l.idfactura, a.idabonado, l.idcategoria,
+			    a.swalcantarillado, a.municipio, a.adultomayor
+			HAVING SUM(l.lecturaactual - l.lecturaanterior) >= 0
+			   AND COUNT(rf.idrubro_rubros) = 0
+			""", nativeQuery = true)
+    List<EmisionesInterface> GetCuentasCeros(Long idemision);
 
 }

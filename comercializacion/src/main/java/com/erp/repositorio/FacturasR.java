@@ -594,4 +594,26 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
 	 * a.idabonado
 	 */
 
+    @Query(value = """
+    SELECT
+         f.idfactura,
+         f.nrofactura,
+         f.fechacobro,
+         u.nomusu,
+         f.idabonado,
+         c.nombre,
+         c.cedula,
+         c.email,
+         c.direccion,
+         c.telefono,
+         t.codigo
+     FROM facturas f
+     JOIN usuarios u ON f.usuariocobro = u.idusuario
+     JOIN clientes c ON f.idcliente = c.idcliente
+     JOIN tpidentifica t ON c.idtpidentifica_tpidentifica = t.idtpidentifica
+     WHERE f.idfactura = ?1 
+     AND f.pagado <> 0
+    """, nativeQuery = true)
+    Fecfactura forFecfactura(Long idfactura);
+
 }

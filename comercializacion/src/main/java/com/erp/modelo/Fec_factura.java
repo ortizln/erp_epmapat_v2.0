@@ -2,6 +2,7 @@ package com.erp.modelo;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 
@@ -19,7 +20,7 @@ public class Fec_factura implements Serializable {
    private String establecimiento;
    private String puntoemision;
    private String direccionestablecimiento;
-   private LocalDate fechaemision;
+   private LocalDateTime fechaemision;
    private String tipoidentificacioncomprador;
    private String guiaremision;
    private String razonsocialcomprador;
@@ -103,11 +104,11 @@ public class Fec_factura implements Serializable {
       this.direccionestablecimiento = direccionestablecimiento;
    }
 
-   public LocalDate getFechaemision() {
+   public LocalDateTime getFechaemision() {
       return fechaemision;
    }
 
-   public void setFechaemision(LocalDate fechaemision) {
+   public void setFechaemision(LocalDateTime fechaemision) {
       this.fechaemision = fechaemision;
    }
 

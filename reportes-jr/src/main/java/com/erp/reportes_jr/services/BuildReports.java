@@ -5,7 +5,7 @@ import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.sql.Connection;
 
-import com.itzel.jasperReports.DTO.JasperDTO;
+import com.erp.reportes_jr.DTO.JasperDTO;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.export.JRCsvExporter;
 import net.sf.jasperreports.engine.export.ooxml.JRXlsxExporter;

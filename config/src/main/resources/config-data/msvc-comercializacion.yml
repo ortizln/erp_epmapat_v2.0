@@ -1,5 +1,8 @@
 server:
   port: 9093
+spring:
+  application:
+    name: msvc-comercializacion
 eureka:
   instance:
     hostname: msvc-comercializacion  # El nombre del contenedor o el servicio en Docker Compose

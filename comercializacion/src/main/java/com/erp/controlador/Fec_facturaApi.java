@@ -1,6 +1,7 @@
 package com.erp.controlador;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -106,4 +107,12 @@ public class Fec_facturaApi {
       fecFacturaDatos fecFactura = fecfacServicio.getNroFactura(idfactura);
       return fecFactura;
    }
-}
+
+   @GetMapping("/createFacElectro")
+   public ResponseEntity<Map<String, Object>> generarFecFactura(@RequestParam Long idfactura) {
+       System.out.println(idfactura);
+       return ResponseEntity.ok(fecfacServicio.generarFecFactura(idfactura));
+   }
+
+
+   }
