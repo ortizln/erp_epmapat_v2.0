@@ -42,7 +42,8 @@ public class FacturasService {
     public FacturasService(FacturasR dao) {
         this.dao = dao;
     }
-
+    @Value("${eureka.service-url}")
+    private String eurekaServiceUrl;
     public Object findFacturasSinCobro(Long user, Long cuenta) {
         validateInput(user, cuenta);
         Map<String, Object> connection = (Map<String, Object>) cajasService.testIfLogin(user);
@@ -97,9 +98,7 @@ public class FacturasService {
             return createEmptyResponse(cuenta);
         }
         for(FacturasSinCobroInter f: facturas){
-            System.out.println("factura " + f.getInteres());
             interes = interes.add(f.getInteres() != null ? f.getInteres() : BigDecimal.ZERO);
-            System.out.println("INTERES: " + interes);
         }
 
         BigDecimal subtotal = calculateSubtotal(facturas);
@@ -160,7 +159,8 @@ public class FacturasService {
 
         try {
             // Construimos la URL del microservicio
-            String url = "http://localhost:8080/fec_factura/createFacElectro?idfactura=" + savedFactura.getIdfactura();
+            String url = eurekaServiceUrl + ":8080/fec_factura/createFacElectro?idfactura=" + savedFactura.getIdfactura();
+
 
             // Consumimos el microservicio (POST sin body, pero puedes ajustar si requiere JSON)
             ResponseEntity<String> response = restTemplate.getForEntity(url, null, String.class);
