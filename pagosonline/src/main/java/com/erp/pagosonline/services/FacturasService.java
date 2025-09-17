@@ -141,6 +141,9 @@ public class FacturasService {
             super(message);
         }
     }
+    @Autowired
+    private RestTemplate restTemplate;
+
     public <S extends Facturas> Facturas cobrarFactura(S factura){
         if(factura.getNrofactura() == null){
             NroFactura_int _nroFactura = cajasR.buildNroFactura(factura.getUsuariocobro());
@@ -151,6 +154,41 @@ public class FacturasService {
             rxc_service.updateLastfactFinFac(factura.getUsuariocobro(), Long.valueOf(secuencial));
             factura.setNrofactura(nrofactura);
         }
+
+        // Guardamos la factura primero
+        Facturas savedFactura = dao.save(factura);
+
+        try {
+            // Construimos la URL del microservicio
+            String url = "http://localhost:8080/fec_factura/createFacElectro?idfactura=" + savedFactura.getIdfactura();
+
+            // Consumimos el microservicio (POST sin body, pero puedes ajustar si requiere JSON)
+            ResponseEntity<String> response = restTemplate.getForEntity(url, null, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                System.out.println("Factura electrónica creada correctamente en el microservicio: " + response.getBody());
+            } else {
+                System.err.println("Error al crear factura electrónica. Status: " + response.getStatusCode());
+            }
+
+        } catch (Exception e) {
+            System.err.println("Error al llamar al microservicio de factura electrónica: " + e.getMessage());
+        }
+
+        return savedFactura;
+    }
+
+    public <S extends Facturas> Facturas _cobrarFactura(S factura){
+        if(factura.getNrofactura() == null){
+            NroFactura_int _nroFactura = cajasR.buildNroFactura(factura.getUsuariocobro());
+            String secuencial = fSecuencial(_nroFactura.getSecuencial());
+            String puntoEmision = fPemiCaja(_nroFactura.getEstablecimiento());
+            String codigo = fPemiCaja(_nroFactura.getCodigo());
+            String nrofactura = puntoEmision + '-' + codigo +'-'+ secuencial;
+            rxc_service.updateLastfactFinFac(factura.getUsuariocobro(), Long.valueOf(secuencial));
+            factura.setNrofactura(nrofactura);
+        }
+        //implementar un resttemplate para consumir un microservicio
         return dao.save(factura);
     }
 

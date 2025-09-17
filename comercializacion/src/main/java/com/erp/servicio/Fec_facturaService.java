@@ -8,19 +8,14 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import com.erp.interfaces.DefinirProjection;
+import com.erp.interfaces.FacIntereses;
 import com.erp.interfaces.Fecfactura;
 import com.erp.modelo.*;
-import com.erp.modelo.administracion.Definir;
-import com.erp.repositorio.FacturasR;
-import com.erp.repositorio.LecturasR;
-import com.erp.repositorio.RubroxfacR;
+import com.erp.repositorio.*;
 import com.erp.repositorio.administracion.DefinirR;
-import com.erp.sri.models.Factura;
-import com.erp.sri.services.ClaveAccesoGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.erp.repositorio.Fec_facturaR;
 import com.erp.sri.interfaces.fecFacturaDatos;
 
 @Service
@@ -29,8 +24,6 @@ public class Fec_facturaService {
    @Autowired
    private Fec_facturaR dao;
    @Autowired
-   private ClaveAccesoGenerator accesoGenerator;
-   @Autowired
    private FacturasR facturasR;
    @Autowired
    private RubroxfacR rubroxfacR;
@@ -38,6 +31,12 @@ public class Fec_facturaService {
    private DefinirR definirR;
    @Autowired
    private LecturasR lecturasR;
+   @Autowired
+   private Fec_factura_detallesR fecFacturaDetallesR;
+   @Autowired
+   private Fec_factura_detalles_impuestosR fecFacturaDetallesImpuestosR;
+   @Autowired
+   private Fec_factura_pagosR fecFacturaPagosR;
 
    public List<Fec_factura> findAll() {
       return dao.findAll();
@@ -78,18 +77,16 @@ public class Fec_facturaService {
         String concepto = "OTROS SERVICIOS";
         String[] partes = separarCodigo(factura.getNrofactura());
         String establecimiento = partes[0]; // 001
-        String puntoEmision   = partes[1]; // 013
-        String secuencial     = partes[2]; // 000022233
-        /*
-         * Para crear el concepto verificamos si la planilla existe en lecturas y poder sacar los m3
-         * la feha de emision y el numero de medidor
-        */
+        String puntoEmision = partes[1]; // 013
+        String secuencial = partes[2]; // 000022233
+
         Lecturas lectura = lecturasR.findOnefactura(idfactura);
-        if (lectura != null){
+        float m3 = 0;
+        if (lectura != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("MMMM yyyy", new Locale("es", "ES"));
             Date fecemision = lecturasR.findDateByIdfactura(idfactura);
             String fechaFormateada = sdf.format(fecemision);
-            float m3 = lectura.getLecturaactual() - lectura.getLecturaanterior();
+            m3 = lectura.getLecturaactual() - lectura.getLecturaanterior();
             concepto = "M3: " + m3 + " Emision: " + fechaFormateada + " Nro medidor: " + lectura.getIdabonado_abonados().getNromedidor();
 
         }
@@ -110,16 +107,14 @@ public class Fec_facturaService {
         fecFactura.setReferencia(factura.getIdabonado());
         fecFactura.setDireccioncomprador(factura.getDireccion());
         fecFactura.setClaveacceso(generarClaveAcceso(fecFactura, definir));
-        Map<String, Object> facdetalle = generarFecFacturaDetalles(idfactura);
-        response.put("status", "201");
-        response.put("message", "Factura procesada correctamente");
-        response.put("body", fecFactura);
-        response.put("detalle", facdetalle);
+        fecFactura.setEstado("I");
+        dao.save(fecFactura);
+        generarFecFacturaDetalles(idfactura);
+        generarFecFacturaPagos(idfactura, (long) m3);
         return response;
     }
     //CREAR FACTURA DETALLE
-    public Map<String, Object> generarFecFacturaDetalles(Long idfactura) {
-        Map<String, Object> response = new HashMap<>();
+    public void generarFecFacturaDetalles(Long idfactura) {
         Fec_factura_detalles fecFacturaDetalles = new Fec_factura_detalles();
         List<Rubroxfac> rxf = rubroxfacR.findByIdfactura(idfactura);
         fecFacturaDetalles.setIdfactura(idfactura);
@@ -131,20 +126,46 @@ public class Fec_facturaService {
             fecFacturaDetalles.setCantidad(BigDecimal.valueOf(item.getCantidad()));
             fecFacturaDetalles.setPreciounitario(item.getValorunitario());
             fecFacturaDetalles.setDescripcion(item.getIdrubro_rubros().getDescripcion());
-            generarFecFacturaDetallesImpuestos(item);
+            fecFacturaDetallesR.save(fecFacturaDetalles);
+            generarFecFacturaDetallesImpuestos(item, Long.valueOf(idfacdetalle));
         });
-        response.put("status", "201");
-        response.put("message", "Factura procesada correctamente");
-        return response;
     }
-    public Map<String, Object> generarFecFacturaDetallesImpuestos(Rubroxfac rxf) {
-       Map<String, Object> response = new HashMap<>();
-       System.out.println(rxf.getValorunitario());
-        response.put("status", "201");
-        response.put("message", "Factura procesada correctamente");
-        return response;
+    public void generarFecFacturaDetallesImpuestos(Rubroxfac rxf, Long idfecfacturadetalle) {
+       Fec_factura_detalles_impuestos fecFacturaDetallesImpuestos = new Fec_factura_detalles_impuestos();
+        String idfacdetalleimpuestos = String.valueOf(rxf.getIdrubro_rubros().getIdrubro()+""+idfecfacturadetalle);
+        fecFacturaDetallesImpuestos.setIdfacturadetalleimpuestos(Long.valueOf(idfacdetalleimpuestos));
+       fecFacturaDetallesImpuestos.setIdfacturadetalle(idfecfacturadetalle);
+       fecFacturaDetallesImpuestos.setCodigoimpuesto("2");
+       fecFacturaDetallesImpuestos.setCodigoporcentaje("0");
+       fecFacturaDetallesImpuestos.setBaseimponible(rxf.getValorunitario());
+        fecFacturaDetallesImpuestosR.save(fecFacturaDetallesImpuestos);
+
     }
 
+    public void generarFecFacturaPagos(Long idfactura, Long m3) {
+        List<FacIntereses> intereses = facturasR.getForIntereses(idfactura);
+        for (FacIntereses item : intereses) {
+            Fec_factura_pagos fecFacturaPagos = new Fec_factura_pagos();
+            fecFacturaPagos.setTotal(BigDecimal.valueOf(item.getSuma()));
+            Long formapago = item.getFormapago();
+            if (formapago == 1 || formapago == 3 || formapago == 6) {
+                fecFacturaPagos.setFormapago("01"); // Efectivo
+            } else if (formapago == 4 || formapago == 7) {
+                fecFacturaPagos.setFormapago("20"); // Tarjeta
+            } else if (formapago == 5) {
+                fecFacturaPagos.setFormapago("19"); // Otro medio
+            } else {
+                fecFacturaPagos.setFormapago("99"); // Desconocido
+            }
+            String idfacturapagos = String.valueOf(idfactura+""+m3);
+            fecFacturaPagos.setIdfacturapagos(Long.valueOf(idfacturapagos));
+            fecFacturaPagos.setUnidadtiempo("dias");
+            fecFacturaPagos.setPlazo(0);
+            fecFacturaPagos.setIdfactura(idfactura);
+            fecFacturaPagosR.save(fecFacturaPagos);
+
+        }
+    }
 
         // COMPLEMENTOS PARA GENERAR LA FECFACTURA
     public static String[] separarCodigo(String codigo) {
