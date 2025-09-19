@@ -12,6 +12,7 @@ import javax.xml.namespace.QName;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 
 public class EnvioComprobantesWs {
     private static RecepcionComprobantesOfflineService service;
@@ -40,12 +41,18 @@ public class EnvioComprobantesWs {
         }
     }
 
+
     public RespuestaSolicitud enviarComprobante(String ruc, File xmlFile, String tipoComprobante, String versionXsd) {
         RespuestaSolicitud response = null;
 
         try {
-            RecepcionComprobantesOffline port = service.getRecepcionComprobantesOfflinePort();
-            response = port.validarComprobante(ArchivoUtils.archivoToByte(xmlFile));
+            RecepcionComprobantesOffline port = (RecepcionComprobantesOffline) service.getRecepcionComprobantesOfflinePort();
+
+            // Leer archivo a bytes usando Java estándar
+            byte[] xmlBytes = Files.readAllBytes(xmlFile.toPath());
+
+            // Enviar al SRI
+            response = port.validarComprobante(xmlBytes);
             return response;
         } catch (Exception e) {
             e.printStackTrace();
@@ -59,7 +66,7 @@ public class EnvioComprobantesWs {
         RespuestaSolicitud response = null;
 
         try {
-            RecepcionComprobantesOffline port = service.getRecepcionComprobantesOfflinePort();
+            RecepcionComprobantesOffline port = (RecepcionComprobantesOffline) service.getRecepcionComprobantesOfflinePort();
             response = port.validarComprobante(xml);
             return response;
         } catch (Exception e) {
@@ -70,20 +77,6 @@ public class EnvioComprobantesWs {
         }
     }
 
-    public RespuestaSolicitud enviarComprobanteLotes(String ruc, File xml, String tipoComprobante, String versionXsd) {
-        RespuestaSolicitud response = null;
-
-        try {
-            RecepcionComprobantesOffline port = service.getRecepcionComprobantesOfflinePort();
-            response = port.validarComprobante(ArchivoUtils.archivoToByte(xml));
-            return response;
-        } catch (Exception e) {
-            e.printStackTrace();
-            response = new RespuestaSolicitud();
-            response.setEstado(e.getMessage());
-            return response;
-        }
-    }
 
     public static RespuestaSolicitud obtenerRespuestaEnvio(File archivo, String ruc, String tipoComprobante, String claveDeAcceso, String urlWsdl) {
         RespuestaSolicitud respuesta = new RespuestaSolicitud();
