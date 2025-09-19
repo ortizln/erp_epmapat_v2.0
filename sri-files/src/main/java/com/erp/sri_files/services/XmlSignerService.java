@@ -1,6 +1,7 @@
 package com.erp.sri_files.services;
 
 import com.erp.sri_files.config.SingleKeyStoreKeyingDataProvider;
+import org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI;
 import org.springframework.stereotype.Service;
 import org.xml.sax.InputSource;
 
@@ -9,6 +10,7 @@ import xades4j.production.*;
 
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
@@ -51,6 +53,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 import xades4j.providers.*;
+import xades4j.providers.impl.DirectKeyingDataProvider;
 
 
 @Service
@@ -59,12 +62,126 @@ public class XmlSignerService {
     /**
      * Firma un XML con XAdES-BES usando un certificado .p12 en memoria.
      *
-     * @param xmlContent XML sin firmar
-     * @param p12Bytes   Certificado .p12 en bytes (desde BD)
+     * @param certificadoBytes XML sin firmar
+     * @param xmlContent   Certificado .p12 en bytes (desde BD)
      * @param password   Contraseña del .p12
      * @return XML firmado (String)
      */
-    public static String signXml(String xmlContent, byte[] p12Bytes, String password) throws Exception {
+    public String signXml(String xmlContent, byte[] certificadoBytes, String password) throws Exception {
+        // Validaciones
+        if (certificadoBytes == null || certificadoBytes.length == 0) {
+            throw new IllegalArgumentException("Certificado no proporcionado");
+        }
+        if (xmlContent == null || xmlContent.trim().isEmpty()) {
+            throw new IllegalArgumentException("Contenido XML vacío");
+        }
+        if (password == null || password.isBlank()) {
+            throw new IllegalArgumentException("Contraseña inválida");
+        }
+
+        // ========== CARGA DEL KEYSTORE ==========
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        keyStore.load(new ByteArrayInputStream(certificadoBytes), password.toCharArray());
+
+        String alias = keyStore.aliases().nextElement();
+
+        // ✅ CORRECTO: Extraer clave privada
+        PrivateKey privateKey = (PrivateKey) keyStore.getKey(alias, password.toCharArray());
+
+        // ✅ CORRECTO: Extraer certificado
+        Certificate[] certChain = keyStore.getCertificateChain(alias);
+        X509Certificate cert = (X509Certificate) certChain[0];
+
+        // ========== CONFIGURACIÓN DE SEGURIDAD ==========
+        Security.addProvider(new XMLDSigRI());
+
+        // ========== PARSEO DEL XML ==========
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        Document document = factory.newDocumentBuilder()
+                .parse(new InputSource(new StringReader(xmlContent)));
+
+        // ========== CONFIGURACIÓN DE FIRMA ==========
+        XMLSignatureFactory sigFactory = XMLSignatureFactory.getInstance("DOM");
+
+        // Transformadas
+        List<Transform> transforms = new ArrayList<>();
+        transforms.add(sigFactory.newTransform(Transform.ENVELOPED, (TransformParameterSpec) null));
+        transforms.add(sigFactory.newTransform("http://www.w3.org/2001/10/xml-exc-c14n#", (TransformParameterSpec) null));
+
+        // Referencia
+        Reference reference = sigFactory.newReference("",
+                sigFactory.newDigestMethod(DigestMethod.SHA256, null),
+                transforms, null, null);
+
+        // SignedInfo
+        SignedInfo signedInfo = sigFactory.newSignedInfo(
+                sigFactory.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE, (C14NMethodParameterSpec) null),
+                sigFactory.newSignatureMethod(SignatureMethod.RSA_SHA256, null),
+                Collections.singletonList(reference));
+
+        // KeyInfo con el certificado (NO con la clave privada)
+        KeyInfoFactory keyInfoFactory = sigFactory.getKeyInfoFactory();
+        X509Data x509Data = keyInfoFactory.newX509Data(Collections.singletonList(cert));
+        KeyInfo keyInfo = keyInfoFactory.newKeyInfo(Collections.singletonList(x509Data));
+
+        // ========== APLICAR FIRMA ==========
+        DOMSignContext signContext = new DOMSignContext(privateKey, document.getDocumentElement());
+        signContext.setDefaultNamespacePrefix("ds");
+
+        XMLSignature signature = sigFactory.newXMLSignature(signedInfo, keyInfo);
+        signature.sign(signContext);
+
+        // ========== SERIALIZAR XML FIRMADO ==========
+        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+        Transformer transformer = transformerFactory.newTransformer();
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        transformer.setOutputProperty(OutputKeys.INDENT, "no");
+
+        StringWriter writer = new StringWriter();
+        transformer.transform(new DOMSource(document), new StreamResult(writer));
+
+        return writer.toString();
+    }
+    public String s2ignXml(String xml, byte[] firmaBytes, String password) throws Exception {
+        // 1. Cargar el KeyStore desde los bytes (firma .p12)
+        KeyStore keyStore = KeyStore.getInstance("PKCS12");
+        try (ByteArrayInputStream is = new ByteArrayInputStream(firmaBytes)) {
+            keyStore.load(is, password.toCharArray());
+        }
+
+        // 2. Obtener alias válido
+        String alias = keyStore.aliases().nextElement();
+
+        // 3. Extraer clave privada
+        PrivateKey privateKey = (PrivateKey) keyStore.getKey(alias, password.toCharArray());
+
+        // 4. Extraer certificado asociado
+        X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
+
+        // 5. Crear proveedor de datos directo para firmar
+        DirectKeyingDataProvider keyProvider = new DirectKeyingDataProvider((X509Certificate) privateKey, (PrivateKey) cert);
+
+        // 6. Crear firmador XAdES-BES
+        XadesSigner signer = new XadesBesSigningProfile(keyProvider).newSigner();
+
+        // 7. Parsear XML a DOM
+        Document doc = DocumentBuilderFactory.newInstance()
+                .newDocumentBuilder()
+                .parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+
+        // 8. Firmar en modo Enveloped (firma dentro del XML)
+        new Enveloped(signer).sign(doc.getDocumentElement());
+
+        // 9. Convertir a String
+        StringWriter writer = new StringWriter();
+        TransformerFactory.newInstance()
+                .newTransformer()
+                .transform(new DOMSource(doc), new StreamResult(writer));
+
+        return writer.toString();
+    }
+    public static String WWsignXml(String xmlContent, byte[] p12Bytes, String password) throws Exception {
         if (p12Bytes == null || p12Bytes.length == 0)
             throw new IllegalArgumentException("El certificado no puede estar vacío");
         if (xmlContent == null || xmlContent.trim().isEmpty())
@@ -111,15 +228,15 @@ public class XmlSignerService {
         // ---- 7) Serializar el XML firmado ----
         TransformerFactory tf = TransformerFactory.newInstance();
         try {
-            tf.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD, "");
-            tf.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+            tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
         } catch (IllegalArgumentException ignored) {
         }
 
         Transformer transformer = tf.newTransformer();
-        transformer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "no");
-        transformer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "no");
-        transformer.setOutputProperty(javax.xml.transform.OutputKeys.ENCODING, "UTF-8");
+        transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
+        transformer.setOutputProperty(OutputKeys.INDENT, "no");
+        transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 
         StringWriter sw = new StringWriter();
         transformer.transform(new DOMSource(doc), new StreamResult(sw));
@@ -139,7 +256,7 @@ public class XmlSignerService {
                 }
 
                 // ========== CONFIGURACIÓN DE SEGURIDAD ==========
-                Security.addProvider(new org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI());
+                Security.addProvider(new XMLDSigRI());
                 System.setProperty("org.apache.xml.security.ignoreLineBreaks", "true");
 
                 // ========== CARGA DEL CERTIFICADO ==========

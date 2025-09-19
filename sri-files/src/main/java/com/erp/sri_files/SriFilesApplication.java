@@ -17,7 +17,7 @@ public class SriFilesApplication {
 	}
 
     @Bean
-    @LoadBalanced
+   // @LoadBalanced
     RestTemplate restTemplate(RestTemplateBuilder builder) {
 		return builder.build();
 	}

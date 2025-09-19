@@ -4,6 +4,8 @@ import com.erp.sri_files.repositories.DefinirR;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,8 +29,10 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -52,6 +56,8 @@ public class FacturaSRIService {
     @Autowired
 
     private static final String VERSION = "1.1.0";
+    private static final Logger log = LoggerFactory.getLogger(FacturaSRIService.class);
+
 
     public String generarXmlFactura(Factura factura) throws FacturaElectronicaException {
 
@@ -80,21 +86,35 @@ public class FacturaSRIService {
             // 6. Convertir a XML
             return convertirObjetoAXml(comprobante);
 
-        } catch (Exception e) {
-            throw new FacturaElectronicaException("Error al generar XML para el SRI", e);
+        }catch (Exception e) {
+            log.error("Error generando XML de factura", e); // <-- imprime toda la causa
+            throw new FacturaElectronicaException("Error al generar XML para el SRI: " + e.getMessage(), e);
         }
     }
 
-    public static void saveXml(String xmlContent, String filePath) {
-        try {
-            Files.write(Path.of(filePath), xmlContent.getBytes(), StandardOpenOption.CREATE);
-            System.out.println("Archivo XML guardado en: " + filePath);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    // En tu servicio
+    public static void saveXml(String xmlContent, String fileName) throws IOException {
+        Path dir = Paths.get(".\\xmlFiles");
+
+        // Crear directorio si no existe
+        Files.createDirectories(dir);
+
+        // Generar timestamp (ejemplo: 2025-09-18_1745)
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
+
+        // Agregar timestamp al nombre del archivo
+        String newFileName = fileName.replace(".xml", "_" + timestamp + ".xml");
+
+        Path path = dir.resolve(newFileName);
+
+        // Guardar archivo
+        Files.write(path, xmlContent.getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE);
+
+        System.out.println("✅ Archivo XML guardado en: " + path.toAbsolutePath());
     }
 
     private InfoTributaria crearInfoTributaria(Factura factura) {
+
         Definir def = getDefinir();
         String claveAcceso;
         if (factura.getClaveacceso() == null) {
@@ -115,6 +135,7 @@ public class FacturaSRIService {
         infoTributaria.setPtoEmi(factura.getPuntoemision());
         infoTributaria.setSecuencial(factura.getSecuencial());
         infoTributaria.setDirMatriz(factura.getDireccionestablecimiento());
+        System.out.println("INFORMACIÓN TRIBUTARIA CREADA");
         return infoTributaria;
     }
 
@@ -136,6 +157,7 @@ public class FacturaSRIService {
         infoFactura.setImporteTotal(tSinImpuestos.getTotalsinimpuestos().add(tSinImpuestos.getDescuento()).setScale(2,
                 RoundingMode.HALF_UP));
         infoFactura.setMoneda("DOLAR");
+        System.out.println("INFORMACIÓN INFO FACTURA CREADA");
 
         /* totalConImpuestos */
         return infoFactura;
@@ -161,6 +183,7 @@ public class FacturaSRIService {
                 impuesto.setValor(new BigDecimal(0));
                 return impuesto;
             }).collect(Collectors.toList()));
+            System.out.println("DETALLES MAPEADOS");
 
             return detalle;
         }).collect(Collectors.toList());

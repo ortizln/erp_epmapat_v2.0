@@ -1,232 +1,444 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>
+		4.0.0
+	</modelVersion>
 	<parent>
-		<groupId>com.erp</groupId>
-		<artifactId>erp_epmapat</artifactId>
-		<version>1.0-SNAPSHOT</version>
+		<groupId>
+			com.erp
+		</groupId>
+		<artifactId>
+			erp_epmapat
+		</artifactId>
+		<version>
+			1.0-SNAPSHOT
+		</version>
 	</parent>
-	<artifactId>sri-files</artifactId>
-	<version>0.0.1</version>
-	<name>sri-files</name>
-	<description>Microservicio para la generacion de reportes del sitema erp</description>
-
+	<artifactId>
+		sri-files
+	</artifactId>
+	<version>
+		0.0.1
+	</version>
+	<name>
+		sri-files
+	</name>
+	<description>
+		Microservicio para la generacion de reportes del sitema erp
+	</description>
 	<properties>
-		<java.version>17</java.version>
-		<spring-cloud.version>2024.0.0</spring-cloud.version>
+		<java.version>
+			17
+		</java.version>
+		<spring-cloud.version>
+			2024.0.0
+		</spring-cloud.version>
 	</properties>
 	<dependencies>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
+			<groupId>
+				org.springframework.boot
+			</groupId>
+			<artifactId>
+				spring-boot-starter-data-jpa
+			</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-config-client</artifactId>
+			<groupId>
+				org.springframework.cloud
+			</groupId>
+			<artifactId>
+				spring-cloud-starter-config
+			</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-config</artifactId>
+			<groupId>
+				org.springframework.cloud
+			</groupId>
+			<artifactId>
+				spring-cloud-starter-netflix-eureka-client
+			</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+			<groupId>
+				org.springframework.boot
+			</groupId>
+			<artifactId>
+				spring-boot-starter-web
+			</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-web</artifactId>
+			<groupId>
+				org.postgresql
+			</groupId>
+			<artifactId>
+				postgresql
+			</artifactId>
+			<scope>
+				runtime
+			</scope>
 		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-
 		<!-- JAXB para generación de XML -->
-
 		<dependency>
-			<groupId>org.springframework.cloud</groupId>
-			<artifactId>spring-cloud-starter-bootstrap</artifactId>
+			<groupId>
+				org.springframework.cloud
+			</groupId>
+			<artifactId>
+				spring-cloud-starter-bootstrap
+			</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.data</groupId>
-			<artifactId>spring-data-jpa</artifactId>
+			<groupId>
+				org.springframework.data
+			</groupId>
+			<artifactId>
+				spring-data-jpa
+			</artifactId>
 		</dependency>
-
 		<!-- JasperReports -->
 		<dependency>
-			<groupId>net.sf.jasperreports</groupId>
-			<artifactId>jasperreports</artifactId>
-			<version>6.21.4</version>
+			<groupId>
+				net.sf.jasperreports
+			</groupId>
+			<artifactId>
+				jasperreports
+			</artifactId>
+			<version>
+				6.21.4
+			</version>
 		</dependency>
 		<!-- Funciones de JasperReports (DateTimeFunctions, etc.) -->
 		<dependency>
-			<groupId>net.sf.jasperreports</groupId>
-			<artifactId>jasperreports-functions</artifactId>
-			<version>6.21.4</version>
+			<groupId>
+				net.sf.jasperreports
+			</groupId>
+			<artifactId>
+				jasperreports-functions
+			</artifactId>
+			<version>
+				6.21.4
+			</version>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.xmlgraphics</groupId>
-			<artifactId>batik-all</artifactId>
-			<version>1.14</version>
+			<groupId>
+				org.apache.xmlgraphics
+			</groupId>
+			<artifactId>
+				batik-all
+			</artifactId>
+			<version>
+				1.14
+			</version>
 		</dependency>
 		<dependency>
-			<groupId>net.sf.barcode4j</groupId>
-			<artifactId>barcode4j</artifactId>
-			<version>2.1</version>
+			<groupId>
+				net.sf.barcode4j
+			</groupId>
+			<artifactId>
+				barcode4j
+			</artifactId>
+			<version>
+				2.1
+			</version>
 			<exclusions>
 				<exclusion>
-					<groupId>*</groupId>
-					<artifactId>*</artifactId>
+					<groupId>
+						*
+					</groupId>
+					<artifactId>
+						*
+					</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
 		<!-- Fuentes (evita errores en PDF) -->
 		<dependency>
-			<groupId>net.sf.jasperreports</groupId>
-			<artifactId>jasperreports-fonts</artifactId>
-			<version>6.21.4</version>
+			<groupId>
+				net.sf.jasperreports
+			</groupId>
+			<artifactId>
+				jasperreports-fonts
+			</artifactId>
+			<version>
+				6.21.4
+			</version>
 		</dependency>
 		<dependency>
-			<groupId>net.sf.jasperreports</groupId>
-			<artifactId>jasperreports-chart-themes</artifactId>
-			<version>6.21.4</version>
+			<groupId>
+				net.sf.jasperreports
+			</groupId>
+			<artifactId>
+				jasperreports-chart-themes
+			</artifactId>
+			<version>
+				6.21.4
+			</version>
 			<!-- Usa la misma versión que jasperreports -->
 		</dependency>
 		<dependency>
-			<groupId>net.sourceforge.barbecue</groupId>
-			<artifactId>barbecue</artifactId>
-			<version>1.5-beta1</version>
+			<groupId>
+				net.sourceforge.barbecue
+			</groupId>
+			<artifactId>
+				barbecue
+			</artifactId>
+			<version>
+				1.5-beta1
+			</version>
 		</dependency>
-		<!-- 		<dependency>
-			<groupId>net.sf.jasperreports</groupId>
-			<artifactId>jasperreports-fonts</artifactId>
-			<version>7.0.3</version>
-		</dependency> -->
+		<!--
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
-			<scope>provided</scope>
+		<groupId>net.sf.jasperreports</groupId>
+		<artifactId>jasperreports-fonts</artifactId>
+		<version>7.0.3</version>
 		</dependency>
+		-->
 		<!-- JAXB para generación de XML -->
 		<dependency>
-			<groupId>jakarta.xml.bind</groupId>
-			<artifactId>jakarta.xml.bind-api</artifactId>
+			<groupId>
+				jakarta.xml.bind
+			</groupId>
+			<artifactId>
+				jakarta.xml.bind-api
+			</artifactId>
 		</dependency>
 		<!-- https://mvnrepository.com/artifact/com.itextpdf/itext-core -->
-		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>itext-core</artifactId>
-			<version>9.1.0</version>
-			<type>pom</type>
+	
+   <dependency>
+     <groupId>uk.co.xprl.efactura</groupId>
+     <artifactId>sri-efactura-core</artifactId>
+     <version>0.1.2</version>
+   </dependency>
+ 	<dependency>
+			<groupId>
+				com.itextpdf
+			</groupId>
+			<artifactId>
+				itext-core
+			</artifactId>
+			<version>
+				9.1.0
+			</version>
+			<type>
+				pom
+			</type>
 		</dependency>
 		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>html2pdf</artifactId>
-			<version>4.0.3</version>
+			<groupId>
+				com.itextpdf
+			</groupId>
+			<artifactId>
+				html2pdf
+			</artifactId>
+			<version>
+				4.0.3
+			</version>
 		</dependency>
 		<!-- XSD validation -->
 		<dependency>
-			<groupId>org.apache.ws.xmlschema</groupId>
-			<artifactId>xmlschema-core</artifactId>
-			<version>2.3.0</version>
+			<groupId>
+				org.apache.ws.xmlschema
+			</groupId>
+			<artifactId>
+				xmlschema-core
+			</artifactId>
+			<version>
+				2.3.0
+			</version>
 		</dependency>
 		<!-- Librería para firmado XML -->
 		<dependency>
-			<groupId>org.apache.santuario</groupId>
-			<artifactId>xmlsec</artifactId>
-			<version>2.3.0</version>
+			<groupId>
+				org.apache.santuario
+			</groupId>
+			<artifactId>
+				xmlsec
+			</artifactId>
+			<version>
+				2.3.0
+			</version>
 		</dependency>
 		<!-- Spring Boot Starter Mail -->
 		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-mail</artifactId>
+			<groupId>
+				org.springframework.boot
+			</groupId>
+			<artifactId>
+				spring-boot-starter-mail
+			</artifactId>
 		</dependency>
 		<!-- Apache PDFBox para generación de PDF -->
 		<dependency>
-			<groupId>org.apache.pdfbox</groupId>
-			<artifactId>pdfbox</artifactId>
-			<version>2.0.27</version>
+			<groupId>
+				org.apache.pdfbox
+			</groupId>
+			<artifactId>
+				pdfbox
+			</artifactId>
+			<version>
+				2.0.27
+			</version>
 		</dependency>
 		<!-- JasperReports -->
-		<!-- 		<dependency>
-			<groupId>net.sf.jasperreports</groupId>
-			<artifactId>jasperreports</artifactId>
-			<version>6.20.0</version>
-		</dependency> -->
+		<!--
+		<dependency>
+		<groupId>net.sf.jasperreports</groupId>
+		<artifactId>jasperreports</artifactId>
+		<version>6.20.0</version>
+		</dependency>
+		-->
 		<!-- Para trabajar con XML -->
 		<dependency>
-			<groupId>com.fasterxml.jackson.dataformat</groupId>
-			<artifactId>jackson-dataformat-xml</artifactId>
+			<groupId>
+				com.fasterxml.jackson.dataformat
+			</groupId>
+			<artifactId>
+				jackson-dataformat-xml
+			</artifactId>
 		</dependency>
-        <!--  SRI-->
+		<!-- SRI -->
 		<!-- Para firmar los archivos xml -->
-        <!-- Apache CXF para SOAP -->
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-spring-boot-starter-jaxws</artifactId>
-            <version>3.5.5</version>
-        </dependency>
-
-
-
-        <!-- BouncyCastle (opcional y recomendado) -->
-        <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.70</version>
-        </dependency>
-
-        <!-- JAX-B / XML -->
-        <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>3.0.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.cxf</groupId>
-            <artifactId>cxf-rt-transports-http</artifactId>
-            <version>3.5.5</version>
-        </dependency>
-        <dependency>
-            <groupId>com.googlecode.xades4j</groupId>
-            <artifactId>xades4j</artifactId>
-            <version>2.4.0</version>
-        </dependency>
+		<!-- Apache CXF para SOAP -->
 		<dependency>
-			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-			<version>3.0.9</version>
-			<type>pom</type>
+			<groupId>
+				org.apache.cxf
+			</groupId>
+			<artifactId>
+				cxf-spring-boot-starter-jaxws
+			</artifactId>
+			<version>
+				3.5.5
+			</version>
+		</dependency>
+		<!-- BouncyCastle (opcional y recomendado) -->
+		<dependency>
+			<groupId>
+				org.bouncycastle
+			</groupId>
+			<artifactId>
+				bcprov-jdk15on
+			</artifactId>
+			<version>
+				1.70
+			</version>
+		</dependency>
+		<!-- JAX-B / XML -->
+		<dependency>
+			<groupId>
+				jakarta.xml.bind
+			</groupId>
+			<artifactId>
+				jakarta.xml.bind-api
+			</artifactId>
+			<version>
+				3.0.1
+			</version>
+		</dependency>
+		<dependency>
+			<groupId>
+				org.apache.cxf
+			</groupId>
+			<artifactId>
+				cxf-rt-transports-http
+			</artifactId>
+			<version>
+				3.5.5
+			</version>
+		</dependency>
+		<dependency>
+			<groupId>
+				com.googlecode.xades4j
+			</groupId>
+			<artifactId>
+				xades4j
+			</artifactId>
+			<version>
+				2.4.0
+			</version>
+		</dependency>
+		<dependency>
+			<groupId>
+				org.codehaus.groovy
+			</groupId>
+			<artifactId>
+				groovy-all
+			</artifactId>
+			<version>
+				3.0.9
+			</version>
+			<type>
+				pom
+			</type>
 			<exclusions>
 				<exclusion>
-					<groupId>junit</groupId>
-					<artifactId>junit</artifactId>
+					<groupId>
+						junit
+					</groupId>
+					<artifactId>
+						junit
+					</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
-	</dependencies>
+		<!-- SRI -->
+	
+   <dependency>
+     <groupId>com.rolandopalermo.facturacion.ec</groupId>
+     <artifactId>veronica-soap</artifactId>
+     <version>1.0.0</version>
+   </dependency>
+ </dependencies>
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
-				<groupId>org.springframework.cloud</groupId>
-				<artifactId>spring-cloud-dependencies</artifactId>
-				<version>${spring-cloud.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
+				<groupId>
+					org.springframework.cloud
+				</groupId>
+				<artifactId>
+					spring-cloud-dependencies
+				</artifactId>
+				<version>
+					${spring-cloud.version}
+				</version>
+				<type>
+					pom
+				</type>
+				<scope>
+					import
+				</scope>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
-	</build>
-
+<build>
+    <plugins>
+<plugin>
+    <groupId>com.sun.xml.ws</groupId>
+    <artifactId>jaxws-maven-plugin</artifactId>
+    <version>2.3.5</version>
+    <configuration>
+        <wsdlUrls>
+            <wsdlUrl>https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOfflineService?wsdl</wsdlUrl>
+            <wsdlUrl>https://cel.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOfflineService?wsdl</wsdlUrl>
+        </wsdlUrls>
+        <packageName>ec.gob.sri.ws.recepcion</packageName>
+        <args>
+            <arg>-B-XautoNameResolution</arg>
+            <arg>-extension</arg>
+        </args>
+        <vmArgs>
+            <vmArg>--add-modules</vmArg>
+            <vmArg>java.xml.ws</vmArg>
+        </vmArgs>
+    </configuration>
+    <executions>
+        <execution>
+            <phase>generate-sources</phase>
+            <goals>
+                <goal>wsimport</goal>
+            </goals>
+        </execution>
+    </executions>
+</plugin>
+    </plugins>
+</build>
 </project>

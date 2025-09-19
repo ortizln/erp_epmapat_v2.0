@@ -20,3 +20,7 @@ xml:
 app:
   reports:
     path: /home/epmapaadmin/reportsEpmapat
+
+sri:
+  xml:
+    output-dir:

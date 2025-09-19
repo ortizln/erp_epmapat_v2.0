@@ -3,6 +3,7 @@ package com.erp.sri_files.services;
 import com.erp.sri_files.exceptions.MicroserviceException;
 import com.erp.sri_files.interfaces.fecFacturaDatos;
 import com.erp.sri_files.models.Factura;
+import com.erp.sri_files.models.Facturas;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -20,13 +21,13 @@ public class AllMicroServices {
 
     public AllMicroServices(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.comercializacionBaseUrl = "http://msvc-comercializacion:9093/facturas";
-        this.fecFacturaBaseUrl = "http://msvc-comercializacion:9093/fec_factura";
+        this.comercializacionBaseUrl = "http://localhost:9093/facturas";
+        this.fecFacturaBaseUrl = "http://localhost:9093/fec_factura";
     }
 
     public Factura findById(Long idFactura) {
         try {
-            String url = "%s/%d".formatted(comercializacionBaseUrl, idFactura);
+            String url = "%s/%d".formatted(fecFacturaBaseUrl, idFactura);
             LOGGER.debug("Llamando a endpoint: {}", url);
             return restTemplate.getForObject(url, Factura.class);
         } catch (RestClientException e) {

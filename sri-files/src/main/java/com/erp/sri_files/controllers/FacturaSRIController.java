@@ -4,12 +4,19 @@ import com.erp.sri_files.exceptions.FacturaElectronicaException;
 import com.erp.sri_files.interfaces.fecFacturaDatos;
 import com.erp.sri_files.models.Definir;
 import com.erp.sri_files.models.Factura;
+import com.erp.sri_files.models.Facturas;
 import com.erp.sri_files.repositories.FacturaR;
 import com.erp.sri_files.services.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -47,6 +54,9 @@ public class FacturaSRIController {
     @Value("${xml.storage.path}")
     private String xmlStoragePath;
 
+    @Value("${sri.xml.output-dir}")
+    private String xmlOutputDir;
+
     @Autowired
     private AllMicroServices allMicroServices;
 
@@ -56,23 +66,31 @@ public class FacturaSRIController {
 
     @GetMapping("/generar-xml")
     public ResponseEntity<String> generarXmlFactura(@RequestParam Long idfactura) throws Exception {
-        Definir definir = definirService.findById(1L).orElseThrow(() -> new RuntimeException("Definir no encontrado"));
-        try {
-            Factura factura = allMicroServices.findById(idfactura);
-            if (factura == null) {
-                return ResponseEntity.noContent().build();
-            } else {
-                String xml = facturaSRIService.generarXmlFactura(factura);
-                String xmlFirmado = xmlSignerService.signXml(xml, definir.getFirma(), "Junior2012");
-                FacturaSRIService.saveXml(xmlFirmado, ".//xmlFiles//Fac_" + factura.getEstablecimiento() + "-"
-                        + factura.getPuntoemision() + "-" + factura.getSecuencial() + ".xml");
-                return ResponseEntity.ok(xml);
-            }
-        } catch (
-        FacturaElectronicaException e) {
-            return ResponseEntity.internalServerError().body(e.getMessage());
+        Definir definir = definirService.findById(1L)
+                .orElseThrow(() -> new RuntimeException("Definir no encontrado"));
+
+        Factura factura = allMicroServices.findById(idfactura);
+
+        if (factura == null) {
+            return ResponseEntity.noContent().build();
         }
+
+        // Generar XML sin firmar
+        String xml = facturaSRIService.generarXmlFactura(factura);
+
+        // Firmar XML usando la firma almacenada en BD
+        String xmlFirmado = xmlSignerService.signXml(xml, definir.getFirma(), "Junior2012");
+
+        // Guardar XML firmado en disco
+        FacturaSRIService.saveXml(
+                xmlFirmado,
+                "Fac_" + factura.getEstablecimiento() + "-" +
+                        factura.getPuntoemision() + "-" + factura.getSecuencial() + ".xml"
+        );
+
+        return ResponseEntity.ok(xmlFirmado);
     }
+
 
     @PostMapping(value = "/enviar", consumes = { "multipart/form-data" })
     public ResponseEntity<String> enviarFactura(
