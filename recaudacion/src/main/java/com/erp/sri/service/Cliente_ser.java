@@ -33,9 +33,9 @@ public class Cliente_ser{
         return c_dao.clienteDatos(dato) ;
     }
 
-    public List<Factura_interes> getFacturasByIdCliente(Long idcliente) {
+    public List<Factura_int> getFacturasByIdCliente(Long idcliente) {
         List<Factura_int> facturas = f_dao.findSinCobrar(idcliente);
-        return a_dao.addInteresToFactura(facturas);
+        return facturas;
     }
 
 }

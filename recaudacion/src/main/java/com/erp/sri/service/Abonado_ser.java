@@ -3,8 +3,10 @@ package com.erp.sri.service;
 import com.erp.sri.interfaces.Abonado_int;
 import com.erp.sri.interfaces.Factura_int;
 import com.erp.sri.model.Factura_interes;
+import com.erp.sri.model.Tmpinteresxfac;
 import com.erp.sri.repository.Abonado_rep;
 import com.erp.sri.repository.Facturas_rep;
+import com.erp.sri.repository.TmpinteresxfacR;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +26,10 @@ public class Abonado_ser {
     private Interes_ser s_interes;
     @Autowired
     private Impuestos_ser s_impuestos;
+    @Autowired
+    private TmpinteresxfacR tmpinteresxfacR;
 
-    public List<Factura_interes> findSinCobrarByAbonado(Long idabonado) {
+    public List<Factura_int> findSinCobrarByAbonado(Long idabonado) {
         Abonado_int abonado = a_dao.findClienteInAbonado(idabonado);
         if (abonado == null) {
             System.out.println("Abonado no encontrado con el ID: " + idabonado);
@@ -42,7 +46,7 @@ public class Abonado_ser {
             facturas.addAll(f_dao.findSinCobrar(abonado.getResponsable()));
         }
 
-        return addInteresToFactura(facturas);
+        return facturas;
     }
 
     public List<Factura_interes> addInteresToFactura(List<Factura_int> facturas) {
@@ -63,8 +67,8 @@ public class Abonado_ser {
                             f.getIdfactura(),
                             f.getIdmodulo(),
                             total,
-                            f.getIdCliente(),
-                            f.getIdAbonado(),
+                            f.getIdcliente(),
+                            f.getIdabonado(),
                             f.getFeccrea(),
                             f.getFormaPago(),
                             f.getEstado(),

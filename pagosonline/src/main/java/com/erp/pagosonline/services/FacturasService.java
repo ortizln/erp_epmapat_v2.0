@@ -205,4 +205,6 @@ public class FacturasService {
         return dao.getReporteFacturasCobradas(idusuario,df,hf,dh, hh);
     }
 
+
+
 }

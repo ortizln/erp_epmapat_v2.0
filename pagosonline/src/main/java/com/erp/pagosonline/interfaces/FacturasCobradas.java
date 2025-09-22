@@ -12,4 +12,6 @@ public interface FacturasCobradas {
     LocalDate getFechacobro();
     LocalTime getHoracobro();
     String getUsuario();
+    String getNombre();
+    String getSecuencialfacilito();
 }

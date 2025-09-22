@@ -10,9 +10,9 @@ public interface Factura_int {
 
 	BigDecimal getTotal();
 
-	Long getIdCliente();
+	Long getIdcliente();
 
-	Long getIdAbonado();
+	Long getIdabonado();
 
 	LocalDate getFeccrea();
 
@@ -31,5 +31,5 @@ public interface Factura_int {
 	BigDecimal getIva();
 	BigDecimal getInteres();
 	String getDireccion();
-
+    String getModulo();
 }

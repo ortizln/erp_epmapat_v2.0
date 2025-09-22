@@ -145,4 +145,7 @@ public class FacturasApi {
         return ResponseEntity.ok(facturasService.getReporteFacturasCobradas(idusuario,df,hf,dh, hh));
     }
 
+    @GetMapping("/reporteCobradas")
+    public ResponseEntity<List<FacturasCobradas>> getFacturasCobradas(){ return null;}
+
 }

@@ -3,6 +3,8 @@ package com.erp.pagosonline.repositories;
 import com.erp.pagosonline.interfaces.FacturasCobradas;
 import com.erp.pagosonline.interfaces.FacturasSinCobroInter;
 import com.erp.pagosonline.models.Facturas;
+import org.hibernate.boot.jaxb.internal.stax.LocalSchemaLocator;
+import org.springframework.cglib.core.Local;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -53,22 +55,26 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
             	sum(rf.cantidad * rf.valorunitario) valortotal,
             	f.idfactura as planilla,
             	f.nrofactura,
+            	f.secuencialfacilito,
             	f.fechacobro ,
             	f.horacobro,\s
-            	u.nomusu as usuario
+            	u.nomusu as usuario, 
+            	c.nombre
             from
             	facturas f
             join rubroxfac rf on
             	f.idfactura = rf.idfactura_facturas
             join usuarios u on\s
             	f.usuariocobro = u.idusuario
+            join clientes c on 
+                f.idcliente = c.idcliente
             where
             	f.usuariocobro = ?1
             	and f.fechacobro between ?2 and ?3
             	and f.horacobro between ?4 and ?5
             group by
             	f.idfactura,\s
-            	u.nomusu\s
+            	u.nomusu, c.nombre\s
             """, nativeQuery = true)
     public List<FacturasCobradas> getReporteFacturasCobradas(Long idusuario, LocalDate df, LocalDate hf, LocalTime dh, LocalTime hh);
 

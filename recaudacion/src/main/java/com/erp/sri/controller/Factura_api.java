@@ -1,12 +1,12 @@
 package com.erp.sri.controller;
 
+import com.erp.sri.interfaces.Factura_int;
 import com.erp.sri.interfaces.Interes_int;
 import com.erp.sri.interfaces.LastConection_int;
 import com.erp.sri.model.*;
 import com.erp.sri.repository.TmpinteresxfacR;
 import com.erp.sri.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.env.OriginTrackedMapPropertySource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,13 +39,13 @@ public class Factura_api {
     private TmpinteresxfacR tmpinteresxfacR;
 
     @GetMapping("/sincobro/cliente")
-    public ResponseEntity<List<Factura_interes>> getSinCobro(@RequestParam Long idcliente) {
+    public ResponseEntity<List<Factura_int>> getSinCobro(@RequestParam Long idcliente) {
         return ResponseEntity.ok(s_cliente.getFacturasByIdCliente(idcliente));
     }
 
     //find cliente in abonado
     @GetMapping("/sincobro/cuenta")
-    public ResponseEntity<List<Factura_interes>> getClienteInAbonado(@RequestParam Long cuenta){
+    public ResponseEntity<List<Factura_int>> getClienteInAbonado(@RequestParam Long cuenta){
         return ResponseEntity.ok(s_abonado.findSinCobrarByAbonado(cuenta));
     }
     @GetMapping("/pruebainteres")
