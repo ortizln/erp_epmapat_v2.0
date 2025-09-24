@@ -1,5 +1,6 @@
 package com.erp.sri.controller;
 
+import com.erp.sri.DTO.FacturaDTO;
 import com.erp.sri.interfaces.Factura_int;
 import com.erp.sri.interfaces.Interes_int;
 import com.erp.sri.interfaces.LastConection_int;
@@ -45,7 +46,7 @@ public class Factura_api {
 
     //find cliente in abonado
     @GetMapping("/sincobro/cuenta")
-    public ResponseEntity<List<Factura_int>> getClienteInAbonado(@RequestParam Long cuenta){
+    public ResponseEntity<List<FacturaDTO>> getClienteInAbonado(@RequestParam Long cuenta){
         return ResponseEntity.ok(s_abonado.findSinCobrarByAbonado(cuenta));
     }
     @GetMapping("/pruebainteres")

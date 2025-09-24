@@ -1,92 +1,141 @@
 package com.erp.sri_files.services;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.concurrent.ThreadLocalRandom;
-
 import com.erp.sri_files.models.Definir;
+import com.erp.sri_files.models.Factura;
 import org.springframework.stereotype.Service;
 
-import com.erp.sri_files.models.Factura;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Service
 public class ClaveAccesoGenerator {
 
+    // Tipo de comprobante: Factura = "01"
+    private static final String TIPO_COMPROBANTE_FACTURA = "01";
+    private static final DateTimeFormatter DDMMYYYY = DateTimeFormatter.ofPattern("ddMMyyyy");
+
+    /**
+     * Genera la clave de acceso (49 dígitos) para Factura (01).
+     * Estructura base de 48 dígitos:
+     * fechaEmision(8) + tipoComprobante(2) + ruc(13) + ambiente(1) + serie(6) +
+     * secuencial(9) + codigoNumerico(8) + tipoEmision(1)  => 48
+     * + dígito verificador (módulo 11) => 49
+     */
     public String generarClaveAcceso(Factura factura, Definir definir) {
-        // 1. Fecha de emisión (DDMMYYYY)
+        Objects.requireNonNull(factura, "Factura no puede ser nula");
+        Objects.requireNonNull(definir, "Definir no puede ser nulo");
+
+        // 1) Fecha de emisión (DDMMYYYY)
         String fechaEmision = formatToDDMMYYYY(factura.getFechaemision());
 
-        // 2. Tipo de comprobante (2 dígitos, por ejemplo factura = 01)
-        String tipoComprobante = "01";
+        // 2) Tipo de comprobante (2 dígitos)
+        String tipoComprobante = TIPO_COMPROBANTE_FACTURA;
 
-        // 3. RUC del emisor (13 dígitos)
-        String ruc = definir.getRuc();
+        // 3) RUC del emisor (13 dígitos)
+        String ruc = leftPadDigits(requireDigits(definir.getRuc(), "RUC"), 13);
 
-        // 4. Ambiente (1 dígito: 1=Pruebas, 2=Producción)
-        String ambiente = definir.getTipoambiente().toString();
+        // 4) Ambiente (1 dígito: 1=Pruebas, 2=Producción)
+        String ambiente = requireDigits(definir.getTipoambiente() == null ? null : definir.getTipoambiente().toString(),
+                "Tipo de ambiente");
+        if (!(ambiente.equals("1") || ambiente.equals("2"))) {
+            throw new IllegalArgumentException("El ambiente debe ser '1' (pruebas) o '2' (producción)");
+        }
 
-        // 5. Serie: 3 dígitos establecimiento + 3 dígitos punto de emisión
-        String serie = String.format("%03d%03d",
-                Integer.parseInt(factura.getEstablecimiento()),
-                Integer.parseInt(factura.getPuntoemision()));
+        // 5) Serie: 3 dígitos establecimiento + 3 dígitos punto de emisión
+        String estab = leftPadDigits(requireDigits(factura.getEstablecimiento(), "Establecimiento"), 3);
+        String ptoEmi = leftPadDigits(requireDigits(factura.getPuntoemision(), "Punto de emisión"), 3);
+        String serie = estab + ptoEmi;
 
-        // 6. Secuencial (9 dígitos)
-        String secuencial = String.format("%09d", Long.parseLong(factura.getSecuencial()));
+        // 6) Secuencial (9 dígitos)
+        String secuencial = leftPadDigits(requireDigits(factura.getSecuencial(), "Secuencial"), 9);
 
-        // 7. Código numérico (8 dígitos aleatorios)
-        String codigoNumerico = generarCodigoNumerico();
+        // 7) Código numérico (8 dígitos) — aleatorio o el que definas en tu negocio
+        String codigoNumerico = generarCodigoNumerico8();
 
-        // 8. Tipo de emisión (1 dígito, normal=1)
+        // 8) Tipo de emisión (1 dígito, normal=1)
         String tipoEmision = "1";
 
-        // Concatenar los 43 dígitos
-        String claveSinDV = fechaEmision + tipoComprobante + ruc + ambiente +
-                serie + secuencial + codigoNumerico + tipoEmision;
+        // Concatenar base de 48 dígitos
+        String base48 = fechaEmision + tipoComprobante + ruc + ambiente + serie + secuencial + codigoNumerico + tipoEmision;
 
-        // 9. Calcular dígito verificador módulo 11
-        String digitoVerificador = calcularDigitoVerificador(claveSinDV);
+        if (base48.length() != 48) {
+            throw new IllegalStateException("La base de la clave de acceso debe tener 48 dígitos, actual: " + base48.length());
+        }
+        if (!base48.chars().allMatch(Character::isDigit)) {
+            throw new IllegalStateException("La base de la clave de acceso debe contener solo dígitos");
+        }
 
-        // 10. Retornar clave completa (49 dígitos)
-        return claveSinDV + digitoVerificador;
+        // 9) Dígito verificador (módulo 11 con pesos 2..7 de derecha a izquierda)
+        char dv = calcularDigitoVerificadorModulo11(base48);
+
+        // 10) Clave completa (49 dígitos)
+        return base48 + dv;
     }
 
+    // ----------------- Utilidades -----------------
 
-    // Formatear fecha a DDMMYYYY
+    /** Formatea LocalDateTime a DDMMYYYY (SRI). */
     public static String formatToDDMMYYYY(LocalDateTime dateTime) {
-        if (dateTime == null) {
-            throw new IllegalArgumentException("La fecha no puede ser nula");
-        }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyy");
-        return dateTime.format(formatter);
+        if (dateTime == null) throw new IllegalArgumentException("La fecha no puede ser nula");
+        return dateTime.format(DDMMYYYY);
     }
 
-    // Generar código numérico aleatorio de 8 dígitos
-    private static String generarCodigoNumerico() {
-        long randomNum = ThreadLocalRandom.current().nextLong(10000000L, 99999999L);
-        return String.valueOf(randomNum);
+    /** Genera un código numérico aleatorio de 8 dígitos (00000000–99999999). */
+    private static String generarCodigoNumerico8() {
+        // Si no deseas ceros a la izquierda, usa rango 10000000..99999999
+        int n = ThreadLocalRandom.current().nextInt(0, 100_000_000);
+        return String.format("%08d", n);
     }
 
-    // Calcular dígito verificador módulo 11
-    private static String calcularDigitoVerificador(String claveAcceso43) {
-        if (claveAcceso43 == null || claveAcceso43.length() != 43) {
-            throw new IllegalArgumentException("La clave de acceso debe tener exactamente 43 dígitos");
+    /**
+     * Cálculo del dígito verificador para clave de acceso SRI (módulo 11):
+     * - Ponderación cíclica 2..7 de derecha a izquierda.
+     * - dv = 11 - (suma % 11)
+     * - Si dv == 11 -> 0 ; si dv == 10 -> 1.
+     */
+    private static char calcularDigitoVerificadorModulo11(String base48) {
+        if (base48 == null || base48.length() != 48 || !base48.chars().allMatch(Character::isDigit)) {
+            throw new IllegalArgumentException("Se espera base de 48 dígitos numéricos");
         }
-
-        int[] patrones = { 2, 3, 4, 5, 6, 7 };
+        final int[] pesos = {2, 3, 4, 5, 6, 7};
         int suma = 0;
-        int j = 0;
-
-        // Recorrer desde el final hacia el inicio
-        for (int i = claveAcceso43.length() - 1; i >= 0; i--) {
-            int digito = Character.getNumericValue(claveAcceso43.charAt(i));
-            suma += digito * patrones[j];
-            j = (j + 1) % patrones.length;
+        int idx = 0;
+        for (int i = base48.length() - 1; i >= 0; i--) {
+            int digito = base48.charAt(i) - '0';
+            suma += digito * pesos[idx];
+            idx = (idx + 1) % pesos.length;
         }
+        int mod = suma % 11;
+        int dv = 11 - mod;
+        if (dv == 11) dv = 0;
+        else if (dv == 10) dv = 1;
+        return (char) ('0' + dv);
+    }
 
-        int modulo = suma % 11;
-        int digitoVerificador = (modulo == 0 || modulo == 1) ? 0 : 11 - modulo;
+    /** Verifica y normaliza que el texto contenga solo dígitos. */
+    private static String requireDigits(String value, String label) {
+        if (value == null || value.isBlank())
+            throw new IllegalArgumentException(label + " no puede ser nulo o vacío");
+        String digits = value.replaceAll("\\D", "");
+        if (digits.isEmpty())
+            throw new IllegalArgumentException(label + " debe contener dígitos");
+        return digits;
+    }
 
-        return String.valueOf(digitoVerificador);
+    /** Rellena a la izquierda con ceros hasta la longitud indicada. */
+    private static String leftPadDigits(String digits, int length) {
+        if (!digits.chars().allMatch(Character::isDigit))
+            throw new IllegalArgumentException("Valor no numérico: " + digits);
+        if (digits.length() > length)
+            throw new IllegalArgumentException("Longitud mayor a " + length + ": " + digits);
+        return String.format("%0" + length + "d", Long.parseLong(digits));
+    }
+
+    public static void validarClaveAcceso(String clave) {
+        if (clave == null || !clave.matches("\\d{49}")) {
+            throw new IllegalArgumentException("claveAcceso inválida: debe tener 49 dígitos");
+        }
     }
 }
-

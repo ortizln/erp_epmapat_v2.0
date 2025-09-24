@@ -38,7 +38,7 @@ public class AllMicroServices {
 
     public fecFacturaDatos getNroFactura(Long idfactura) {
         try {
-            String url = UriComponentsBuilder.fromHttpUrl(fecFacturaBaseUrl)
+            String url = UriComponentsBuilder.fromUriString(fecFacturaBaseUrl)
                     .path("/fecFacturaDatos")
                     .queryParam("idfactura", idfactura)
                     .toUriString();

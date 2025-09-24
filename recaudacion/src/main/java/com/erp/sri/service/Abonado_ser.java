@@ -1,5 +1,6 @@
 package com.erp.sri.service;
 
+import com.erp.sri.DTO.FacturaDTO;
 import com.erp.sri.interfaces.Abonado_int;
 import com.erp.sri.interfaces.Factura_int;
 import com.erp.sri.model.Factura_interes;
@@ -29,7 +30,7 @@ public class Abonado_ser {
     @Autowired
     private TmpinteresxfacR tmpinteresxfacR;
 
-    public List<Factura_int> findSinCobrarByAbonado(Long idabonado) {
+    public List<FacturaDTO> findSinCobrarByAbonado(Long idabonado) {
         Abonado_int abonado = a_dao.findClienteInAbonado(idabonado);
         if (abonado == null) {
             System.out.println("Abonado no encontrado con el ID: " + idabonado);
@@ -46,49 +47,37 @@ public class Abonado_ser {
             facturas.addAll(f_dao.findSinCobrar(abonado.getResponsable()));
         }
 
-        return facturas;
-    }
-
-    public List<Factura_interes> addInteresToFactura(List<Factura_int> facturas) {
-        Map<Long, BigDecimal> interesesMap = s_interes.interesesOfFacturas(facturas);
-        Map<Long, BigDecimal> ivaMap = s_impuestos.calcularIvas(facturas);
-
-        return facturas.stream()
+        // 👇 convertimos a DTOs
+        List<FacturaDTO> facturasDTO = facturas.stream()
                 .map(f -> {
-                    Long id = f.getIdfactura();
-                    BigDecimal interes = (!Boolean.TRUE.equals(f.getSwcondonar()))
-                            ? interesesMap.getOrDefault(id, BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP)
-                            : BigDecimal.ZERO;
+                    FacturaDTO dto = new FacturaDTO();
+                    dto.setIdfactura(f.getIdfactura());
+                    dto.setIdmodulo(f.getIdmodulo());
+                    dto.setTotal(f.getTotal());
+                    dto.setIdcliente(f.getIdcliente());
+                    dto.setIdabonado(f.getIdabonado());
+                    dto.setFeccrea(f.getFeccrea());
+                    dto.setFormaPago(f.getFormaPago());
+                    dto.setEstado(f.getEstado());
+                    dto.setPagado(f.getPagado());
+                    dto.setSwcondonar(f.getSwcondonar());
+                    dto.setFechacobro(f.getfechacobro());
+                    dto.setUsuariocobro(f.getUsuariocobro());
+                    dto.setNrofactura(f.getNrofactura());
+                    dto.setNombre(f.getNombre());
+                    dto.setInteres(f.getInteres());
+                    dto.setDireccion(f.getDireccion());
+                    dto.setModulo(f.getModulo());
 
-                    BigDecimal iva = ivaMap.getOrDefault(id, BigDecimal.ZERO).setScale(2, RoundingMode.HALF_UP);
-                    BigDecimal total = f.getTotal().setScale(2, RoundingMode.HALF_UP);
+                    // 👇 calcular IVA
+                    BigDecimal iva = s_impuestos.calcularIva(f.getIdfactura());
+                    dto.setIva(iva);
 
-                    return new Factura_interes(
-                            f.getIdfactura(),
-                            f.getIdmodulo(),
-                            total,
-                            f.getIdcliente(),
-                            f.getIdabonado(),
-                            f.getFeccrea(),
-                            f.getFormaPago(),
-                            f.getEstado(),
-                            f.getPagado(),
-                            f.getSwcondonar(),
-                            interes,
-                            f.getfechacobro(),
-                            f.getUsuariocobro(),
-                            f.getNrofactura(),
-                            iva,
-                            f.getNombre(),
-                            f.getDireccion()
-                    );
+                    return dto;
                 })
                 .collect(Collectors.toList());
+
+        return facturasDTO;
     }
 
-
-    public static double round(double value, int places) {
-        double factor = Math.pow(10, places);
-        return Math.round(value * factor) / factor;
-    }
 }

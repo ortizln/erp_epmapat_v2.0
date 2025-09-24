@@ -16,7 +16,7 @@ public class RutasxemisionServicio {
     private RutasxemisionR dao;
 
     public List<Rutasxemision> findByIdemision(Long idemision) {
-        return dao.findByIdemision(idemision);
+        return dao.findByIdemisionEmisionesOrderByCodigo(idemision);
     }
 
     public Optional<Rutasxemision> findById(Long idemision) {

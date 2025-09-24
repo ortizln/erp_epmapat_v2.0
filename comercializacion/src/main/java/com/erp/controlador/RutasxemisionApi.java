@@ -1,6 +1,7 @@
 package com.erp.controlador;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
@@ -29,14 +30,15 @@ public class RutasxemisionApi {
 	RutasxemisionServicio ruxemiServicio;
 
 	// Alternativa 1. Ok.
-	@GetMapping
-	public List<Rutasxemision> getByIdemision(@Param(value = "idemision") Long idemision) {
-		if (idemision != null) {
-			return ruxemiServicio.findByIdemision(idemision);
-		} else {
-			return null;
-		}
-	}
+    @GetMapping
+    public ResponseEntity<List<Rutasxemision>> findByIdemision(@RequestParam("idemision") Long idemision) {
+        List<Rutasxemision> rutas = ruxemiServicio.findByIdemision(idemision);
+        if (rutas.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(rutas);
+    }
+
 
 	@GetMapping("/{idrutaxemision}")
 	public ResponseEntity<Rutasxemision> getByIdrutaxemision(@PathVariable Long idrutaxemision) {

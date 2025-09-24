@@ -50,7 +50,7 @@ public interface Facturas_rep extends JpaRepository<Facturas, Long> {
             	or f.estado = 3 )
             	and f.fechaeliminacion is null
             	and fechaconvenio is null
-            	and not rf.idrubro_rubros = 165
+            	and not rf.idrubro_rubros in (165,5) 
             group by
             	f.idfactura,
             	c.nombre,
@@ -102,7 +102,7 @@ public interface Facturas_rep extends JpaRepository<Facturas, Long> {
             	or f.estado = 3 )
             	and f.fechaeliminacion is null
             	and fechaconvenio is null
-            	and not rf.idrubro_rubros = 165
+            	and not rf.idrubro_rubros in (165,5) 
             group by
             	f.idfactura,
             	c.nombre,
@@ -155,7 +155,7 @@ public interface Facturas_rep extends JpaRepository<Facturas, Long> {
             	or f.estado = 3 )
             	and f.fechaeliminacion is null
             	and fechaconvenio is null
-            	and not rf.idrubro_rubros = 165
+            	and not rf.idrubro_rubros in (165,5)
             group by
             	f.idfactura,
             	c.nombre ,

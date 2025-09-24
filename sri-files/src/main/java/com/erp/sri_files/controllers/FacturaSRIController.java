@@ -1,39 +1,29 @@
 package com.erp.sri_files.controllers;
 
-import com.erp.sri_files.exceptions.FacturaElectronicaException;
 import com.erp.sri_files.interfaces.fecFacturaDatos;
 import com.erp.sri_files.models.Definir;
 import com.erp.sri_files.models.Factura;
-import com.erp.sri_files.models.Facturas;
 import com.erp.sri_files.repositories.FacturaR;
 import com.erp.sri_files.services.*;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.springframework.core.io.Resource;
+import ec.gob.sri.ws.recepcion.RespuestaSolicitud;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-import org.springframework.core.io.InputStreamResource;
-
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/sri")
@@ -59,7 +49,8 @@ public class FacturaSRIController {
 
     @Autowired
     private AllMicroServices allMicroServices;
-
+    @Autowired
+    private EnvioComprobantesWs envioComprobantesWs;
     public FacturaSRIController(FacturaSRIService facturaSRIService) {
         this.facturaSRIService = facturaSRIService;
     }
@@ -92,7 +83,180 @@ public class FacturaSRIController {
     }
 
 
-    @PostMapping(value = "/enviar", consumes = { "multipart/form-data" })
+    // ===========================
+    // 1) Firmar subiendo el archivo
+    // ===========================
+    @PostMapping(
+            value = "/firmar-xml",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_XML_VALUE
+    )
+    public ResponseEntity<String> firmarXmlFile(
+            @RequestParam("xml") MultipartFile xmlFile,
+            @RequestParam(name = "idDefinir", defaultValue = "1") Long idDefinir,
+            @RequestParam(name = "password", required = false) String password
+    ) {
+        try {
+            Definir definir = definirService.findById(idDefinir)
+                    .orElseThrow(() -> new RuntimeException("Definir no encontrado"));
+
+            // xml del archivo
+            String xml = new String(xmlFile.getBytes(), java.nio.charset.StandardCharsets.UTF_8);
+
+            // password: param -> BD -> fallback
+            String pass = (password != null && !password.isBlank())
+                    ? password
+                    : (definir.getClave_firma() != null && !definir.getClave_firma().isBlank()
+                    ? definir.getClave_firma()
+                    : "Junior2012");
+
+            String xmlFirmado = xmlSignerService.signXml(xml, definir.getFirma(), pass);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_XML)
+                    .body(xmlFirmado);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body("Error firmando XML: " + e.getMessage());
+        }
+    }
+
+    // ===========================
+    // 2) Firmar enviando el XML como texto
+    // ===========================
+    @PostMapping(
+            value = "/firmar-xml-text",
+            consumes = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE, MediaType.TEXT_PLAIN_VALUE },
+            produces = MediaType.APPLICATION_XML_VALUE
+    )
+    public ResponseEntity<String> firmarXmlText(
+            @RequestBody String xml,
+            @RequestParam(name = "idDefinir", defaultValue = "1") Long idDefinir,
+            @RequestParam(name = "password", required = false) String password
+    ) {
+        try {
+            Definir definir = definirService.findById(idDefinir)
+                    .orElseThrow(() -> new RuntimeException("Definir no encontrado"));
+
+            String pass = (password != null && !password.isBlank())
+                    ? password
+                    : (definir.getFirma() != null && !definir.getClave_firma().isBlank()
+                    ? definir.getClave_firma()
+                    : "Junior2012");
+
+            String xmlFirmado = xmlSignerService.signXml(xml, definir.getFirma(), pass);
+
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_XML)
+                    .body(xmlFirmado);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body("Error firmando XML: " + e.getMessage());
+        }
+    }
+
+    @PostMapping(
+            value = "/firmar-xml-upload",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<?> firmarXmlUpload(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(name = "idDefinir", defaultValue = "1") Long idDefinir,
+            @RequestParam(name = "password", required = false) String password,
+            @RequestParam(name = "save", defaultValue = "true") boolean save,
+            @RequestParam(name = "download", defaultValue = "false") boolean download,
+            @RequestParam(name = "filename", required = false) String filename
+    ) {
+        try {
+            if (file == null || file.isEmpty()) {
+                return ResponseEntity.badRequest().body("Sube un archivo XML en el parámetro 'file'.");
+            }
+
+            Definir definir = definirService.findById(idDefinir)
+                    .orElseThrow(() -> new RuntimeException("Definir no encontrado"));
+
+            // Password: parámetro -> BD -> fallback
+            String pass = (password != null && !password.isBlank())
+                    ? password
+                    : (definir.getClave_firma() != null && !definir.getClave_firma().isBlank()
+                    ? definir.getClave_firma()
+                    : "Junior2012");
+
+            // Leer XML del archivo (UTF-8)
+            String xml = new String(file.getBytes(), java.nio.charset.StandardCharsets.UTF_8);
+
+            // Firmar
+            String xmlFirmado = xmlSignerService.signXml(xml, definir.getFirma(), pass);
+
+            // Guardar en disco si se pide
+            if (save) {
+                // Si no te pasan filename, usa el nombre original con sufijo _firmado.xml
+                String baseName = (filename != null && !filename.isBlank())
+                        ? filename
+                        : (file.getOriginalFilename() != null ? file.getOriginalFilename() : "factura.xml");
+                if (!baseName.toLowerCase().endsWith(".xml")) baseName += ".xml";
+
+                // Añade sufijo para distinguir firmado
+                String nameWithSuffix = baseName.replace(".xml", "_firmado.xml");
+                FacturaSRIService.saveXml(xmlFirmado, nameWithSuffix);
+            }
+
+            // ¿Devolver como descarga?
+            if (download) {
+                String dlName = (filename != null && !filename.isBlank())
+                        ? filename
+                        : (file.getOriginalFilename() != null ? file.getOriginalFilename() : "factura.xml");
+                if (!dlName.toLowerCase().endsWith(".xml")) dlName += ".xml";
+                dlName = dlName.replace(".xml", "_firmado.xml");
+
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_XML)
+                        .header("Content-Disposition", "attachment; filename=\"" + dlName + "\"")
+                        .body(xmlFirmado);
+            }
+
+            // Si no es descarga, lo devuelvo directamente (texto XML)
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_XML)
+                    .body(xmlFirmado);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body("Error firmando XML: " + e.getMessage());
+        }
+    }
+
+
+
+    @PostMapping("/enviar")
+    public ResponseEntity<?> enviarComprobante(@RequestParam("file") MultipartFile file) {
+        try {
+            // 1) Leer el XML firmado en bytes
+            byte[] xmlBytes = file.getBytes();
+
+            // 2) Llamar al servicio de recepción
+            RespuestaSolicitud respuesta = envioComprobantesWs.enviarFacturaFirmada(xmlBytes);
+
+            // 3) Procesar la respuesta
+            if ("RECIBIDA".equalsIgnoreCase(respuesta.getEstado())) {
+                return ResponseEntity.ok(respuesta);
+            } else {
+                return ResponseEntity.badRequest().body(respuesta);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error al enviar comprobante: " + e.getMessage());
+        }
+    }
+
+
+    @PostMapping(value = "/enviarcv", consumes = { "multipart/form-data" })
     public ResponseEntity<String> enviarFactura(
             @RequestParam String toEmail,
             @RequestParam String subject,
@@ -107,16 +271,6 @@ public class FacturaSRIController {
         }
     }
 
-    /*
-     * @GetMapping("/firmar-xml")
-     * public ResponseEntity<Object> firmarDoc(File xmlFile, File p12File, String
-     * p12Password, String alias)
-     * throws Exception {
-     * Document doc = XmlSignerService.signXml(xmlFile, p12File, p12Password,
-     * alias);
-     * return ResponseEntity.ok(doc);
-     * }
-     */
 
     @GetMapping("/generar-pdf")
     public ResponseEntity<Resource> generarPdf(@RequestParam Long idfactura) {
