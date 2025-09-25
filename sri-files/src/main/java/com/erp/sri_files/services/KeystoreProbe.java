@@ -1,12 +1,14 @@
 package com.erp.sri_files.services;
 
+import org.springframework.stereotype.Service;
+
 import java.io.ByteArrayInputStream;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 import java.util.Enumeration;
-
+@Service
 public final class KeystoreProbe {
 
     public static Result probePkcs12(Object firmaField, String password) throws Exception {

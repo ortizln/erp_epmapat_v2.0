@@ -1,5 +1,6 @@
 package com.erp.sri_files.controllers;
 
+import com.erp.sri_files.config.AESUtil;
 import com.erp.sri_files.interfaces.fecFacturaDatos;
 import com.erp.sri_files.models.Definir;
 import com.erp.sri_files.models.Factura;
@@ -51,6 +52,8 @@ public class FacturaSRIController {
     private AllMicroServices allMicroServices;
     @Autowired
     private EnvioComprobantesWs envioComprobantesWs;
+    @Autowired
+    private KeystoreProbe keystoreProbe;
     public FacturaSRIController(FacturaSRIService facturaSRIService) {
         this.facturaSRIService = facturaSRIService;
     }
@@ -178,14 +181,24 @@ public class FacturaSRIController {
 
             Definir definir = definirService.findById(idDefinir)
                     .orElseThrow(() -> new RuntimeException("Definir no encontrado"));
+            if (definir.getFirma() == null /* && def.getFirmaBase64()==null si aplica */) {
+                throw new IllegalStateException("No hay archivo de firma en Definir");
+            }
+            System.out.println(definir.getClave_firma());
+            System.out.println(AESUtil.descifrar(definir.getClave_firma()));
+            // --- PROBAMOS CARGA ---
+            String contr = AESUtil.descifrar(definir.getClave_firma());
 
+            KeystoreProbe.Result info = KeystoreProbe.probePkcs12(definir.getFirma(), contr);
+            // Si llegó aquí, la contraseña es válida (ya sea para el keystore o para la key)
+            System.out.println("PKCS12 OK. Alias: {}" + info.alias());
             // Password: parámetro -> BD -> fallback
             String pass = (password != null && !password.isBlank())
                     ? password
-                    : (definir.getClave_firma() != null && !definir.getClave_firma().isBlank()
-                    ? definir.getClave_firma()
+                    : (contr != null && !contr.isBlank()
+                    ? contr
                     : "Junior2012");
-
+            System.out.println(pass);
             // Leer XML del archivo (UTF-8)
             String xml = new String(file.getBytes(), java.nio.charset.StandardCharsets.UTF_8);
 
