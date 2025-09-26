@@ -31,6 +31,8 @@ import java.util.stream.Collectors;
 public class FacturaSRIService {
 
     private static final Logger log = LoggerFactory.getLogger(FacturaSRIService.class);
+    private static String nvlStr(String v, String def) { return (v == null || v.isBlank()) ? def : v; }
+    private static String nullIfBlank(String v) { return (v == null || v.isBlank()) ? null : v; }
 
     private static final String VERSION = "1.1.0";
     private static final String TIPO_COMPROBANTE_FACTURA = "01";
@@ -50,7 +52,7 @@ public class FacturaSRIService {
             Comprobante comp = new Comprobante();
             comp.setVersion(VERSION);
             comp.setId("comprobante");
-
+                System.out.println(factura.getDetalles().size());
             // 2) infoTributaria (incluye claveAcceso 49 dígitos)
             comp.setInfoTributaria(crearInfoTributaria(factura));
 
@@ -95,8 +97,8 @@ public class FacturaSRIService {
         validarClaveAcceso(claveAcceso);
 
         InfoTributaria it = new InfoTributaria();
-        it.setAmbiente(def.getTipoambiente());       // 1=pruebas, 2=producción
-        it.setTipoEmision((byte) 1);                 // normal
+        it.setAmbiente(String.valueOf(def.getTipoambiente()));       // 1=pruebas, 2=producción
+        it.setTipoEmision(String.valueOf((byte) 1));                 // normal
         it.setRazonSocial(def.getRazonsocial());
         it.setNombreComercial(def.getNombrecomercial());
         it.setRuc(def.getRuc());
@@ -310,12 +312,18 @@ public class FacturaSRIService {
      * BLOQUE: detalles con impuestos
      * ========================================================== */
     private List<Detalle> mapearDetalles(List<FacturaDetalle> detallesFactura) {
-        if (detallesFactura == null) return List.of();
+        if (detallesFactura == null || detallesFactura.isEmpty()) return List.of();
 
-        return detallesFactura.stream().map(d -> {
+        List<Detalle> lista = new ArrayList<>();
+        for (FacturaDetalle d : detallesFactura) {
+            System.out.println(d.getFactura());
+            if (d == null) continue;
+            System.out.println("NULLO");
+
             Detalle det = new Detalle();
-            det.setCodigoPrincipal(d.getCodigoprincipal());
-            det.setDescripcion(d.getDescripcion());
+            det.setCodigoPrincipal(nvlStr(d.getCodigoprincipal(), "SIN-CODIGO")); // requerido
+            det.setCodigoAuxiliar(nullIfBlank(d.getCodigoprincipal()));           // opcional
+            det.setDescripcion(nvlStr(d.getDescripcion(), "SIN DESCRIPCION"));    // requerido
 
             BigDecimal cantidad = nvl(d.getCantidad());
             BigDecimal pUnit    = nvl(d.getPreciounitario());
@@ -325,40 +333,52 @@ public class FacturaSRIService {
             det.setPrecioUnitario(pUnit);
             det.setDescuento(desc);
 
-            BigDecimal precioTotalSinImp = cantidad.multiply(pUnit).subtract(desc);
-            if (precioTotalSinImp.compareTo(BigDecimal.ZERO) < 0) precioTotalSinImp = BigDecimal.ZERO;
-            det.setPrecioTotalSinImpuesto(precioTotalSinImp.setScale(2, RoundingMode.HALF_UP));
+            BigDecimal baseLinea = cantidad.multiply(pUnit).subtract(desc);
+            if (baseLinea.compareTo(BigDecimal.ZERO) < 0) baseLinea = BigDecimal.ZERO;
+            baseLinea = baseLinea.setScale(2, RoundingMode.HALF_UP);
+            det.setPrecioTotalSinImpuesto(baseLinea);
 
-            // Impuestos por detalle
-            List<Impuesto> imps = (d.getImpuestos() == null ? List.<FacturaDetalleImpuesto>of() : d.getImpuestos())
-                    .stream().map(i -> {
-                        Impuesto imp = new Impuesto();
-                        imp.setCodigo(i.getCodigoimpuesto());            // p.ej. "2" IVA
-                        imp.setCodigoPorcentaje(i.getCodigoporcentaje());// p.ej. "0","2","6",...
-                        BigDecimal base = nvl(i.getBaseimponible());
-                        BigDecimal tarifa = obtenerTarifaPorcentaje(i.getCodigoimpuesto(), obtenerCodigoPorcentajeSeguro(i));
-                        BigDecimal valor  = base.multiply(tarifa).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            // ===== Impuestos por detalle =====
+            List<Detalle.Impuesto> imps = new ArrayList<>();
+            List<FacturaDetalleImpuesto> fuente = d.getImpuestos() == null ? List.of() : d.getImpuestos();
+            for (FacturaDetalleImpuesto i : fuente) {
+                if (i == null) continue;
 
-                        imp.setTarifa(tarifa); // % (si tu modelo lo guarda como %)
-                        imp.setBaseImponible(base.setScale(2, RoundingMode.HALF_UP));
-                        imp.setValor(valor.setScale(2, RoundingMode.HALF_UP));
-                        return imp;
-                    }).collect(Collectors.toList());
+                String cod = nvlStr(i.getCodigoimpuesto(), "2"); // IVA por defecto
+                String cp  = nvlStr(obtenerCodigoPorcentajeSeguro(i), "0");
 
-            // Fallback si no hay impuestos en la línea: poner IVA 0% sobre la base de la línea
+                BigDecimal base   = nvl(i.getBaseimponible());
+                if (base.compareTo(BigDecimal.ZERO) == 0) base = baseLinea; // fallback a base de la línea
+                BigDecimal tarifa = obtenerTarifaPorcentaje(cod, cp);
+                BigDecimal valor  = base.multiply(tarifa).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+                Detalle.Impuesto imp = new Detalle.Impuesto();
+                imp.setCodigo(cod);
+                imp.setCodigoPorcentaje(cp);
+                // tarifa es opcional en SRI, si la quieres emitir:
+                imp.setTarifa(tarifa);
+                imp.setBaseImponible(base.setScale(2, RoundingMode.HALF_UP));
+                imp.setValor(valor.setScale(2, RoundingMode.HALF_UP));
+                imps.add(imp);
+            }
+
+            // Fallback: si no hay impuestos, poner IVA 0% sobre la base de la línea
             if (imps.isEmpty()) {
-                Impuesto imp0 = new Impuesto();
+                Detalle.Impuesto imp0 = new Detalle.Impuesto();
                 imp0.setCodigo("2");
                 imp0.setCodigoPorcentaje("0");
                 imp0.setTarifa(BigDecimal.ZERO);
-                imp0.setBaseImponible(precioTotalSinImp.setScale(2, RoundingMode.HALF_UP));
+                imp0.setBaseImponible(baseLinea);
                 imp0.setValor(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
-                imps = List.of(imp0);
+                imps.add(imp0);
             }
 
-            det.setImpuestos(imps);
-            return det;
-        }).collect(Collectors.toList());
+            det.setImpuestos(imps);                    // nunca null (JAXB happy)
+            det.setDetallesAdicionales(new ArrayList<>()); // si no usas adicionales, deja lista vacía
+
+            lista.add(det);
+        }
+        return lista;
     }
 
     /* ==========================================================

@@ -2,75 +2,52 @@ package com.erp.sri_files.models;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
-@Getter
-@Setter
 @XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "", propOrder = {
+        "codigoPrincipal","codigoAuxiliar","descripcion","cantidad","precioUnitario","descuento",
+        "precioTotalSinImpuesto","detallesAdicionales","impuestos"
+})
 public class Detalle {
 
-    @XmlElement(name = "codigoPrincipal", required = true)
-    private String codigoPrincipal;
-
-    @XmlElement(name = "codigoAuxiliar")
+    @XmlElement(required = true) private String codigoPrincipal;
     private String codigoAuxiliar;
-
-    @XmlElement(name = "descripcion", required = true)
-    private String descripcion;
-
-    @XmlElement(name = "cantidad", required = true)
-    private BigDecimal cantidad;
-
-    @XmlElement(name = "precioUnitario", required = true)
-    private BigDecimal precioUnitario;
-
-    @XmlElement(name = "descuento", required = true)
-    private BigDecimal descuento;
-
-    @XmlElement(name = "precioTotalSinImpuesto", required = true)
-    private BigDecimal precioTotalSinImpuesto;
+    @XmlElement(required = true) private String descripcion;
+    @XmlElement(required = true) private BigDecimal cantidad;
+    @XmlElement(required = true) private BigDecimal precioUnitario;
+    @XmlElement(required = true) private BigDecimal descuento;
+    @XmlElement(required = true) private BigDecimal precioTotalSinImpuesto;
 
     @XmlElementWrapper(name = "detallesAdicionales")
     @XmlElement(name = "detAdicional")
-    private List<DetalleAdicional> detallesAdicionales;
+    private List<DetalleAdicional> detallesAdicionales = new ArrayList<>();
 
-    @XmlElementWrapper(name = "impuestos", required = true)
-    @XmlElement(name = "impuesto")
-    private List<Impuesto> impuestos;
+    @XmlElementWrapper(name = "impuestos")
+    @XmlElement(name = "impuesto", required = true)
+    private List<Impuesto> impuestos = new ArrayList<>();
 
-    // Clase para detalles adicionales (opcional)
     @Data
     @XmlAccessorType(XmlAccessType.FIELD)
     public static class DetalleAdicional {
-        @XmlAttribute
+        @XmlAttribute(name = "nombre", required = true)
         private String nombre;
-        
         @XmlValue
         private String valor;
     }
 
-    // Clase para impuestos
     @Data
     @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "", propOrder = {"codigo","codigoPorcentaje","tarifa","baseImponible","valor"})
     public static class Impuesto {
-        @XmlElement(name = "codigo", required = true)
-        private String codigo; // "2" IVA, "3" ICE, etc.
-        
-        @XmlElement(name = "codigoPorcentaje", required = true)
-        private String codigoPorcentaje; // "0" 0%, "2" 12%, etc.
-        
-        @XmlElement(name = "tarifa")
-        private BigDecimal tarifa; // Solo para algunos impuestos
-        
-        @XmlElement(name = "baseImponible", required = true)
-        private BigDecimal baseImponible;
-        
-        @XmlElement(name = "valor", required = true)
-        private BigDecimal valor;
+        @XmlElement(required = true) private String codigo;
+        @XmlElement(required = true) private String codigoPorcentaje;
+        private BigDecimal tarifa; // opcional
+        @XmlElement(required = true) private BigDecimal baseImponible;
+        @XmlElement(required = true) private BigDecimal valor;
     }
 }

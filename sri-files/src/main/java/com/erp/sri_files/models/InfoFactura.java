@@ -2,64 +2,49 @@ package com.erp.sri_files.models;
 
 import jakarta.xml.bind.annotation.*;
 import lombok.Data;
+
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @XmlAccessorType(XmlAccessType.FIELD)
+@XmlType(name = "", propOrder = {
+        "fechaEmision","obligadoContabilidad","tipoIdentificacionComprador","razonSocialComprador",
+        "identificacionComprador","direccionComprador","contribuyenteEspecial",
+        "totalSinImpuestos","totalDescuento","totalConImpuestos",
+        "propina","importeTotal","moneda","pagos"
+})
 public class InfoFactura {
 
-    @XmlElement(name = "fechaEmision", required = true)
-    private String fechaEmision;
-    @XmlElement(name = "obligadoContabilidad")
-    private String obligadoContabilidad; // "SI" o "NO"
-    @XmlElement(name = "tipoIdentificacionComprador", required = true)
-    private String tipoIdentificacionComprador; // "04" RUC, "05" Cédula, "06" Pasaporte, etc.
-    @XmlElement(name = "razonSocialComprador", required = true)
-    private String razonSocialComprador;
-    
-    @XmlElement(name = "identificacionComprador", required = true)
-    private String identificacionComprador;
-
-
-    @XmlElement(name = "direccionComprador")
+    @XmlElement(required = true) private String fechaEmision; // dd/MM/yyyy
+    private String obligadoContabilidad;
+    @XmlElement(required = true) private String tipoIdentificacionComprador;
+    @XmlElement(required = true) private String razonSocialComprador;
+    @XmlElement(required = true) private String identificacionComprador;
     private String direccionComprador;
-    @XmlElement(name = "contribuyenteEspecial")
     private String contribuyenteEspecial;
-    @XmlElement(name = "totalSinImpuestos", required = true)
-    private BigDecimal totalSinImpuestos;
 
-    @XmlElement(name = "totalDescuento", required = true)
-    private BigDecimal totalDescuento;
-    @XmlElement(name = "totalConImpuestos")
-    private TotalConImpuestos totalConImpuestos;
+    @XmlElement(required = true) private BigDecimal totalSinImpuestos;
+    @XmlElement(required = true) private BigDecimal totalDescuento;
 
-    @XmlElement(name = "propina", required = true)
-    private BigDecimal propina = BigDecimal.ZERO;
+    @XmlElement(required = true) private TotalConImpuestos totalConImpuestos;
 
-    @XmlElement(name = "importeTotal", required = true)
-    private BigDecimal importeTotal;
+    @XmlElement(required = true) private BigDecimal propina = BigDecimal.ZERO;
+    @XmlElement(required = true) private BigDecimal importeTotal;
+    @XmlElement(required = true) private String moneda = "DOLAR";
 
-    @XmlElement(name = "moneda", required = true)
-    private String moneda = "DOLAR";
-
-    /*
-     * @XmlElement(name = "pagos")
-     * private Pagos pagos; // Opcional para facturas con pagos
-     */
+    @XmlElementWrapper(name = "pagos")
+    @XmlElement(name = "pago")
+    private List<Pago> pagos = new ArrayList<>();
 
     @Data
     @XmlAccessorType(XmlAccessType.FIELD)
+    @XmlType(name = "", propOrder = {"formaPago","total","plazo","unidadTiempo"})
     public static class Pago {
-        @XmlElement(name = "formaPago", required = true)
-        private String formaPago; // "01" Efectivo, "15" Tarjeta crédito, etc.
-
-        @XmlElement(name = "total", required = true)
-        private BigDecimal total;
-
-        @XmlElement(name = "plazo")
-        private String plazo; // Opcional
-
-        @XmlElement(name = "unidadTiempo")
-        private String unidadTiempo; // Opcional (dias, meses)
+        @XmlElement(required = true) private String formaPago;
+        @XmlElement(required = true) private BigDecimal total;
+        private String plazo;
+        private String unidadTiempo;
     }
 }
