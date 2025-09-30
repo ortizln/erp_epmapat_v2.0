@@ -69,16 +69,17 @@ public class XadesBesService {
         XadesSigner signer = (new XadesBesSigningProfile(kdp)).newSigner();
 
         // Referencia al nodo #comprobante con transforms: enveloped + exclusive-c14n
-        DataObjectReference obj = DataObjectReference.forElementId("comprobante")
+        // 1) Asegura el ID
+        root.setIdAttribute("id", true); // y que root.getAttribute("id").equals("comprobante")
+
+        // 2) Referencia con la URI directa
+        DataObjectReference obj = (DataObjectReference) new DataObjectReference("#comprobante")
                 .withTransform(new GenericAlgorithm("http://www.w3.org/2000/09/xmldsig#enveloped-signature"))
-                .withTransform(new GenericAlgorithm("http://www.w3.org/2001/10/xml-exc-c14n#"))
-                .withDataObjectFormat(new DataObjectFormatProperty("text/xml", "factura"));
+                .withTransform(new GenericAlgorithm("http://www.w3.org/2001/10/xml-exc-c14n#"));
 
-        // Tu JAR de xades4j usa esta firma: pasar SDOs en el constructor y luego sign(root)
+        // 3) Usa el constructor de Enveloped que acepta los SDOs y luego firma el root
         SignedDataObjects sdos = new SignedDataObjects(obj);
-        Enveloped enveloped = new Enveloped(signer);
-        enveloped.sign(root);
-
+        new Enveloped(signer).sign(root);
         // --- Verificación rápida: la Reference debe ser URI="#comprobante" ---
         XPath xp = XPathFactory.newInstance().newXPath();
         String refUri = (String) xp.evaluate(
