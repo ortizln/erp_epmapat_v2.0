@@ -1,4 +1,4 @@
-DB_PASS=12345
+DB_PASS=086411421
 DB_URL=jdbc:postgresql://localhost:5432/ErpEpmapaT
 DB_USER=postgres
 EUREKA_INSTANCE=msvc-eureka

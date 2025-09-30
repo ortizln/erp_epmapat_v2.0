@@ -21,5 +21,9 @@ public class SriFilesApplication {
     RestTemplate restTemplate(RestTemplateBuilder builder) {
 		return builder.build();
 	}
+    static {
+        org.apache.xml.security.Init.init();
+        System.setProperty("org.apache.xml.security.ignoreLineBreaks", "true");
+    }
 
 }

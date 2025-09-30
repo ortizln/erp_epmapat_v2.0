@@ -31,6 +31,12 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Fijar Santuario para evitar choques de versión -->
+            <dependency>
+                <groupId>org.apache.santuario</groupId>
+                <artifactId>xmlsec</artifactId>
+                <version>2.3.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -114,11 +120,24 @@
             <artifactId>jasperreports-chart-themes</artifactId>
             <version>6.21.4</version>
         </dependency>
+
         <dependency>
             <groupId>org.apache.xmlgraphics</groupId>
             <artifactId>batik-all</artifactId>
             <version>1.14</version>
+            <exclusions>
+                <!-- Evita traer parsers XML antiguos que chocan con Java 17 / Santuario -->
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xercesImpl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
+
         <dependency>
             <groupId>net.sf.barcode4j</groupId>
             <artifactId>barcode4j</artifactId>
@@ -165,6 +184,7 @@
             <artifactId>xmlsec</artifactId>
             <version>2.3.0</version>
         </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
@@ -174,6 +194,8 @@
             <artifactId>bcprov-jdk15on</artifactId>
             <version>1.70</version>
         </dependency>
+
+        <!-- XAdES -->
         <dependency>
             <groupId>com.googlecode.xades4j</groupId>
             <artifactId>xades4j</artifactId>
@@ -191,15 +213,7 @@
             <groupId>uk.co.xprl.efactura</groupId>
             <artifactId>sri-efactura-core</artifactId>
             <version>0.1.2</version>
-            <!-- En caso de que esta lib trajera javax accidentalmente (no debería), podrías excluirlo aquí -->
         </dependency>
-
-        <!-- QUITADO A PROPÓSITO:
-             - javax.xml.ws:*  (API antigua)
-             - com.sun.xml.ws:jaxws-rt:2.x  (Metro 2.x)
-             - javax.xml.bind:* (JAXB 2.x)
-             - com.rolandopalermo.facturacion.ec:veronica-soap (usa javax)
-             - org.apache.cxf:* (para evitar mezclar stacks) -->
     </dependencies>
 
     <build>
@@ -212,9 +226,6 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
-            <!-- QUITADO jaxws-maven-plugin para no generar stubs javax.
-                 Si más adelante quieres generar stubs Jakarta, se hace con jaxws-tools 4.x,
-                 pero como ya usas sri-efactura-core no es necesario. -->
         </plugins>
     </build>
 </project>

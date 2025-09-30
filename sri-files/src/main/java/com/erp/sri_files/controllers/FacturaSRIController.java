@@ -6,6 +6,8 @@ import com.erp.sri_files.models.Definir;
 import com.erp.sri_files.models.Factura;
 import com.erp.sri_files.repositories.FacturaR;
 import com.erp.sri_files.services.*;
+import com.erp.sri_files.utils.FirmaComprobantesService;
+import ec.gob.sri.ws.autorizacion.RespuestaComprobante;
 import ec.gob.sri.ws.recepcion.RespuestaSolicitud;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,9 +19,16 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,6 +49,8 @@ public class FacturaSRIController {
     private EmailService emailService;
     @Autowired
     private XmlToPdfService xmlToPdfService;
+    @Autowired
+    private FirmaComprobantesService firmaComprobantesService;
 
     private final FacturaSRIService facturaSRIService;
     @Value("${xml.storage.path}")
@@ -244,8 +255,6 @@ public class FacturaSRIController {
         }
     }
 
-
-
     @PostMapping("/enviar")
     public ResponseEntity<?> enviarComprobante(@RequestParam("file") MultipartFile file) {
         try {
@@ -255,10 +264,18 @@ public class FacturaSRIController {
             // 2) Llamar al servicio de recepción
             RespuestaSolicitud respuesta = envioComprobantesWs.enviarFacturaFirmada(xmlBytes);
 
-            // 3) Procesar la respuesta
+            // 3) Procesar respuesta
             if ("RECIBIDA".equalsIgnoreCase(respuesta.getEstado())) {
-                return ResponseEntity.ok(respuesta);
+                // Extraer la clave de acceso del XML firmado
+                String xmlString = new String(xmlBytes, StandardCharsets.UTF_8);
+                String claveAcceso = extraerClaveAcceso(xmlString);
+
+                // Consultar autorización
+                RespuestaComprobante autorizacion = envioComprobantesWs.consultarAutorizacion(claveAcceso);
+
+                return ResponseEntity.ok(autorizacion);
             } else {
+                // Si no fue recibida, retornar detalle de errores
                 return ResponseEntity.badRequest().body(respuesta);
             }
 
@@ -266,6 +283,22 @@ public class FacturaSRIController {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Error al enviar comprobante: " + e.getMessage());
         }
+    }
+
+    /**
+     * Método auxiliar para extraer la clave de acceso del XML firmado
+     */
+    private String extraerClaveAcceso(String xml) throws Exception {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        factory.setNamespaceAware(true);
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        Document doc = builder.parse(new InputSource(new StringReader(xml)));
+
+        NodeList nodes = doc.getElementsByTagName("claveAcceso");
+        if (nodes.getLength() > 0) {
+            return nodes.item(0).getTextContent();
+        }
+        throw new Exception("No se encontró la clave de acceso en el XML");
     }
 
 
