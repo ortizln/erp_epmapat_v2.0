@@ -284,6 +284,66 @@ public class FacturaSRIController {
             return ResponseEntity.status(500).body("Error al enviar comprobante: " + e.getMessage());
         }
     }
+    @RestController
+    @RequestMapping("/api/comprobantes")
+    public class ComprobantesController {
+
+        private final EnvioComprobantesWs envioComprobantesWs; // tu cliente SOAP/REST al SRI
+
+        public ComprobantesController(EnvioComprobantesWs envioComprobantesWs) {
+            this.envioComprobantesWs = envioComprobantesWs;
+        }
+
+        @PostMapping("/enviar")
+        public ResponseEntity<?> enviarComprobante(@RequestParam("file") MultipartFile file) {
+            try {
+                // 1) Leer el XML firmado en bytes
+                byte[] xmlBytes = file.getBytes();
+
+                // 2) Llamar al servicio de recepción del SRI
+                RespuestaSolicitud respuesta = envioComprobantesWs.enviarFacturaFirmada(xmlBytes);
+
+                // 3) Procesar respuesta
+                if ("RECIBIDA".equalsIgnoreCase(respuesta.getEstado())) {
+                    // 3a) Extraer claveAcceso del XML firmado
+                    String xmlString = new String(xmlBytes, StandardCharsets.UTF_8);
+                    String claveAcceso = extraerClaveAcceso(xmlString);
+
+                    // 3b) Consultar autorización en el SRI
+                    RespuestaComprobante autorizacion = envioComprobantesWs.consultarAutorizacion(claveAcceso);
+
+                    return ResponseEntity.ok(autorizacion);
+                } else {
+                    // Si no fue recibida, devolver detalle de errores
+                    return ResponseEntity.badRequest().body(respuesta);
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.status(500).body("Error al enviar comprobante: " + e.getMessage());
+            }
+        }
+
+        /**
+         * Extrae el valor de <claveAcceso> del XML.
+         */
+        private String extraerClaveAcceso(String xml) throws Exception {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+
+            Document doc = dbf.newDocumentBuilder()
+                    .parse(new InputSource(new StringReader(xml)));
+
+            NodeList list = doc.getElementsByTagName("claveAcceso");
+            if (list.getLength() > 0) {
+                return list.item(0).getTextContent().trim();
+            }
+            throw new IllegalStateException("No se encontró <claveAcceso> en el XML");
+        }
+    }
+
+
+
 
     /**
      * Método auxiliar para extraer la clave de acceso del XML firmado

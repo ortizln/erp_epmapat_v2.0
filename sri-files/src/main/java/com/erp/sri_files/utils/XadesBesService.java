@@ -7,12 +7,9 @@ import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
 
 import xades4j.algorithms.GenericAlgorithm;
-import xades4j.production.DataObjectReference;
+import xades4j.production.*;
+import xades4j.properties.DataObjectDesc;
 import xades4j.properties.DataObjectFormatProperty;
-import xades4j.production.Enveloped;
-import xades4j.production.SignedDataObjects;
-import xades4j.production.XadesBesSigningProfile;
-import xades4j.production.XadesSigner;
 import xades4j.providers.impl.DirectKeyingDataProvider;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -49,57 +46,40 @@ public class XadesBesService {
         Document doc = dbf.newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
         Element root = doc.getDocumentElement();
 
-// Forzamos el atributo 'id' como tipo ID
-        if (root.hasAttribute("id")) {
-            root.setIdAttribute("id", true);
-            System.out.println("Marcado atributo id como tipo ID: " + root.getAttribute("id"));
-        } else {
-            throw new IllegalStateException("El nodo <factura> no tiene atributo id");
-        }
-
-
-        // IMPORTANTE: declarar 'id' como atributo tipo ID para que #comprobante resuelva
-        if (!root.hasAttribute("id")) {
-            throw new IllegalArgumentException("El elemento raíz no tiene atributo id=\"comprobante\"");
-        }
+        // 1) Asegura que el atributo id del <factura> sea tipo ID
+        if (!root.hasAttribute("id"))
+            throw new IllegalStateException("El nodo <factura> no tiene atributo id=\"comprobante\"");
         root.setIdAttribute("id", true);
 
-        // Proveedor directo (cert + key) desde el P12
+        // 2) Proveedor (cert + key)
         DirectKeyingDataProvider kdp = new DirectKeyingDataProvider(km.cert(), km.key());
         XadesSigner signer = (new XadesBesSigningProfile(kdp)).newSigner();
 
-        // Referencia al nodo #comprobante con transforms: enveloped + exclusive-c14n
-        // 1) Asegura el ID
-        root.setIdAttribute("id", true); // y que root.getAttribute("id").equals("comprobante")
-
-        // 2) Referencia con la URI directa
-        DataObjectReference obj = (DataObjectReference) new DataObjectReference("#comprobante")
+        // 3) Objeto a firmar: referencia explícita a #comprobante + transforms
+        //    OJO: withTransform(...) devuelve DataObjectDesc
+        DataObjectDesc obj = new DataObjectReference("#comprobante")
                 .withTransform(new GenericAlgorithm("http://www.w3.org/2000/09/xmldsig#enveloped-signature"))
                 .withTransform(new GenericAlgorithm("http://www.w3.org/2001/10/xml-exc-c14n#"));
 
-        // 3) Usa el constructor de Enveloped que acepta los SDOs y luego firma el root
+        // 4) SignedDataObjects
         SignedDataObjects sdos = new SignedDataObjects(obj);
-        new Enveloped(signer).sign(root);
-        // --- Verificación rápida: la Reference debe ser URI="#comprobante" ---
+
+        // 5) **Firmar directo con el signer** (sin Enveloped)
+        signer.sign(sdos, root);   // <-- esta es la API que tu jar expone
+
+        // Verificación rápida: la Reference debe ser URI="#comprobante"
         XPath xp = XPathFactory.newInstance().newXPath();
         String refUri = (String) xp.evaluate(
                 "/*[local-name()='factura']/*[local-name()='Signature']/*[local-name()='SignedInfo']/*[local-name()='Reference'][1]/@URI",
-                doc,
-                XPathConstants.STRING
+                doc, XPathConstants.STRING
         );
-
-        System.out.println("Reference URI encontrado: " + refUri);
-
-
-        if (refUri == null || !refUri.startsWith("#comprobante")) {
+        if (refUri == null || !refUri.startsWith("#comprobante"))
             throw new IllegalStateException("La firma resultante no referencia #comprobante (URI encontrado='" + refUri + "')");
-        }
 
-        // Serializa (sin &#13;)
+        // Serializa
         Transformer t = TransformerFactory.newInstance().newTransformer();
         StringWriter sw = new StringWriter();
-        t.transform(new DOMSource(doc),
-                new StreamResult(sw));
+        t.transform(new DOMSource(doc), new StreamResult(sw));
         return sw.toString().replace("&#13;", "");
     }
 }
