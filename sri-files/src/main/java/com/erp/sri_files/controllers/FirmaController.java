@@ -16,6 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/firmas")
+@CrossOrigin("*")
 public class FirmaController {
 
     private final EnvioComprobantesWs envioComprobantesWs;
