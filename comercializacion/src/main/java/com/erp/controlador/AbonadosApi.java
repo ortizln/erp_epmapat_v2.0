@@ -31,7 +31,6 @@ import com.erp.servicio.AbonadoServicio;
 @RestController
 @RequestMapping("/abonados")
 @CrossOrigin(origins = "*")
-
 public class AbonadosApi {
 
 	@Autowired

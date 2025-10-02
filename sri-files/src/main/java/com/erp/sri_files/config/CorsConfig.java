@@ -12,12 +12,12 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/api/**")
-                        .allowedOrigins("http://localhost:4200")
+                registry.addMapping("/api/singsend/**")
+                        .allowedOrigins("*") // 👈 tu frontend Angular
                         .allowedMethods("GET","POST","PUT","DELETE","PATCH","OPTIONS")
                         .allowedHeaders("*")                 // o específicos si quieres restringir
-                        .exposedHeaders("Content-Disposition")
-                        .allowCredentials(true)              // ponlo en false si NO usas cookies/sesión
+                        .exposedHeaders("*")
+                        .allowCredentials(false)              // ponlo en false si NO usas cookies/sesión
                         .maxAge(3600);
             }
         };
