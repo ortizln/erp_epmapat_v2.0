@@ -460,10 +460,17 @@ public ResponseEntity<?> firmarYEnviarFactura(
                     ));
                 }
             }
-            System.out.println(factura.getEstado());
-            if(factura.getEstado().equals("I")){
+            String estadoRaw = factura.getEstado();
+            String estado = normEstado(estadoRaw);
+
+            System.out.println("Estado recuperado: [" + estadoRaw + "] (len=" + (estadoRaw == null ? 0 : estadoRaw.length()) + ")");
+            System.out.println("Estado normalizado: [" + estado + "], codes: " + debugCodes(estado));
+
+// ✅ Continuar solo si es I; si NO es I, devolver error
+            if (!"I".equalsIgnoreCase(estado)) {
                 return ResponseEntity.status(404).body(Map.of(
-                        "error", "No se pudo enviar la factura, el estado debe ser I",
+                        "error", "No se pudo enviar la factura: el estado debe ser 'I'",
+                        "estadoActual", estado,
                         "idfactura", idfactura
                 ));
             }
@@ -539,6 +546,22 @@ public ResponseEntity<?> firmarYEnviarFactura(
             ));
         }
     }
+
+    // Normaliza estado: null-safe, trim y sin espacios raros
+    private static String normEstado(String s) {
+        return s == null ? "" : s.trim();
+    }
+
+    // Para depurar: imprime códigos Unicode de cada char
+    private static String debugCodes(String s) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            sb.append(String.format("\\u%04X", (int) s.charAt(i)));
+            if (i < s.length() - 1) sb.append(' ');
+        }
+        return sb.toString();
+    }
+
 
 
     /** Toma el primer <autorizacion> con <estado>AUTORIZADO</estado> y devuelve su <comprobante> (XML) o null. */
