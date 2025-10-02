@@ -1,13 +1,22 @@
 package com.erp.sri_files.controllers;
 
+import com.erp.sri_files.models.Factura;
+import com.erp.sri_files.models.Facturas;
+import com.erp.sri_files.repositories.FacturaR;
+import com.erp.sri_files.repositories.FacturasR;
 import com.erp.sri_files.services.EnvioComprobantesWs;
+import com.erp.sri_files.services.FacturaSRIService;
+import com.erp.sri_files.services.FacturasService;
 import com.erp.sri_files.utils.FirmaComprobantesService;
 import com.erp.sri_files.utils.FirmaComprobantesService.ModoFirma;
 import ec.gob.sri.ws.autorizacion.RespuestaComprobante;
 import ec.gob.sri.ws.recepcion.RespuestaSolicitud;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -23,11 +32,23 @@ public class FirmaController {
 
     private final EnvioComprobantesWs envioComprobantesWs;
     private final FirmaComprobantesService firmaService;
+    private final RestTemplate restTemplate;
+
+    @Autowired
+    private FacturaR fecFacturaR;
+    @Autowired
+    private FacturaSRIService facturaSRIService;
+    @Autowired
+    private FacturasService facturasService;
+
+    @Value("${eureka.service-url}")
+    private String eurekaServiceUrl;
 
     public FirmaController(EnvioComprobantesWs envioComprobantesWs,
-                           FirmaComprobantesService firmaService) {
+                           FirmaComprobantesService firmaService, RestTemplate restTemplate) {
         this.envioComprobantesWs = envioComprobantesWs;
         this.firmaService = firmaService;
+        this.restTemplate = restTemplate;
     }
 
     // ===== Helpers / DTOs =====
@@ -401,6 +422,124 @@ public ResponseEntity<?> firmarYEnviarFactura(
         ));
     }
 }
+
+    // ===================== 8) CREAR XML FIRMAR Y ENVIAR =====================
+    @GetMapping(path = "/factura_electronica")
+    public ResponseEntity<?> crear_firmar_enviarFactura(@RequestParam Long idfactura) {
+        try {
+            String modo = "XADES_BES";
+            Integer ambienteForzado = 1;
+
+            // 1) Intentar obtener factura
+            Factura factura = fecFacturaR.findByIdfactura(idfactura);
+
+            if (factura == null) {
+                Boolean request = facturasService.findByIdfactura(idfactura);
+                if (Boolean.TRUE.equals(request)) {
+                    String url = eurekaServiceUrl + ":8080/fec_factura/createFacElectro?idfactura=" + idfactura;
+                    restTemplate.getForObject(url, Void.class);
+
+                    // 🔹 Reintentos: esperar hasta que ya exista en BD
+                    for (int i = 0; i < 5; i++) {
+                        Thread.sleep(2000); // espera 2s
+                        factura = fecFacturaR.findByIdfactura(idfactura); // 🔹 RECONSULTA aquí
+                        if (factura != null) break;
+                    }
+
+                    if (factura == null) {
+                        return ResponseEntity.status(404).body(Map.of(
+                                "error", "No se pudo generar la factura en los reintentos",
+                                "idfactura", idfactura
+                        ));
+                    }
+
+                } else {
+                    return ResponseEntity.badRequest().body(Map.of(
+                            "error", "Factura no pagada o no encontrada en facturasService",
+                            "idfactura", idfactura
+                    ));
+                }
+            }
+            System.out.println(factura.getEstado());
+            if(factura.getEstado().equals("I")){
+                return ResponseEntity.status(404).body(Map.of(
+                        "error", "No se pudo enviar la factura, el estado debe ser I",
+                        "idfactura", idfactura
+                ));
+            }
+
+            // 2) Generar XML sin firmar
+            String xmlPlano = facturaSRIService.generarXmlFactura(factura);
+
+            // Limpia BOM si existe (importante para parseo/firma)
+            if (xmlPlano != null && !xmlPlano.isEmpty() && xmlPlano.charAt(0) == '\uFEFF') {
+                xmlPlano = xmlPlano.substring(1);
+            }
+
+            // 3) Elegir modo de firma
+            ModoFirma mf = "XMLDSIG".equalsIgnoreCase(modo) ? ModoFirma.XMLDSIG : ModoFirma.XADES_BES;
+
+            // 4) Firmar
+            String xmlFirmado = firmaService.firmarFactura(xmlPlano, mf);
+
+            // 5) Ambiente
+            if (ambienteForzado != null) {
+                envioComprobantesWs.setAmbiente(ambienteForzado == 2 ? 2 : 1);
+            } else {
+                envioComprobantesWs.setAmbienteFromXml(xmlFirmado);
+            }
+
+            // 6) Enviar a recepción
+            RespuestaSolicitud recepcion = envioComprobantesWs.enviarFacturaFirmadaTxt(xmlFirmado);
+
+            if (!"RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "estado", recepcion.getEstado(),
+                        "errores", resumenErroresRecepcion(recepcion)
+                ));
+            }
+
+            // 7) Polling/consulta de autorización
+            RespuestaComprobante rc = envioComprobantesWs.consultarAutorizacionConEspera(
+                    xmlFirmado,
+                    clave -> {
+                        try { return envioComprobantesWs.consultarAutorizacion(clave); }
+                        catch (Exception e) { throw new RuntimeException(e); }
+                    },
+                    10,   // intentos
+                    4000  // ms entre intentos
+            );
+
+            // 8) Extraer el XML autorizado (si existe)
+            String xmlAutorizado = extraerXmlAutorizado(rc);
+            if (xmlAutorizado != null) {
+                System.out.println("AUTORIZADO");
+
+                //envio crear pdf
+                //envio por correo
+                factura.setXmlautorizado(xmlAutorizado);
+                factura.setEstado("O");
+                fecFacturaR.save(factura);
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_XML)
+                        .body(xmlAutorizado);
+            }
+
+            // 9) Si no hay autorización aún
+            return ResponseEntity.status(202).body(Map.of(
+                    "estado", "PENDIENTE",
+                    "detalle", "La autorización aún no está disponible."
+            ));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Error al firmar/enviar comprobante",
+                    "detalle", e.getMessage()
+            ));
+        }
+    }
+
 
     /** Toma el primer <autorizacion> con <estado>AUTORIZADO</estado> y devuelve su <comprobante> (XML) o null. */
     private static String extraerXmlAutorizado(ec.gob.sri.ws.autorizacion.RespuestaComprobante rc) {

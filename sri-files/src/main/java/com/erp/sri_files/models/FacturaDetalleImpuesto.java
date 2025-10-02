@@ -24,5 +24,4 @@ public class FacturaDetalleImpuesto {
     private String codigoporcentaje;
     private BigDecimal baseimponible;
     
-    // Getters y Setters
 }

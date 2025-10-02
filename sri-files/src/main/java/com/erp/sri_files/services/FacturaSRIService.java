@@ -7,6 +7,7 @@ import com.erp.sri_files.models.Detalle.Impuesto;
 import com.erp.sri_files.models.TotalConImpuestos.TotalImpuesto;
 import com.erp.sri_files.repositories.DefinirR;
 import com.erp.sri_files.repositories.FacturaDetalleR;
+import com.erp.sri_files.repositories.FacturaR;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
@@ -38,7 +39,8 @@ public class FacturaSRIService {
     private static final String TIPO_COMPROBANTE_FACTURA = "01";
     private static final DateTimeFormatter DDMMYYYY_CLAVE = DateTimeFormatter.ofPattern("ddMMyyyy"); // para clave
     private static final DateTimeFormatter DD_MM_YYYY = DateTimeFormatter.ofPattern("dd/MM/yyyy");  // para XML
-
+    @Autowired
+    private FacturaR facturaR;
     @Autowired private DefinirR definirR;
     @Autowired private FacturaDetalleR fDetalleR;
     // @Autowired private EmailService emailService; // si lo usas, descomenta
@@ -48,11 +50,11 @@ public class FacturaSRIService {
      * ========================================================== */
     public String generarXmlFactura(Factura factura) throws FacturaElectronicaException {
         try {
+
             // 1) Raíz
             Comprobante comp = new Comprobante();
             comp.setVersion(VERSION);
             comp.setId("comprobante");
-                System.out.println(factura.getDetalles().size());
             // 2) infoTributaria (incluye claveAcceso 49 dígitos)
             comp.setInfoTributaria(crearInfoTributaria(factura));
 
@@ -61,6 +63,15 @@ public class FacturaSRIService {
 
             // 4) detalles (cada línea con sus impuestos)
             comp.setDetalles(mapearDetalles(factura.getDetalles()));
+
+
+            // 👉 Construir/actualizar infoAdicional
+            Map<String,String> extras = new LinkedHashMap<>();
+            // Ejemplos (opcional): vienen de UI o reglas de negocio
+            // extras.put("Observación", "Pago en ventanilla");
+            // extras.put("Cajero", "001-A");
+
+            upsertInfoAdicional(comp, factura, extras);
 
             // 5) Marshal a XML
             return convertirObjetoAXml(comp);
@@ -94,8 +105,10 @@ public class FacturaSRIService {
                 ? generarClaveAcceso(factura, def)
                 : factura.getClaveacceso();
 
-        validarClaveAcceso(claveAcceso);
-
+        Boolean ca = validarClaveAcceso(factura.getClaveacceso());
+        if(!ca){
+           claveAcceso = generarClaveAcceso(factura, def);
+        }
         InfoTributaria it = new InfoTributaria();
         it.setAmbiente(String.valueOf(def.getTipoambiente()));       // 1=pruebas, 2=producción
         it.setTipoEmision(String.valueOf((byte) 1));                 // normal
@@ -161,11 +174,23 @@ public class FacturaSRIService {
         return (char) ('0' + dv);
     }
 
-    private static void validarClaveAcceso(String clave) {
+    /**
+     * Valida una clave de acceso SRI (49 dígitos).
+     * Verifica longitud, solo números y dígito verificador módulo 11.
+     */
+    private boolean validarClaveAcceso(String clave) {
         if (clave == null || !clave.matches("\\d{49}")) {
-            throw new IllegalArgumentException("claveAcceso inválida: debe tener 49 dígitos");
+            return false; // longitud o formato incorrecto
         }
+
+        String base48 = clave.substring(0, 48);  // primeros 48 dígitos
+        char dvEsperado = clave.charAt(48);      // dígito verificador provisto
+
+        char dvCalculado = calcularDigitoVerificadorModulo11(base48);
+
+        return dvEsperado == dvCalculado;
     }
+
 
     private static String generarCodigoNumerico8() {
         int n = ThreadLocalRandom.current().nextInt(0, 100_000_000);
@@ -211,8 +236,22 @@ public class FacturaSRIService {
 
         info.setImporteTotal(importeTotal);
         info.setMoneda("DOLAR");
+
+        // === PAGOS ===
+        // Si no tienes detalle de pagos, agrega uno único por el importe total
+        InfoFactura.Pago pago = new InfoFactura.Pago();
+        pago.setFormaPago("20");            // 20 = otros medios/efectivo (ajusta según catálogo SRI)
+        pago.setTotal(importeTotal);        // Debe coincidir con el importeTotal
+
+        // Si tu factura maneja crédito puedes agregar plazo y unidadTiempo:
+        // pago.setPlazo(new BigDecimal("30"));
+        // pago.setUnidadTiempo("dias");
+
+        info.setPagos(List.of(pago));       // se asigna la lista con el pago
+
         return info;
     }
+
 
     private static String formatForXml(LocalDateTime dt) {
         if (dt == null) throw new IllegalArgumentException("La fecha no puede ser nula");
@@ -316,14 +355,12 @@ public class FacturaSRIService {
 
         List<Detalle> lista = new ArrayList<>();
         for (FacturaDetalle d : detallesFactura) {
-            System.out.println(d.getFactura());
             if (d == null) continue;
-            System.out.println("NULLO");
 
             Detalle det = new Detalle();
-            det.setCodigoPrincipal(nvlStr(d.getCodigoprincipal(), "SIN-CODIGO")); // requerido
-            det.setCodigoAuxiliar(nullIfBlank(d.getCodigoprincipal()));           // opcional
-            det.setDescripcion(nvlStr(d.getDescripcion(), "SIN DESCRIPCION"));    // requerido
+            det.setCodigoPrincipal(nvlStr(d.getCodigoprincipal(), "SIN-CODIGO"));
+            det.setCodigoAuxiliar(nullIfBlank(d.getCodigoprincipal()));
+            det.setDescripcion(nvlStr(d.getDescripcion(), "SIN DESCRIPCION"));
 
             BigDecimal cantidad = nvl(d.getCantidad());
             BigDecimal pUnit    = nvl(d.getPreciounitario());
@@ -344,25 +381,22 @@ public class FacturaSRIService {
             for (FacturaDetalleImpuesto i : fuente) {
                 if (i == null) continue;
 
-                String cod = nvlStr(i.getCodigoimpuesto(), "2"); // IVA por defecto
+                String cod = nvlStr(i.getCodigoimpuesto(), "2"); // IVA
                 String cp  = nvlStr(obtenerCodigoPorcentajeSeguro(i), "0");
 
                 BigDecimal base   = nvl(i.getBaseimponible());
-                if (base.compareTo(BigDecimal.ZERO) == 0) base = baseLinea; // fallback a base de la línea
+                if (base.compareTo(BigDecimal.ZERO) == 0) base = baseLinea;
                 BigDecimal tarifa = obtenerTarifaPorcentaje(cod, cp);
                 BigDecimal valor  = base.multiply(tarifa).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
 
                 Detalle.Impuesto imp = new Detalle.Impuesto();
                 imp.setCodigo(cod);
                 imp.setCodigoPorcentaje(cp);
-                // tarifa es opcional en SRI, si la quieres emitir:
-                imp.setTarifa(tarifa);
+                imp.setTarifa(tarifa); // opcional
                 imp.setBaseImponible(base.setScale(2, RoundingMode.HALF_UP));
                 imp.setValor(valor.setScale(2, RoundingMode.HALF_UP));
                 imps.add(imp);
             }
-
-            // Fallback: si no hay impuestos, poner IVA 0% sobre la base de la línea
             if (imps.isEmpty()) {
                 Detalle.Impuesto imp0 = new Detalle.Impuesto();
                 imp0.setCodigo("2");
@@ -372,14 +406,97 @@ public class FacturaSRIService {
                 imp0.setValor(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
                 imps.add(imp0);
             }
+            det.setImpuestos(imps);
 
-            det.setImpuestos(imps);                    // nunca null (JAXB happy)
-            det.setDetallesAdicionales(new ArrayList<>()); // si no usas adicionales, deja lista vacía
+            // ===== Detalles adicionales =====
+            List<Detalle.DetalleAdicional> ads = new ArrayList<>();
+
+            // Ejemplos si tu entidad tiene campos opcionales:
+            // if (d.getSerie() != null && !d.getSerie().isBlank())
+            //     ads.add(new Detalle.DetAdicional("Serie", d.getSerie()));
+            // if (d.getMedidor() != null && !d.getMedidor().isBlank())
+            //     ads.add(new Detalle.DetAdicional("Medidor", d.getMedidor()));
+
+            // Solo asigna si hay al menos un detAdicional; si no, deja null para NO emitir el wrapper
+            det.setDetallesAdicionales(ads.isEmpty() ? null : ads);
 
             lista.add(det);
         }
         return lista;
     }
+
+
+    /* ==========================================================
+     * BLOQUE: info adicional
+     * ========================================================== */    private void upsertInfoAdicional(Comprobante comp,
+                                     Factura factura,
+                                     Map<String, String> extras) {
+        if (comp.getInfoAdicional() == null) {
+            comp.setInfoAdicional(new ArrayList<>());
+        }
+
+        // Construir candidatos (desde Factura + extras)
+        List<Comprobante.CampoAdicional> candidatos = new ArrayList<>();
+
+        // ===== desde Factura (ajusta a tus campos reales) =====
+        //putCampo(candidatos, "Dirección",     safe(factura.getDireccioncomprador(), 300));
+        // Si tienes email y teléfono en tu entidad:
+         putCampo(candidatos, "e-mail",        safe(factura.getEmailcomprador(), 300));
+        putCampo(candidatos, "Teléfono",      safe(factura.getTelefonocomprador(), 300));
+        // por tu dominio (ej. cuenta/medidor, etc.)
+        // putCampo(candidatos, "Cuenta",        safe(factura.getCuentaContrato(), 300));
+        putCampo(candidatos, "Fecha emisión", safe(formatForXml(factura.getFechaemision()), 300));
+        putCampo(candidatos, "Recaudador", safe(factura.getRecaudador(), 300));
+        putCampo(candidatos, "Cuenta", safe(factura.getReferencia(), 300));
+        putCampo(candidatos, "Concepto", safe(factura.getConcepto(), 300));
+
+        // ===== extras externos =====
+        if (extras != null) {
+            extras.forEach((k, v) -> putCampo(candidatos, safeName(k, 30), safe(v, 300)));
+        }
+
+        // Deduplicar por nombre: lo último gana
+        Map<String, Comprobante.CampoAdicional> porNombre = new LinkedHashMap<>();
+        // primero lo que ya tenía el comprobante
+        for (Comprobante.CampoAdicional c : comp.getInfoAdicional()) {
+            if (isOk(c.getNombre(), c.getValor())) porNombre.put(c.getNombre(), c);
+        }
+        // luego candidatos (pisan)
+        for (Comprobante.CampoAdicional c : candidatos) {
+            if (isOk(c.getNombre(), c.getValor())) porNombre.put(c.getNombre(), c);
+        }
+
+        comp.setInfoAdicional(new ArrayList<>(porNombre.values()));
+    }
+
+    private boolean isOk(String nombre, String valor) {
+        return nombre != null && !nombre.isBlank() && valor != null && !valor.isBlank();
+    }
+
+    private void putCampo(List<Comprobante.CampoAdicional> lista, String nombre, String valor) {
+        if (!isOk(nombre, valor)) return;
+        Comprobante.CampoAdicional c = new Comprobante.CampoAdicional();
+        c.setNombre(nombre);
+        c.setValor(valor);
+        lista.add(c);
+    }
+
+    // Recorta y limpia nombre (ajusta límite si tu XSD lo exige distinto)
+    private String safeName(String s, int max) {
+        if (s == null) return null;
+        s = s.trim();
+        if (s.length() > max) s = s.substring(0, max);
+        return s;
+    }
+
+    // Recorta y limpia valor
+    private String safe(String s, int max) {
+        if (s == null) return null;
+        s = s.trim();
+        if (s.length() > max) s = s.substring(0, max);
+        return s;
+    }
+
 
     /* ==========================================================
      * UTILIDADES (marshal, repos, guardado, etc.)
@@ -401,6 +518,8 @@ public class FacturaSRIService {
     }
 
     public static void saveXml(String xmlContent, String fileName) throws Exception {
+        System.out.println("GUARDANDO ....") ;
+
         Path dir = Paths.get(".\\xmlFiles");
         Files.createDirectories(dir);
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"));
@@ -436,4 +555,24 @@ public class FacturaSRIService {
             throw new IllegalArgumentException("Longitud mayor a " + length + ": " + digits);
         return String.format("%0" + length + "d", Long.parseLong(digits));
     }
+
+    // En FacturaSRIService (o un Utils):
+    private static void setPagoContado(InfoFactura info, BigDecimal total) {
+        InfoFactura.Pago p = new InfoFactura.Pago();
+        p.setFormaPago("20");      // Efectivo/otros (ajusta según catálogo SRI)
+        p.setTotal(total);
+        info.getPagos().clear();
+        info.getPagos().add(p);
+    }
+
+    private static void setPagoCredito(InfoFactura info, BigDecimal total, int plazoDias) {
+        InfoFactura.Pago p = new InfoFactura.Pago();
+        p.setFormaPago("20");      // o "01" / "19" / etc., según tu negocio
+        p.setTotal(total);
+        p.setPlazo(String.valueOf(BigDecimal.valueOf(plazoDias)));
+        p.setUnidadTiempo("dias");
+        info.getPagos().clear();
+        info.getPagos().add(p);
+    }
+
 }

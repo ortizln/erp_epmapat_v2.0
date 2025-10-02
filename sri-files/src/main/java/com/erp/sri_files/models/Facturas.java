@@ -23,9 +23,7 @@ public class Facturas implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idfactura;
-
     private Long idmodulo;
-
     private Long idcliente;
     private String nrofactura;
     private Long porcexoneracion;
@@ -33,27 +31,15 @@ public class Facturas implements Serializable {
     private BigDecimal totaltarifa;
     private Integer pagado;
     private Long usuariocobro;
-    // @Temporal(TemporalType.DATE)
-    // @DateTimeFormat(iso = ISO.DATE_TIME)
-    // @Column(name = "fechacobro")
     private LocalDate fechacobro;
     private Long estado;
     private Long usuarioanulacion;
-    // @Temporal(TemporalType.DATE)
-    // @DateTimeFormat(iso = ISO.DATE)
-    // @Column(name = "fechaanulacion")
     private LocalDate fechaanulacion;
     private String razonanulacion;
     private Long usuarioeliminacion;
-    // @Temporal(TemporalType.DATE)
-    // @DateTimeFormat(iso= ISO.DATE)
-    // @Column ( name = "fechaeliminacion")
     private LocalDate fechaeliminacion;
     private String razoneliminacion;
     private Long conveniopago;
-    // @Temporal(TemporalType.DATE)
-    // @DateTimeFormat(iso= ISO.DATE)
-    // @Column(name = "fechaconvenio")
     private LocalDate fechaconvenio;
     private Long estadoconvenio;
     private Long formapago;
@@ -61,20 +47,10 @@ public class Facturas implements Serializable {
     @JsonFormat(pattern = "H:m:s")
     private LocalTime horacobro;
     private Long usuariotransferencia;
-    // @Temporal(TemporalType.DATE)
-    // @DateTimeFormat(iso = ISO.DATE)
-    // @Column(name = "fechatransferencia")
     private LocalDate fechatransferencia;
     private Long usucrea;
-
-    // @Temporal(TemporalType.DATE)
-    // @DateTimeFormat(iso=ISO.DATE)
-    // @Column(name = "feccrea")
     private LocalDate feccrea;
     private Long usumodi;
-    // @Temporal(TemporalType.DATE)
-    // @DateTimeFormat(iso = ISO.DATE)
-    // @Column(name = "fecmodi")
     private LocalDate fecmodi;
     private BigDecimal valorbase;
     @Column(name = "idabonado")

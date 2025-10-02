@@ -71,6 +71,7 @@ public class ClaveAccesoGenerator {
         char dv = calcularDigitoVerificadorModulo11(base48);
 
         // 10) Clave completa (49 dígitos)
+        System.out.println("CLAVE COMPLETA: "+base48 + dv);
         return base48 + dv;
     }
 
