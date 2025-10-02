@@ -6,6 +6,8 @@ import com.erp.sri_files.repositories.DefinirR;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+
 @Service
 public class FirmaComprobantesService {
 
@@ -23,41 +25,42 @@ public class FirmaComprobantesService {
         this.xadesBesService = xadesBesService;
     }
 
-    /** Firma usando el registro DEFINIR.id=1 por defecto. */
+    // Firmar desde String
     @Transactional
     public String firmarFactura(String xmlPlano, ModoFirma modo) throws Exception {
-        System.out.println("SIN DEFINIR");
         Definir cert = certRepo.findById(1L)
-                .orElseThrow(() -> new IllegalStateException("Certificado no encontrado (id=1)"));
+                .orElseThrow(() -> new IllegalStateException("Certificado no encontrado id=" ));
 
-        byte[] pkcs12 = cert.getFirma(); // BLOB crudo
+        byte[] pkcs12 = cert.getFirma();
         if (pkcs12 == null || pkcs12.length == 0)
             throw new IllegalStateException("El campo DEFINIR.firma está vacío");
-String password = AESUtil.descifrar(cert.getClave_firma());
-        var km = Pkcs12Loader.load(pkcs12, password != null ? password.toCharArray() : new char[0]);
 
-        return (modo == ModoFirma.XMLDSIG)
-                ? xmlDsigService.signFacturaComprobante(xmlPlano, km)
-                : xadesBesService.signFacturaComprobanteXades(xmlPlano, km);
+        String password = AESUtil.descifrar(cert.getClave_firma());
+        var km = Pkcs12Loader.load(pkcs12, password !=null? password.toCharArray(): new char[0]);
+
+        return switch (modo) {
+            case XMLDSIG -> xmlDsigService.signFacturaComprobante(xmlPlano, km);
+            case XADES_BES -> xadesBesService.signComprobanteXades(xmlPlano.getBytes(StandardCharsets.UTF_8), km);
+        };
     }
 
-    /** Variante para indicar el id del registro DEFINIR a usar. */
+    // Firmar desde byte[] (más robusto contra BOM / encoding)
     @Transactional
-    public String firmarFactura(String xmlPlano, long definirId, ModoFirma modo) throws Exception {
-        System.out.println("CON DEFINIR");
+    public String firmarFactura(byte[] xmlBytes, ModoFirma modo) throws Exception {
+        Definir cert = certRepo.findById(1L)
+                .orElseThrow(() -> new IllegalStateException("Certificado no encontrado id="));
 
-        Definir cert = certRepo.findById(definirId)
-                .orElseThrow(() -> new IllegalStateException("Certificado no encontrado (id=" + definirId + ")"));
-
-        byte[] pkcs12 = cert.getFirma(); // BLOB crudo
+        byte[] pkcs12 = cert.getFirma();
         if (pkcs12 == null || pkcs12.length == 0)
             throw new IllegalStateException("El campo DEFINIR.firma está vacío");
         String password = AESUtil.descifrar(cert.getClave_firma());
+        var km = Pkcs12Loader.load(pkcs12, password !=null? password.toCharArray(): new char[0]);
 
-        var km = Pkcs12Loader.load(pkcs12, password != null ? password.toCharArray() : new char[0]);
-
-        return (modo == ModoFirma.XMLDSIG)
-                ? xmlDsigService.signFacturaComprobante(xmlPlano, km)
-                : xadesBesService.signFacturaComprobanteXades(xmlPlano, km);
+        return switch (modo) {
+            case XMLDSIG -> xmlDsigService.signFacturaComprobante(
+                    new String(xmlBytes, StandardCharsets.UTF_8), km
+            );
+            case XADES_BES -> xadesBesService.signComprobanteXades(xmlBytes, km);
+        };
     }
 }

@@ -15,8 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/firmas")
-@CrossOrigin(origins = "*")
+@RequestMapping("/api/singsend")
 public class FirmaController {
 
     private final EnvioComprobantesWs envioComprobantesWs;
@@ -97,28 +96,6 @@ public class FirmaController {
         }
     }
 
-    // ===================== 2) SOLO FIRMAR → JSON =====================
-    @PostMapping(
-            path = "/factura/upload",
-            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public FirmarResp firmarFacturaUploadJson(
-            @RequestPart("xml") MultipartFile xmlFile,
-            @RequestParam(value = "modo", required = false, defaultValue = "XADES_BES") String modo,
-            @RequestParam(value = "definirId", required = false, defaultValue = "1") Long definirId
-            // @RequestParam(value = "password", required = false) String password // <- agrega si tu servicio lo necesita
-    ) throws Exception {
-
-        String xmlPlano = toUtf8String(xmlFile);
-        ModoFirma mf = "XMLDSIG".equalsIgnoreCase(modo) ? ModoFirma.XMLDSIG : ModoFirma.XADES_BES;
-
-        String firmado = (definirId == null)
-                ? firmaService.firmarFactura(xmlPlano, mf)
-                : firmaService.firmarFactura(xmlPlano, definirId, mf);
-
-        return new FirmarResp(firmado);
-    }
 
     // ===================== 3) SOLO FIRMAR → XML =====================
     @PostMapping(
@@ -138,16 +115,16 @@ public class FirmaController {
 
         return (definirId == null)
                 ? firmaService.firmarFactura(xmlPlano, mf)
-                : firmaService.firmarFactura(xmlPlano, definirId, mf);
+                : firmaService.firmarFactura(xmlPlano, mf);
     }
 
     // ===================== 4) FIRMAR Y ENVIAR EN UNO SOLO =====================
     @PostMapping(
-            path = "/factura/upload.xml",
+            path = "/factura/xml",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<?> firmarYEnviarFacturaUploadXml(
+    public ResponseEntity<?> firmarYEnviarFacturaUloadXml(
             @RequestPart("xml") MultipartFile xmlFile,
             @RequestParam(value = "modo", required = false, defaultValue = "XADES_BES") String modo,
             @RequestParam(value = "definirId", required = false, defaultValue = "1") Long definirId,
@@ -155,6 +132,7 @@ public class FirmaController {
             // @RequestParam(value = "password", required = false) String password
     ) {
         try {
+            System.out.println("FIRMAR Y ENVIAR");
             // 1) Convertir el archivo a String
             String xmlPlano = toUtf8String(xmlFile);
             // 2) Elegir modo de firma
@@ -162,7 +140,7 @@ public class FirmaController {
             // 3) Firmar
             String xmlFirmado = (definirId == null)
                     ? firmaService.firmarFactura(xmlPlano, mf)
-                    : firmaService.firmarFactura(xmlPlano, definirId, mf);
+                    : firmaService.firmarFactura(xmlPlano, mf);
 
             // 4) Ambiente: forzado si lo pasan; si no, deducir del XML firmado
             if (ambienteForzado != null) {
@@ -207,7 +185,7 @@ public class FirmaController {
 
     // ===================== 5) FIRMAR Y ENVIAR RECIBIENDO XML EN STRING =====================
     @PostMapping(
-            path = "/factura/send-xml",
+            path = "/factura",
             consumes = {MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_PLAIN_VALUE},
             produces = MediaType.APPLICATION_JSON_VALUE
     )
@@ -230,7 +208,7 @@ public class FirmaController {
             // 2) Firmar
             String xmlFirmado = (definirId == null)
                     ? firmaService.firmarFactura(xmlPlano, mf)
-                    : firmaService.firmarFactura(xmlPlano, definirId, mf);
+                    : firmaService.firmarFactura(xmlPlano, mf);
 
             // 3) Ambiente: forzado si lo pasan; si no, deducir del XML firmado
             if (ambienteForzado != null) {
@@ -272,6 +250,59 @@ public class FirmaController {
             ));
         }
     }
+
+    // ===================== 6) FIRMAR Y ENVIAR EN UNO SOLO =====================
+    @PostMapping(
+            path = "/retencion",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_XML_VALUE
+    )
+    public ResponseEntity<?> firmarYEnviarFacturaUploadXml(
+            @RequestPart("xml") MultipartFile xmlFile,
+            @RequestParam(value = "modo", required = false, defaultValue = "XADES_BES") String modo,
+            @RequestParam(value = "definirId", required = false, defaultValue = "1") Long definirId,
+            @RequestParam(value = "ambiente", required = false) Integer ambienteForzado
+    ) {
+        try {
+            byte[] xmlBytes = xmlFile.getBytes();   // ✅ directo en bytes
+            ModoFirma mf = "XMLDSIG".equalsIgnoreCase(modo) ? ModoFirma.XMLDSIG : ModoFirma.XADES_BES;
+
+            // 1) Firmar robusto
+            String xmlFirmado = firmaService.firmarFactura(xmlBytes, mf);
+
+            // 2) Ambiente
+            if (ambienteForzado != null) {
+                envioComprobantesWs.setAmbiente(ambienteForzado == 2 ? 2 : 1);
+            } else {
+                envioComprobantesWs.setAmbienteFromXml(xmlFirmado);
+            }
+
+            // 3) Enviar a recepción
+            RespuestaSolicitud recepcion = envioComprobantesWs.enviarFacturaFirmadaTxt(xmlFirmado);
+
+            // 4) Polling hasta autorización
+            if ("RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
+                RespuestaComprobante autorizacion = envioComprobantesWs.consultarAutorizacionConEspera(
+                        xmlFirmado,
+                        clave -> {
+                            try { return envioComprobantesWs.consultarAutorizacion(clave); }
+                            catch (Exception e) { throw new RuntimeException(e); }
+                        },
+                        10, 4000
+                );
+                return ResponseEntity.ok(Map.of("recepcion", recepcion,
+                        "autorizacion", autorizacion,
+                        "xmlFirmado", xmlFirmado));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of("recepcion", recepcion,
+                        "xmlFirmado", xmlFirmado));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", e.getMessage()));
+        }
+    }
+
 
 
     // ===== Manejador de errores comunes =====

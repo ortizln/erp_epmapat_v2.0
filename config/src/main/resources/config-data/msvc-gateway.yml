@@ -54,7 +54,7 @@ spring:
           #uri: http://msvc-sri:9096
           uri: http://localhost:9096
           predicates:
-            - Path=/api/sri/**, /api/firmas/**
+            - Path=/api/sri/**, /api/singsend/**
 
         - id: msvc-reportesjr
           uri: http://msvc-reportesjr:9097
