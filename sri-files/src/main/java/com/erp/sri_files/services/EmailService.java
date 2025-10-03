@@ -1,5 +1,6 @@
 package com.erp.sri_files.services;
 
+import com.erp.sri_files.models.EmailAttachment;
 import jakarta.activation.DataHandler;
 import jakarta.activation.DataSource;
 import jakarta.activation.FileDataSource;
@@ -8,8 +9,15 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeBodyPart;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.mail.internet.MimeMultipart;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import java.io.File;
@@ -17,6 +25,9 @@ import java.util.List;
 
 @Service
 public class EmailService {
+
+    @Autowired
+    private JavaMailSender javaMailSender;
 
     public boolean envioEmail(final String emisor, final String password, List<String> receptores,
             String asunto, String mensajeHtml) {
@@ -78,7 +89,6 @@ public class EmailService {
             Transport.send(message, emisor, password);
 
         } catch (Exception e) {
-            System.err.println("Error en envío de correo: " + e.getMessage());
             envioExitoso = false;
 
             // Manejo específico de excepciones comunes
@@ -92,99 +102,33 @@ public class EmailService {
         return envioExitoso;
     }
 
-    public boolean __envioArchivo(final String emisor, final String password, List<String> receptores, String asunto,
-            List<String> adjuntos, final String domiCorreo) {
-        boolean envioExitoso = true;
-        System.out.println("Usuario: " + emisor + ".  Clave: " + password);
-
-        Properties props = new Properties();
-
-        // final String smtpUsername = "facturacion@emapasr.gob.ec";
-        // final String smtpPassword = "(santarosa)fact#9";
-
-        props.put("mail.transport.protocol", "smtp");
-        props.put("mail.smtp.host", domiCorreo);// indica el protocolo y que servidor de correo va utilizar
-        props.setProperty("mail.smtp.port", "465"); // inidica el puerto (por defecto 465)
-        props.setProperty("mail.smtp.auth", "true");// indica la autenticacion en el servidor (por defecto true)
-        props.setProperty("mail.smtp.user", emisor);
-        props.setProperty("mail.smtp.password", password);
-
-        props.put("mail.smtp.ssl.trust", domiCorreo);
-        props.put("mail.smtp.starttls.enable", "true");
-
+    public boolean enviarXmlYPdf(
+            String emisor,
+            String password, // <- si ya está en Spring, ignóralo
+            List<String> receptores,
+            String asunto,
+            String htmlMensaje,
+            String nombreXml, byte[] xmlBytes,
+            String nombrePdf, byte[] pdfBytes
+    ) {
         try {
+            MimeMessage mime = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mime, true, StandardCharsets.UTF_8.name());
 
-            Session session = Session.getDefaultInstance(props, new Authenticator() {
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(emisor, password);
-                }
-            });
+            helper.setFrom(emisor);
+            helper.setTo(receptores.toArray(String[]::new));
+            helper.setSubject(asunto);
+            helper.setText(htmlMensaje, true);
 
-            BodyPart texto = new MimeBodyPart();
-            texto.setText(asunto);
+            helper.addAttachment(nombreXml, new ByteArrayResource(xmlBytes), "application/xml");
+            helper.addAttachment(nombrePdf, new ByteArrayResource(pdfBytes), "application/pdf");
 
-            MimeMessage message = new MimeMessage(session);
-            InternetAddress[] dest = new InternetAddress[receptores.size()];
-            for (int i = 0; i <= dest.length - 1; i++) {
-                dest[i] = new InternetAddress(receptores.get(i));
-            }
-            // Se define el emisor del email
-            message.setFrom(new InternetAddress(emisor));
-            InternetAddress[] replyTo = new InternetAddress[1];
-            replyTo[0] = new InternetAddress(emisor);
-            message.setReplyTo(replyTo);
-            // Se definen a los destinatarios
-            message.addRecipients(Message.RecipientType.TO, dest);
-            // Se define el asunto del email
-            message.setSubject(asunto);
-
-            /***************************/
-            BodyPart adjunto = new MimeBodyPart();
-            Multipart multipart = new MimeMultipart();
-
-            /*********************/
-
-            // Se adjuntan los archivos al correo
-            if (adjuntos != null && adjuntos.size() > 0) {
-                for (String rutaAdjunto : adjuntos) {
-                    adjunto = new MimeBodyPart();
-                    File f = new File(rutaAdjunto);
-                    if (f.exists()) {
-                        DataSource source = new FileDataSource(rutaAdjunto);
-                        adjunto.setDataHandler(new DataHandler(source));
-                        adjunto.setFileName(f.getName());
-                        multipart.addBodyPart(texto);
-                        multipart.addBodyPart(adjunto);
-                    }
-                }
-            }
-
-            // Se junta el mensaje y los archivos adjuntos
-            message.setContent(multipart);
-
-            Transport transport = session.getTransport("smtp");
-            transport.send(message);
-
-            // transport.close();
-
-        } catch (Exception e) {
-            System.out.println("Erro de envio de correo: " + e.getMessage());
-            e.printStackTrace();
-            envioExitoso = false;
-        } finally {
-            if (adjuntos != null && adjuntos.size() < 0) {
-                for (String rutaAdjunto : adjuntos) {
-                    try {
-                        File arch = new File(rutaAdjunto);
-                        arch.delete();
-                    } catch (Exception e2) {
-                        e2.getMessage();
-                    }
-                }
-            }
+            javaMailSender.send(mime);
+            return true;
+        } catch (Exception ex) {
+            // log.error("Error enviando correo", ex);
+            return false;
         }
-
-        return envioExitoso;
     }
 }
+

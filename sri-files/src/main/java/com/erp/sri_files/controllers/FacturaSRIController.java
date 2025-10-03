@@ -1,14 +1,11 @@
 package com.erp.sri_files.controllers;
 
-import com.erp.sri_files.config.AESUtil;
-import com.erp.sri_files.interfaces.fecFacturaDatos;
-import com.erp.sri_files.models.Definir;
+
 import com.erp.sri_files.models.Factura;
 import com.erp.sri_files.repositories.FacturaR;
 import com.erp.sri_files.services.*;
 import com.erp.sri_files.utils.FirmaComprobantesService;
-import ec.gob.sri.ws.autorizacion.RespuestaComprobante;
-import ec.gob.sri.ws.recepcion.RespuestaSolicitud;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -18,19 +15,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.StringReader;
-import java.nio.charset.StandardCharsets;
+
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -91,106 +80,55 @@ public class FacturaSRIController {
         );
         return ResponseEntity.ok(xml);
     }
+
     @GetMapping("/generar-pdf")
     public ResponseEntity<Resource> generarPdf(@RequestParam Long idfactura) {
+        // 1) Recuperación y validaciones básicas
         Factura factura = dao.findByIdfactura(idfactura);
-        if (factura == null || factura.getXmlautorizado() == null) {
+        if (factura == null || factura.getXmlautorizado() == null || factura.getXmlautorizado().isBlank()) {
             return ResponseEntity.noContent().build();
         }
-
-        String xmlAutorizado = factura.getXmlautorizado();
-        LocalDateTime fechaEmision = factura.getFechaemision();
-        if (fechaEmision == null) {
-            return ResponseEntity.badRequest().build();
+        if (factura.getFechaemision() == null) {
+            return ResponseEntity.badRequest().body(null);
         }
 
-        // Compararemos como LocalDate para evitar problemas de hora
-        LocalDate emisionDate = fechaEmision.toLocalDate();
-        LocalDate fechaLimite = LocalDate.of(2025, 5, 6);
+        final String xmlAutorizado = factura.getXmlautorizado();
+        final LocalDate fechaEmision = factura.getFechaemision().toLocalDate();
+        final LocalDate fechaLimite  = LocalDate.of(2025, 5, 6);
 
         try {
+            // 2) Elegir plantilla según fecha
             ByteArrayOutputStream pdfStream;
-
-            // Si fechaEmision >= fechaLimite -> generarFacturaPDF
-            // Si fechaEmision <  fechaLimite -> generarFacturaPDF_v2
-            if (!emisionDate.isBefore(fechaLimite)) {
-                // emisionDate es igual o posterior a fechaLimite
-                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
-            } else {
-                // emisionDate es anterior a fechaLimite
+            if (fechaEmision.isBefore(fechaLimite)) {
+                // Antes del 06/05/2025 -> versión antigua
                 pdfStream = xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado);
+            } else {
+                // El 06/05/2025 o después -> versión actual
+                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
             }
 
             if (pdfStream == null || pdfStream.size() == 0) {
-                throw new RuntimeException("No se pudo generar el PDF.");
+                throw new IllegalStateException("No se pudo generar el PDF (stream vacío).");
             }
 
+            // 3) Respuesta como archivo descargable
+            String filename = "factura_" + idfactura + ".pdf";
             InputStreamResource resource =
                     new InputStreamResource(new ByteArrayInputStream(pdfStream.toByteArray()));
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=factura.pdf")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + filename)
                     .contentType(MediaType.APPLICATION_PDF)
                     .contentLength(pdfStream.size())
                     .body(resource);
 
         } catch (Exception e) {
+            // Loggea si usas logger
+            // log.error("Error generando PDF para factura {}", idfactura, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
-
-/*
-    @GetMapping("/generar-pdf")
-    public ResponseEntity<Resource> generarPdf(@RequestParam Long idfactura) {
-
-        Factura factura = dao.findByIdfactura(idfactura);
-        if (factura == null || factura.getXmlautorizado() == null) {
-            return ResponseEntity.noContent().build();
-        }
-        String xmlAutorizado = factura.getXmlautorizado();
-        LocalDateTime fehchaemision = factura.getFechaemision();
-        LocalDate fechaLimite = LocalDate.of(2025, 5, 6);
-
-        try {
-            // Generar el PDF como ByteArrayOutputStream
-            ByteArrayOutputStream pdfStream;
-            // Comparar fechas
-            if (fehchaemision.isAfter(fechaLimite)) {
-                System.out.println("===> 1 <===");
-                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
-
-            } else if (fehchaemision.isBefore(fechaLimite)) {
-                System.out.println("===> 2 <===");
-                pdfStream = xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado);
-
-            } else if (fehchaemision.isEqual(fechaLimite)) {
-                System.out.println("===> 3 <===");
-                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
-            } else {
-                System.out.println("===> 4 <===");
-                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
-            }
-
-            if (pdfStream == null || pdfStream.size() == 0) {
-                throw new RuntimeException("No se pudo generar el PDF.");
-            }
-
-            // Convertir el stream en un InputStreamResource
-            InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(pdfStream.toByteArray()));
-
-            // Retornar el PDF como un archivo descargable
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=factura.pdf")
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .contentLength(pdfStream.size())
-                    .body(resource);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
-        }
-    }*/
 
     @PostMapping("/send")
     public ResponseEntity<Map<String, Object>> sendMail(@RequestParam String emisor, @RequestParam String password,

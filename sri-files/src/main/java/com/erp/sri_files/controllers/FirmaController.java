@@ -1,29 +1,47 @@
 package com.erp.sri_files.controllers;
 
+import com.erp.sri_files.models.EmailAttachment;
 import com.erp.sri_files.models.Factura;
-import com.erp.sri_files.models.Facturas;
 import com.erp.sri_files.repositories.FacturaR;
-import com.erp.sri_files.repositories.FacturasR;
-import com.erp.sri_files.services.EnvioComprobantesWs;
-import com.erp.sri_files.services.FacturaSRIService;
-import com.erp.sri_files.services.FacturasService;
+import com.erp.sri_files.services.*;
 import com.erp.sri_files.utils.FirmaComprobantesService;
 import com.erp.sri_files.utils.FirmaComprobantesService.ModoFirma;
 import ec.gob.sri.ws.autorizacion.RespuestaComprobante;
 import ec.gob.sri.ws.recepcion.RespuestaSolicitud;
+import jakarta.annotation.Resource;
+import net.sf.jasperreports.repo.InputStreamResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 @RestController
 @RequestMapping("/api/singsend")
@@ -40,6 +58,12 @@ public class FirmaController {
     private FacturaSRIService facturaSRIService;
     @Autowired
     private FacturasService facturasService;
+    @Autowired
+    private XmlToPdfService xmlToPdfService;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private org.springframework.mail.javamail.JavaMailSender javaMailSender;
 
     @Value("${eureka.service-url}")
     private String eurekaServiceUrl;
@@ -432,8 +456,13 @@ public ResponseEntity<?> firmarYEnviarFactura(
 
             // 1) Intentar obtener factura
             Factura factura = fecFacturaR.findByIdfactura(idfactura);
-
-            if (factura == null) {
+            if(factura != null && (Objects.equals(factura.getEstado(), "A") || Objects.equals(factura.getEstado(), "O"))){
+                return ResponseEntity.status(201).body(Map.of(
+                        "error", "No se pudo generar la factura porque ya esta fue enviada",
+                        "idfactura", idfactura
+                ));
+            }
+                if (factura == null) {
                 Boolean request = facturasService.findByIdfactura(idfactura);
                 if (Boolean.TRUE.equals(request)) {
                     String url = eurekaServiceUrl + ":8080/fec_factura/createFacElectro?idfactura=" + idfactura;
@@ -463,10 +492,6 @@ public ResponseEntity<?> firmarYEnviarFactura(
             String estadoRaw = factura.getEstado();
             String estado = normEstado(estadoRaw);
 
-            System.out.println("Estado recuperado: [" + estadoRaw + "] (len=" + (estadoRaw == null ? 0 : estadoRaw.length()) + ")");
-            System.out.println("Estado normalizado: [" + estado + "], codes: " + debugCodes(estado));
-
-// ✅ Continuar solo si es I; si NO es I, devolver error
             if (!"I".equalsIgnoreCase(estado)) {
                 return ResponseEntity.status(404).body(Map.of(
                         "error", "No se pudo enviar la factura: el estado debe ser 'I'",
@@ -518,19 +543,64 @@ public ResponseEntity<?> firmarYEnviarFactura(
             );
 
             // 8) Extraer el XML autorizado (si existe)
+// 8) Extraer el XML autorizado (si existe)
             String xmlAutorizado = extraerXmlAutorizado(rc);
             if (xmlAutorizado != null) {
-                System.out.println("AUTORIZADO");
+                // Generar PDF desde el XML autorizado
+                ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
+                if (pdfStream == null || pdfStream.size() == 0) {
+                    return ResponseEntity.status(500).body(Map.of(
+                            "error", "No se pudo generar el PDF de la autorización"
+                    ));
+                }
 
-                //envio crear pdf
-                //envio por correo
+                // Persistir en BD (opcional)
                 factura.setXmlautorizado(xmlAutorizado);
                 factura.setEstado("O");
                 fecFacturaR.save(factura);
+
+                // --- Preparar adjuntos para correo ---
+                String nombrePdf  = "factura_" + factura.getIdfactura() + ".pdf";
+                String nombreXml  = "factura_" + factura.getIdfactura() + ".xml";
+                byte[] pdfBytes   = pdfStream.toByteArray();
+                byte[] xmlBytes   = xmlAutorizado.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+                // (Opcional) también armo un payload JSON para tu frontend
+                String pdfBase64 = java.util.Base64.getEncoder().encodeToString(pdfBytes);
+                Map<String, Object> payload = Map.of(
+                        "xmlNombre", nombreXml,
+                        "xmlContenido", xmlAutorizado,       // XML en texto (no base64)
+                        "pdfNombre", nombrePdf,
+                        "pdfMimeType", "application/pdf",
+                        "pdfBase64", pdfBase64
+                );
+
+                // --- Enviar correo con adjuntos (XML+PDF) ---
+                // ajusta estos datos o pásalos como parámetros si lo prefieres
+                String emisor      = "facturacion@epmapatulcan.gob.ec";
+                String password    = "TU_PASSWORD_APP"; // usa password de aplicación
+                java.util.List<String> receptores = java.util.List.of(
+                        "destino1@correo.com",
+                        "destino2@correo.com"
+                );
+                String asunto      = "Factura electrónica " + factura.getEstablecimiento() + "-" + factura.getPuntoemision() + "-" + factura.getSecuencial();
+                String htmlMensaje = """
+            <h3>Factura electrónica autorizada</h3>
+            <p>Se adjuntan los archivos XML (autorizado) y PDF.</p>
+            """;
+
+                // Llama a tu EmailService (ver firma más abajo)
+                sendMail(
+                        nombreXml, xmlBytes,
+                        nombrePdf, pdfBytes
+                );
+
                 return ResponseEntity.ok()
-                        .contentType(MediaType.APPLICATION_XML)
-                        .body(xmlAutorizado);
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(payload);
             }
+
+
 
             // 9) Si no hay autorización aún
             return ResponseEntity.status(202).body(Map.of(
@@ -546,6 +616,125 @@ public ResponseEntity<?> firmarYEnviarFactura(
             ));
         }
     }
+
+    // ===================== 9) GENERAR UN PDF DESDE UN STRING XML =====================
+
+    public ResponseEntity<Resource> generarPdfDesdeXml(
+            String xmlAutorizado
+    ) {
+        try {
+            if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
+                return ResponseEntity.badRequest().build();
+            }
+
+            // Limpia BOM si vino
+            if (xmlAutorizado.charAt(0) == '\uFEFF') {
+                xmlAutorizado = xmlAutorizado.substring(1);
+            }
+
+            // 1) Extraer fechaEmision del XML (formato dd/MM/yyyy)
+            LocalDate fechaEmision = extraerFechaEmision(xmlAutorizado);
+            LocalDate fechaLimite  = LocalDate.of(2025, 5, 6);
+
+            // 2) Elegir plantilla
+            ByteArrayOutputStream pdfStream = (fechaEmision != null && fechaEmision.isBefore(fechaLimite))
+                    ? xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado)  // antes de 06/05/2025
+                    : xmlToPdfService.generarFacturaPDF(xmlAutorizado);     // ese día o después (o si no se pudo leer fecha)
+
+            if (pdfStream == null || pdfStream.size() == 0) {
+                throw new IllegalStateException("No se pudo generar el PDF (stream vacío).");
+            }
+
+            //String filename = "factura" + (idfactura != null ? "_" + idfactura : "") + ".pdf";
+            InputStreamResource resource =
+                    new InputStreamResource();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .contentLength(pdfStream.size())
+                    .body((Resource) resource);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
+
+    // ===================== 10) ENVIAR POR CORREO =====================
+    public ResponseEntity<Map<String, Object>> sendMail(
+            String nombreXml, byte[] xmlBytes,
+            String nombrePdf, byte[] pdfBytes) {
+        try {
+
+            jakarta.mail.internet.MimeMessage mime = javaMailSender.createMimeMessage();
+            org.springframework.mail.javamail.MimeMessageHelper helper =
+                    new org.springframework.mail.javamail.MimeMessageHelper(mime, true, java.nio.charset.StandardCharsets.UTF_8.name());
+
+            String emisor;
+             String password;
+             List<String> receptores;
+             String asunto;
+             String mensaje;
+            // ====== CONFIGURACIÓN DEL CORREO ======
+            emisor = "facturacion@epmapatulcan.gob.ec";
+            password = "79DB6F2BFA7FFED2E17F16CABA197D2063EB";
+            receptores = List.of("ortizln9@gmail.com", "alexis.ortiz81@outlook.com",
+                    "saulruales@gmail.com", "ortizln9@gmail.com");
+            asunto = "Factura electrónica EPMAPA-T";
+            mensaje = "<h1>Factura Electrónica</h1><p>Adjunto se encuentra la factura autorizada.</p>";
+
+            // ====== CONVERTIR ADJUNTOS ======
+            helper.addAttachment(nombreXml, new org.springframework.core.io.ByteArrayResource(xmlBytes), "application/xml");
+            helper.addAttachment(nombrePdf, new org.springframework.core.io.ByteArrayResource(pdfBytes), "application/pdf");
+
+
+            // ====== ENVÍO DEL CORREO ======
+            boolean resultado = emailService.enviarXmlYPdf(emisor, password, receptores, asunto, mensaje, nombreXml, xmlBytes, nombrePdf, pdfBytes);
+            System.out.println(resultado);
+            // ====== RESPUESTA ======
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", resultado);
+            response.put("message", resultado ? "Correo enviado exitosamente con adjuntos" : "Error al enviar el correo");
+            response.put("timestamp", new Date());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", "Error en el servidor: " + e.getMessage());
+            errorResponse.put("timestamp", new Date());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+
+    private LocalDate extraerFechaEmision(String xml) {
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            // endurecer parser
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+
+            Document doc = dbf.newDocumentBuilder()
+                    .parse(new InputSource(new StringReader(xml)));
+            NodeList list = doc.getElementsByTagName("fechaEmision");
+            if (list.getLength() == 0) return null;
+
+            String texto = list.item(0).getTextContent();
+            if (texto == null || texto.isBlank()) return null;
+
+            DateTimeFormatter fmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            return LocalDate.parse(texto.trim(), fmt);
+        } catch (Exception ignore) {
+            return null; // si no se puede leer, que el caller use la plantilla por defecto
+        }
+    }
+
+
+
+
 
     // Normaliza estado: null-safe, trim y sin espacios raros
     private static String normEstado(String s) {

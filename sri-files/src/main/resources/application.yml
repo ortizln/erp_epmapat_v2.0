@@ -8,6 +8,19 @@ spring:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASS}
+  mail:
+    host: smtp.cmaginet.net
+    port: 587
+    username: facturacion@epmapatulcan.gob.ec
+    password: 79DB6F2BFA7FFED2E17F16CABA197D2063EB
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.ssl.trust: smtp.cmaginet.net
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+
 
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
