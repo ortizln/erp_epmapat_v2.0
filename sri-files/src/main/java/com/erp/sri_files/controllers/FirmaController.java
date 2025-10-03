@@ -1,7 +1,10 @@
 package com.erp.sri_files.controllers;
 
+import com.erp.sri_files.config.AESUtil;
+import com.erp.sri_files.models.Definir;
 import com.erp.sri_files.models.EmailAttachment;
 import com.erp.sri_files.models.Factura;
+import com.erp.sri_files.repositories.DefinirR;
 import com.erp.sri_files.repositories.FacturaR;
 import com.erp.sri_files.services.*;
 import com.erp.sri_files.utils.FirmaComprobantesService;
@@ -62,6 +65,8 @@ public class FirmaController {
     private XmlToPdfService xmlToPdfService;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private DefinirR definirService;
     @Autowired
     private org.springframework.mail.javamail.JavaMailSender javaMailSender;
 
@@ -660,37 +665,38 @@ public ResponseEntity<?> firmarYEnviarFactura(
     }
 
     // ===================== 10) ENVIAR POR CORREO =====================
+    @PostMapping("/send-mail")
     public ResponseEntity<Map<String, Object>> sendMail(
-            String nombreXml, byte[] xmlBytes,
-            String nombrePdf, byte[] pdfBytes) {
+            @RequestParam String nombreXml,
+            @RequestParam byte[] xmlBytes,
+            @RequestParam String nombrePdf,
+            @RequestParam byte[] pdfBytes
+    ) {
         try {
+            String emisor = "facturacion@epmapatulcan.gob.ec";
+            String password = "gOqp8L7EYkWa2NveUdKRtN3fl7qxlXPSDa5BKxIvgjEjOYonERiuDscG0WwTXBfZ";
+            List<String> receptores = List.of("alexis.ortiz81@outlook.com");
+            String asunto = "Factura electrónica EPMAPA-T";
+            String mensaje = "<h1>Factura Electrónica</h1><p>Adjunto se encuentra la factura autorizada.</p>";
 
-            jakarta.mail.internet.MimeMessage mime = javaMailSender.createMimeMessage();
-            org.springframework.mail.javamail.MimeMessageHelper helper =
-                    new org.springframework.mail.javamail.MimeMessageHelper(mime, true, java.nio.charset.StandardCharsets.UTF_8.name());
+            // 🔹 Armar el objeto con toda la info
+            Map<String, Object> obj = new HashMap<>();
+            obj.put("emisor", emisor);
+            obj.put("password", password);
+            obj.put("receptores", receptores);
+            obj.put("asunto", asunto);
+            obj.put("html", mensaje);
+            obj.put("nombreXml", nombreXml);
+            obj.put("xmlBase64", Base64.getEncoder().encodeToString(xmlBytes));
+            obj.put("nombrePdf", nombrePdf);
+            obj.put("pdfBase64", Base64.getEncoder().encodeToString(pdfBytes));
+            Definir d = definirService.findById(1L).orElseThrow();
+            System.out.println("CIFRADO: ==> "+d.getClave_email());
+            System.out.println("DESCIFRADO: ==> "+AESUtil.descifrar(d.getClave_email()));
+            // 🔹 Llamada al servicio que realmente envía
+            boolean resultado = sendAttachments(obj);
 
-            String emisor;
-             String password;
-             List<String> receptores;
-             String asunto;
-             String mensaje;
-            // ====== CONFIGURACIÓN DEL CORREO ======
-            emisor = "facturacion@epmapatulcan.gob.ec";
-            password = "79DB6F2BFA7FFED2E17F16CABA197D2063EB";
-            receptores = List.of("ortizln9@gmail.com", "alexis.ortiz81@outlook.com",
-                    "saulruales@gmail.com", "ortizln9@gmail.com");
-            asunto = "Factura electrónica EPMAPA-T";
-            mensaje = "<h1>Factura Electrónica</h1><p>Adjunto se encuentra la factura autorizada.</p>";
-
-            // ====== CONVERTIR ADJUNTOS ======
-            helper.addAttachment(nombreXml, new org.springframework.core.io.ByteArrayResource(xmlBytes), "application/xml");
-            helper.addAttachment(nombrePdf, new org.springframework.core.io.ByteArrayResource(pdfBytes), "application/pdf");
-
-
-            // ====== ENVÍO DEL CORREO ======
-            boolean resultado = emailService.enviarXmlYPdf(emisor, password, receptores, asunto, mensaje, nombreXml, xmlBytes, nombrePdf, pdfBytes);
-            System.out.println(resultado);
-            // ====== RESPUESTA ======
+            // 🔹 Respuesta HTTP
             Map<String, Object> response = new HashMap<>();
             response.put("success", resultado);
             response.put("message", resultado ? "Correo enviado exitosamente con adjuntos" : "Error al enviar el correo");
@@ -706,6 +712,38 @@ public ResponseEntity<?> firmarYEnviarFactura(
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+
+    // Envía XML y PDF adjuntos (base64 en body) usando spring.mail.*
+    public boolean sendAttachments(Map<String, Object> obj) {
+        try {
+
+            String emisor      = (String) obj.get("emisor");
+            String password    = (String) obj.get("password");
+            @SuppressWarnings("unchecked")
+            List<String> receptores = (List<String>) obj.get("receptores");
+            String asunto      = (String) obj.get("asunto");
+            String htmlMensaje = (String) obj.get("html");
+
+            String nombreXml   = (String) obj.get("nombreXml");
+            String xmlBase64   = (String) obj.get("xmlBase64");
+            byte[] xmlBytes    = xmlBase64 != null ? Base64.getDecoder().decode(xmlBase64) : null;
+
+            String nombrePdf   = (String) obj.get("nombrePdf");
+            String pdfBase64   = (String) obj.get("pdfBase64");
+            byte[] pdfBytes    = pdfBase64 != null ? Base64.getDecoder().decode(pdfBase64) : null;
+
+            return emailService.enviarXmlYPdf(
+                    emisor, password, receptores,
+                    asunto, htmlMensaje,
+                    nombreXml, xmlBytes,
+                    nombrePdf, pdfBytes
+            );
+        } catch (Exception e) {
+            System.out.println("Error en sendAttachments: " + e.getMessage());
+            return false;
+        }
+    }
+
 
 
     private LocalDate extraerFechaEmision(String xml) {
