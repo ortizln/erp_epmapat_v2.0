@@ -4,3 +4,6 @@ DB_USER=postgres
 EUREKA_INSTANCE=msvc-eureka
 EUREKA_SERVICEURL=http://localhost
 HOST=http://localhost
+MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
+MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+MAIL_HOST:smtp.elasticemail.com

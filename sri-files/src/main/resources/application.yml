@@ -1,33 +1,30 @@
 spring:
   application:
     name: msvc-sri
+  profiles:
+    active: dev
   config:
     import: optional:configserver:http://config-server:8888
-    #79DB6F2BFA7FFED2E17F16CABA197D2063EB
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASS}
   mail:
-    host: webmail.epmapatulcan.gob.ec   # Debe estar en el certificado TLS
-    port: 465
-    username: facturacion@epmapatulcan.gob.ec
-    password: gOqp8L7EYkWa2NveUdKRtN3fl7qxlXPSDa5BKxIvgjEjOYonERiuDscG0WwTXBfZ
+    host: ${MAIL_HOST:smtp.elasticemail.com}
+    port: ${MAIL_PORT:465}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
     properties:
-      mail.transport.protocol: smtp
       mail.smtp.auth: true
-      mail.smtp.starttls.enable: false
+      mail.smtp.starttls.enable: true
       mail.smtp.ssl.enable: true
       mail.smtp.ssl.checkserveridentity: true
-      mail.smtp.ssl.trust: webmail.epmapatulcan.gob.ec
-      mail.smtp.connectiontimeout: 5000
-      mail.smtp.timeout: 5000
-      mail.smtp.writetimeout: 5000
+      mail.smtp.ssl.trust: ${MAIL_HOST:smtp.elasticemail.com}
+      mail.smtp.connectiontimeout: 8000
+      mail.smtp.timeout: 8000
+      mail.smtp.writetimeout: 8000
       mail.debug: true
-
-
-
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
@@ -39,6 +36,11 @@ xml:
 app:
   reports:
     path: /home/epmapaadmin/reportsEpmapat
+  mail:
+    from: facturacion@epmapatulcan.gob.ec
+    # opcional:
+    display-name: EPMAPA-T
+    reply-to: facturacion@epmapatulcan.gob.ec
 
 sri:
   xml:

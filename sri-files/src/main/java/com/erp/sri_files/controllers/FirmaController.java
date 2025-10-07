@@ -1,6 +1,9 @@
 package com.erp.sri_files.controllers;
 
 import com.erp.sri_files.config.AESUtil;
+import com.erp.sri_files.dto.SendMailRequest;
+import com.erp.sri_files.dto.SendMailResponse;
+import com.erp.sri_files.dto.TemplateMailRequest;
 import com.erp.sri_files.models.Definir;
 import com.erp.sri_files.models.EmailAttachment;
 import com.erp.sri_files.models.Factura;
@@ -12,6 +15,7 @@ import com.erp.sri_files.utils.FirmaComprobantesService.ModoFirma;
 import ec.gob.sri.ws.autorizacion.RespuestaComprobante;
 import ec.gob.sri.ws.recepcion.RespuestaSolicitud;
 import jakarta.annotation.Resource;
+import jakarta.validation.Valid;
 import net.sf.jasperreports.repo.InputStreamResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -64,11 +68,12 @@ public class FirmaController {
     @Autowired
     private XmlToPdfService xmlToPdfService;
     @Autowired
-    private EmailService emailService;
-    @Autowired
     private DefinirR definirService;
+
+
     @Autowired
-    private org.springframework.mail.javamail.JavaMailSender javaMailSender;
+    private MailService mailService;
+
 
     @Value("${eureka.service-url}")
     private String eurekaServiceUrl;
@@ -732,19 +737,11 @@ public ResponseEntity<?> firmarYEnviarFactura(
             String pdfBase64   = (String) obj.get("pdfBase64");
             byte[] pdfBytes    = pdfBase64 != null ? Base64.getDecoder().decode(pdfBase64) : null;
 
-            return emailService.enviarXmlYPdf(
-                    emisor, password, receptores,
-                    asunto, htmlMensaje,
-                    nombreXml, xmlBytes,
-                    nombrePdf, pdfBytes
-            );
         } catch (Exception e) {
             System.out.println("Error en sendAttachments: " + e.getMessage());
             return false;
         }
     }
-
-
 
     private LocalDate extraerFechaEmision(String xml) {
         try {
@@ -769,10 +766,6 @@ public ResponseEntity<?> firmarYEnviarFactura(
             return null; // si no se puede leer, que el caller use la plantilla por defecto
         }
     }
-
-
-
-
 
     // Normaliza estado: null-safe, trim y sin espacios raros
     private static String normEstado(String s) {
@@ -826,11 +819,39 @@ public ResponseEntity<?> firmarYEnviarFactura(
         return out;
     }
 
-
-
     // ===== Manejador de errores comunes =====
     @ExceptionHandler({ IllegalArgumentException.class, IllegalStateException.class })
     public ResponseEntity<String> handleBadRequest(Exception ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
+
+
+    //=================================================================================================================
+
+    @PostMapping("/send")
+    public ResponseEntity<SendMailResponse> send(@Valid @RequestBody SendMailRequest req) {
+        try {
+            mailService.send(req);
+            return ResponseEntity.ok(new SendMailResponse(true, "Enviado", java.time.Instant.now()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new SendMailResponse(false, e.getMessage(), java.time.Instant.now()));
+        }
+    }
+
+    @PostMapping("/send-template")
+    public ResponseEntity<SendMailResponse> sendTemplate(@Valid @RequestBody TemplateMailRequest req) {
+        try {
+            mailService.sendTemplate(req);
+            return ResponseEntity.ok(new SendMailResponse(true, "Enviado", java.time.Instant.now()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new SendMailResponse(false, e.getMessage(), java.time.Instant.now()));
+        }
+    }
+
+    @GetMapping("/health")
+    public ResponseEntity<Map<String,Object>> health() {
+        boolean ok = mailService.smtpHealth();
+        return ResponseEntity.ok(Map.of("smtp", ok ? "UP" : "DOWN", "time", java.time.Instant.now()));
+    }
+
 }
