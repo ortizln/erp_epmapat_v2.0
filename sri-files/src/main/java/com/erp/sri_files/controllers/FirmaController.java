@@ -737,6 +737,7 @@ public ResponseEntity<?> firmarYEnviarFactura(
             String pdfBase64   = (String) obj.get("pdfBase64");
             byte[] pdfBytes    = pdfBase64 != null ? Base64.getDecoder().decode(pdfBase64) : null;
 
+            return true;
         } catch (Exception e) {
             System.out.println("Error en sendAttachments: " + e.getMessage());
             return false;
