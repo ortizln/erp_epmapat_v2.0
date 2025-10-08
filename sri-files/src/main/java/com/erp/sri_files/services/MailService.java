@@ -11,9 +11,7 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
-import org.springframework.stereotype.Service;
 
 @Service
 public class MailService {
@@ -73,6 +71,55 @@ public class MailService {
 
         mailSender.send(mime);
     }
+
+    /** Envío HTML + adjuntos + inline images (cid) */
+    @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1500))
+    public boolean sendMail(SendMailRequest req) {
+        try {
+            validateAttachments(req.attachments());
+
+            MimeMessage mime = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(
+                    mime, true, java.nio.charset.StandardCharsets.UTF_8.name());
+
+            // From
+            String from = (req.from() == null || req.from().isBlank()) ? defaultFrom : req.from();
+            helper.setFrom(from);
+
+            // To/CC/BCC
+            helper.setTo(req.to().toArray(String[]::new));
+            if (req.cc() != null && !req.cc().isEmpty()) helper.setCc(req.cc().toArray(String[]::new));
+            if (req.bcc() != null && !req.bcc().isEmpty()) helper.setBcc(req.bcc().toArray(String[]::new));
+
+            // Asunto y cuerpo
+            helper.setSubject(req.subject());
+            helper.setText(req.htmlBody(), true);
+
+            // Inline images (opcional: <img src="cid:logo.png">)
+            if (req.inlineImages() != null && !req.inlineImages().isEmpty()) {
+                for (var e : req.inlineImages().entrySet()) {
+                    byte[] bytes = java.util.Base64.getDecoder().decode(e.getValue());
+                    helper.addInline(e.getKey(), new org.springframework.core.io.ByteArrayResource(bytes));
+                }
+            }
+            // Adjuntos
+            if (req.attachments() != null && !req.attachments().isEmpty()) {
+                for (AttachmentDTO a : req.attachments()) {
+                    byte[] data = java.util.Base64.getDecoder().decode(a.base64());
+                    helper.addAttachment(a.filename(),
+                            new org.springframework.core.io.ByteArrayResource(data),
+                            a.mimeType());
+                }
+            }
+            mailSender.send(mime);
+            return true;
+
+        } catch (Exception ex) {
+
+            return false;
+        }
+    }
+
 
     /** Envío por plantilla Thymeleaf */
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1500)) // opcional

@@ -1,11 +1,11 @@
 package com.erp.sri_files.controllers;
 
 import com.erp.sri_files.config.AESUtil;
+import com.erp.sri_files.dto.AttachmentDTO;
 import com.erp.sri_files.dto.SendMailRequest;
 import com.erp.sri_files.dto.SendMailResponse;
 import com.erp.sri_files.dto.TemplateMailRequest;
 import com.erp.sri_files.models.Definir;
-import com.erp.sri_files.models.EmailAttachment;
 import com.erp.sri_files.models.Factura;
 import com.erp.sri_files.repositories.DefinirR;
 import com.erp.sri_files.repositories.FacturaR;
@@ -39,38 +39,25 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-
 @RestController
 @RequestMapping("/api/singsend")
 @CrossOrigin(origins = "*")
-public class FirmaController {
+public class SRI_Controller {
 
-    private final EnvioComprobantesWs envioComprobantesWs;
+    private final SendXmlToSriService sendXmlToSriService;
     private final FirmaComprobantesService firmaService;
     private final RestTemplate restTemplate;
 
     @Autowired
     private FacturaR fecFacturaR;
     @Autowired
-    private FacturaSRIService facturaSRIService;
+    private FacturaXmlGeneratorService facturaXmlGeneratorService;
     @Autowired
     private FacturasService facturasService;
     @Autowired
     private XmlToPdfService xmlToPdfService;
     @Autowired
     private DefinirR definirService;
-
-
     @Autowired
     private MailService mailService;
 
@@ -78,9 +65,9 @@ public class FirmaController {
     @Value("${eureka.service-url}")
     private String eurekaServiceUrl;
 
-    public FirmaController(EnvioComprobantesWs envioComprobantesWs,
-                           FirmaComprobantesService firmaService, RestTemplate restTemplate) {
-        this.envioComprobantesWs = envioComprobantesWs;
+    public SRI_Controller(SendXmlToSriService sendXmlToSriService,
+                          FirmaComprobantesService firmaService, RestTemplate restTemplate) {
+        this.sendXmlToSriService = sendXmlToSriService;
         this.firmaService = firmaService;
         this.restTemplate = restTemplate;
     }
@@ -120,20 +107,20 @@ public class FirmaController {
 
             // 2) Ambiente: si te lo pasan, lo usas; sino lo deduces del XML
             if (ambienteForzado != null) {
-                envioComprobantesWs.setAmbiente(ambienteForzado == 2 ? 2 : 1);
+                sendXmlToSriService.setAmbiente(ambienteForzado == 2 ? 2 : 1);
             } else {
-                envioComprobantesWs.setAmbienteFromXml(xmlFirmado);
+                sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
             }
 
             // 3) Recepción
-            RespuestaSolicitud respuesta = envioComprobantesWs.enviarFacturaFirmada(xmlBytes);
+            RespuestaSolicitud respuesta = sendXmlToSriService.enviarFacturaFirmada(xmlBytes);
 
             // 4) Si RECIBIDA, intenta autorización con polling
             if ("RECIBIDA".equalsIgnoreCase(respuesta.getEstado())) {
-                RespuestaComprobante autorizacion = envioComprobantesWs.consultarAutorizacionConEspera(
+                RespuestaComprobante autorizacion = sendXmlToSriService.consultarAutorizacionConEspera(
                         xmlFirmado,
                         clave -> {
-                            try { return envioComprobantesWs.consultarAutorizacion(clave); }
+                            try { return sendXmlToSriService.consultarAutorizacion(clave); }
                             catch (Exception e) { throw new RuntimeException(e); }
                         },
                         10,   // intentos
@@ -153,7 +140,7 @@ public class FirmaController {
     }
 
 
-    // ===================== 3) SOLO FIRMAR → XML =====================
+    // ===================== 2) SOLO FIRMAR → XML =====================
     @PostMapping(
             path = "/factura/firmar/upload.xml"
     )
@@ -161,7 +148,6 @@ public class FirmaController {
             @RequestPart("xml") MultipartFile xmlFile,
             @RequestParam(value = "modo", required = false, defaultValue = "XADES_BES") String modo,
             @RequestParam(value = "definirId", required = false) Long definirId
-            // @RequestParam(value = "password", required = false) String password // <- agrega si tu servicio lo necesita
     ) throws Exception {
 
         String xmlPlano = toUtf8String(xmlFile);
@@ -172,7 +158,7 @@ public class FirmaController {
                 : firmaService.firmarFactura(xmlPlano, mf);
     }
 
-    // ===================== 4) FIRMAR Y ENVIAR EN UNO SOLO =====================
+    // ===================== 3) FIRMAR Y ENVIAR EN UNO SOLO =====================
     @PostMapping(
             path = "/factura/xml"
     )
@@ -181,7 +167,6 @@ public class FirmaController {
             @RequestParam(value = "modo", required = false, defaultValue = "XADES_BES") String modo,
             @RequestParam(value = "definirId", required = false, defaultValue = "1") Long definirId,
             @RequestParam(value = "ambiente", required = false) Integer ambienteForzado
-            // @RequestParam(value = "password", required = false) String password
     ) {
         try {
             // 1) Convertir el archivo a String
@@ -195,20 +180,20 @@ public class FirmaController {
 
             // 4) Ambiente: forzado si lo pasan; si no, deducir del XML firmado
             if (ambienteForzado != null) {
-                envioComprobantesWs.setAmbiente(ambienteForzado == 2 ? 2 : 1);
+                sendXmlToSriService.setAmbiente(ambienteForzado == 2 ? 2 : 1);
             } else {
-                envioComprobantesWs.setAmbienteFromXml(xmlFirmado);
+                sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
             }
 
             // 5) Enviar a recepción
-            RespuestaSolicitud recepcion = envioComprobantesWs.enviarFacturaFirmadaTxt(xmlFirmado);
+            RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
 
             // 6) Si RECIBIDA, aplicar polling hasta autorización
             if ("RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
-                RespuestaComprobante autorizacion = envioComprobantesWs.consultarAutorizacionConEspera(
+                RespuestaComprobante autorizacion = sendXmlToSriService.consultarAutorizacionConEspera(
                         xmlFirmado,
                         clave -> {
-                            try { return envioComprobantesWs.consultarAutorizacion(clave); }
+                            try { return sendXmlToSriService.consultarAutorizacion(clave); }
                             catch (Exception e) { throw new RuntimeException(e); }
                         },
                         10,   // intentos
@@ -232,7 +217,7 @@ public class FirmaController {
         }
     }
 
-    // ===================== 5) FIRMAR Y ENVIAR RECIBIENDO XML EN STRING =====================
+    // ===================== 4) FIRMAR Y ENVIAR RECIBIENDO XML EN STRING =====================
     @PostMapping(
             path = "/factura/string"
     )
@@ -259,21 +244,21 @@ public class FirmaController {
 
             // 3) Ambiente: forzado si lo pasan; si no, deducir del XML firmado
             if (ambienteForzado != null) {
-                envioComprobantesWs.setAmbiente(ambienteForzado == 2 ? 2 : 1);
+                sendXmlToSriService.setAmbiente(ambienteForzado == 2 ? 2 : 1);
             } else {
-                envioComprobantesWs.setAmbienteFromXml(xmlFirmado);
+                sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
             }
 
             // 4) Enviar a recepción
-            RespuestaSolicitud recepcion = envioComprobantesWs.enviarFacturaFirmadaTxt(xmlFirmado);
+            RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
 
 
             // 5) Si RECIBIDA, aplicar polling hasta autorización
             if ("RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
-                RespuestaComprobante autorizacion = envioComprobantesWs.consultarAutorizacionConEspera(
+                RespuestaComprobante autorizacion = sendXmlToSriService.consultarAutorizacionConEspera(
                         xmlFirmado,
                         clave -> {
-                            try { return envioComprobantesWs.consultarAutorizacion(clave); }
+                            try { return sendXmlToSriService.consultarAutorizacion(clave); }
                             catch (Exception e) { throw new RuntimeException(e); }
                         },
                         10,   // intentos
@@ -297,7 +282,7 @@ public class FirmaController {
         }
     }
 
-    // ===================== 6) FIRMAR Y ENVIAR RETENCIÓN (solo retorna XML autorizado) =====================
+    // ===================== 5) FIRMAR Y ENVIAR RETENCIÓN (solo retorna XML autorizado) =====================
     @PostMapping(
             path = "/retencion",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -306,7 +291,6 @@ public class FirmaController {
     public ResponseEntity<?> firmarYEnviarRetencion(
             @RequestPart("xml") MultipartFile xmlFile,
             @RequestParam(value = "modo", required = false, defaultValue = "XADES_BES") String modo,
-            @RequestParam(value = "definirId", required = false, defaultValue = "1") Long definirId,
             @RequestParam(value = "ambiente", required = false) Integer ambienteForzado,
             @RequestParam(value = "download", required = false, defaultValue = "false") boolean download // si quieres forzar descarga
     ) {
@@ -322,14 +306,12 @@ public class FirmaController {
 
             // 2) Ambiente
             if (ambienteForzado != null) {
-                envioComprobantesWs.setAmbiente(ambienteForzado == 2 ? 2 : 1);
+                sendXmlToSriService.setAmbiente(ambienteForzado == 2 ? 2 : 1);
             } else {
-                envioComprobantesWs.setAmbienteFromXml(xmlFirmado);
+                sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
             }
-
-
             // 5) Enviar a recepción
-            RespuestaSolicitud recepcion = envioComprobantesWs.enviarFacturaFirmadaTxt(xmlFirmado);
+            RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
 
             // 6) Si recepción NO fue RECIBIDA -> 400 con errores
             if (!"RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
@@ -338,17 +320,15 @@ public class FirmaController {
                         "errores", resumenErroresRecepcion(recepcion)
                 ));
             }
-
             // 7) Polling de autorización
-            RespuestaComprobante rc = envioComprobantesWs.consultarAutorizacionConEspera(
+            RespuestaComprobante rc = sendXmlToSriService.consultarAutorizacionConEspera(
                     xmlFirmado,
                     clave -> {
-                        try { return envioComprobantesWs.consultarAutorizacion(clave); }
+                        try { return sendXmlToSriService.consultarAutorizacion(clave); }
                         catch (Exception e) { throw new RuntimeException(e); }
                     },
                     10, 4000
             );
-
             // 8) Extraer solo el XML autorizado del SRI
             String xmlAutorizado = extraerXmlAutorizado(rc);
             if (xmlAutorizado != null) {
@@ -365,13 +345,11 @@ public class FirmaController {
                         .contentType(MediaType.APPLICATION_XML)
                         .body(xmlAutorizado);
             }
-
             // 9) Aún no autorizado
             return ResponseEntity.status(202).body(Map.of(
                     "estado", "PENDIENTE",
                     "detalle", "La autorización aún no está disponible."
             ));
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of(
@@ -406,13 +384,13 @@ public ResponseEntity<?> firmarYEnviarFactura(
 
         // 2) Ambiente
         if (ambienteForzado != null) {
-            envioComprobantesWs.setAmbiente(ambienteForzado == 2 ? 2 : 1);
+            sendXmlToSriService.setAmbiente(ambienteForzado == 2 ? 2 : 1);
         } else {
-            envioComprobantesWs.setAmbienteFromXml(xmlFirmado);
+            sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
         }
 
         // 4) Enviar a recepción
-        RespuestaSolicitud recepcion = envioComprobantesWs.enviarFacturaFirmadaTxt(xmlFirmado);
+        RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
 
         // Si NO fue recibida, devolvemos error resumido (JSON)
         if (!"RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
@@ -423,10 +401,10 @@ public ResponseEntity<?> firmarYEnviarFactura(
         }
 
         // 5) Polling/consulta de autorización
-        RespuestaComprobante rc = envioComprobantesWs.consultarAutorizacionConEspera(
+        RespuestaComprobante rc = sendXmlToSriService.consultarAutorizacionConEspera(
                 xmlFirmado,
                 clave -> {
-                    try { return envioComprobantesWs.consultarAutorizacion(clave); }
+                    try { return sendXmlToSriService.consultarAutorizacion(clave); }
                     catch (Exception e) { throw new RuntimeException(e); }
                 },
                 10,   // intentos
@@ -460,12 +438,14 @@ public ResponseEntity<?> firmarYEnviarFactura(
     // ===================== 8) CREAR XML FIRMAR Y ENVIAR =====================
     @GetMapping(path = "/factura_electronica")
     public ResponseEntity<?> crear_firmar_enviarFactura(@RequestParam Long idfactura) {
+        //crear variable de respuesta estado y detalla
+        // 1) Intentar obtener factura
+        Factura factura = fecFacturaR.findByIdfactura(idfactura);
         try {
             String modo = "XADES_BES";
             Integer ambienteForzado = 1;
 
-            // 1) Intentar obtener factura
-            Factura factura = fecFacturaR.findByIdfactura(idfactura);
+
             if(factura != null && (Objects.equals(factura.getEstado(), "A") || Objects.equals(factura.getEstado(), "O"))){
                 return ResponseEntity.status(201).body(Map.of(
                         "error", "No se pudo generar la factura porque ya esta fue enviada",
@@ -511,7 +491,7 @@ public ResponseEntity<?> firmarYEnviarFactura(
             }
 
             // 2) Generar XML sin firmar
-            String xmlPlano = facturaSRIService.generarXmlFactura(factura);
+            String xmlPlano = facturaXmlGeneratorService.generarXmlFactura(factura);
 
             // Limpia BOM si existe (importante para parseo/firma)
             if (xmlPlano != null && !xmlPlano.isEmpty() && xmlPlano.charAt(0) == '\uFEFF') {
@@ -526,13 +506,13 @@ public ResponseEntity<?> firmarYEnviarFactura(
 
             // 5) Ambiente
             if (ambienteForzado != null) {
-                envioComprobantesWs.setAmbiente(ambienteForzado == 2 ? 2 : 1);
+                sendXmlToSriService.setAmbiente(ambienteForzado == 2 ? 2 : 1);
             } else {
-                envioComprobantesWs.setAmbienteFromXml(xmlFirmado);
+                sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
             }
 
             // 6) Enviar a recepción
-            RespuestaSolicitud recepcion = envioComprobantesWs.enviarFacturaFirmadaTxt(xmlFirmado);
+            RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
 
             if (!"RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
                 return ResponseEntity.badRequest().body(Map.of(
@@ -542,18 +522,17 @@ public ResponseEntity<?> firmarYEnviarFactura(
             }
 
             // 7) Polling/consulta de autorización
-            RespuestaComprobante rc = envioComprobantesWs.consultarAutorizacionConEspera(
+            RespuestaComprobante rc = sendXmlToSriService.consultarAutorizacionConEspera(
                     xmlFirmado,
                     clave -> {
-                        try { return envioComprobantesWs.consultarAutorizacion(clave); }
+                        try { return sendXmlToSriService.consultarAutorizacion(clave); }
                         catch (Exception e) { throw new RuntimeException(e); }
                     },
-                    10,   // intentos
+                    20,   // intentos
                     4000  // ms entre intentos
             );
 
             // 8) Extraer el XML autorizado (si existe)
-// 8) Extraer el XML autorizado (si existe)
             String xmlAutorizado = extraerXmlAutorizado(rc);
             if (xmlAutorizado != null) {
                 // Generar PDF desde el XML autorizado
@@ -563,55 +542,77 @@ public ResponseEntity<?> firmarYEnviarFactura(
                             "error", "No se pudo generar el PDF de la autorización"
                     ));
                 }
-
                 // Persistir en BD (opcional)
                 factura.setXmlautorizado(xmlAutorizado);
-                factura.setEstado("O");
-                fecFacturaR.save(factura);
-
-                // --- Preparar adjuntos para correo ---
+                // --- Preparar adjuntos (Base64) ---
                 String nombrePdf  = "factura_" + factura.getIdfactura() + ".pdf";
                 String nombreXml  = "factura_" + factura.getIdfactura() + ".xml";
-                byte[] pdfBytes   = pdfStream.toByteArray();
-                byte[] xmlBytes   = xmlAutorizado.getBytes(java.nio.charset.StandardCharsets.UTF_8);
 
-                // (Opcional) también armo un payload JSON para tu frontend
+                byte[] pdfBytes = pdfStream.toByteArray();
+                byte[] xmlBytes = xmlAutorizado.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
                 String pdfBase64 = java.util.Base64.getEncoder().encodeToString(pdfBytes);
-                Map<String, Object> payload = Map.of(
-                        "xmlNombre", nombreXml,
-                        "xmlContenido", xmlAutorizado,       // XML en texto (no base64)
-                        "pdfNombre", nombrePdf,
-                        "pdfMimeType", "application/pdf",
-                        "pdfBase64", pdfBase64
-                );
+                String xmlBase64 = java.util.Base64.getEncoder().encodeToString(xmlBytes);
 
-                // --- Enviar correo con adjuntos (XML+PDF) ---
-                // ajusta estos datos o pásalos como parámetros si lo prefieres
-                String emisor      = "facturacion@epmapatulcan.gob.ec";
-                String password    = "TU_PASSWORD_APP"; // usa password de aplicación
-                java.util.List<String> receptores = java.util.List.of(
-                        "destino1@correo.com",
-                        "destino2@correo.com"
+                List<AttachmentDTO> attachments = java.util.List.of(
+                        new AttachmentDTO(nombrePdf, "application/pdf", pdfBase64),
+                        new AttachmentDTO(nombreXml, "application/xml", xmlBase64)
                 );
-                String asunto      = "Factura electrónica " + factura.getEstablecimiento() + "-" + factura.getPuntoemision() + "-" + factura.getSecuencial();
-                String htmlMensaje = """
-            <h3>Factura electrónica autorizada</h3>
-            <p>Se adjuntan los archivos XML (autorizado) y PDF.</p>
-            """;
+// --- Destinatarios ---
+// Usa el correo del comprador si lo tienes en la entidad; de lo contrario, uno de prueba
+                /*List<String> to = (factura.getEmailcomprador() != null && !factura.getEmailcomprador().isBlank())
+                        ? java.util.List.of(factura.getEmailcomprador().trim())
+                        : java.util.List.of("destinatario@dominio.com");*/
 
-                // Llama a tu EmailService (ver firma más abajo)
-                sendMail(
-                        nombreXml, xmlBytes,
-                        nombrePdf, pdfBytes
+                List<String> to = (java.util.List.of("ortizln9@gmail.com", "alexis.ortiz81@outlook.com"));
+
+// CC/BCC opcionales
+                List<String> cc = java.util.Collections.emptyList();
+                List<String> bcc = java.util.Collections.emptyList();
+
+// From: pásalo como null para que el servicio use app.mail.from
+                String from = null;
+
+// Asunto y cuerpo
+                String subject = "Factura electrónica #" + factura.getEstablecimiento() + "-"
+                        + factura.getPuntoemision() + "-" + factura.getSecuencial();
+
+                String htmlBody =
+                        "<h1>Factura electrónica autorizada</h1>" +
+                                "<p>Estimado/a " + (factura.getRazonsocialcomprador() != null ? factura.getRazonsocialcomprador() : "cliente") + ",</p>" +
+                                "<p>Adjuntamos su comprobante electrónico en formato PDF y XML.</p>" +
+                                "<p>Saludos,<br>EPMAPA-T</p>";
+
+// Inline images (si no usas, envía map vacío)
+                java.util.Map<String, String> inlineImages = java.util.Collections.emptyMap();
+
+// --- Construir request ---
+                SendMailRequest mailReq = new SendMailRequest(
+                        from,      // deja que MailService tome el 'from' por defecto de configuración
+                        to,
+                        cc,
+                        bcc,
+                        subject,
+                        htmlBody,
+                        attachments,
+                        inlineImages
                 );
-
+// --- Enviar ---
+                boolean mail = mailService.sendMail(mailReq);
+                if(mail){
+                    factura.setEstado("A");
+                }
+                else{
+                    factura.setEstado("O");
+                }
+                fecFacturaR.save(factura);
                 return ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(payload);
+                        .body("Enviado con exito");
             }
-
-
-
+            factura.setEstado("P");
+            factura.setErrores("Pendiente la autorizacion: " + xmlFirmado);
+            fecFacturaR.save(factura);
             // 9) Si no hay autorización aún
             return ResponseEntity.status(202).body(Map.of(
                     "estado", "PENDIENTE",
@@ -620,6 +621,9 @@ public ResponseEntity<?> firmarYEnviarFactura(
 
         } catch (Exception e) {
             e.printStackTrace();
+            factura.setEstado("U");
+            factura.setErrores(e.getMessage());
+            fecFacturaR.save(factura);
             return ResponseEntity.status(500).body(Map.of(
                     "error", "Error al firmar/enviar comprobante",
                     "detalle", e.getMessage()
@@ -627,121 +631,339 @@ public ResponseEntity<?> firmarYEnviarFactura(
         }
     }
 
-    // ===================== 9) GENERAR UN PDF DESDE UN STRING XML =====================
 
-    public ResponseEntity<Resource> generarPdfDesdeXml(
-            String xmlAutorizado
+    // ===================== 5) FIRMAR Y ENVIAR RETENCIÓN (recibe XML como String) =====================
+    @PostMapping(
+            path = "/retencion/string",
+            consumes = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE },
+            produces = { MediaType.APPLICATION_XML_VALUE, MediaType.APPLICATION_JSON_VALUE }
+    )
+    public ResponseEntity<?> firmarYEnviarRetencion(
+            @RequestBody String xmlPlanoBody,
+            @RequestParam(value = "modo", required = false, defaultValue = "XADES_BES") String modo,
+            @RequestParam(value = "ambiente", required = false) Integer ambienteForzado,
+            @RequestParam(value = "download", required = false, defaultValue = "false") boolean download
     ) {
         try {
-            if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
-                return ResponseEntity.badRequest().build();
+            // 1) Validar y limpiar el XML recibido
+            if (xmlPlanoBody == null || xmlPlanoBody.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "error", "XML vacío o nulo"
+                ));
+            }
+            String xmlPlano = stripBom(xmlPlanoBody).trim();
+
+            // 2) Modo firma
+            ModoFirma mf = "XMLDSIG".equalsIgnoreCase(modo) ? ModoFirma.XMLDSIG : ModoFirma.XADES_BES;
+
+            // 3) Firmar (re-usa tu servicio actual)
+            String xmlFirmado = firmaService.firmarFactura(xmlPlano, mf);
+
+            // 4) Ambiente (forzado o leído del XML firmado)
+            if (ambienteForzado != null) {
+                sendXmlToSriService.setAmbiente(ambienteForzado == 2 ? 2 : 1);
+            } else {
+                sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
             }
 
-            // Limpia BOM si vino
-            if (xmlAutorizado.charAt(0) == '\uFEFF') {
-                xmlAutorizado = xmlAutorizado.substring(1);
+            // 5) Enviar a recepción
+            RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
+
+            // 6) Si recepción NO fue RECIBIDA -> 400 con errores
+            if (!"RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "estado", recepcion.getEstado(),
+                        "errores", resumenErroresRecepcion(recepcion)
+                ));
             }
 
-            // 1) Extraer fechaEmision del XML (formato dd/MM/yyyy)
-            LocalDate fechaEmision = extraerFechaEmision(xmlAutorizado);
-            LocalDate fechaLimite  = LocalDate.of(2025, 5, 6);
+            // 7) Polling de autorización
+            RespuestaComprobante rc = sendXmlToSriService.consultarAutorizacionConEspera(
+                    xmlFirmado,
+                    clave -> {
+                        try { return sendXmlToSriService.consultarAutorizacion(clave); }
+                        catch (Exception e) { throw new RuntimeException(e); }
+                    },
+                    10,   // intentos
+                    4000  // ms entre intentos
+            );
 
-            // 2) Elegir plantilla
-            ByteArrayOutputStream pdfStream = (fechaEmision != null && fechaEmision.isBefore(fechaLimite))
-                    ? xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado)  // antes de 06/05/2025
-                    : xmlToPdfService.generarFacturaPDF(xmlAutorizado);     // ese día o después (o si no se pudo leer fecha)
+            // 8) Extraer XML autorizado
+            String xmlAutorizado = extraerXmlAutorizado(rc);
+            ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
 
-            if (pdfStream == null || pdfStream.size() == 0) {
-                throw new IllegalStateException("No se pudo generar el PDF (stream vacío).");
+            if (xmlAutorizado != null) {
+                // --- Preparar adjuntos (Base64) ---
+                String nombrePdf  = "retencion_" + rc.getAutorizaciones() + ".pdf";
+                String nombreXml  = "retencion_" + rc.getAutorizaciones() + ".xml";
+
+                byte[] pdfBytes = pdfStream.toByteArray();
+                byte[] xmlBytes = xmlAutorizado.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+
+                String pdfBase64 = java.util.Base64.getEncoder().encodeToString(pdfBytes);
+                String xmlBase64 = java.util.Base64.getEncoder().encodeToString(xmlBytes);
+
+                List<AttachmentDTO> attachments = java.util.List.of(
+                        new AttachmentDTO(nombrePdf, "application/pdf", pdfBase64),
+                        new AttachmentDTO(nombreXml, "application/xml", xmlBase64)
+                );
+// --- Destinatarios ---
+// Usa el correo del comprador si lo tienes en la entidad; de lo contrario, uno de prueba
+                /*List<String> to = (factura.getEmailcomprador() != null && !factura.getEmailcomprador().isBlank())
+                        ? java.util.List.of(factura.getEmailcomprador().trim())
+                        : java.util.List.of("destinatario@dominio.com");*/
+
+                List<String> to = (java.util.List.of("ortizln9@gmail.com", "alexis.ortiz81@outlook.com"));
+
+// CC/BCC opcionales
+                List<String> cc = java.util.Collections.emptyList();
+                List<String> bcc = java.util.Collections.emptyList();
+
+// From: pásalo como null para que el servicio use app.mail.from
+                String from = null;
+
+// Asunto y cuerpo
+                String subject = "Comprobante electrónico #" ;
+
+                String htmlBody =
+                        "<h1>Factura electrónica autorizada</h1>" +
+                                "<p>Estimado/a " + "cliente" + ",</p>" +
+                                "<p>Adjuntamos su comprobante electrónico en formato PDF y XML.</p>" +
+                                "<p>Saludos,<br>EPMAPA-T</p>";
+
+// Inline images (si no usas, envía map vacío)
+                java.util.Map<String, String> inlineImages = java.util.Collections.emptyMap();
+
+// --- Construir request ---
+                SendMailRequest mailReq = new SendMailRequest(
+                        from,      // deja que MailService tome el 'from' por defecto de configuración
+                        to,
+                        cc,
+                        bcc,
+                        subject,
+                        htmlBody,
+                        attachments,
+                        inlineImages
+                );
+// --- Enviar ---
+                boolean mail = mailService.sendMail(mailReq);
+                if (download) {
+                    String fileName = "retencion-" + System.currentTimeMillis() + ".xml";
+                    return ResponseEntity.ok()
+                            .contentType(MediaType.APPLICATION_XML)
+                            .header("Content-Disposition", "attachment; filename=\"" + fileName + "\"")
+                            .body(xmlAutorizado);
+                }
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_XML)
+                        .body(xmlAutorizado);
             }
 
-            //String filename = "factura" + (idfactura != null ? "_" + idfactura : "") + ".pdf";
-            InputStreamResource resource =
-                    new InputStreamResource();
 
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=")
-                    .contentType(MediaType.APPLICATION_PDF)
-                    .contentLength(pdfStream.size())
-                    .body((Resource) resource);
+
+            // 9) Aún no autorizado
+            return ResponseEntity.status(202).body(Map.of(
+                    "estado", "PENDIENTE",
+                    "detalle", "La autorización aún no está disponible."
+            ));
+
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Error al firmar/enviar comprobante de retención",
+                    "detalle", e.getMessage()
+            ));
         }
     }
 
-    // ===================== 10) ENVIAR POR CORREO =====================
-    @PostMapping("/send-mail")
-    public ResponseEntity<Map<String, Object>> sendMail(
-            @RequestParam String nombreXml,
-            @RequestParam byte[] xmlBytes,
-            @RequestParam String nombrePdf,
-            @RequestParam byte[] pdfBytes
+    // ========== 1) Consultar por CLAVE DE ACCESO ==========
+    @GetMapping(path = "/autorizacion", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> consultarAutorizacion(
+            @RequestParam String claveAcceso,
+            @RequestParam(defaultValue = "false") boolean wait,     // true = usar polling
+            @RequestParam(defaultValue = "20") int attempts,        // # intentos en modo wait
+            @RequestParam(defaultValue = "3000") long sleepMillis,  // pausa entre intentos (ms)
+            @RequestParam(defaultValue = "false") boolean includeXml // incluir XML autorizado en la respuesta
     ) {
         try {
-            String emisor = "facturacion@epmapatulcan.gob.ec";
-            String password = "gOqp8L7EYkWa2NveUdKRtN3fl7qxlXPSDa5BKxIvgjEjOYonERiuDscG0WwTXBfZ";
-            List<String> receptores = List.of("alexis.ortiz81@outlook.com");
-            String asunto = "Factura electrónica EPMAPA-T";
-            String mensaje = "<h1>Factura Electrónica</h1><p>Adjunto se encuentra la factura autorizada.</p>";
+            RespuestaComprobante rc;
+            if (wait) {
+                // Polling hasta que SRI devuelva resultado o se agoten intentos
+                rc = sendXmlToSriService.consultarAutorizacionConEspera(
+                        // no necesitamos xml aquí; pasamos la clave directamente
+                        /*xmlFirmado*/ "<na>", // parámetro no usado en tu impl para polling
+                        _clave -> {
+                            try { return sendXmlToSriService.consultarAutorizacion(claveAcceso); }
+                            catch (Exception e) { throw new RuntimeException(e); }
+                        },
+                        attempts,
+                        sleepMillis
+                );
+            } else {
+                // Solo 1 consulta
+                rc = sendXmlToSriService.consultarAutorizacion(claveAcceso);
+            }
 
-            // 🔹 Armar el objeto con toda la info
-            Map<String, Object> obj = new HashMap<>();
-            obj.put("emisor", emisor);
-            obj.put("password", password);
-            obj.put("receptores", receptores);
-            obj.put("asunto", asunto);
-            obj.put("html", mensaje);
-            obj.put("nombreXml", nombreXml);
-            obj.put("xmlBase64", Base64.getEncoder().encodeToString(xmlBytes));
-            obj.put("nombrePdf", nombrePdf);
-            obj.put("pdfBase64", Base64.getEncoder().encodeToString(pdfBytes));
-            Definir d = definirService.findById(1L).orElseThrow();
-            System.out.println("CIFRADO: ==> "+d.getClave_email());
-            System.out.println("DESCIFRADO: ==> "+AESUtil.descifrar(d.getClave_email()));
-            // 🔹 Llamada al servicio que realmente envía
-            boolean resultado = sendAttachments(obj);
-
-            // 🔹 Respuesta HTTP
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", resultado);
-            response.put("message", resultado ? "Correo enviado exitosamente con adjuntos" : "Error al enviar el correo");
-            response.put("timestamp", new Date());
-
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok( mapRespuestaAutorizacion(rc, includeXml) );
 
         } catch (Exception e) {
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("message", "Error en el servidor: " + e.getMessage());
-            errorResponse.put("timestamp", new Date());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Error consultando autorización en SRI",
+                    "detalle", e.getMessage(),
+                    "claveAcceso", claveAcceso
+            ));
         }
     }
 
-    // Envía XML y PDF adjuntos (base64 en body) usando spring.mail.*
-    public boolean sendAttachments(Map<String, Object> obj) {
+    // ========== 2) Consultar por XML (extrae <claveAcceso>) ==========
+    @PostMapping(
+            path = "/autorizacion/by-xml",
+            consumes = MediaType.APPLICATION_XML_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> consultarAutorizacionDesdeXml(
+            @RequestBody String xml,
+            @RequestParam(defaultValue = "false") boolean wait,
+            @RequestParam(defaultValue = "10") int attempts,
+            @RequestParam(defaultValue = "3000") long sleepMillis,
+            @RequestParam(defaultValue = "false") boolean includeXml
+    ) {
         try {
+            if (xml == null || xml.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "error", "XML vacío"
+                ));
+            }
+            String clave = extraerClaveAcceso(xml);
+            if (clave == null || clave.isBlank()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "error", "No se encontró <claveAcceso> en el XML"
+                ));
+            }
 
-            String emisor      = (String) obj.get("emisor");
-            String password    = (String) obj.get("password");
-            @SuppressWarnings("unchecked")
-            List<String> receptores = (List<String>) obj.get("receptores");
-            String asunto      = (String) obj.get("asunto");
-            String htmlMensaje = (String) obj.get("html");
+            RespuestaComprobante rc;
+            if (wait) {
+                rc = sendXmlToSriService.consultarAutorizacionConEspera(
+                        xml,
+                        k -> {
+                            try { return sendXmlToSriService.consultarAutorizacion(clave); }
+                            catch (Exception e) { throw new RuntimeException(e); }
+                        },
+                        attempts,
+                        sleepMillis
+                );
+            } else {
+                rc = sendXmlToSriService.consultarAutorizacion(clave);
+            }
 
-            String nombreXml   = (String) obj.get("nombreXml");
-            String xmlBase64   = (String) obj.get("xmlBase64");
-            byte[] xmlBytes    = xmlBase64 != null ? Base64.getDecoder().decode(xmlBase64) : null;
+            return ResponseEntity.ok( mapRespuestaAutorizacion(rc, includeXml) );
 
-            String nombrePdf   = (String) obj.get("nombrePdf");
-            String pdfBase64   = (String) obj.get("pdfBase64");
-            byte[] pdfBytes    = pdfBase64 != null ? Base64.getDecoder().decode(pdfBase64) : null;
-
-            return true;
         } catch (Exception e) {
-            System.out.println("Error en sendAttachments: " + e.getMessage());
-            return false;
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Error consultando autorización en SRI",
+                    "detalle", e.getMessage()
+            ));
         }
+    }
+
+    // ================== Helpers ==================
+
+    /** Estructura JSON amigable para el frontend */
+    private Map<String, Object> mapRespuestaAutorizacion(RespuestaComprobante rc, boolean includeXml) {
+        if (rc == null) {
+            return Map.of("estado", "SIN_RESPUESTA");
+        }
+
+        String numero = (rc.getNumeroComprobantes() == null) ? "0" : rc.getNumeroComprobantes().trim();
+        int n;
+        try { n = Integer.parseInt(numero); } catch (NumberFormatException e) { n = 0; }
+
+        List<Map<String, Object>> items = new ArrayList<>();
+        if (rc.getAutorizaciones() != null && rc.getAutorizaciones().getAutorizacion() != null) {
+            for (var a : rc.getAutorizaciones().getAutorizacion()) {
+                Map<String, Object> it = new LinkedHashMap<>();
+                it.put("estado", safe(a.getEstado()));
+                it.put("numeroAutorizacion", safe(a.getNumeroAutorizacion()));
+                it.put("fechaAutorizacion", a.getFechaAutorizacion() != null ? a.getFechaAutorizacion().toString() : null);
+                it.put("ambiente", safe(a.getAmbiente()));
+
+                // errores/mensajes (si existen)
+                if (a.getMensajes() != null && a.getMensajes().getMensaje() != null && !a.getMensajes().getMensaje().isEmpty()) {
+                    List<Map<String, String>> msgs = new ArrayList<>();
+                    for (var m : a.getMensajes().getMensaje()) {
+                        msgs.add(Map.of(
+                                "identificador", safe(m.getIdentificador()),
+                                "mensaje", safe(m.getMensaje()),
+                                "informacionAdicional", safe(m.getInformacionAdicional())
+                        ));
+                    }
+                    it.put("mensajes", msgs);
+                }
+
+                if (includeXml) {
+                    String x = extraerComprobanteXmlAutorizado(a);
+                    it.put("xmlAutorizado", x); // puede ser null si no hay
+                }
+
+                items.add(it);
+            }
+        }
+
+        return Map.of(
+                "numeroComprobantes", n,
+                "autorizaciones", items
+        );
+    }
+
+    private static String safe(String s) { return (s == null) ? "" : s; }
+
+    /** Extrae <claveAcceso> de un XML texto */
+    private String extraerClaveAcceso(String xml) {
+        try {
+            if (xml.charAt(0) == '\uFEFF') xml = xml.substring(1); // limpia BOM si vino
+            javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+            dbf.setNamespaceAware(true);
+            // endurece parser
+            dbf.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            dbf.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+
+            org.w3c.dom.Document doc = dbf.newDocumentBuilder()
+                    .parse(new org.xml.sax.InputSource(new java.io.StringReader(xml)));
+            org.w3c.dom.NodeList list = doc.getElementsByTagName("claveAcceso");
+            if (list.getLength() == 0) return null;
+            return list.item(0).getTextContent().replaceAll("\\s+", "");
+        } catch (Exception ignore) {
+            return null;
+        }
+    }
+
+    /** Saca el <comprobante> XML dentro de una Autorizacion (si está presente) */
+    private String extraerComprobanteXmlAutorizado(ec.gob.sri.ws.autorizacion.Autorizacion a) {
+        try {
+            if (a == null || a.getComprobante() == null) return null;
+            // Suele venir como CDATA con el XML original del comprobante
+            String xml = a.getComprobante();
+            // normaliza BOM
+            if (xml != null && !xml.isBlank() && xml.charAt(0) == '\uFEFF') xml = xml.substring(1);
+            return xml;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+
+
+
+
+    /** Quita BOM UTF-8 si viene al inicio del String */
+    private static String stripBom(String s) {
+        if (s != null && !s.isEmpty() && s.charAt(0) == '\uFEFF') {
+            return s.substring(1);
+        }
+        return s;
     }
 
     private LocalDate extraerFechaEmision(String xml) {
@@ -772,18 +994,6 @@ public ResponseEntity<?> firmarYEnviarFactura(
     private static String normEstado(String s) {
         return s == null ? "" : s.trim();
     }
-
-    // Para depurar: imprime códigos Unicode de cada char
-    private static String debugCodes(String s) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < s.length(); i++) {
-            sb.append(String.format("\\u%04X", (int) s.charAt(i)));
-            if (i < s.length() - 1) sb.append(' ');
-        }
-        return sb.toString();
-    }
-
-
 
     /** Toma el primer <autorizacion> con <estado>AUTORIZADO</estado> y devuelve su <comprobante> (XML) o null. */
     private static String extraerXmlAutorizado(ec.gob.sri.ws.autorizacion.RespuestaComprobante rc) {
@@ -827,7 +1037,7 @@ public ResponseEntity<?> firmarYEnviarFactura(
     }
 
 
-    //=================================================================================================================
+    //======================================OPCIONES DE ENVIO DE CORREO ELECTRÓNICO========================================================================
 
     @PostMapping("/send")
     public ResponseEntity<SendMailResponse> send(@Valid @RequestBody SendMailRequest req) {

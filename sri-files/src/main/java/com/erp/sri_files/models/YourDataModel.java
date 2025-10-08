@@ -14,7 +14,5 @@ public class YourDataModel {
     private String field1;
     private int field2;
     private List<String> items;
-    
-    // Getters y Setters
-    // Constructor
+
 }

@@ -38,7 +38,7 @@ import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 @Service
 public class XmlToPdfService {
     @Autowired
-    FacturaSRIService facturaSRIService;
+    FacturaXmlGeneratorService facturaXmlGeneratorService;
     @Autowired
     private Tabla15R tabla15r;
     @Value("${app.reports.path}")

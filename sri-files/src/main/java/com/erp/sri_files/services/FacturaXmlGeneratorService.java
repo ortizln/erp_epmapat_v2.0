@@ -3,11 +3,9 @@ package com.erp.sri_files.services;
 import com.erp.sri_files.exceptions.FacturaElectronicaException;
 import com.erp.sri_files.interfaces.TotalSinImpuestos;
 import com.erp.sri_files.models.*;
-import com.erp.sri_files.models.Detalle.Impuesto;
 import com.erp.sri_files.models.TotalConImpuestos.TotalImpuesto;
 import com.erp.sri_files.repositories.DefinirR;
 import com.erp.sri_files.repositories.FacturaDetalleR;
-import com.erp.sri_files.repositories.FacturaR;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
@@ -29,9 +27,9 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 @Service
-public class FacturaSRIService {
+public class FacturaXmlGeneratorService {
 
-    private static final Logger log = LoggerFactory.getLogger(FacturaSRIService.class);
+    private static final Logger log = LoggerFactory.getLogger(FacturaXmlGeneratorService.class);
     private static String nvlStr(String v, String def) { return (v == null || v.isBlank()) ? def : v; }
     private static String nullIfBlank(String v) { return (v == null || v.isBlank()) ? null : v; }
 
@@ -39,12 +37,8 @@ public class FacturaSRIService {
     private static final String TIPO_COMPROBANTE_FACTURA = "01";
     private static final DateTimeFormatter DDMMYYYY_CLAVE = DateTimeFormatter.ofPattern("ddMMyyyy"); // para clave
     private static final DateTimeFormatter DD_MM_YYYY = DateTimeFormatter.ofPattern("dd/MM/yyyy");  // para XML
-    @Autowired
-    private FacturaR facturaR;
     @Autowired private DefinirR definirR;
     @Autowired private FacturaDetalleR fDetalleR;
-    // @Autowired private EmailService emailService; // si lo usas, descomenta
-
     /* ==========================================================
      * API PRINCIPAL
      * ========================================================== */
@@ -86,7 +80,6 @@ public class FacturaSRIService {
         List<FacturaDetalle> detalles = factura.getDetalles();
         if (detalles == null || detalles.isEmpty()) {
             try {
-                // ⚠️ Ajusta este método al nombre real en tu repositorio
                 detalles = fDetalleR.findByFacturaIdWithImpuestos(factura.getIdfactura());
             } catch (Exception ignore) {
                 detalles = List.of();
@@ -105,7 +98,7 @@ public class FacturaSRIService {
                 ? generarClaveAcceso(factura, def)
                 : factura.getClaveacceso();
 
-        Boolean ca = validarClaveAcceso(factura.getClaveacceso());
+        boolean ca = validarClaveAcceso(factura.getClaveacceso());
         if(!ca){
            claveAcceso = generarClaveAcceso(factura, def);
         }

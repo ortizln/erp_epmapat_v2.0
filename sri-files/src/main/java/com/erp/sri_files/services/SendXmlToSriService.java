@@ -18,10 +18,10 @@ import java.util.Map;
 import java.util.function.Function;
 
 @Service
-public class EnvioComprobantesWs {
+public class SendXmlToSriService {
 
     /** 1 = PRUEBAS, 2 = PRODUCCIÓN. */
-    private int ambiente = 1;
+    private int ambiente = 2;
 
     // --- CONFIGURABLES ---
     // WSDL locales (classpath). Por defecto apuntan al directorio resources/wsdl

@@ -8,9 +8,9 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
-
+//ESTE SERVICIO GENERA LA CLAVE DE ACCESO PARA LAS FACTURAS
 @Service
-public class ClaveAccesoGenerator {
+public class CAG_FacturasService {
 
     // Tipo de comprobante: Factura = "01"
     private static final String TIPO_COMPROBANTE_FACTURA = "01";
