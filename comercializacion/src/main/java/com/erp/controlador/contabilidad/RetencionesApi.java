@@ -54,6 +54,7 @@ public class RetencionesApi {
 
    @GetMapping("/ultimo")
    public Retenciones ultimo() {
+       System.out.println("CONSULTANDO ULTIMA RETENCION");
       return reteServicio.findFirstByOrderBySecretencion1Desc();
    }
 
@@ -110,7 +111,7 @@ public class RetencionesApi {
       retenciones.setDescripcion(retencionesm.getDescripcion());
       retenciones.setIdasiento(retencionesm.getIdasiento());
       retenciones.setIdbene(retencionesm.getIdbene());
-      retenciones.setIntdoc(retencionesm.getIntdoc());
+      retenciones.setIddocu(retencionesm.getIddocu());
       retenciones.setIdautoriza(retencionesm.getIdautoriza());
       retenciones.setIdtabla01(retencionesm.getIdtabla01());
       retenciones.setIdtabla15(retencionesm.getIdtabla15());
