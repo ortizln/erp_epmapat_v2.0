@@ -20,5 +20,6 @@ public class Ventanas {
     private String color1;
     private String color2;
     private Long idusuario;
+    private Long permissions;
 
 }
