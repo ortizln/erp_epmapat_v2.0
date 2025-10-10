@@ -17,7 +17,7 @@ import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/fec_factura")
-@CrossOrigin(origins = "*")
+
 
 public class Fec_facturaApi {
 

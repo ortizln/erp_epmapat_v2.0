@@ -13,7 +13,7 @@ import com.erp.servicio.administracion.AccesoServicio;
 
 @RestController
 @RequestMapping("/acceso")
-@CrossOrigin(origins = "*")
+
 
 public class AccesoApi {
 

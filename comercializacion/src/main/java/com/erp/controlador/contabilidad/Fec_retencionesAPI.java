@@ -17,7 +17,7 @@ import com.erp.servicio.contabilidad.Fec_retencionesServicio;
 
 @RestController
 @RequestMapping("/fec_retenciones")
-@CrossOrigin(origins = "*")
+
 
 public class Fec_retencionesAPI {
    

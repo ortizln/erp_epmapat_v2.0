@@ -16,7 +16,7 @@ import com.erp.servicio.rrhh.TpcontratosServicio;
 
 @RestController
 @RequestMapping("/tpcontratos")
-@CrossOrigin("*")
+
 public class TpcontratosApi {
     @Autowired
     private TpcontratosServicio tpcontratosServicio;

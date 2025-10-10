@@ -21,7 +21,7 @@ import com.erp.servicio.coactivas.RemisionServicio;
 
 @RestController
 @RequestMapping("/remisiones")
-@CrossOrigin("*")
+
 public class RemisionApi {
     @Autowired
     private RemisionServicio remisionServicio;

@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/gdcajas")
-@CrossOrigin("*")
+
 public class GdcajasApi {
     @Autowired
     private GdcajasService gdcajasService;

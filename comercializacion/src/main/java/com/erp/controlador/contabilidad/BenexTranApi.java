@@ -22,7 +22,7 @@ import com.erp.servicio.contabilidad.BenexTranServicio;
 
 @RestController
 @RequestMapping("/benextran")
-@CrossOrigin(origins = "*")
+
 
 public class BenexTranApi {
 

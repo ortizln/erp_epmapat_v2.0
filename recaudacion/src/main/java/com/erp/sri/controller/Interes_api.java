@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/rec/interes")
-@CrossOrigin("*")
+
 public class Interes_api {
     @Autowired
     private Interes_ser s_interes;

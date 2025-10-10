@@ -21,7 +21,7 @@ import com.erp.servicio.PrecioxCatS;
 
 @RestController
 @RequestMapping("/pliego")
-@CrossOrigin(origins = "*")
+
 
 public class PrecioxCatApi {
 

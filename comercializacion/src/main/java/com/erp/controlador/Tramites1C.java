@@ -21,7 +21,7 @@ import com.erp.servicio.Tramites1S;
 
 @RestController
 @RequestMapping("/tramites1")
-@CrossOrigin("*")
+
 
 public class Tramites1C {
 

@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/conservacion_documental")
-@CrossOrigin("*")
+
 public class Conservacion_documentalApi {
     @Autowired
     private Conservacion_documentalService conservacionDocumentalService;

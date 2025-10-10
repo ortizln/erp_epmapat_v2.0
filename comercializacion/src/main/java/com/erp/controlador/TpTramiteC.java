@@ -16,7 +16,7 @@ import com.erp.servicio.TpTramiteS;
 
 @RestController
 @RequestMapping("/tptramite")
-@CrossOrigin("*")
+
 
 public class TpTramiteC {
 

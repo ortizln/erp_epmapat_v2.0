@@ -22,7 +22,7 @@ import com.erp.servicio.PtoEmisionS;
 
 @RestController
 @RequestMapping("/ptoemision")
-@CrossOrigin(origins = "*")
+
 
 public class PtoEmisionApi {
 

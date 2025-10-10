@@ -35,7 +35,7 @@ import com.erp.jasperReports.services.BuildReports;
 
 @RestController
 @RequestMapping("/jasperReports")
-@CrossOrigin("*")
+
 public class BuildReportsApi {
     @Autowired
     private BuildReports buildReports;

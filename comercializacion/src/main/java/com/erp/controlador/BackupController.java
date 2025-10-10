@@ -12,7 +12,7 @@ import com.erp.servicio.BackupService;
 
 @RestController
 @RequestMapping("/api/backup")
-@CrossOrigin("*")
+
 public class BackupController {
 
     private final BackupService backupService;

@@ -12,7 +12,7 @@ import com.erp.servicio.ImpuestosServicio;
 
 @RestController
 @RequestMapping("/impuestos")
-@CrossOrigin("*")
+
 public class ImpuestosApi {
     @Autowired
     private ImpuestosServicio impuestosServicio;

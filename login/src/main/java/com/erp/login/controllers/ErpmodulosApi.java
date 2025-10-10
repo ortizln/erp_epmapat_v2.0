@@ -13,7 +13,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/erpmodulos")
-@CrossOrigin("*")
+
 public class ErpmodulosApi {
     @Autowired
     private ErpmodulosService emServicio;

@@ -17,7 +17,7 @@ import com.erp.servicio.FacelectroServicio;
 
 @RestController
 @RequestMapping("/facelectro")
-@CrossOrigin(origins = "*")
+
 
 public class FacelectroApi {
 

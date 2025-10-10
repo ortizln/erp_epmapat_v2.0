@@ -14,7 +14,7 @@ import com.erp.servicio.administracion.ErpmodulosServicio;
 
 @RestController
 @RequestMapping("/erpmodulos")
-@CrossOrigin("*")
+
 public class ErpmodulosApi {
     @Autowired
     private ErpmodulosServicio emServicio;

@@ -25,7 +25,7 @@ import com.erp.servicio.AguaTramiteServicio;
 
 @RestController
 @RequestMapping("/aguatramite")
-@CrossOrigin("*")
+
 
 public class AguaTramiteApi {
 

@@ -16,7 +16,7 @@ import com.erp.servicio.rrhh.PersonalServicio;
 
 @RestController
 @RequestMapping("/personal")
-@CrossOrigin("*")
+
 public class PersonalApi {
     @Autowired
     private PersonalServicio personalServicio;

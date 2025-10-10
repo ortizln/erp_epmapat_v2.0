@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/seccion")
-@CrossOrigin("*")
+
 public class SeccionApi {
     @Autowired
     private SeccionService seccionService;

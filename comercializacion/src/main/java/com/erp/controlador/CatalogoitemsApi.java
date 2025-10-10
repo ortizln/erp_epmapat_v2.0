@@ -20,7 +20,7 @@ import com.erp.servicio.CatalogoitemServicio;
 
 @RestController
 @RequestMapping("/catalogoitems")
-@CrossOrigin(origins = "*")
+
 
 public class CatalogoitemsApi {
 

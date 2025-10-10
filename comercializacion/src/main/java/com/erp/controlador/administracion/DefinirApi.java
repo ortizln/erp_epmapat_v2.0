@@ -15,8 +15,6 @@ import com.erp.servicio.administracion.DefinirServicio;
 
 @RestController
 @RequestMapping("/definir")
-@CrossOrigin("*")
-
 public class DefinirApi {
 
     @Autowired

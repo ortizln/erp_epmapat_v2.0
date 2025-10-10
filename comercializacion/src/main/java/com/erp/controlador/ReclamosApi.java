@@ -22,7 +22,7 @@ import com.erp.servicio.ReclamosS;
 
 @RestController
 @RequestMapping("/reclamos")
-@CrossOrigin(origins = "*")
+
 
 public class ReclamosApi {
 

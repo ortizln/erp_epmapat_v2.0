@@ -18,8 +18,6 @@ import com.erp.servicio.ClienteServicio;
 
 @RestController
 @RequestMapping("/clientes")
-@CrossOrigin(origins = "*")
-
 public class ClientesApi {
 
 	@Autowired

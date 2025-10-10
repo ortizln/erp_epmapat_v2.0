@@ -36,7 +36,7 @@ import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/sri")
-@CrossOrigin("*")
+
 public class FacturaSRIController {
     @Autowired
     private FacturaR dao;

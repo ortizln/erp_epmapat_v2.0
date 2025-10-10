@@ -22,7 +22,7 @@ import com.erp.servicio.contabilidad.BeneficiarioServicio;
 
 @RestController
 @RequestMapping("/beneficiarios")
-@CrossOrigin("*")
+
 
 public class BeneficiariosApi {
 

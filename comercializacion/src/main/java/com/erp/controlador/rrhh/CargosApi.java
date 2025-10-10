@@ -16,7 +16,7 @@ import com.erp.servicio.rrhh.CargosServicio;
 
 @RestController
 @RequestMapping("/cargos")
-@CrossOrigin("*")
+
 public class CargosApi {
     @Autowired
     private CargosServicio cargosServicio;

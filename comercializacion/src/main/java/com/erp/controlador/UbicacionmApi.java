@@ -20,7 +20,7 @@ import com.erp.servicio.UbicacionmServicio;
 
 @RestController
 @RequestMapping("/ubicacionm")
-@CrossOrigin("*")
+
 
 public class UbicacionmApi {
 

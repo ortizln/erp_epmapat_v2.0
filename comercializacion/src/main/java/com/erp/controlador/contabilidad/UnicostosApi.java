@@ -14,7 +14,7 @@ import com.erp.servicio.contabilidad.UnicostosServicio;
 
 @RestController
 @RequestMapping("/unicostos")
-@CrossOrigin(origins = "*")
+
 
 public class UnicostosApi {
 

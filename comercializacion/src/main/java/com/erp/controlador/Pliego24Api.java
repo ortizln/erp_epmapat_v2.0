@@ -15,7 +15,7 @@ import com.erp.servicio.Pliego24Servicio;
 
 @RestController
 @RequestMapping("/pliego24")
-@CrossOrigin("*")
+
 
 public class Pliego24Api {
 

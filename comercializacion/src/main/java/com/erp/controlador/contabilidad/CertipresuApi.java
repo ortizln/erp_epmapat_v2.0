@@ -24,7 +24,7 @@ import com.erp.servicio.contabilidad.CertipresuServicio;
 
 @RestController
 @RequestMapping("/certipresu")
-@CrossOrigin("*")
+
 
 public class CertipresuApi {
 

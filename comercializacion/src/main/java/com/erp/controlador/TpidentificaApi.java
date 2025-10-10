@@ -20,7 +20,7 @@ import com.erp.servicio.TpidentificaServicio;
 
 @RestController
 @RequestMapping("/tpidentifica")
-@CrossOrigin("*")
+
 
 public class TpidentificaApi {
 

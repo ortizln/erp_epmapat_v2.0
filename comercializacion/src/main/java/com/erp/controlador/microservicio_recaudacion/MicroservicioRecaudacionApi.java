@@ -17,7 +17,7 @@ import com.erp.servicio.microservicio_recaudacion.RecaudacionMicroservice;
 
 @RestController
 @RequestMapping("/mrecaudacion")
-@CrossOrigin("*")
+
 public class MicroservicioRecaudacionApi {
     @Autowired
     private RecaudacionMicroservice sRecaudacionMicroservice;

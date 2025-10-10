@@ -23,7 +23,7 @@ import com.erp.servicio.CcertificacionServicio;
 
 @RestController
 @RequestMapping("/ccertificaciones")
-@CrossOrigin(origins = "*")
+
 
 public class CcertificacionesApi {
 

@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/jasperReports")
-@CrossOrigin("*")
 public class BuildReportsApi {
     @Autowired
     private BuildReports buildReports;

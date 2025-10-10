@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/rec/cajas")
-@CrossOrigin("*")
+
 public class Cajas_api {
     @Autowired
     private Cajas_ser s_cajas;

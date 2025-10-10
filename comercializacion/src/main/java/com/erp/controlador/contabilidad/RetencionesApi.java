@@ -23,7 +23,7 @@ import com.erp.servicio.contabilidad.RetencionesServicio;
 
 @RestController
 @RequestMapping("/retenciones")
-@CrossOrigin("*")
+
 
 public class RetencionesApi {
 

@@ -19,7 +19,7 @@ import com.erp.servicio.SuspensionesS;
 
 @RestController
 @RequestMapping("/suspensiones")
-@CrossOrigin("*")
+
 
 public class SuspensionesC {
 

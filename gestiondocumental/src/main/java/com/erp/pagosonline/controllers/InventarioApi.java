@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/inventario")
-@CrossOrigin("*")
+
 public class InventarioApi {
     @Autowired
     private InventarioService inventarioService;

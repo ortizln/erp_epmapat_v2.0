@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/emisionindividual")
-@CrossOrigin("*")
+
 public class EmisionIndividualApi {
     @Autowired
     private EmisionIndividualServicio sei;

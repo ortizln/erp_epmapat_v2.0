@@ -20,7 +20,7 @@ import com.erp.servicio.contabilidad.PartixcertiServicio;
 
 @RestController
 @RequestMapping("/partixcerti")
-@CrossOrigin("*")
+
 
 public class PartixcertiApi {
 

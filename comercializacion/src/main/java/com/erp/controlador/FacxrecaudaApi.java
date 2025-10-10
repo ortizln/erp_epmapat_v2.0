@@ -21,7 +21,7 @@ import com.erp.servicio.FacxrecaudaServicio;
 
 @RestController
 @RequestMapping("/facxrecauda")
-@CrossOrigin(origins = "*")
+
 
 public class FacxrecaudaApi {
 

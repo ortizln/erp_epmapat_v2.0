@@ -11,7 +11,7 @@ import com.erp.servicio.Fec_factura_detallesService;
 
 @RestController
 @RequestMapping("/facturadetalles")
-@CrossOrigin(origins = "*")
+
 public class Fec_factura_detallesApi {
 	@Autowired
 	private Fec_factura_detallesService fecfdetService;

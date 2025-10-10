@@ -22,7 +22,7 @@ import com.erp.servicio.contabilidad.PresupueServicio;
 
 @RestController
 @RequestMapping("/pregastos")
-@CrossOrigin("*")
+
 
 public class PregastosApi {
 

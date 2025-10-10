@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/rubroxfac")
-@CrossOrigin(origins = "*")
+
 
 public class RubroxfacApi {
 

@@ -13,7 +13,7 @@ import com.erp.sri.service.Cliente_ser;
 
 @RestController
 @RequestMapping("/api/rec/cliente")
-@CrossOrigin("*")
+
 public class Cliente_api {
 	@Autowired
 	private Cliente_ser s_cliente;

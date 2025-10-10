@@ -19,7 +19,7 @@ import com.erp.servicio.contabilidad.Tabla15Servicio;
 
 @RestController
 @RequestMapping("/tabla15")
-@CrossOrigin("*")
+
 
 public class Tabla15Api {
     @Autowired

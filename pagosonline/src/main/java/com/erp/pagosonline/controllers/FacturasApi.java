@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/pagonline/facturas")
-@CrossOrigin("*")
+
 public class FacturasApi {
     @Autowired
     private FacturasService facturasService;

@@ -17,7 +17,7 @@ import com.erp.servicio.contabilidad.AirxreteServicio;
 
 @RestController
 @RequestMapping("/airxrete")
-@CrossOrigin("*")
+
 
 public class AirxreteApi {
 

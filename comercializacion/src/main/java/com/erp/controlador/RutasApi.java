@@ -24,7 +24,7 @@ import com.erp.servicio.RutaServicio;
 
 @RestController
 @RequestMapping("/rutas")
-@CrossOrigin("*")
+
 
 public class RutasApi {
 

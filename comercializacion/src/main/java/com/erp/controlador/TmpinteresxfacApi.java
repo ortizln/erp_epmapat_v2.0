@@ -13,7 +13,7 @@ import com.erp.servicio.TmpinteresxfacService;
 
 @RestController
 @RequestMapping("/tmpinteresxfac")
-@CrossOrigin("*")
+
 public class TmpinteresxfacApi {
     @Autowired
     private TmpinteresxfacService tmpinteresxfacService;

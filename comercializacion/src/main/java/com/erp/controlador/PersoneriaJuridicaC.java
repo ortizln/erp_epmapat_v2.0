@@ -15,7 +15,7 @@ import com.erp.servicio.PersonJuridicaServicio;
 
 @RestController
 @RequestMapping("/personeriajuridica")
-@CrossOrigin(origins = "*")
+
 
 public class PersoneriaJuridicaC {
 

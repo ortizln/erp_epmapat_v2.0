@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/rec/impuestos")
-@CrossOrigin("*")
+
 public class Impuestos_api {
     @Autowired
     private Impuestos_ser s_impuetos;

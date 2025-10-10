@@ -16,7 +16,7 @@ import com.erp.servicio.CuotaServicio;
 
 @RestController
 @RequestMapping("/cuotas")
-@CrossOrigin(origins = "*")
+
 
 public class CuotasApi {
 

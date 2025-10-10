@@ -22,7 +22,7 @@ import java.util.Date;
 
 @RestController
 @RequestMapping("/facturacion")
-@CrossOrigin("*")
+
 public class FacturacionApi {
 
    @Autowired

@@ -24,7 +24,7 @@ import com.erp.servicio.CategoriaServicio;
 
 @RestController
 @RequestMapping("/categorias")
-@CrossOrigin(origins = "*")
+
 
 public class CategoriasApi {
 

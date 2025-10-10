@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/ingreso_documento")
-@CrossOrigin("*")
+
 public class Ingreso_documentoApi {
     @Autowired
     private Ingreso_documentosService ingresoDocumentosService;

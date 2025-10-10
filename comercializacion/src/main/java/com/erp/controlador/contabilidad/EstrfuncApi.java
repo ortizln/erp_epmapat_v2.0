@@ -23,7 +23,7 @@ import org.springframework.data.repository.query.Param;
 
 @RestController
 @RequestMapping("/estrfunc")
-@CrossOrigin(origins = "*")
+
 
 public class EstrfuncApi {
 

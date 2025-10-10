@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/usrxmodulos")
-@CrossOrigin("*")
+
 public class UsrModulosApi {
     @Autowired
     private UsrxmodulosService umServicio;

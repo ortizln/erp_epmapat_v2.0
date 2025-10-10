@@ -56,7 +56,7 @@ import org.springframework.http.MediaType;
 
 @RestController
 @RequestMapping("/facturas")
-@CrossOrigin(origins = "*")
+
 public class FacturasApi {
 
 	@Autowired

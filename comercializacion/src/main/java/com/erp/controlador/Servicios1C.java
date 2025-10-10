@@ -21,7 +21,7 @@ import com.erp.servicio.Servicios1S;
 
 @RestController
 @RequestMapping("/servicios1")
-@CrossOrigin("*")
+
 
 public class Servicios1C {
 

@@ -28,7 +28,7 @@ import org.springframework.data.domain.Sort;
 
 @RestController
 @RequestMapping("/nacionalidades")
-@CrossOrigin(origins = "*")
+
 
 public class NacionalidadApi {
 

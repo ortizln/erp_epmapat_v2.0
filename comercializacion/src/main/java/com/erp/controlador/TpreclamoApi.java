@@ -20,7 +20,7 @@ import com.erp.servicio.TpreclamoServicio;
 
 @RestController
 @RequestMapping("/tpreclamo")
-@CrossOrigin("*")
+
 
 public class TpreclamoApi {
 

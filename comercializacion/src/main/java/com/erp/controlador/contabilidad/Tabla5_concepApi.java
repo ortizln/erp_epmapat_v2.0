@@ -19,7 +19,7 @@ import com.erp.servicio.contabilidad.Tabla5_concepServicio;
 
 @RestController
 @RequestMapping("/tabla5_concep")
-@CrossOrigin("*")
+
 
 public class Tabla5_concepApi {
 
