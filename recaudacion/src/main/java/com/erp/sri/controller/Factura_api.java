@@ -29,8 +29,6 @@ public class Factura_api {
     @Autowired
     private Factura_ser s_factura;
     @Autowired
-    private Interes_ser s_interes;
-    @Autowired
     private Cajas_ser s_cajas;
     @Autowired
     private Recaudacion_ser s_recaudacion;
