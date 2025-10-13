@@ -1,10 +1,7 @@
 package com.erp.sri_files.controllers;
 
 import com.erp.sri_files.config.AESUtil;
-import com.erp.sri_files.dto.AttachmentDTO;
-import com.erp.sri_files.dto.SendMailRequest;
-import com.erp.sri_files.dto.SendMailResponse;
-import com.erp.sri_files.dto.TemplateMailRequest;
+import com.erp.sri_files.dto.*;
 import com.erp.sri_files.models.Definir;
 import com.erp.sri_files.models.Factura;
 import com.erp.sri_files.repositories.DefinirR;
@@ -14,11 +11,11 @@ import com.erp.sri_files.utils.FirmaComprobantesService;
 import com.erp.sri_files.utils.FirmaComprobantesService.ModoFirma;
 import ec.gob.sri.ws.autorizacion.RespuestaComprobante;
 import ec.gob.sri.ws.recepcion.RespuestaSolicitud;
-import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
-import net.sf.jasperreports.repo.InputStreamResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -32,6 +29,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
@@ -536,7 +534,7 @@ public ResponseEntity<?> firmarYEnviarFactura(
             String xmlAutorizado = extraerXmlAutorizado(rc);
             if (xmlAutorizado != null) {
                 // Generar PDF desde el XML autorizado
-                ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
+                ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado);
                 if (pdfStream == null || pdfStream.size() == 0) {
                     return ResponseEntity.status(500).body(Map.of(
                             "error", "No se pudo generar el PDF de la autorización"
@@ -558,8 +556,8 @@ public ResponseEntity<?> firmarYEnviarFactura(
                         new AttachmentDTO(nombrePdf, "application/pdf", pdfBase64),
                         new AttachmentDTO(nombreXml, "application/xml", xmlBase64)
                 );
-// --- Destinatarios ---
-// Usa el correo del comprador si lo tienes en la entidad; de lo contrario, uno de prueba
+                // --- Destinatarios ---
+                // Usa el correo del comprador si lo tienes en la entidad; de lo contrario, uno de prueba
                 /*List<String> to = (factura.getEmailcomprador() != null && !factura.getEmailcomprador().isBlank())
                         ? java.util.List.of(factura.getEmailcomprador().trim())
                         : java.util.List.of("destinatario@dominio.com");*/
@@ -586,7 +584,7 @@ public ResponseEntity<?> firmarYEnviarFactura(
 // Inline images (si no usas, envía map vacío)
                 java.util.Map<String, String> inlineImages = java.util.Collections.emptyMap();
 
-// --- Construir request ---
+            // --- Construir request ---
                 SendMailRequest mailReq = new SendMailRequest(
                         from,      // deja que MailService tome el 'from' por defecto de configuración
                         to,
@@ -597,7 +595,7 @@ public ResponseEntity<?> firmarYEnviarFactura(
                         attachments,
                         inlineImages
                 );
-// --- Enviar ---
+            // --- Enviar ---
                 boolean mail = mailService.sendMail(mailReq);
                 if(mail){
                     factura.setEstado("A");
@@ -777,21 +775,21 @@ public ResponseEntity<?> firmarYEnviarFactura(
     }
 
     // ========== 1) Consultar por CLAVE DE ACCESO ==========
-    @GetMapping(path = "/autorizacion", produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping(path = "/autorizacion")
     public ResponseEntity<?> consultarAutorizacion(
             @RequestParam String claveAcceso,
-            @RequestParam(defaultValue = "false") boolean wait,     // true = usar polling
-            @RequestParam(defaultValue = "20") int attempts,        // # intentos en modo wait
-            @RequestParam(defaultValue = "3000") long sleepMillis,  // pausa entre intentos (ms)
-            @RequestParam(defaultValue = "false") boolean includeXml // incluir XML autorizado en la respuesta
+            @RequestParam(defaultValue = "false") boolean wait,        // true = polling
+            @RequestParam(defaultValue = "20") int attempts,           // intentos de polling
+            @RequestParam(defaultValue = "3000") long sleepMillis,     // pausa entre intentos (ms)
+            @RequestParam(defaultValue = "true") boolean returnXml,   // true = retornar application/xml
+            @RequestParam(defaultValue = "false") boolean download     // true = forzar descarga
     ) {
         try {
             RespuestaComprobante rc;
             if (wait) {
-                // Polling hasta que SRI devuelva resultado o se agoten intentos
+                // Polling: consultamos varias veces hasta tener respuesta con autorizaciones
                 rc = sendXmlToSriService.consultarAutorizacionConEspera(
-                        // no necesitamos xml aquí; pasamos la clave directamente
-                        /*xmlFirmado*/ "<na>", // parámetro no usado en tu impl para polling
+                        /*xmlFirmado no se usa en tu impl de polling*/ "<na>",
                         _clave -> {
                             try { return sendXmlToSriService.consultarAutorizacion(claveAcceso); }
                             catch (Exception e) { throw new RuntimeException(e); }
@@ -800,11 +798,87 @@ public ResponseEntity<?> firmarYEnviarFactura(
                         sleepMillis
                 );
             } else {
-                // Solo 1 consulta
+                // Consulta simple
                 rc = sendXmlToSriService.consultarAutorizacion(claveAcceso);
             }
 
-            return ResponseEntity.ok( mapRespuestaAutorizacion(rc, includeXml) );
+            // Normalizamos número de comprobantes
+            int num = 0;
+            try {
+                num = (rc.getNumeroComprobantes() == null) ? 0 : Integer.parseInt(rc.getNumeroComprobantes().trim());
+            } catch (NumberFormatException ignore) {}
+
+            // Si SRI aún no tiene respuesta
+            if (num <= 0 || rc.getAutorizaciones() == null || rc.getAutorizaciones().getAutorizacion() == null) {
+                return ResponseEntity.status(202).body(Map.of(
+                        "estado", "PENDIENTE",
+                        "detalle", "Aún no hay autorizaciones disponibles para la clave.",
+                        "claveAcceso", claveAcceso
+                ));
+            }
+
+            // Buscamos una autorización AUTORIZADO (si no, devolvemos la primera como diagnóstico)
+            var lista = rc.getAutorizaciones().getAutorizacion();
+            var autorizada = lista.stream()
+                    .filter(a -> "AUTORIZADO".equalsIgnoreCase(safeStr(a.getEstado())))
+                    .findFirst()
+                    .orElse(null);
+
+            if (autorizada == null) {
+                // No hubo “AUTORIZADO”, devolvemos diagnóstico de la primera
+                var a0 = lista.get(0);
+                var mensajes = (a0.getMensajes() != null && a0.getMensajes().getMensaje() != null)
+                        ? a0.getMensajes().getMensaje().stream().map(m -> Map.of(
+                        "identificador", safeStr(m.getIdentificador()),
+                        "mensaje", safeStr(m.getMensaje()),
+                        "informacionAdicional", safeStr(m.getInformacionAdicional())
+                )).toList()
+                        : java.util.List.of();
+
+                return ResponseEntity.status(400).body(Map.of(
+                        "estadoAutorizacion", safeStr(a0.getEstado()),
+                        "numeroAutorizacion", safeStr(a0.getNumeroAutorizacion()),
+                        "fechaAutorizacion", (a0.getFechaAutorizacion() != null ? a0.getFechaAutorizacion().toString() : ""),
+                        "ambiente", safeStr(a0.getAmbiente()),
+                        "mensajes", mensajes,
+                        "claveAcceso", claveAcceso
+                ));
+            }
+
+            // Extraemos el XML autorizado (el comprobante viene en CDATA dentro de <comprobante>)
+            String xmlAutorizado = extraerXmlAutorizado(rc);
+            if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
+                return ResponseEntity.status(500).body(Map.of(
+                        "error", "No se pudo extraer el XML autorizado del SRI.",
+                        "claveAcceso", claveAcceso
+                ));
+            }
+
+            // --- modos de respuesta ---
+            // 1) Forzar descarga
+            if (download) {
+                String nombre = "autorizado_" + claveAcceso + ".xml";
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_XML)
+                        .header("Content-Disposition", "attachment; filename=\"" + nombre + "\"")
+                        .body(xmlAutorizado);
+            }
+
+            // 2) Retornar directamente el XML como application/xml
+            if (returnXml) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_XML)
+                        .body(xmlAutorizado);
+            }
+
+            // 3) Resumen JSON (sin XML)
+            return ResponseEntity.ok(Map.of(
+                    "estado", "AUTORIZADO",
+                    "numeroAutorizacion", safeStr(autorizada.getNumeroAutorizacion()),
+                    "fechaAutorizacion", (autorizada.getFechaAutorizacion() != null ? autorizada.getFechaAutorizacion().toString() : ""),
+                    "ambiente", safeStr(autorizada.getAmbiente()),
+                    "claveAcceso", claveAcceso
+            ));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -815,6 +889,9 @@ public ResponseEntity<?> firmarYEnviarFactura(
             ));
         }
     }
+
+    private static String safeStr(Object o) { return (o == null) ? "" : o.toString(); }
+
 
     // ========== 2) Consultar por XML (extrae <claveAcceso>) ==========
     @PostMapping(
@@ -867,6 +944,55 @@ public ResponseEntity<?> firmarYEnviarFactura(
             ));
         }
     }
+
+    /*
+    * GENERAR PDF
+    * */
+
+    @GetMapping("/generar-pdf")
+    public ResponseEntity<Resource> generarPdf(@RequestParam Long idfactura) {
+        String url = eurekaServiceUrl + ":8080/fec_factura/factura?idfactura=" + idfactura;
+        FecFacturaDTO factura = restTemplate.getForObject(url, FecFacturaDTO.class);
+        String xmlAutorizado = factura.getXmlautorizado();
+        LocalDate fehchaemision = factura.getFechaemision();
+        LocalDate fechaLimite = LocalDate.of(2025, 5, 6);
+
+        try {
+            // Generar el PDF como ByteArrayOutputStream
+            ByteArrayOutputStream pdfStream;
+            // Comparar fechas
+            if (fehchaemision.isAfter(fechaLimite)) {
+                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
+
+            } else if (fehchaemision.isBefore(fechaLimite)) {
+                pdfStream = xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado);
+
+            } else if (fehchaemision.isEqual(fechaLimite)) {
+                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
+            } else {
+                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
+            }
+
+            if (pdfStream == null || pdfStream.size() == 0) {
+                throw new RuntimeException("No se pudo generar el PDF.");
+            }
+
+            // Convertir el stream en un InputStreamResource
+            org.springframework.core.io.InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(pdfStream.toByteArray()));
+
+            // Retornar el PDF como un archivo descargable
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=factura.pdf")
+                    .contentType(MediaType.APPLICATION_PDF)
+                    .contentLength(pdfStream.size())
+                    .body(resource);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
+        }
+    }
+
 
     // ================== Helpers ==================
 
@@ -953,10 +1079,6 @@ public ResponseEntity<?> firmarYEnviarFactura(
             return null;
         }
     }
-
-
-
-
 
     /** Quita BOM UTF-8 si viene al inicio del String */
     private static String stripBom(String s) {

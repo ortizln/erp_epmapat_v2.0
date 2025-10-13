@@ -38,6 +38,13 @@ public class SendXmlToSriService {
     @Value("${sri.endpoint.autorizacion.pruebas:https://celcer.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline}")
     private String epAutorizacionPruebas;
 
+    // WSDL locales (classpath). Por defecto apuntan al directorio resources/wsdl
+    @Value("${sri.wsdl.local.recepcion:wsdl/RecepcionComprobantesOfflineP.wsdl}")
+    private String wsdlLocalRecepcionProd;
+
+    @Value("${sri.wsdl.local.autorizacion:wsdl/AutorizacionComprobantesOfflineP.wsdl}")
+    private String wsdlLocalAutorizacionProd;
+
     @Value("${sri.endpoint.recepcion.produccion:https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline}")
     private String epRecepcionProd;
 
@@ -45,7 +52,7 @@ public class SendXmlToSriService {
     private String epAutorizacionProd;
 
     // Permite configurar ambiente por properties (sri.ambiente=1|2)
-    @Value("${sri.ambiente:1}")
+    @Value("${sri.ambiente:2}")
     public void setAmbiente(int ambiente) { this.ambiente = (ambiente == 2) ? 2 : 1; }
     public int getAmbiente() { return ambiente; }
 
@@ -65,16 +72,28 @@ public class SendXmlToSriService {
 
     private void applyTimeouts(Object port) {
         Map<String, Object> ctx = ((BindingProvider) port).getRequestContext();
-        ctx.put("com.sun.xml.ws.connect.timeout", 15000); // 15s conexión
-        ctx.put("com.sun.xml.ws.request.timeout", 30000); // 30s lectura
+        // Metro (com.sun.xml.ws.*)
+        ctx.put("com.sun.xml.ws.connect.timeout", 15000);
+        ctx.put("com.sun.xml.ws.request.timeout", 30000);
+        // Compat JAX-WS RI interno (algunas JVMs)
+        ctx.put("com.sun.xml.internal.ws.connect.timeout", 15000);
+        ctx.put("com.sun.xml.internal.ws.request.timeout", 30000);
+        // (opcional) estándar JAX-WS
+        ctx.put("javax.xml.ws.client.connectionTimeout", "15000");
+        ctx.put("javax.xml.ws.client.receiveTimeout", "30000");
     }
-
     private void overrideEndpoint(Object port, boolean autorizacion) {
         String endpoint = (ambiente == 2)
                 ? (autorizacion ? epAutorizacionProd : epRecepcionProd)
                 : (autorizacion ? epAutorizacionPruebas : epRecepcionPruebas);
+
         ((BindingProvider) port).getRequestContext()
                 .put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endpoint);
+
+        // LOG útil
+        System.out.println("[SRI] Ambiente=" + (ambiente == 1 ? "PRUEBAS" : "PRODUCCIÓN")
+                + " | Servicio=" + (autorizacion ? "AUTORIZACIÓN" : "RECEPCIÓN")
+                + " | Endpoint=" + endpoint);
     }
 
     // ===================== Recepción =====================
@@ -94,8 +113,13 @@ public class SendXmlToSriService {
     }
 
     /** Enviar XML firmado como String. */
-    public RespuestaSolicitud enviarFacturaFirmadaTxt(String xmlFirmado) throws Exception {
+    public RespuestaSolicitud enviar_FacturaFirmadaTxt(String xmlFirmado) throws Exception {
         return enviarFacturaFirmada(xmlFirmado.getBytes(StandardCharsets.UTF_8));
+    }
+    public RespuestaSolicitud enviarFacturaFirmadaTxt(String xmlFirmado) throws Exception {
+        // limpia BOM si hay
+        String xml = stripBom(xmlFirmado);
+        return enviarFacturaFirmada(xml.getBytes(StandardCharsets.UTF_8));
     }
 
     // ===================== Autorización =====================
@@ -103,7 +127,8 @@ public class SendXmlToSriService {
     /** Consultar autorización con clave de acceso. */
     public RespuestaComprobante consultarAutorizacion(String claveAcceso) throws Exception {
         URL wsdlURL = classpathUrl(wsdlLocalAutorizacion);
-        QName qname = new QName("http://ec.gob.sri.ws.autorizacion", "AutorizacionComprobantesOfflineService");
+        QName qname = new QName("http://ec.gob.sri.ws.autorizacion",
+                "AutorizacionComprobantesOfflineService");
 
         AutorizacionComprobantesOfflineService service =
                 new AutorizacionComprobantesOfflineService(wsdlURL, qname);
@@ -113,8 +138,9 @@ public class SendXmlToSriService {
         applyTimeouts(port);
         overrideEndpoint(port, /* autorizacion */ true);
 
-        return port.autorizacionComprobante(claveAcceso);
+        return port.autorizacionComprobante(claveAcceso.trim());
     }
+
 
     /** Polling: reintenta autorización hasta que haya resultados o se agoten intentos. */
     public RespuestaComprobante consultarAutorizacionConEspera(String xmlFirmado,
@@ -142,28 +168,34 @@ public class SendXmlToSriService {
     /** Helper: fija ambiente leyendo <infoTributaria><ambiente> del XML firmado. */
     public void setAmbienteFromXml(String xmlFirmado) {
         try {
+            String xml = stripBom(xmlFirmado);
             var dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
             var doc = dbf.newDocumentBuilder()
-                    .parse(new org.xml.sax.InputSource(new java.io.StringReader(xmlFirmado)));
+                    .parse(new org.xml.sax.InputSource(new java.io.StringReader(xml)));
             var list = doc.getElementsByTagName("ambiente");
             if (list.getLength() > 0) {
                 int amb = Integer.parseInt(list.item(0).getTextContent().trim());
                 setAmbiente(amb == 2 ? 2 : 1);
             }
         } catch (Exception ignore) {
-            // si falla, conserva el ambiente actual
+            // conserva el ambiente actual
         }
     }
-
     /** Extrae <claveAcceso> del XML firmado. */
     private String extraerClaveAcceso(String xml) throws Exception {
+        String cleaned = stripBom(xml);
         var dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
         dbf.setNamespaceAware(true);
         var doc = dbf.newDocumentBuilder()
-                .parse(new org.xml.sax.InputSource(new java.io.StringReader(xml)));
+                .parse(new org.xml.sax.InputSource(new java.io.StringReader(cleaned)));
         var list = doc.getElementsByTagName("claveAcceso");
         if (list.getLength() == 0) throw new IllegalStateException("No se encontró <claveAcceso> en el XML");
         return list.item(0).getTextContent().replaceAll("\\s+", "");
+    }
+
+    private String stripBom(String s) {
+        if (s == null || s.isEmpty()) return s;
+        return (s.charAt(0) == '\uFEFF') ? s.substring(1) : s;
     }
 }

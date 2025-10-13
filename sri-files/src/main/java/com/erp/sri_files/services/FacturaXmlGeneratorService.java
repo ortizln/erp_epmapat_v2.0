@@ -421,7 +421,8 @@ public class FacturaXmlGeneratorService {
 
     /* ==========================================================
      * BLOQUE: info adicional
-     * ========================================================== */    private void upsertInfoAdicional(Comprobante comp,
+     * ========================================================== */
+    private void upsertInfoAdicional(Comprobante comp,
                                      Factura factura,
                                      Map<String, String> extras) {
         if (comp.getInfoAdicional() == null) {
