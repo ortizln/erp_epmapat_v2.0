@@ -21,7 +21,7 @@ import com.erp.servicio.contabilidad.CuentaServicio;
 
 @RestController
 @RequestMapping("/cuentas")
-@CrossOrigin("*")
+
 
 public class CuentasApi {
 

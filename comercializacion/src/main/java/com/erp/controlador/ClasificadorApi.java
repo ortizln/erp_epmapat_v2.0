@@ -21,7 +21,7 @@ import com.erp.servicio.ClasificadorServicio;
 
 @RestController
 @RequestMapping("/clasificador")
-@CrossOrigin(origins = "*")
+
 
 public class ClasificadorApi {
 

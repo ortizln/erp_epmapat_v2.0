@@ -21,7 +21,7 @@ import com.erp.servicio.contabilidad.TramipresuServicio;
 
 @RestController
 @RequestMapping("/tramipresu")
-@CrossOrigin("*")
+
 
 public class TramipresuApi {
 

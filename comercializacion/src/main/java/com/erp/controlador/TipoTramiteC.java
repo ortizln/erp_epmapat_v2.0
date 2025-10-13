@@ -23,7 +23,7 @@ import com.erp.servicio.TipoTramiteS;
 
 @RestController
 @RequestMapping("/tipotramite")
-@CrossOrigin("*")
+
 
 public class TipoTramiteC {
 

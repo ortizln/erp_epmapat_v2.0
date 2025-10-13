@@ -23,7 +23,7 @@ import com.erp.servicio.CajaServicio;
 
 @RestController
 @RequestMapping("/cajas")
-@CrossOrigin(origins = "*")
+
 
 public class CajasApi {
 

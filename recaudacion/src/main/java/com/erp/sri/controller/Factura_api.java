@@ -20,7 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/rec/facturas")
-@CrossOrigin("*")
+
 public class Factura_api {
     @Autowired
     private Cliente_ser s_cliente;
@@ -28,8 +28,6 @@ public class Factura_api {
     private Abonado_ser s_abonado;
     @Autowired
     private Factura_ser s_factura;
-    @Autowired
-    private Interes_ser s_interes;
     @Autowired
     private Cajas_ser s_cajas;
     @Autowired

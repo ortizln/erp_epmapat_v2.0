@@ -18,7 +18,7 @@ import com.erp.servicio.ValoresncServicio;
 
 @RestController
 @RequestMapping("/valoresnc")
-@CrossOrigin("*")
+
 public class ValoresncApi {
     @Autowired
     private ValoresncServicio valoresServicio;

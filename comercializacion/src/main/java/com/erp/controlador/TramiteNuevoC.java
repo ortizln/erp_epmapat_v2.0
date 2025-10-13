@@ -23,7 +23,7 @@ import com.erp.servicio.TramiteNuevoS;
 
 @RestController
 @RequestMapping("/tramitenuevo")
-@CrossOrigin("*")
+
 
 public class TramiteNuevoC {
 

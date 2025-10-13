@@ -16,7 +16,7 @@ import com.erp.servicio.ModuloServicio;
 
 @RestController
 @RequestMapping("/modulos")
-@CrossOrigin(origins = "*")
+
 
 public class ModulosApi {
 

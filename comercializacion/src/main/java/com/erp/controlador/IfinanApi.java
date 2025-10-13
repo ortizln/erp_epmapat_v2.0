@@ -21,7 +21,7 @@ import com.erp.servicio.IfinanServicio;
 
 @RestController
 @RequestMapping("/ifinan")
-@CrossOrigin("*")
+
 
 public class IfinanApi {
 

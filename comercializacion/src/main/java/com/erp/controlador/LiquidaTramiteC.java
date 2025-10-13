@@ -18,7 +18,7 @@ import com.erp.servicio.LiquidaTramiteS;
 
 @RestController
 @RequestMapping("/liquidatramite")
-@CrossOrigin(origins = "*")
+
 
 public class LiquidaTramiteC {
 

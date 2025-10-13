@@ -18,7 +18,7 @@ import com.erp.servicio.contabilidad.TransaciServicio;
 
 @RestController
 @RequestMapping("/transaci")
-@CrossOrigin("*")
+
 
 public class TransaciApi {
 

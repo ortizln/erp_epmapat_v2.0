@@ -18,7 +18,7 @@ import com.erp.servicio.contabilidad.ConciliaBanServicio;
 
 @RestController
 @RequestMapping("/conciliaban")
-@CrossOrigin("*")
+
 
 public class ConciliaBanApi {
 

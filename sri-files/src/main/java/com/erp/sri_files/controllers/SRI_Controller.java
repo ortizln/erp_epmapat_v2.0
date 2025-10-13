@@ -39,7 +39,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/singsend")
-@CrossOrigin(origins = "*")
+
 public class SRI_Controller {
 
     private final SendXmlToSriService sendXmlToSriService;

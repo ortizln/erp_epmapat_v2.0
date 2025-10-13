@@ -25,7 +25,7 @@ import com.erp.servicio.CtramitesS;
 
 @RestController
 @RequestMapping("/ctramites")
-@CrossOrigin("*")
+
 
 public class CtramitesC {
 

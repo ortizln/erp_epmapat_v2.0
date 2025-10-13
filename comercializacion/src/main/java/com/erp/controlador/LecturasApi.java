@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/lecturas")
-@CrossOrigin("*")
+
 
 public class LecturasApi {
 

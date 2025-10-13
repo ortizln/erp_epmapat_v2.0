@@ -17,7 +17,7 @@ import com.erp.servicio.contabilidad.Fec_reteimpuServicio;
 
 @RestController
 @RequestMapping("/fec_reteimpu")
-@CrossOrigin(origins = "*")
+
 
 public class Fec_reteimpuApi {
 

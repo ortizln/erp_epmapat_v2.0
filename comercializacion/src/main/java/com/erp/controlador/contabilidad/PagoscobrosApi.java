@@ -15,7 +15,7 @@ import com.erp.servicio.contabilidad.PagoscobroServicio;
 
 @RestController
 @RequestMapping("/pagoscobros")
-@CrossOrigin(origins = "*")
+
 
 public class PagoscobrosApi {
 

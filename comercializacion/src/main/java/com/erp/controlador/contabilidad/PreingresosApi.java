@@ -21,7 +21,7 @@ import com.erp.servicio.contabilidad.PresupueServicio;
 
 @RestController
 @RequestMapping("/preingresos")
-@CrossOrigin("*")
+
 
 public class PreingresosApi {
 

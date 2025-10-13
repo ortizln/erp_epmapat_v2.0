@@ -24,7 +24,7 @@ import com.erp.servicio.NovedadServicio;
 
 @RestController
 @RequestMapping("/novedades")
-@CrossOrigin(origins = "*")
+
 
 public class NovedadesApi {
 

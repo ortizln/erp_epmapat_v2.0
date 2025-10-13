@@ -16,7 +16,7 @@ import com.erp.servicio.ItemxfactServicio;
 
 @RestController
 @RequestMapping("/itemxfact")
-@CrossOrigin("*")
+
 
 public class ItemxfactApi {
 

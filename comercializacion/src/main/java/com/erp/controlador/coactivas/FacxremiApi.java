@@ -17,7 +17,7 @@ import com.erp.servicio.coactivas.FacxremiServicio;
 
 @RestController
 @RequestMapping("/facxremi")
-@CrossOrigin("*")
+
 public class FacxremiApi {
     @Autowired
     private FacxremiServicio facxremiServicio;

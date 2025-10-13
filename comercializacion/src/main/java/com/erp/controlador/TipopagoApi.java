@@ -20,7 +20,7 @@ import com.erp.servicio.TipopagoServicio;
 
 @RestController
 @RequestMapping("/tipopago")
-@CrossOrigin("*")
+
 
 public class TipopagoApi {
     

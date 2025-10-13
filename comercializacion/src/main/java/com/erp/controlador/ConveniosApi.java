@@ -25,7 +25,7 @@ import com.erp.servicio.ConvenioServicio;
 
 @RestController
 @RequestMapping("/convenios")
-@CrossOrigin("*")
+
 public class ConveniosApi {
 
    @Autowired

@@ -13,7 +13,7 @@ import com.erp.servicio.TpCertificaServicio;
 
 @RestController
 @RequestMapping("/tpcertifica")
-@CrossOrigin("*")
+
 
 public class TpCertificaApi {
 

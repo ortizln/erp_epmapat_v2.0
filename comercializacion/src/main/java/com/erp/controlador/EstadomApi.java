@@ -20,7 +20,7 @@ import com.erp.servicio.EstadomServicio;
 
 @RestController
 @RequestMapping("/estadom")
-@CrossOrigin(origins = "*")
+
 
 public class EstadomApi {
        

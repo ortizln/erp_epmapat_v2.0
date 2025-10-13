@@ -23,7 +23,7 @@ import com.erp.servicio.NtacreditoServicio;
 
 @RestController
 @RequestMapping("/ntacredito")
-@CrossOrigin("*")
+
 public class NtacreditoApi {
     @Autowired
     private NtacreditoServicio ntacreditoServicio;

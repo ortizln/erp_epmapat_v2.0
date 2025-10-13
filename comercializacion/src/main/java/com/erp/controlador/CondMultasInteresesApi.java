@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/condmultasintereses")
-@CrossOrigin("*")
+
 public class CondMultasInteresesApi {
     @Autowired
     CondMultasInteresesServicio codservice;

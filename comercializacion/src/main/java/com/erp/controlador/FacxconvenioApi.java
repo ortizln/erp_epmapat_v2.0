@@ -19,7 +19,7 @@ import com.erp.servicio.FacxconvenioServicio;
 
 @RestController
 @RequestMapping("/facxconvenio")
-@CrossOrigin("*")
+
 
 public class FacxconvenioApi {
 

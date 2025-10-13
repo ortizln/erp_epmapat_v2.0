@@ -20,7 +20,7 @@ import com.erp.servicio.UsoitemsServicio;
 
 @RestController
 @RequestMapping("/usoitems")
-@CrossOrigin(origins = "*")
+
 
 public class UsoitemsApi {
 

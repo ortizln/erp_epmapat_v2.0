@@ -20,7 +20,7 @@ import com.erp.servicio.contabilidad.NiifCuentaServicio;
 
 @RestController
 @RequestMapping("/niifcuentas")
-@CrossOrigin("*")
+
 
 public class NiifCuentasApi {
 

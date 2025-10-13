@@ -16,7 +16,7 @@ import com.erp.servicio.FacturamodificacionesServicio;
 
 @RestController
 @RequestMapping("/facturamodificaciones")
-@CrossOrigin("*")
+
 public class FacturamodificacionesApi {
     @Autowired
     private FacturamodificacionesServicio fmodiServicio;

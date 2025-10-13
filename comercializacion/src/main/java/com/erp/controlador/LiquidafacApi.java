@@ -17,7 +17,7 @@ import com.erp.servicio.LiquidafacServicio;
 
 @RestController
 @RequestMapping("/liquidafac")
-@CrossOrigin("*")
+
 
 public class LiquidafacApi {
 

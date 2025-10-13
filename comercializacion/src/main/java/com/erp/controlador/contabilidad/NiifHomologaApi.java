@@ -21,7 +21,7 @@ import com.erp.servicio.contabilidad.NiifHomologaServicio;
 
 @RestController
 @RequestMapping("/niifhomologa")
-@CrossOrigin("*")
+
 
 public class NiifHomologaApi {
 

@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/contemergencia")
-@CrossOrigin("*")
+
 public class ContemergenciasApi {
     @Autowired
     private ContemergenciaServicio contemergenciaServicio;

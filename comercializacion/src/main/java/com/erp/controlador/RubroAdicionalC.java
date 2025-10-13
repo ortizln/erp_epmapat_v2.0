@@ -14,7 +14,7 @@ import com.erp.servicio.RubroAdicionalS;
 
 @RestController
 @RequestMapping("/rubroadicional")
-@CrossOrigin(origins = "*")
+
 
 public class RubroAdicionalC {
 

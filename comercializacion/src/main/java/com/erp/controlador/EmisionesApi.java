@@ -25,7 +25,7 @@ import com.erp.servicio.EmisionServicio;
 
 @RestController
 @RequestMapping("/emisiones")
-@CrossOrigin("*")
+
 
 public class EmisionesApi {
 

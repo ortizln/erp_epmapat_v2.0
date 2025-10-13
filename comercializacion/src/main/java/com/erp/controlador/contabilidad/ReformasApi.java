@@ -20,7 +20,7 @@ import com.erp.servicio.contabilidad.ReformaServicio;
 
 @RestController
 @RequestMapping("/reformas")
-@CrossOrigin(origins = "*")
+
 
 public class ReformasApi {
 

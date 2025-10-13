@@ -16,7 +16,7 @@ import com.erp.servicio.rrhh.DetcargoServicio;
 
 @RestController
 @RequestMapping("/detcargo")
-@CrossOrigin("*")
+
 public class DetcargoApi {
     @Autowired
     private DetcargoServicio detcargoServicio;

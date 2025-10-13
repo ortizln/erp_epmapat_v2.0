@@ -28,7 +28,7 @@ import com.erp.servicio.contabilidad.PresupueServicio;
 
 @RestController
 @RequestMapping("/ejecucion")
-@CrossOrigin(origins = "*")
+
 
 public class EjecucionApi {
 

@@ -14,7 +14,7 @@ import com.erp.servicio.administracion.ColorServicio;
 
 @RestController
 @RequestMapping("/colores")
-@CrossOrigin(origins = "*")
+
 
 public class ColoresApi {
 

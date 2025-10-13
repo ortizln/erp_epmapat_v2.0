@@ -20,7 +20,7 @@ import com.erp.servicio.administracion.DocumentoServicio;
 
 @RestController
 @RequestMapping("/documentos")
-@CrossOrigin("*")
+
 
 public class DocumentosApi {
 

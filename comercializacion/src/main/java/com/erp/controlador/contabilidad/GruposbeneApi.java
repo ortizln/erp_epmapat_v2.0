@@ -21,7 +21,7 @@ import com.erp.servicio.contabilidad.GrupobeneServicio;
 
 @RestController
 @RequestMapping("/gruposbene")
-@CrossOrigin(origins = "*")
+
 
 public class GruposbeneApi {
 

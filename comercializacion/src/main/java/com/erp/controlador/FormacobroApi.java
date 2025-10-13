@@ -13,7 +13,7 @@ import com.erp.servicio.FormacobroServicio;
 
 @RestController
 @RequestMapping("/formacobro")
-@CrossOrigin("*")
+
 
 public class FormacobroApi {
 

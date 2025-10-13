@@ -22,7 +22,7 @@ import com.erp.servicio.RutasxemisionServicio;
 
 @RestController
 @RequestMapping("/rutasxemision")
-@CrossOrigin("*")
+
 
 public class RutasxemisionApi {
 

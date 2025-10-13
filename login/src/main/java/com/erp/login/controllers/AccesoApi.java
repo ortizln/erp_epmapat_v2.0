@@ -12,7 +12,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/acceso")
-@CrossOrigin("*")
+
 public class AccesoApi {
     @Autowired
     AccesoService accServicio;

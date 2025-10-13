@@ -24,7 +24,7 @@ import com.erp.servicio.administracion.UsuarioServicio;
 
 @RestController
 @RequestMapping("/usuarios")
-@CrossOrigin(origins = "*")
+
 
 public class UsuariosApi {
 

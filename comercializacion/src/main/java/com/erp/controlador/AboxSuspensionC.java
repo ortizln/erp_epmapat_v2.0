@@ -16,7 +16,7 @@ import com.erp.servicio.AboxSuspensionS;
 
 @RestController
 @RequestMapping("/aboxsuspension")
-@CrossOrigin(origins = "*")
+
 public class AboxSuspensionC {
 
 	@Autowired

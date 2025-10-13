@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/tabla4")
-@CrossOrigin("*")
+
 public class Tabla4Api {
     @Autowired
     private Tabla4Service tab4Servicio;

@@ -23,7 +23,7 @@ import com.erp.servicio.InteresServicio;
 
 @RestController
 @RequestMapping("/intereses")
-@CrossOrigin(origins = "*")
+
 
 public class InteresesApi {
 

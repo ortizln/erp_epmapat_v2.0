@@ -23,7 +23,7 @@ import com.erp.servicio.RecaudaxcajaServicio;
 
 @RestController
 @RequestMapping("/recaudaxcaja")
-@CrossOrigin("*")
+
 public class RecaudaxcajaApi {
 
 	@Autowired

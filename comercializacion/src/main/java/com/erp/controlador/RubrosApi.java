@@ -21,7 +21,7 @@ import com.erp.servicio.RubroServicio;
 
 @RestController
 @RequestMapping("/rubros")
-@CrossOrigin(origins = "*")
+
 
 public class RubrosApi {
 

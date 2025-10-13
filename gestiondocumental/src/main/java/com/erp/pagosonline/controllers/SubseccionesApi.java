@@ -11,7 +11,7 @@ import java.util.Optional;
 
 @RestController
 @RequestMapping("/subsecciones")
-@CrossOrigin("*")
+
 public class SubseccionesApi {
     @Autowired
     private SubseccionesService subseccionesService;

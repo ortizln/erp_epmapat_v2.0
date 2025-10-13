@@ -21,7 +21,7 @@ import com.erp.servicio.administracion.Tabla4Servicio;
 
 @RestController
 @RequestMapping("/tabla4")
-@CrossOrigin("*")
+
 
 public class Tabla4Api {
 

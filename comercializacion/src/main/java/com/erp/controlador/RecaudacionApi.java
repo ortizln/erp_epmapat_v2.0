@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
 @RequestMapping("/recaudacion")
-@CrossOrigin(origins = "*")
+
 
 public class RecaudacionApi {
 
