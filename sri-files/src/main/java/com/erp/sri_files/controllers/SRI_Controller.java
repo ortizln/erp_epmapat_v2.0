@@ -1,8 +1,6 @@
 package com.erp.sri_files.controllers;
 
-import com.erp.sri_files.config.AESUtil;
 import com.erp.sri_files.dto.*;
-import com.erp.sri_files.models.Definir;
 import com.erp.sri_files.models.Factura;
 import com.erp.sri_files.repositories.DefinirR;
 import com.erp.sri_files.repositories.FacturaR;
@@ -23,11 +21,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
-
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -39,7 +35,6 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api/singsend")
-
 public class SRI_Controller {
 
     private final SendXmlToSriService sendXmlToSriService;
@@ -775,7 +770,7 @@ public ResponseEntity<?> firmarYEnviarFactura(
     }
 
     // ========== 1) Consultar por CLAVE DE ACCESO ==========
-    @GetMapping(path = "/autorizacion")
+    @GetMapping(value = "/autorizacion", produces = MediaType.TEXT_PLAIN_VALUE)
     public ResponseEntity<?> consultarAutorizacion(
             @RequestParam String claveAcceso,
             @RequestParam(defaultValue = "false") boolean wait,        // true = polling

@@ -22,7 +22,6 @@ import java.util.Date;
 
 @RestController
 @RequestMapping("/facturacion")
-
 public class FacturacionApi {
 
    @Autowired

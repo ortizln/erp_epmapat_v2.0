@@ -21,8 +21,6 @@ import com.erp.servicio.FacxrecaudaServicio;
 
 @RestController
 @RequestMapping("/facxrecauda")
-
-
 public class FacxrecaudaApi {
 
    @Autowired

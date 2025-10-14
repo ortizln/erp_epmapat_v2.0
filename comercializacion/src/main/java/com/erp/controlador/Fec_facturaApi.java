@@ -17,8 +17,6 @@ import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/fec_factura")
-
-
 public class Fec_facturaApi {
 
    @Autowired

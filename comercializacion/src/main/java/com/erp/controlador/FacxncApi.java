@@ -18,7 +18,6 @@ import com.erp.servicio.FacxncService;
 
 @RestController
 @RequestMapping("/facxnc")
-
 public class FacxncApi {
     @Autowired
     private FacxncService facxncService;

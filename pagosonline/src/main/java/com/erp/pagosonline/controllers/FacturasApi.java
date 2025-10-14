@@ -29,7 +29,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/pagonline/facturas")
-
 public class FacturasApi {
     @Autowired
     private FacturasService facturasService;

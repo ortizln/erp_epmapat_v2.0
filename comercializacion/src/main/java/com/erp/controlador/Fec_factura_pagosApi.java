@@ -11,7 +11,6 @@ import com.erp.servicio.Fec_factura_pagosService;
 
 @RestController
 @RequestMapping("/facturapagos")
-
 public class Fec_factura_pagosApi {
     @Autowired
     private Fec_factura_pagosService fecfpagosService;

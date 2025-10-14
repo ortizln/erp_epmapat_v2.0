@@ -11,7 +11,6 @@ import com.erp.servicio.Fec_factura_detalles_impuestosService;
 
 @RestController
 @RequestMapping("/facdetallesimpuestos")
-
 public class Fec_factura_detalles_impuestosApi {
 	@Autowired
 	private Fec_factura_detalles_impuestosService fecfdetimpService;
