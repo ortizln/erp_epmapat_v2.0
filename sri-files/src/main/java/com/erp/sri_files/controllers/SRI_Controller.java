@@ -770,7 +770,7 @@ public ResponseEntity<?> firmarYEnviarFactura(
     }
 
     // ========== 1) Consultar por CLAVE DE ACCESO ==========
-    @GetMapping(value = "/autorizacion", produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping(value = "/autorizacion",     produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
     public ResponseEntity<?> consultarAutorizacion(
             @RequestParam String claveAcceso,
             @RequestParam(defaultValue = "false") boolean wait,        // true = polling

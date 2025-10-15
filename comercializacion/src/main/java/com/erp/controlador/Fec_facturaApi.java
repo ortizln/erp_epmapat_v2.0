@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import com.erp.excepciones.ResourceNotFoundExcepciones;
@@ -14,6 +15,8 @@ import com.erp.sri.interfaces.fecFacturaDatos;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/fec_factura")
@@ -21,8 +24,14 @@ public class Fec_facturaApi {
 
    @Autowired
    private Fec_facturaService fecfacServicio;
+   @Autowired
+   private RestTemplate restTemplate;
 
-   @GetMapping
+    @Value("${eureka.service-url}")
+    private String eurekaServiceUrl;
+
+
+    @GetMapping
    public List<Fec_factura> getAll() {
       return fecfacServicio.findAll();
    }
@@ -91,6 +100,29 @@ public class Fec_facturaApi {
       Fec_factura upfecfactura = fecfacServicio.save(factura);
       return ResponseEntity.ok(upfecfactura);
    }
+    @PutMapping("/setxml")
+    public ResponseEntity<Fec_factura> setXmlToFactura(@RequestParam Long idfactura, @RequestBody Fec_factura ff) {
+        Fec_factura factura = fecfacServicio.findById(idfactura)
+                .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
+
+        try {
+            String url = eurekaServiceUrl + ":8080/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
+            String xml = restTemplate.getForObject(url, String.class);
+
+            factura.setXmlautorizado(xml);
+            factura.setEstado("A");
+            fecfacServicio.save(factura);
+
+            return ResponseEntity.ok(factura);
+        } catch (HttpServerErrorException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(factura);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(factura);
+        }
+    }
+
 
    @GetMapping("/fecFacturaDatos")
    public fecFacturaDatos getDatosFecFactura(@RequestParam Long idfactura) {
