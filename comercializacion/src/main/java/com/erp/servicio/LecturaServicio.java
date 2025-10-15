@@ -191,415 +191,423 @@ public class LecturaServicio {
 	 * CUENTA, CATEGORIA, SWADULTOMAYOR, SWMUNICIPIO, L.ANTERIOR, L.ACTUAL, ESTADO,
 	 * IDFACTURA, m3
 	 */
-	private static final BigDecimal[] porcResidencial = {
-			BigDecimal.valueOf(0.777), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78),
-			BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.778), BigDecimal.valueOf(0.778),
-			BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.68),
-			BigDecimal.valueOf(0.68), BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.68), BigDecimal.valueOf(0.68),
-			BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.68), BigDecimal.valueOf(0.68),
-			BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.676), BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.678),
-			BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.68), BigDecimal.valueOf(0.647), BigDecimal.valueOf(0.65),
-			BigDecimal.valueOf(0.65), BigDecimal.valueOf(0.647), BigDecimal.valueOf(0.647), BigDecimal.valueOf(0.65),
-			BigDecimal.valueOf(0.65), BigDecimal.valueOf(0.647), BigDecimal.valueOf(0.647), BigDecimal.valueOf(0.65),
-			BigDecimal.valueOf(0.65), BigDecimal.valueOf(0.65), BigDecimal.valueOf(0.65), BigDecimal.valueOf(0.65),
-			BigDecimal.valueOf(0.65), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
-			BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
-			BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
-			BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
-			BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
-			BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
-			BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
-			BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7)
-	};
+    /* CALCULO DEL PLIEGO TARIFARIO */
+    /*
+     * PARAMETROS GENERALES:
+     * CUENTA, CATEGORIA, SWADULTOMAYOR, SWMUNICIPIO, L.ANTERIOR, L.ACTUAL, ESTADO,
+     * IDFACTURA, m3
+     */
+    private static final BigDecimal[] porcResidencial = {
+            BigDecimal.valueOf(0.777), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78),
+            BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.778), BigDecimal.valueOf(0.778),
+            BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.68),
+            BigDecimal.valueOf(0.68), BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.68), BigDecimal.valueOf(0.68),
+            BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.68), BigDecimal.valueOf(0.68),
+            BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.676), BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.678),
+            BigDecimal.valueOf(0.678), BigDecimal.valueOf(0.68), BigDecimal.valueOf(0.647), BigDecimal.valueOf(0.65),
+            BigDecimal.valueOf(0.65), BigDecimal.valueOf(0.647), BigDecimal.valueOf(0.647), BigDecimal.valueOf(0.65),
+            BigDecimal.valueOf(0.65), BigDecimal.valueOf(0.647), BigDecimal.valueOf(0.647), BigDecimal.valueOf(0.65),
+            BigDecimal.valueOf(0.65), BigDecimal.valueOf(0.65), BigDecimal.valueOf(0.65), BigDecimal.valueOf(0.65),
+            BigDecimal.valueOf(0.65), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
+            BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
+            BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
+            BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
+            BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
+            BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
+            BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7),
+            BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7), BigDecimal.valueOf(0.7)
+    };
 
-	public BigDecimal calcularValores(Long cuenta, Long idfactura, int m3, int categoria, boolean swMunicipio,
-			boolean swAdultoMayor, boolean swAguapotable) {
-		BigDecimal multa = multas(cuenta);
-		BigDecimal total = BigDecimal.ZERO;
-		Facturas factura = dao_facturas.findById(idfactura).orElseThrow();
-		Rubroxfac rubroxfac = new Rubroxfac();
-		Rubros rubro = new Rubros();
-		if (factura != null) {
-			EmisionOfCuentaDTO valoresEmision = new EmisionOfCuentaDTO();
-			valoresEmision.setCuenta(cuenta);
-			valoresEmision.setIdfactura(idfactura);
-			valoresEmision.setM3(m3);
-			valoresEmision.setCategoria(categoria);
-			valoresEmision.setSwMunicipio(swMunicipio);
-			valoresEmision.setSwAdultoMayor(swAdultoMayor);
-			valoresEmision.setFactura(factura);
-			valoresEmision.setSwAguapotable(swAguapotable);
+    public BigDecimal calcularValores(Long cuenta, Long idfactura, int m3, int categoria, boolean swMunicipio,
+                                      boolean swAdultoMayor, boolean swAguapotable) {
+        BigDecimal multa = multas(cuenta);
+        BigDecimal total = BigDecimal.ZERO;
+        Facturas factura = dao_facturas.findById(idfactura).orElseThrow();
+        Rubroxfac rubroxfac = new Rubroxfac();
+        Rubros rubro = new Rubros();
+        if (factura != null) {
+            EmisionOfCuentaDTO valoresEmision = new EmisionOfCuentaDTO();
+            valoresEmision.setCuenta(cuenta);
+            valoresEmision.setIdfactura(idfactura);
+            valoresEmision.setM3(m3);
+            valoresEmision.setCategoria(categoria);
+            valoresEmision.setSwMunicipio(swMunicipio);
+            valoresEmision.setSwAdultoMayor(swAdultoMayor);
+            valoresEmision.setFactura(factura);
+            valoresEmision.setSwAguapotable(swAguapotable);
 
-			BigDecimal aguapotable = BigDecimal.ZERO;
-			BigDecimal alcantarillado = BigDecimal.ZERO;
-			BigDecimal saneamiento = BigDecimal.ZERO;
-			BigDecimal conservacionFuentes = BigDecimal.ZERO;
+            BigDecimal aguapotable = BigDecimal.ZERO;
+            BigDecimal alcantarillado = BigDecimal.ZERO;
+            BigDecimal saneamiento = BigDecimal.ZERO;
+            BigDecimal conservacionFuentes = BigDecimal.ZERO;
 
-			if ((categoria == 1 || (categoria == 9 && swAdultoMayor == true)) && m3 > 70) {
-				valoresEmision.setCategoria(2);
-			}
-			Pliego24 pliego = dao_pliego._findBloque(valoresEmision.getCategoria(), m3);
-			valoresEmision.setPliego24(pliego);
-			Categorias _categoria = dao_categoria.getCategoriaById(valoresEmision.getCategoria());
-			valoresEmision.setCategorias(_categoria);
-			BigDecimal excedente = BigDecimal.ZERO;
-			if (valoresEmision.isSwAguapotable() == false) {
-				aguapotable = aguaPotable(valoresEmision).setScale(2, RoundingMode.HALF_UP);
-				saneamiento = saneamiento(valoresEmision).setScale(2, RoundingMode.HALF_UP);
-			}
-			alcantarillado = alcantarillado(valoresEmision).setScale(2, RoundingMode.HALF_UP);
-			conservacionFuentes = conservacionFuentes(valoresEmision).setScale(2, RoundingMode.HALF_UP);
-			if (categoria == 9 && swAdultoMayor == true && m3 > 34 && m3 <= 70) {
-				excedente = excedente(valoresEmision);
-				rubro.setIdrubro(1005L);
-				rubroxfac.setIdrubro_rubros(rubro);
-				rubroxfac.setCantidad(1F);
-				rubroxfac.setIdfactura_facturas(factura);
-				rubroxfac.setValorunitario(excedente.setScale(2, RoundingMode.HALF_UP));
-				saveRxf(rubroxfac);
-			}
-			if (multa.compareTo(BigDecimal.ZERO) > 0) {
-				System.out.println("MULTA " + multa);
-				rubro.setIdrubro(5L);
-				rubroxfac.setIdrubro_rubros(rubro);
-				rubroxfac.setCantidad(1F);
-				rubroxfac.setIdfactura_facturas(factura);
-				rubroxfac.setValorunitario(multa.setScale(2, RoundingMode.HALF_UP));
-				saveRxf(rubroxfac);
-			}
-			total = aguapotable
-					.add(alcantarillado)
-					.add(saneamiento)
-					.add(conservacionFuentes).add(excedente).add(multa);
-			factura.setTotaltarifa(total);
-			factura.setFeccrea(LocalDate.now().withDayOfMonth(1));
-			factura.setValorbase(total);
-			dao_facturas.save(factura);
-		}
+            if ((categoria == 1 || (categoria == 9 && swAdultoMayor == true)) && m3 > 70) {
+                valoresEmision.setCategoria(2);
+            }
+            Pliego24 pliego = dao_pliego._findBloque(valoresEmision.getCategoria(), m3);
+            valoresEmision.setPliego24(pliego);
+            Categorias _categoria = dao_categoria.getCategoriaById(valoresEmision.getCategoria());
+            valoresEmision.setCategorias(_categoria);
+            BigDecimal excedente = BigDecimal.ZERO;
+            saneamiento = saneamiento(valoresEmision).setScale(2, RoundingMode.HALF_UP);
+            alcantarillado = alcantarillado(valoresEmision).setScale(2, RoundingMode.HALF_UP);
 
-		return total.setScale(2, RoundingMode.HALF_UP);
-	}
+            aguapotable = aguaPotable(valoresEmision).setScale(2, RoundingMode.HALF_UP);
+            conservacionFuentes = conservacionFuentes(valoresEmision).setScale(2, RoundingMode.HALF_UP);
+            if (categoria == 9 && swAdultoMayor == true && m3 > 34 && m3 <= 70) {
+                excedente = excedente(valoresEmision);
+                rubro.setIdrubro(1005L);
+                rubroxfac.setIdrubro_rubros(rubro);
+                rubroxfac.setCantidad(1F);
+                rubroxfac.setIdfactura_facturas(factura);
+                rubroxfac.setValorunitario(excedente.setScale(2, RoundingMode.HALF_UP));
+                saveRxf(rubroxfac);
+            }
+            if (multa.compareTo(BigDecimal.ZERO) > 0) {
+                rubro.setIdrubro(6L);
+                rubroxfac.setIdrubro_rubros(rubro);
+                rubroxfac.setCantidad(1F);
+                rubroxfac.setIdfactura_facturas(factura);
+                rubroxfac.setValorunitario(multa.setScale(2, RoundingMode.HALF_UP));
+                saveRxf(rubroxfac);
+            }
+            total = aguapotable
+                    .add(alcantarillado)
+                    .add(saneamiento)
+                    .add(conservacionFuentes).add(excedente).add(multa);
+            factura.setTotaltarifa(total);
+            factura.setFeccrea(LocalDate.now().withDayOfMonth(1));
+            factura.setValorbase(total);
+            dao_facturas.save(factura);
+        }
 
-	/* AGUA POTABLE - versión optimizada */
-	public BigDecimal aguaPotable(EmisionOfCuentaDTO valoresEmision) {
-		BigDecimal aguapotable = BigDecimal.ZERO;
-		BigDecimal apFijo;
-		BigDecimal apVariable;
-		BigDecimal porcentaje;
-		Rubroxfac rubroxfac = new Rubroxfac();
-		Rubros rubro = new Rubros();
-		if (!valoresEmision.isSwAguapotable()) {
-			// Determinar porcentaje según categoría
-			if (valoresEmision.getCategoria() == 1 || valoresEmision.getCategoria() == 9) {
-				// Residencial
-				int index = Math.min(valoresEmision.getM3(), porcResidencial.length - 1);
-				porcentaje = porcResidencial[index];
-			} else {
-				// Comercial, Industrial, Oficial u otras
-				porcentaje = valoresEmision.getPliego24().getPorc();
-			}
-			// Cálculo común de fijo
-			apFijo = valoresEmision.getCategorias().getFijoagua()
-					.subtract(BigDecimal.valueOf(0.10))
-					.multiply(porcentaje);
-			// Cálculo común de variable
-			porcentaje = valoresEmision.getPliego24().getPorc();
+        return total.setScale(2, RoundingMode.HALF_UP);
+    }
 
-			apVariable = BigDecimal.valueOf(valoresEmision.getM3())
-					.multiply(valoresEmision.getPliego24().getAgua())
-					.multiply(porcentaje);
-			// Total
-			aguapotable = apFijo.add(apVariable);
-			// Regla especial para Oficial (categoria 4)
-			if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
-				aguapotable = aguapotable.divide(BigDecimal.valueOf(2));
-			}
+    /* AGUA POTABLE - versión optimizada */
+    public BigDecimal aguaPotable(EmisionOfCuentaDTO valoresEmision) {
+        BigDecimal aguapotable = BigDecimal.ZERO;
+        BigDecimal apFijo;
+        BigDecimal apVariable;
+        BigDecimal porcentaje;
+        Rubroxfac rubroxfac = new Rubroxfac();
+        Rubros rubro = new Rubros();
+        // Determinar porcentaje según categoría
+        if (valoresEmision.getCategoria() == 1 || valoresEmision.getCategoria() == 9) {
+            // Residencial
+            int index = Math.min(valoresEmision.getM3(), porcResidencial.length - 1);
+            porcentaje = porcResidencial[index];
+        } else {
+            // Comercial, Industrial, Oficial u otras
+            porcentaje = valoresEmision.getPliego24().getPorc();
+        }
+        // Cálculo común de fijo
+        apFijo = valoresEmision.getCategorias().getFijoagua()
+                .subtract(BigDecimal.valueOf(0.10))
+                .multiply(porcentaje);
+        // Cálculo común de variable
+        porcentaje = valoresEmision.getPliego24().getPorc();
 
-			if (valoresEmision.getCategoria() == 9) {
-				aguapotable = aguapotable.divide(BigDecimal.valueOf(2));
-			}
+        apVariable = BigDecimal.valueOf(valoresEmision.getM3())
+                .multiply(valoresEmision.getPliego24().getAgua())
+                .multiply(porcentaje);
+        // Total
+        aguapotable = apFijo.add(apVariable);
+        // Regla especial para Oficial (categoria 4)
+        if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
+            aguapotable = aguapotable.divide(BigDecimal.valueOf(2));
+        }
 
-		}
+        if (valoresEmision.getCategoria() == 9) {
+            aguapotable = aguapotable.divide(BigDecimal.valueOf(2));
+        }
 
-		rubro.setIdrubro(1001L);
-		rubroxfac.setIdrubro_rubros(rubro);
-		rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
-		rubroxfac.setCantidad(1F);
-		rubroxfac.setValorunitario(aguapotable.setScale(2, RoundingMode.HALF_UP));
-		saveRxf(rubroxfac);
-		return aguapotable;
-	}
+        rubro.setIdrubro(1001L);
+        rubroxfac.setIdrubro_rubros(rubro);
+        rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
+        rubroxfac.setCantidad(1F);
+        rubroxfac.setValorunitario(aguapotable.setScale(2, RoundingMode.HALF_UP));
+        saveRxf(rubroxfac);
+        return aguapotable;
+    }
 
-	/* ALCANTARILLADO - versión optimizada */
-	public BigDecimal alcantarillado(EmisionOfCuentaDTO valoresEmision) {
-		BigDecimal valor = BigDecimal.ZERO;
-		BigDecimal fijo, variable;
-		BigDecimal porcentaje;
-		Rubroxfac rubroxfac = new Rubroxfac();
-		Rubros rubro = new Rubros();
-		// Hidrosuccionador siempre se suma al final
-		BigDecimal hidro = hidrosuccionador(valoresEmision);
-		porcentaje = valoresEmision.getPliego24().getPorc();
+    /* ALCANTARILLADO - versión optimizada */
+    public BigDecimal alcantarillado(EmisionOfCuentaDTO valoresEmision) {
+        BigDecimal valor = BigDecimal.ZERO;
+        BigDecimal fijo, variable;
+        BigDecimal porcentaje;
+        Rubroxfac rubroxfac = new Rubroxfac();
+        Rubros rubro = new Rubros();
+        porcentaje = valoresEmision.getPliego24().getPorc();
+        if (!valoresEmision.isSwAguapotable()) {
 
-		// Cálculo común de fijo
-		fijo = valoresEmision.getCategorias().getFijosanea()
-				.subtract(BigDecimal.valueOf(0.50))
-				.multiply(porcentaje);
+            // Hidrosuccionador siempre se suma al final
+            BigDecimal hidro = hidrosuccionador(valoresEmision);
 
-		// Cálculo común de variable
-		variable = BigDecimal.valueOf(valoresEmision.getM3())
-				.multiply(valoresEmision.getPliego24().getSaneamiento().divide(BigDecimal.valueOf(2)))
-				.multiply(porcentaje);
+            // Cálculo común de fijo
+            fijo = valoresEmision.getCategorias().getFijosanea()
+                    .subtract(BigDecimal.valueOf(0.50))
+                    .multiply(porcentaje);
 
-		// Total
-		valor = fijo.add(variable);
+            // Cálculo común de variable
+            variable = BigDecimal.valueOf(valoresEmision.getM3())
+                    .multiply(valoresEmision.getPliego24().getSaneamiento().divide(BigDecimal.valueOf(2)))
+                    .multiply(porcentaje);
 
-		// Regla especial para Oficial (categoria 4)
-		if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
-			valor = valor.divide(BigDecimal.valueOf(2));
-		}
+            // Total
+            valor = fijo.add(variable);
 
-		if (valoresEmision.getCategoria() == 9) {
-			valor = valor.divide(BigDecimal.valueOf(2));
-		}
+            // Regla especial para Oficial (categoria 4)
+            if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
+                valor = valor.divide(BigDecimal.valueOf(2));
+            }
 
-		// Sumar hidro al final
-		valor = valor.add(hidro);
+            if (valoresEmision.getCategoria() == 9) {
+                valor = valor.divide(BigDecimal.valueOf(2));
+            }
 
-		System.out.println("HIDRO SUCCIONADOR: " + hidro);
-		rubro.setIdrubro(1002L);
-		rubroxfac.setIdrubro_rubros(rubro);
-		rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
-		rubroxfac.setCantidad(1F);
-		rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.HALF_UP));
-		saveRxf(rubroxfac);
-		return valor;
-	}
+            // Sumar hidro al final
+            valor = valor.add(hidro);
+        }
+        rubro.setIdrubro(1002L);
+        rubroxfac.setIdrubro_rubros(rubro);
+        rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
+        rubroxfac.setCantidad(1F);
+        rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.HALF_UP));
+        saveRxf(rubroxfac);
+        return valor;
+    }
 
-	/* SANEAMIENTO */
-	public BigDecimal saneamiento(EmisionOfCuentaDTO valoresEmision) {
-		BigDecimal valor = BigDecimal.ZERO;
-		BigDecimal porcentaje = BigDecimal.ZERO;
-		Rubroxfac rubroxfac = new Rubroxfac();
-		Rubros rubro = new Rubros();
-		if (!valoresEmision.isSwAguapotable()) {
+    /* SANEAMIENTO */
+    public BigDecimal saneamiento(EmisionOfCuentaDTO valoresEmision) {
+        BigDecimal valor = BigDecimal.ZERO;
+        BigDecimal porcentaje = BigDecimal.ZERO;
+        Rubroxfac rubroxfac = new Rubroxfac();
+        Rubros rubro = new Rubros();
+        if (!valoresEmision.isSwAguapotable()) {
 
-			porcentaje = valoresEmision.getPliego24().getPorc();
+            porcentaje = valoresEmision.getPliego24().getPorc();
 
-			// Cálculo común de variable
-			valor = BigDecimal.valueOf(valoresEmision.getM3())
-					.multiply(valoresEmision.getPliego24().getSaneamiento().divide(BigDecimal.valueOf(2)))
-					.multiply(porcentaje);
-			if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
-				valor = valor.divide(BigDecimal.valueOf(2));
-			}
-			if (valoresEmision.getCategoria() == 9) {
-				valor = valor.divide(BigDecimal.valueOf(2));
-			}
-		}
-		rubro.setIdrubro(1003L);
-		rubroxfac.setIdrubro_rubros(rubro);
-		rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
-		rubroxfac.setCantidad(1F);
-		rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.HALF_UP));
-		saveRxf(rubroxfac);
+            // Cálculo común de variable
+            valor = BigDecimal.valueOf(valoresEmision.getM3())
+                    .multiply(valoresEmision.getPliego24().getSaneamiento().divide(BigDecimal.valueOf(2)))
+                    .multiply(porcentaje);
+            if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
+                valor = valor.divide(BigDecimal.valueOf(2));
+            }
+            if (valoresEmision.getCategoria() == 9) {
+                valor = valor.divide(BigDecimal.valueOf(2));
+            }
+        }
+        rubro.setIdrubro(1003L);
+        rubroxfac.setIdrubro_rubros(rubro);
+        rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
+        rubroxfac.setCantidad(1F);
+        rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.HALF_UP));
+        saveRxf(rubroxfac);
 
-		return valor.setScale(2, RoundingMode.HALF_UP);
-	}
+        return valor.setScale(2, RoundingMode.HALF_UP);
+    }
 
-	/* AGUA POTABLE - versión optimizada */
-	public BigDecimal exaguaPotable(EmisionOfCuentaDTO valoresEmision) {
-		BigDecimal aguapotable = BigDecimal.ZERO;
-		BigDecimal apFijo;
-		BigDecimal apVariable;
-		BigDecimal porcentaje;
-		if (!valoresEmision.isSwAguapotable()) {
-			// Determinar porcentaje según categoría
-			if (valoresEmision.getCategoria() == 1 || valoresEmision.getCategoria() == 9) {
-				// Residencial
-				int index = Math.min(valoresEmision.getM3(), porcResidencial.length - 1);
-				porcentaje = porcResidencial[index];
-			} else {
-				// Comercial, Industrial, Oficial u otras
-				porcentaje = valoresEmision.getPliego24().getPorc();
-			}
-			// Cálculo común de fijo
-			apFijo = valoresEmision.getCategorias().getFijoagua()
-					.subtract(BigDecimal.valueOf(0.10))
-					.multiply(porcentaje);
-			// Cálculo común de variable
-			porcentaje = valoresEmision.getPliego24().getPorc();
+    /* AGUA POTABLE - versión optimizada */
+    public BigDecimal exaguaPotable(EmisionOfCuentaDTO valoresEmision) {
+        BigDecimal aguapotable = BigDecimal.ZERO;
+        BigDecimal apFijo;
+        BigDecimal apVariable;
+        BigDecimal porcentaje;
 
-			apVariable = BigDecimal.valueOf(valoresEmision.getM3())
-					.multiply(valoresEmision.getPliego24().getAgua())
-					.multiply(porcentaje);
-			// Total
-			aguapotable = apFijo.add(apVariable);
-			// Regla especial para Oficial (categoria 4)
-			if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
-				aguapotable = aguapotable.divide(BigDecimal.valueOf(2));
-			}
+        // Determinar porcentaje según categoría
+        if (valoresEmision.getCategoria() == 1 || valoresEmision.getCategoria() == 9) {
+            // Residencial
+            int index = Math.min(valoresEmision.getM3(), porcResidencial.length - 1);
+            porcentaje = porcResidencial[index];
+        } else {
+            // Comercial, Industrial, Oficial u otras
+            porcentaje = valoresEmision.getPliego24().getPorc();
+        }
+        // Cálculo común de fijo
+        apFijo = valoresEmision.getCategorias().getFijoagua()
+                .subtract(BigDecimal.valueOf(0.10))
+                .multiply(porcentaje);
+        // Cálculo común de variable
+        porcentaje = valoresEmision.getPliego24().getPorc();
 
-			if (valoresEmision.getCategoria() == 9) {
-				aguapotable = aguapotable.divide(BigDecimal.valueOf(2));
-			}
+        apVariable = BigDecimal.valueOf(valoresEmision.getM3())
+                .multiply(valoresEmision.getPliego24().getAgua())
+                .multiply(porcentaje);
+        // Total
+        aguapotable = apFijo.add(apVariable);
+        // Regla especial para Oficial (categoria 4)
+        if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
+            aguapotable = aguapotable.divide(BigDecimal.valueOf(2));
+        }
 
-		}
-		return aguapotable;
-	}
+        if (valoresEmision.getCategoria() == 9) {
+            aguapotable = aguapotable.divide(BigDecimal.valueOf(2));
+        }
 
-	/* ALCANTARILLADO - versión optimizada */
-	public BigDecimal exalcantarillado(EmisionOfCuentaDTO valoresEmision) {
-		BigDecimal valor = BigDecimal.ZERO;
-		BigDecimal fijo, variable;
-		BigDecimal porcentaje;
+        return aguapotable;
+    }
 
-		// Hidrosuccionador siempre se suma al final
-		BigDecimal hidro = hidrosuccionador(valoresEmision);
-		porcentaje = valoresEmision.getPliego24().getPorc();
+    /* ALCANTARILLADO - versión optimizada */
+    public BigDecimal exalcantarillado(EmisionOfCuentaDTO valoresEmision) {
+        BigDecimal valor = BigDecimal.ZERO;
+        BigDecimal fijo, variable;
+        BigDecimal porcentaje;
+        Rubroxfac rubroxfac = new Rubroxfac();
+        Rubros rubro = new Rubros();
+        // Hidrosuccionador siempre se suma al final
+        porcentaje = valoresEmision.getPliego24().getPorc();
+        if (!valoresEmision.isSwAguapotable()) {
 
-		// Cálculo común de fijo
-		fijo = valoresEmision.getCategorias().getFijosanea()
-				.subtract(BigDecimal.valueOf(0.50))
-				.multiply(porcentaje);
+            BigDecimal hidro = hidrosuccionador(valoresEmision);
 
-		// Cálculo común de variable
-		variable = BigDecimal.valueOf(valoresEmision.getM3())
-				.multiply(valoresEmision.getPliego24().getSaneamiento().divide(BigDecimal.valueOf(2)))
-				.multiply(porcentaje);
+            // Cálculo común de fijo
+            fijo = valoresEmision.getCategorias().getFijosanea()
+                    .subtract(BigDecimal.valueOf(0.50))
+                    .multiply(porcentaje);
 
-		// Total
-		valor = fijo.add(variable);
+            // Cálculo común de variable
+            variable = BigDecimal.valueOf(valoresEmision.getM3())
+                    .multiply(valoresEmision.getPliego24().getSaneamiento().divide(BigDecimal.valueOf(2)))
+                    .multiply(porcentaje);
 
-		// Regla especial para Oficial (categoria 4)
-		if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
-			valor = valor.divide(BigDecimal.valueOf(2));
-		}
+            // Total
+            valor = fijo.add(variable);
 
-		if (valoresEmision.getCategoria() == 9) {
-			valor = valor.divide(BigDecimal.valueOf(2));
-		}
+            // Regla especial para Oficial (categoria 4)
+            if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
+                valor = valor.divide(BigDecimal.valueOf(2));
+            }
 
-		// Sumar hidro al final
-		valor = valor.add(hidro);
-		return valor;
-	}
+            if (valoresEmision.getCategoria() == 9) {
+                valor = valor.divide(BigDecimal.valueOf(2));
+            }
 
-	/* SANEAMIENTO */
-	public BigDecimal exsaneamiento(EmisionOfCuentaDTO valoresEmision) {
-		BigDecimal valor = BigDecimal.ZERO;
-		BigDecimal porcentaje = BigDecimal.ZERO;
-		if (!valoresEmision.isSwAguapotable()) {
+            // Sumar hidro al final
+            valor = valor.add(hidro);
+        }
+        return valor;
+    }
 
-			porcentaje = valoresEmision.getPliego24().getPorc();
+    /* SANEAMIENTO */
+    public BigDecimal exsaneamiento(EmisionOfCuentaDTO valoresEmision) {
+        BigDecimal valor = BigDecimal.ZERO;
+        BigDecimal porcentaje = BigDecimal.ZERO;
+        Rubroxfac rubroxfac = new Rubroxfac();
+        Rubros rubro = new Rubros();
+        if (!valoresEmision.isSwAguapotable()) {
 
-			// Cálculo común de variable
-			valor = BigDecimal.valueOf(valoresEmision.getM3())
-					.multiply(valoresEmision.getPliego24().getSaneamiento().divide(BigDecimal.valueOf(2)))
-					.multiply(porcentaje);
-			if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
-				valor = valor.divide(BigDecimal.valueOf(2));
-			}
-			if (valoresEmision.getCategoria() == 9) {
-				valor = valor.divide(BigDecimal.valueOf(2));
-			}
-		}
+            porcentaje = valoresEmision.getPliego24().getPorc();
 
-		return valor.setScale(2, RoundingMode.HALF_UP);
-	}
+            // Cálculo común de variable
+            valor = BigDecimal.valueOf(valoresEmision.getM3())
+                    .multiply(valoresEmision.getPliego24().getSaneamiento().divide(BigDecimal.valueOf(2)))
+                    .multiply(porcentaje);
+            if (valoresEmision.getCategoria() == 4 && valoresEmision.isSwMunicipio()) {
+                valor = valor.divide(BigDecimal.valueOf(2));
+            }
+            if (valoresEmision.getCategoria() == 9) {
+                valor = valor.divide(BigDecimal.valueOf(2));
+            }
+        }
 
-	/* CONSERVACIÓN DE FUENTES */
-	public BigDecimal conservacionFuentes(EmisionOfCuentaDTO valoresEmision) {
-		BigDecimal valor = BigDecimal.valueOf(0.10);
-		Rubroxfac rubroxfac = new Rubroxfac();
-		Rubros rubro = new Rubros();
+        return valor.setScale(2, RoundingMode.HALF_UP);
+    }
 
-		rubro.setIdrubro(1004L);
-		rubroxfac.setIdrubro_rubros(rubro);
-		rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
-		rubroxfac.setCantidad(1F);
-		rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.HALF_UP));
-		saveRxf(rubroxfac);
+    /* CONSERVACIÓN DE FUENTES */
+    public BigDecimal conservacionFuentes(EmisionOfCuentaDTO valoresEmision) {
+        BigDecimal valor = BigDecimal.valueOf(0.10);
+        Rubroxfac rubroxfac = new Rubroxfac();
+        Rubros rubro = new Rubros();
 
-		return valor;
-	}
+        rubro.setIdrubro(1004L);
+        rubroxfac.setIdrubro_rubros(rubro);
+        rubroxfac.setIdfactura_facturas(valoresEmision.getFactura());
+        rubroxfac.setCantidad(1F);
+        rubroxfac.setValorunitario(valor.setScale(2, RoundingMode.HALF_UP));
+        saveRxf(rubroxfac);
 
-	/* HIDROSUCCIONADOR */
-	public BigDecimal hidrosuccionador(EmisionOfCuentaDTO valoresEmision) {
-		BigDecimal valor = BigDecimal.ZERO;
-		BigDecimal porcentaje = BigDecimal.ZERO;
-		porcentaje = valoresEmision.getPliego24().getPorc();
-		valor = BigDecimal.valueOf(0.50).multiply(porcentaje);
-		return valor;
-	}
+        return valor;
+    }
 
-	/* EXCEDENTE */
-	public BigDecimal excedente(EmisionOfCuentaDTO valoresExcedente1) {
-		valoresExcedente1.setCategoria(1);
-		BigDecimal valor = BigDecimal.ZERO;
-		valoresExcedente1.setCategoria(1);
-		Pliego24 pliego = dao_pliego._findBloque(valoresExcedente1.getCategoria(), valoresExcedente1.getM3());
-		valoresExcedente1.setPliego24(pliego);
-		Categorias _categoria = dao_categoria.getCategoriaById(valoresExcedente1.getCategoria());
-		valoresExcedente1.setCategorias(_categoria);
-		BigDecimal apex1 = exaguaPotable(valoresExcedente1);
-		BigDecimal aex1 = exalcantarillado(valoresExcedente1);
-		BigDecimal sex1 = exsaneamiento(valoresExcedente1);
-		BigDecimal cex1 = conservacionFuentes(valoresExcedente1);
-		BigDecimal suma1 = apex1.add(aex1).add(sex1).add(cex1);
-		EmisionOfCuentaDTO valoresExcedente2 = new EmisionOfCuentaDTO();
-		valoresExcedente2 = valoresExcedente1;
-		valoresExcedente2.setM3(valoresExcedente1.getM3() - 1);
-		BigDecimal apex2 = exaguaPotable(valoresExcedente2);
-		BigDecimal aex2 = exalcantarillado(valoresExcedente2);
-		BigDecimal sex2 = exsaneamiento(valoresExcedente2);
-		BigDecimal cex2 = conservacionFuentes(valoresExcedente2);
-		BigDecimal suma2 = apex2.add(aex2).add(sex2).add(cex2);
-		BigDecimal excedente = suma1.subtract(suma2);
-		return excedente;
-	}
+    /* HIDROSUCCIONADOR */
+    public BigDecimal hidrosuccionador(EmisionOfCuentaDTO valoresEmision) {
+        BigDecimal valor = BigDecimal.ZERO;
+        BigDecimal porcentaje = BigDecimal.ZERO;
+        porcentaje = valoresEmision.getPliego24().getPorc();
+        valor = BigDecimal.valueOf(0.50).multiply(porcentaje);
+        return valor;
+    }
 
-	/* MULTAS */
-	public BigDecimal multas(Long cuentas) {
-		List<Long> idfacturas = dao_facturas.findSinCobroAbo(cuentas);
-		long nroPendientes = idfacturas.size();
-		BigDecimal multa = BigDecimal.ZERO;
-		if (nroPendientes == 3) {
-			multa = BigDecimal.valueOf(2);
-		}
-		/*
-		 * if (nroPendientes > 2) {
-		 * Definir definir = dao_definir.findTopByOrderByIddefinirDesc(); // 👈 último
-		 * registro
-		 * if (definir != null) {
-		 * BigDecimal rbu = definir.getRbu();
-		 * multa = multa.add(rbu.multiply(BigDecimal.valueOf(0.01)));
-		 * }
-		 * }
-		 */
+    /* EXCEDENTE */
+    public BigDecimal excedente(EmisionOfCuentaDTO valoresExcedente1) {
+        valoresExcedente1.setCategoria(1);
+        BigDecimal valor = BigDecimal.ZERO;
+        valoresExcedente1.setCategoria(1);
+        Pliego24 pliego = dao_pliego._findBloque(valoresExcedente1.getCategoria(), valoresExcedente1.getM3());
+        valoresExcedente1.setPliego24(pliego);
+        Categorias _categoria = dao_categoria.getCategoriaById(valoresExcedente1.getCategoria());
+        valoresExcedente1.setCategorias(_categoria);
+        BigDecimal apex1 = exaguaPotable(valoresExcedente1);
+        BigDecimal aex1 = exalcantarillado(valoresExcedente1);
+        BigDecimal sex1 = exsaneamiento(valoresExcedente1);
+        BigDecimal cex1 = conservacionFuentes(valoresExcedente1);
+        BigDecimal suma1 = apex1.add(aex1).add(sex1).add(cex1);
+        EmisionOfCuentaDTO valoresExcedente2 = new EmisionOfCuentaDTO();
+        valoresExcedente2 = valoresExcedente1;
+        valoresExcedente2.setM3(valoresExcedente1.getM3() - 1);
+        BigDecimal apex2 = exaguaPotable(valoresExcedente2);
+        BigDecimal aex2 = exalcantarillado(valoresExcedente2);
+        BigDecimal sex2 = exsaneamiento(valoresExcedente2);
+        BigDecimal cex2 = conservacionFuentes(valoresExcedente2);
+        BigDecimal suma2 = apex2.add(aex2).add(sex2).add(cex2);
+        BigDecimal excedente = suma1.subtract(suma2);
+        return excedente;
+    }
 
-		return multa;
-	}
+    /* MULTAS */
+    public BigDecimal multas(Long cuentas) {
+        List<Long> idfacturas = dao_facturas.findSinCobroAbo(cuentas);
+        long nroPendientes = idfacturas.size();
+        BigDecimal multa = BigDecimal.ZERO;
+        if (nroPendientes == 3) {
+            multa = BigDecimal.valueOf(2);
+        }
+        /*
+         * if (nroPendientes > 2) {
+         * Definir definir = dao_definir.findTopByOrderByIddefinirDesc(); // 👈 último
+         * registro
+         * if (definir != null) {
+         * BigDecimal rbu = definir.getRbu();
+         * multa = multa.add(rbu.multiply(BigDecimal.valueOf(0.01)));
+         * }
+         * }
+         */
 
-	private Rubroxfac saveRxf(Rubroxfac rxf) {
-		Rubroxfac swrxf = dao_rubroxfac.findOneFxR(
-				rxf.getIdfactura_facturas().getIdfactura(),
-				rxf.getIdrubro_rubros().getIdrubro());
+        return multa;
+    }
 
-		if (swrxf != null) {
-			// ✅ actualizar valores en el registro existente
-			swrxf.setValorunitario(rxf.getValorunitario());
-			swrxf.setCantidad(rxf.getCantidad());
-			// si hay más campos que deben actualizarse, también agrégalos aquí
-			return dao_rubroxfac.save(swrxf);
-		} else {
-			// ✅ guardar nuevo registro
-			return dao_rubroxfac.save(rxf);
-		}
-	}
+    private Rubroxfac saveRxf(Rubroxfac rxf) {
+        Rubroxfac swrxf = dao_rubroxfac.findOneFxR(
+                rxf.getIdfactura_facturas().getIdfactura(),
+                rxf.getIdrubro_rubros().getIdrubro());
+
+        if (swrxf != null) {
+
+            // ✅ actualizar valores en el registro existente
+            swrxf.setValorunitario(rxf.getValorunitario());
+            swrxf.setCantidad(rxf.getCantidad());
+            // si hay más campos que deben actualizarse, también agrégalos aquí
+            return dao_rubroxfac.save(swrxf);
+        } else {
+            // ✅ guardar nuevo registro
+            return dao_rubroxfac.save(rxf);
+        }
+    }
 
     public List<EmisionesInterface> getSWalcatarillados(Long idemision) {
-        List<EmisionesInterface> emiI = dao.GetCuentasCeros(idemision);
+        List<EmisionesInterface> emiI = dao.getSWalcatarillados(idemision);
 
         emiI.forEach(e -> {
             calcularValores(
@@ -615,5 +623,7 @@ public class LecturaServicio {
 
         return emiI; // devolvemos la lista ya procesada
     }
+
+
 
 }

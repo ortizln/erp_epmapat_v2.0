@@ -945,48 +945,65 @@ public ResponseEntity<?> firmarYEnviarFactura(
     * */
 
     @GetMapping("/generar-pdf")
-    public ResponseEntity<Resource> generarPdf(@RequestParam Long idfactura) {
-        String url = eurekaServiceUrl + ":8080/fec_factura/factura?idfactura=" + idfactura;
-        FecFacturaDTO factura = restTemplate.getForObject(url, FecFacturaDTO.class);
-        String xmlAutorizado = factura.getXmlautorizado();
-        LocalDate fehchaemision = factura.getFechaemision();
-        LocalDate fechaLimite = LocalDate.of(2025, 5, 6);
-
+    public ResponseEntity<?> generarPdf(@RequestParam Long idfactura) {
         try {
-            // Generar el PDF como ByteArrayOutputStream
+            // 1) Traer la factura del otro microservicio
+            String url = eurekaServiceUrl + ":8080/fec_factura/factura?idfactura=" + idfactura;
+            FecFacturaDTO factura = restTemplate.getForObject(url, FecFacturaDTO.class);
+
+            if (factura == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "No se encontró la factura", "idfactura", idfactura));
+            }
+
+            String xmlAutorizado = factura.getXmlautorizado();
+            if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(Map.of("error", "No se encontró XML autorizado para la factura", "idfactura", idfactura));
+            }
+
+            // 2) Determinar plantilla según fecha
+            LocalDate fechaEmision = factura.getFechaemision(); // asumiendo LocalDate en el DTO
+            LocalDate fechaLimite  = LocalDate.of(2025, 5, 6);
+
             ByteArrayOutputStream pdfStream;
-            // Comparar fechas
-            if (fehchaemision.isAfter(fechaLimite)) {
-                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
-
-            } else if (fehchaemision.isBefore(fechaLimite)) {
+            if (fechaEmision != null && fechaEmision.isBefore(fechaLimite)) {
                 pdfStream = xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado);
-
-            } else if (fehchaemision.isEqual(fechaLimite)) {
-                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
             } else {
+                // igual para == y > usamos la plantilla nueva
                 pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
             }
 
             if (pdfStream == null || pdfStream.size() == 0) {
-                throw new RuntimeException("No se pudo generar el PDF.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "No se pudo generar el PDF (stream vacío)."));
             }
 
-            // Convertir el stream en un InputStreamResource
-            org.springframework.core.io.InputStreamResource resource = new InputStreamResource(new ByteArrayInputStream(pdfStream.toByteArray()));
+            // 3) Preparar la descarga
+            InputStreamResource resource =
+                    new InputStreamResource(new ByteArrayInputStream(pdfStream.toByteArray()));
 
-            // Retornar el PDF como un archivo descargable
+            String nombreArchivo = "factura_" + idfactura + ".pdf";
+
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=factura.pdf")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + nombreArchivo)
                     .contentType(MediaType.APPLICATION_PDF)
                     .contentLength(pdfStream.size())
                     .body(resource);
 
+        } catch (org.springframework.web.client.RestClientException ex) {
+            return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
+                    .body(Map.of("error", "No se pudo consultar el microservicio de facturas",
+                            "detalle", ex.getMessage(),
+                            "idfactura", idfactura));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
+                    .body(Map.of("error", "Error generando el PDF",
+                            "detalle", e.getMessage(),
+                            "idfactura", idfactura));
         }
     }
+
 
 
     // ================== Helpers ==================

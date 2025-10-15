@@ -252,4 +252,24 @@ public List<CountRubrosByEmision>getCuentaRubrosByEmision(long idemision );
 			""", nativeQuery = true)
     List<EmisionesInterface> GetCuentasCeros(Long idemision);
 
+    @Query(value = """
+					SELECT
+			    l.idfactura,
+			    SUM(l.lecturaactual - l.lecturaanterior) AS m3,
+			    a.idabonado as cuenta,
+			    l.idcategoria as categoria,
+			    a.swalcantarillado as swAguapotable ,
+			    a.municipio as swMunicipio ,
+			    a.adultomayor  as swAdultoMayor
+			FROM lecturas l
+			JOIN abonados a
+			    ON l.idabonado_abonados = a.idabonado
+			WHERE l.idemision = ?1
+			  AND a.swalcantarillado = TRUE
+			GROUP BY l.idfactura, a.idabonado, l.idcategoria
+			ORDER BY l.idfactura;
+					""", nativeQuery = true)
+    public List<EmisionesInterface> getSWalcatarillados(Long idemision);
+
+
 }
