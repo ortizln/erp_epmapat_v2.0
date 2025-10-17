@@ -43,5 +43,21 @@ app:
     reply-to: facturacion@epmapatulcan.gob.ec
 
 sri:
-  xml:
-    output-dir:
+  ambiente: 2 # 1=PRUEBAS, 2=PRODUCCIÓN
+  polling:
+    attempts: 40          # intentos máx
+    initialSleepMs: 2000  # primera espera
+    maxSleepMs: 8000      # techo de espera
+    backoffFactor: 1.5    # factor de crecimiento
+    stopOnNoAutorizado: true
+  wsdl:
+    local:
+      recepcion: wsdl/RecepcionComprobantesOffline.wsdl
+      autorizacion: wsdl/AutorizacionComprobantesOffline.wsdl
+  endpoint:
+    recepcion:
+      pruebas: https://celcer.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline
+      produccion: https://cel.sri.gob.ec/comprobantes-electronicos-ws/RecepcionComprobantesOffline
+    autorizacion:
+      pruebas: https://celcer.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline
+      produccion: https://cel.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline

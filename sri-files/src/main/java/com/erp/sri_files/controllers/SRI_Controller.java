@@ -677,7 +677,7 @@ public ResponseEntity<?> firmarYEnviarFactura(
                         try { return sendXmlToSriService.consultarAutorizacion(clave); }
                         catch (Exception e) { throw new RuntimeException(e); }
                     },
-                    10,   // intentos
+                    30,   // intentos
                     4000  // ms entre intentos
             );
 

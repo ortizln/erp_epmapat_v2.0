@@ -417,8 +417,6 @@ public class XmlToPdfService {
             if (reportStream == null) {
                 throw new RuntimeException("Plantilla factura_template.jrxml no encontrada");
             }
-            System.out.println("===> 1 <===" + reportStream.getClass());
-
             JasperReport jasperReport = JasperCompileManager.compileReport(reportStream);
             JRDataSource itemsDataSource = new JRBeanCollectionDataSource(itemsList);
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, itemsDataSource);
