@@ -1,9 +1,12 @@
 package com.erp.servicio;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
+import com.erp.utils.InteresUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -24,6 +27,8 @@ public class InteresServicio {
 	private FacturaServicio s_factura;
 	@Autowired
 	private LecturaServicio s_lectura;
+    @Autowired
+    private InteresRepositoryAdapter repo;
 
 	public List<Intereses> findAll() {
 		return dao.findAll();
@@ -123,9 +128,10 @@ public class InteresServicio {
 		});
 		return totalInteres[0];
 	}
-	
-	
-	public Object interesToFactura(ValorFactDTO factura) {
+    public InteresRepositoryAdapter getRepoAdapter() { return this.repo; }
+
+
+    public Object interesToFactura(ValorFactDTO factura) {
 
 		// Variable para almacenar el interés total de todas las facturas
 		final double[] totalInteres = { 0.0 };
@@ -187,5 +193,39 @@ public class InteresServicio {
 		
 		return totalInteres[0];
 	}
+
+    public BigDecimal calcularInteresFactura(Long idfactura, LocalDate hoy) {
+        List<FacIntereses> factura = s_lectura.getForIntereses(idfactura);
+        if (factura.isEmpty()) factura = s_factura.getForIntereses(idfactura);
+        if (factura == null || factura.isEmpty()) return BigDecimal.ZERO;
+
+        BigDecimal total = BigDecimal.ZERO;
+
+        for (FacIntereses f : factura) {
+            LocalDate fecInicio = (f.getFormapago() == 4 ? f.getFechatransferencia() : f.getFeccrea());
+            if (fecInicio == null) continue;
+
+            BigDecimal principal = InteresUtils.bd(f.getSuma());
+
+            YearMonth ymStart = YearMonth.from(fecInicio);
+            YearMonth ymEnd   = YearMonth.from(hoy).minusMonths(1); // hasta mes anterior a hoy
+
+            if (ymStart.isAfter(ymEnd)) continue;
+
+            List<YearMonth> meses = InteresUtils.range(ymStart, ymEnd);
+            Map<YearMonth, BigDecimal> pctMap = repo.getPorcentajesPorRango(meses.get(0), meses.get(meses.size() - 1));
+
+            List<BigDecimal> ratios = new ArrayList<>(meses.size());
+            for (YearMonth ym : meses) {
+                BigDecimal pct = pctMap.getOrDefault(ym, BigDecimal.ZERO); // % mensual
+                ratios.add(InteresUtils.pctToRatio(pct));                   // a razón
+            }
+
+            BigDecimal interes = InteresUtils.compoundInterest(principal, ratios);
+            total = total.add(interes, InteresUtils.MC);
+        }
+
+        return total.setScale(InteresUtils.SCALE_MONEY, java.math.RoundingMode.HALF_UP);
+    }
 
 }

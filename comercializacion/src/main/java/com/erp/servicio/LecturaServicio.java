@@ -284,6 +284,7 @@ public class LecturaServicio {
         return total.setScale(2, RoundingMode.HALF_UP);
     }
 
+
     /* AGUA POTABLE - versión optimizada */
     public BigDecimal aguaPotable(EmisionOfCuentaDTO valoresEmision) {
         BigDecimal aguapotable = BigDecimal.ZERO;

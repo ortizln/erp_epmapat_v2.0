@@ -195,58 +195,76 @@ public class SendXmlToSriService {
         return ultimo; // podría venir sin autorizaciones (pendiente)
     }
 
+    
+
     /**
-     * Polling por autorización **directo** con clave (más simple de usar)
+     * Polling de autorización por clave de acceso con backoff exponencial y jitter.
+     *
+     * @param claveAcceso          clave a consultar
+     * @param maxIntentos          intentos máximos (p.ej. 20)
+     * @param sleepInicialMs       espera inicial entre intentos (p.ej. 2000)
+     * @param sleepMaxMs           techo de espera (p.ej. 8000)
+     * @param factorBackoff        multiplicador (p.ej. 1.5)
+     * @param cortarEnNoAutorizado true = cortamos si llega NO AUTORIZADO
+     * @return RespuestaComprobante del último intento (idealmente con estado definitivo)
      */
     public RespuestaComprobante consultarAutorizacionConEsperaPorClave(
             String claveAcceso,
-            int maxAttempts,
-            long initialSleepMs,
-            long maxSleepMs,
-            double backoffFactor,
-            boolean stopOnNoAutorizado
+            int maxIntentos,
+            long sleepInicialMs,
+            long sleepMaxMs,
+            double factorBackoff,
+            boolean cortarEnNoAutorizado
     ) throws Exception {
-        long sleep = initialSleepMs;
+
+        long sleep = sleepInicialMs;
         RespuestaComprobante ultimo = null;
 
-        for (int i = 1; i <= maxAttempts; i++) {
+        for (int intento = 1; intento <= maxIntentos; intento++) {
+            try {
+                ultimo = consultarAutorizacion(claveAcceso);
 
-            ultimo = consultarAutorizacion(claveAcceso);
+                int num = parseNum(ultimo);
+                if (num > 0) {
+                    var a = first(ultimo);
+                    String estado = (a == null) ? "" : s(a.getEstado());
 
-            // ¿SRI ya regresó algo?
-            int n = 0;
-            try { n = (ultimo.getNumeroComprobantes() == null) ? 0 : Integer.parseInt(ultimo.getNumeroComprobantes().trim()); }
-            catch (NumberFormatException ignore) {}
-
-            if (n > 0) {
-                var a = getFirstAuth(ultimo);
-                String estado = (a == null ? "" : s(a.getEstado()));
-
-                // Corte inmediato en estados definitivos
-                if ("AUTORIZADO".equalsIgnoreCase(estado)) {
-                    return ultimo; // listo: úsalo y extrae el XML
+                    // Corte inmediato si hay estado definitivo
+                    if ("AUTORIZADO".equalsIgnoreCase(estado)) {
+                        return ultimo;
+                    }
+                    if ("NO AUTORIZADO".equalsIgnoreCase(estado) && cortarEnNoAutorizado) {
+                        return ultimo;
+                    }
+                    // Si hay respuesta pero aún no definitiva, seguimos esperando
                 }
-                if ("NO AUTORIZADO".equalsIgnoreCase(estado) && stopOnNoAutorizado) {
-                    return ultimo; // devolver diagnóstico (mensajes/identificadores)
-                }
+
+            } catch (Exception ex) {
+                // Errores transitorios: seguimos reintentando (podrías loguear 'ex')
+                // Si quieres cortar ante ciertos errores, hazlo aquí.
             }
 
-            // Espera con backoff + jitter antes del próximo intento
-            long jitter = (long) (Math.random() * 400); // 0-400ms
-            Thread.sleep(Math.min(sleep, maxSleepMs) + jitter);
-            sleep = (long) Math.max(sleep * backoffFactor, sleep + 1000); // crece suavemente
+            // Espera con backoff + jitter
+            long jitter = (long)(Math.random() * 400);                // 0–400 ms
+            long delay  = Math.min(sleep, sleepMaxMs) + jitter;
+            Thread.sleep(delay);
+            sleep = Math.max((long)(sleep * factorBackoff), sleep + 1000); // crecimiento suave
         }
-        return ultimo; // puede llegar aún PENDIENTE: decide en el controlador qué responder
+
+        // Vuelve con lo último que se obtuvo (posiblemente PENDIENTE)
+        return ultimo;
     }
+
+
     // ---- Helper: obtener la primera autorización “útil” ----
     private ec.gob.sri.ws.autorizacion.Autorizacion getFirstAuth(RespuestaComprobante rc) {
         if (rc == null || rc.getAutorizaciones() == null || rc.getAutorizaciones().getAutorizacion() == null) return null;
         return rc.getAutorizaciones().getAutorizacion().stream().findFirst().orElse(null);
     }
 
-    private static String s(String v){ return v == null ? "" : v.trim(); }
+    private static String _s(String v){ return v == null ? "" : v.trim(); }
     // ---- Helper: extraer XML AUTORIZADO (CDATA de <comprobante>) ----
-    public String extraerXmlAutorizado(RespuestaComprobante rc) {
+    public String _extraerXmlAutorizado(RespuestaComprobante rc) {
         var a = getFirstAuth(rc);
         if (a == null) return null;
         if (!"AUTORIZADO".equalsIgnoreCase(s(a.getEstado()))) return null;
@@ -258,4 +276,36 @@ public class SendXmlToSriService {
         if (xml.endsWith("]]>")) xml = xml.substring(0, xml.length()-3);
         return xml.trim();
     }
+
+
+    // === Helpers breves ===
+    private static String s(String v){ return v == null ? "" : v.trim(); }
+
+    private int parseNum(RespuestaComprobante rc){
+        if (rc == null) return 0;
+        var n = rc.getNumeroComprobantes();
+        try { return (n == null) ? 0 : Integer.parseInt(n.trim()); }
+        catch (NumberFormatException ignore){ return 0; }
+    }
+
+    private ec.gob.sri.ws.autorizacion.Autorizacion first(RespuestaComprobante rc){
+        if (rc == null || rc.getAutorizaciones() == null) return null;
+        var list = rc.getAutorizaciones().getAutorizacion();
+        return (list == null || list.isEmpty()) ? null : list.get(0);
+    }
+
+    private boolean isDefinitivo(String estado){
+        return "AUTORIZADO".equalsIgnoreCase(estado) || "NO AUTORIZADO".equalsIgnoreCase(estado);
+    }
+
+    /** Devuelve el XML autorizado (comprobante dentro de CDATA) o null. */
+    public String extraerXmlAutorizado(RespuestaComprobante rc){
+        var a = first(rc);
+        if (a == null || !"AUTORIZADO".equalsIgnoreCase(s(a.getEstado()))) return null;
+        String comp = s(a.getComprobante());
+        if (comp.startsWith("<![CDATA[")) comp = comp.substring(9);
+        if (comp.endsWith("]]>")) comp = comp.substring(0, comp.length()-3);
+        return comp.trim();
+    }
+
 }

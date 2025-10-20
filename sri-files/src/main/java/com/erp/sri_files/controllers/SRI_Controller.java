@@ -774,8 +774,8 @@ public ResponseEntity<?> firmarYEnviarFactura(
     public ResponseEntity<?> consultarAutorizacion(
             @RequestParam String claveAcceso,
             @RequestParam(defaultValue = "false") boolean wait,        // true = polling
-            @RequestParam(defaultValue = "20") int attempts,           // intentos de polling
-            @RequestParam(defaultValue = "3000") long sleepMillis,     // pausa entre intentos (ms)
+            @RequestParam(defaultValue = "60") int attempts,           // intentos de polling
+            @RequestParam(defaultValue = "80000") long sleepMillis,     // pausa entre intentos (ms)
             @RequestParam(defaultValue = "true") boolean returnXml,   // true = retornar application/xml
             @RequestParam(defaultValue = "false") boolean download     // true = forzar descarga
     ) {
@@ -785,7 +785,7 @@ public ResponseEntity<?> firmarYEnviarFactura(
                 // Polling: consultamos varias veces hasta tener respuesta con autorizaciones
                 rc = sendXmlToSriService.consultarAutorizacionConEspera(
                         /*xmlFirmado no se usa en tu impl de polling*/ "<na>",
-                        _clave -> {
+                        _claveAcceso -> {
                             try { return sendXmlToSriService.consultarAutorizacion(claveAcceso); }
                             catch (Exception e) { throw new RuntimeException(e); }
                         },

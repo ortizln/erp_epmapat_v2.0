@@ -24,11 +24,7 @@ public class Abonado_ser {
     @Autowired
     private Facturas_rep f_dao;
     @Autowired
-    private Interes_ser s_interes;
-    @Autowired
     private Impuestos_ser s_impuestos;
-    @Autowired
-    private TmpinteresxfacR tmpinteresxfacR;
 
     public List<FacturaDTO> findSinCobrarByAbonado(Long idabonado) {
         Abonado_int abonado = a_dao.findClienteInAbonado(idabonado);
