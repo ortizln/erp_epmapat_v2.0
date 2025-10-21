@@ -616,4 +616,32 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
     """, nativeQuery = true)
     Fecfactura forFecfactura(Long idfactura);
 
+
+    @Query(value = """
+    SELECT 
+      f.idfactura                               AS id,
+      SUM(rf.cantidad * rf.valorunitario)       AS suma,
+      f.formapago                               AS formaPago,
+      CASE 
+        WHEN f.formapago = 4 THEN f.fechatransferencia
+        ELSE e.feccrea
+      END                                       AS fecCrea,
+      f.fechatransferencia                      AS fecTransfer
+    FROM facturas f
+    JOIN rubroxfac  rf ON rf.idfactura_facturas = f.idfactura
+    JOIN lecturas   l  ON l.idfactura           = f.idfactura
+    JOIN emisiones  e  ON e.idemision           = l.idemision
+    WHERE f.totaltarifa > 0
+      AND (
+            (f.estado IN (1,2) AND f.fechacobro IS NULL)
+            OR f.estado = 3
+          )
+      AND f.fechaconvenio   IS NULL
+      AND f.fechaeliminacion IS NULL
+    GROUP BY 
+      f.idfactura, f.formapago, e.feccrea, f.fechatransferencia
+""", nativeQuery = true)
+    List<FacLite> getSinCobrarLite();
+
+
 }

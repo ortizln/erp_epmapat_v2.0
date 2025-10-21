@@ -8,6 +8,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.erp.DTO.PreviewResponse;
+import com.erp.DTO.RecalculoRequest;
+import com.erp.DTO.RecalculoResponse;
+import com.erp.servicio.InteresBatchService;
 import com.erp.servicio.TmpinteresxfacService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -39,6 +43,8 @@ public class InteresesApi {
 	private InteresServicio inteServicio;
     @Autowired
     private TmpinteresxfacService tmpService;
+    @Autowired
+    private InteresBatchService batchService;
 
     @GetMapping
 	public List<Intereses> getAllLista(@Param(value = "anio") Number anio, @Param(value = "mes") Number mes) {
@@ -98,75 +104,58 @@ public class InteresesApi {
     */
 
     /**
-     * 1) Ejecuta el proceso batch (upsert) de intereses en TMP para todas las facturas “sin cobrar”.
-     *    POST /api/intereses/tmp/recalcular
+     * POST /api/intereses/batch/recalcular
+     * Dispara el proceso batch que:
+     *  - Carga porcentajes una sola vez
+     *  - Precomputa factores acumulados
+     *  - Calcula interés O(1) por factura
+     *  - Hace upsert por lotes en tmpinteresxfac
+     *
+     * Body JSON (opcional):
+     *  {
+     *    "fechaCorte": "2025-10-20",   // opcional, default: hoy
+     *    "lagMeses": 1                  // opcional, default: 1  (hasta mes anterior)
+     *  }
      */
-    @PostMapping("/tmp/recalcular")
-    public ResponseEntity<Map<String, Object>> recalcularTmp() {
-        Map<String, Object> resp = tmpService.updateTmpInteresxfac();
+    @PostMapping("/batch/recalcular")
+    public ResponseEntity<RecalculoResponse> recalcularBatch(
+            @RequestBody(required = false) RecalculoRequest req
+    ) {
+        LocalDate corte = (req != null && req.fechaCorte() != null) ? req.fechaCorte() : LocalDate.now();
+        int lag = (req != null && req.lagMeses() != null) ? Math.max(0, req.lagMeses()) : 1;
+
+        Map<String, Object> out = batchService.recalcularIntereses(corte, lag);
+
+        RecalculoResponse resp = new RecalculoResponse(
+                (int) out.getOrDefault("status", 200),
+                (int) out.getOrDefault("totalFacturas", 0),
+                (String) out.getOrDefault("desde", null),
+                (String) out.getOrDefault("hasta", null),
+                (String) out.getOrDefault("message", "OK")
+        );
         return ResponseEntity.ok(resp);
     }
 
     /**
-     * 2) Calcula (solo vista previa) el interés de una factura específica al día indicado (o hoy por defecto).
-     *    GET /api/intereses/facturas/{id}/calculo?fecha=2025-10-20
+     * GET /api/intereses/facturas/{id}/preview?fecha=YYYY-MM-DD&lag=1
+     * Calcula interés de una factura al corte indicado (no persiste).
+     * - Usa InteresServicio.calcularInteresFactura(...) que ya tienes.
      */
-    @GetMapping("/facturas/{id}/calculo")
-    public ResponseEntity<Map<String, Object>> calcularInteresPorFactura(
+    @GetMapping("/facturas/{id}/preview")
+    public ResponseEntity<PreviewResponse> previewFactura(
             @PathVariable("id") Long idFactura,
             @RequestParam(value = "fecha", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
+            @RequestParam(value = "lag", required = false, defaultValue = "1") int lag
     ) {
         LocalDate corte = (fecha != null) ? fecha : LocalDate.now();
-        BigDecimal interes = inteServicio.calcularInteresFactura(idFactura, corte);
 
-        Map<String, Object> body = new HashMap<>();
-        body.put("status", 200);
-        body.put("idFactura", idFactura);
-        body.put("fechaCorte", corte);
-        body.put("interesCalculado", interes);
-        return ResponseEntity.ok(body);
-    }
+        // Si tu InteresServicio ya implementa lag en el cálculo, úsalo.
+        // Si no, puedes crear un método alterno con lag o simplemente llamar al batchService para algo puntual.
+        BigDecimal interes = inteServicio.calcularInteresFactura(idFactura, corte); // sin lag; ajusta si implementaste lag aquí
 
-    /**
-     * 3) (Opcional) Expone porcentajes por rango YearMonth para auditoría o UI.
-     *    GET /api/intereses/porcentajes?desde=2024-01&hasta=2025-09
-     */
-    @GetMapping("/porcentajes")
-    public ResponseEntity<Map<String, Object>> getPorcentajesRango(
-            @RequestParam("desde") String desde,  // yyyy-MM
-            @RequestParam("hasta") String hasta   // yyyy-MM
-    ) {
-        YearMonth ymDesde;
-        YearMonth ymHasta;
-        try {
-            ymDesde = YearMonth.parse(desde);
-            ymHasta = YearMonth.parse(hasta);
-        } catch (DateTimeParseException e) {
-            Map<String, Object> err = new HashMap<>();
-            err.put("status", 400);
-            err.put("message", "Parámetros inválidos. Usa formato yyyy-MM, ej: 2025-01");
-            return ResponseEntity.badRequest().body(err);
-        }
-
-        if (ymDesde.isAfter(ymHasta)) {
-            Map<String, Object> err = new HashMap<>();
-            err.put("status", 400);
-            err.put("message", "'desde' no puede ser posterior a 'hasta'");
-            return ResponseEntity.badRequest().body(err);
-        }
-
-        // Si creaste el InteresRepositoryAdapter con getPorcentajesPorRango(...)
-        var map = inteServicio
-                .getRepoAdapter() // expón un getter o inyecta aquí el adapter directamente
-                .getPorcentajesPorRango(ymDesde, ymHasta);
-
-        Map<String, Object> ok = new HashMap<>();
-        ok.put("status", 200);
-        ok.put("desde", ymDesde.toString());
-        ok.put("hasta", ymHasta.toString());
-        ok.put("porcentajes", map); // { "2024-01": 1.25, ... } si lo serializas como Map<String, BigDecimal>
-        return ResponseEntity.ok(ok);
+        PreviewResponse resp = new PreviewResponse(200, idFactura, corte, interes);
+        return ResponseEntity.ok(resp);
     }
 
 }
