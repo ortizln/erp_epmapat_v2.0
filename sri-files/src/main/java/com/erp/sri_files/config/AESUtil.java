@@ -7,7 +7,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 public class AESUtil {
     private static final String CLAVE_SECRETA = "1234567890123456"; // 16 caracteres (AES-128)
-
+//Cifado de datos
     public static String cifrar(String datos) throws Exception {
         SecretKeySpec key = new SecretKeySpec(CLAVE_SECRETA.getBytes(), "AES");
         Cipher cipher = Cipher.getInstance("AES");
