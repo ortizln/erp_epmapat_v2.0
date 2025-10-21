@@ -124,7 +124,7 @@ public class InteresesApi {
         LocalDate corte = (req != null && req.fechaCorte() != null) ? req.fechaCorte() : LocalDate.now();
         int lag = (req != null && req.lagMeses() != null) ? Math.max(0, req.lagMeses()) : 1;
 
-        Map<String, Object> out = batchService.recalcularIntereses(corte, lag);
+        Map<String, Object> out = batchService.recalcularIntereses(corte);
 
         RecalculoResponse resp = new RecalculoResponse(
                 (int) out.getOrDefault("status", 200),
