@@ -6,12 +6,25 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.erp.modelo.Catalogoitems;
+import org.springframework.data.repository.query.Param;
 
 public interface CatalogoitemsR extends JpaRepository<Catalogoitems, Long>{
 
    //Productos por Seccion y/o Descripcion
-   @Query(value = "SELECT * FROM catalogoitems AS c JOIN usoitems as u ON c.idusoitems_usoitems=u.idusoitems WHERE u.idmodulo_modulos>=?1 and u.idmodulo_modulos<=?2 and LOWER(c.descripcion) like %?3% ORDER by c.descripcion", nativeQuery = true)
-	public List<Catalogoitems> findProductos(Long idusoitems1, Long idusoitems2, String descripcion);
+   @Query("""
+    SELECT c
+    FROM Catalogoitems c
+    JOIN c.idusoitems_usoitems u
+    WHERE u.idmodulo_modulos.idmodulo BETWEEN :id1 AND :id2
+      AND LOWER(c.descripcion) LIKE LOWER(CONCAT('%', :descripcion, '%'))
+    ORDER BY c.descripcion
+    """)
+   List<Catalogoitems> findProductos(
+           @Param("id1") Long id1,
+           @Param("id2") Long id2,
+           @Param("descripcion") String descripcion
+   );
+
 
    @Query(value="SELECT * FROM catalogoitems WHERE idrubro_rubros=?1 order by descripcion", nativeQuery = true)
 	public List<Catalogoitems> findByIdrubro(Long idrubro);

@@ -9,8 +9,8 @@ import com.erp.modelo.Cajas;
 
 public interface CajasR extends JpaRepository<Cajas, Long> {
 
-   @Query(value = "SELECT * FROM cajas AS c JOIN ptoemision AS p ON c.idptoemision_ptoemision = p.idptoemision ORDER BY p.establecimiento, c.codigo ASC", nativeQuery = true)
-	public List<Cajas> findAll();
+    @Query("SELECT c FROM Cajas c JOIN c.idptoemision_ptoemision p ORDER BY p.establecimiento, c.codigo ASC")
+    List<Cajas> findAll();
    //Validación de Códigos (Establecimiento + Pto de emision)
    @Query(value = "SELECT * FROM cajas AS c JOIN ptoemision AS p ON c.idptoemision_ptoemision = p.idptoemision WHERE c.idptoemision_ptoemision=?1 AND c.codigo=?2", nativeQuery = true)
 	public List<Cajas> findByCodigos( Long idptoemision, String codigo);

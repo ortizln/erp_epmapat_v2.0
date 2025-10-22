@@ -19,7 +19,7 @@ import com.erp.modelo.administracion.Documentos;
 import com.erp.servicio.administracion.DocumentoServicio;
 
 @RestController
-@RequestMapping("/documentos")
+@RequestMapping("/api/comercializacion/documentos")
 
 
 public class DocumentosApi {

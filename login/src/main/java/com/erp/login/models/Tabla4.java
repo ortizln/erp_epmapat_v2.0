@@ -1,5 +1,6 @@
 package com.erp.login.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "tabla4")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Tabla4 {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

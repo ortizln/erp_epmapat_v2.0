@@ -10,8 +10,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "catalogoitems")
 
 public class Catalogoitems {
@@ -34,79 +42,4 @@ public class Catalogoitems {
    private Long usumodi;
    private Date fecmodi;
 
-   public Long getIdcatalogoitems() {
-      return idcatalogoitems;
-   }
-
-   public void setIdcatalogoitems(Long idcatalogoitems) {
-      this.idcatalogoitems = idcatalogoitems;
-   }
-
-   public String getDescripcion() {
-      return descripcion;
-   }
-
-   public void setDescripcion(String descripcion) {
-      this.descripcion = descripcion;
-   }
-   
-   public Float getCantidad() {
-      return cantidad;
-   }
-   public void setCantidad(Float cantidad) {
-      this.cantidad = cantidad;
-   }
-   public Integer getFacturable() {
-      return facturable;
-   }
-   public void setFacturable(Integer facturable) {
-      this.facturable = facturable;
-   }
-   public Boolean getEstado() {
-      return estado;
-   }
-   public void setEstado(Boolean estado) {
-      this.estado = estado;
-   }
-
-   public Usoitems getIdusoitems_usoitems() {
-      return idusoitems_usoitems;
-   }
-   public void setIdusoitems_usoitems(Usoitems idusoitems_usoitems) {
-      this.idusoitems_usoitems = idusoitems_usoitems;
-   }
-
-   public Rubros getIdrubro_rubros() {
-      return idrubro_rubros;
-   }
-   public void setIdrubro_rubros(Rubros idrubro_rubros) {
-      this.idrubro_rubros = idrubro_rubros;
-   }
-
-   public Long getUsucrea() {
-      return usucrea;
-   }
-   public void setUsucrea(Long usucrea) {
-      this.usucrea = usucrea;
-   }
-   public Date getFeccrea() {
-      return feccrea;
-   }
-   public void setFeccrea(Date feccrea) {
-      this.feccrea = feccrea;
-   }
-   public Long getUsumodi() {
-      return usumodi;
-   }
-   public void setUsumodi(Long usumodi) {
-      this.usumodi = usumodi;
-   }
-   public Date getFecmodi() {
-      return fecmodi;
-   }
-   public void setFecmodi(Date fecmodi) {
-      this.fecmodi = fecmodi;
-   }
-
-   
 }
