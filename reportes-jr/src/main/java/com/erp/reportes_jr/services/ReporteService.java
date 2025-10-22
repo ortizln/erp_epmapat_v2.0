@@ -17,102 +17,29 @@ import java.util.*;
 
 @Service
 public class ReporteService {
-@Autowired
-private ReportesR repo;
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    public Reportes guardarReporte(String nombre, String descripcion, MultipartFile jrxmlFile, MultipartFile jasperFile) throws Exception {
-        if (repo.existsByNombre(nombre)) {
-            throw new RuntimeException("Ya existe un reporte con ese nombre");
-        }
-        Reportes reporte = new Reportes();
-        reporte.setNombre(nombre);
-        reporte.setDescripcion(descripcion);
-        reporte.setArchivoJrxml(jrxmlFile.getBytes());
-        reporte.setArchivoJasper(jasperFile.getBytes());
-        // Extraer parámetros del Jasper compilado
-        try (ByteArrayInputStream jasperStream = new ByteArrayInputStream(jasperFile.getBytes())) {
-            JasperReport jasperReport = (JasperReport) JRLoader.loadObject(jasperStream);
-            List<Map<String, Object>> parametros = new ArrayList<>();
-            for (JRParameter p : jasperReport.getParameters()) {
-                if (!p.isSystemDefined()) {
-                    Map<String, Object> param = new HashMap<>();
-                    param.put("nombre", p.getName());
-                    param.put("tipo", p.getValueClassName());
-                    parametros.add(param);
-                }
-            }
-            reporte.setParametros(new ObjectMapper().writeValueAsString(parametros));
+    @Autowired
+    private ReportesR repo;
+    public Reportes guardar(Reportes reporte) {
+        if (repo.existsByNombre(reporte.getNombre())) {
+            throw new RuntimeException("Ya existe un reporte con el nombre: " + reporte.getNombre());
         }
         return repo.save(reporte);
     }
 
-    public List<Reportes> listarReportes() {
+    public List<Reportes> listarTodos() {
         return repo.findAll();
     }
 
-    public Optional<Reportes> obtenerPorId(Long id) {
+    public Optional<Reportes> buscarPorId(Long id) {
         return repo.findById(id);
     }
+    public Reportes findByNombre(String nombre) {
+        return repo.findByNombre(nombre);
+    }
 
-    public void eliminarReporte(Long id) {
+
+    public void eliminar(Long id) {
         repo.deleteById(id);
-    }
-    public byte[] descargarArchivo(Long id, String tipo) throws Exception {
-        Reportes reporte = repo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Reporte no encontrado"));
-
-        if ("jrxml".equalsIgnoreCase(tipo)) {
-            return reporte.getArchivoJrxml();
-        } else if ("jasper".equalsIgnoreCase(tipo)) {
-            return reporte.getArchivoJasper();
-        } else {
-            throw new IllegalArgumentException("Tipo de archivo no válido: " + tipo);
-        }
-    }
-    @Transactional
-    public Reportes actualizarReporte(Long id,
-                                      String nombre,
-                                      String descripcion,
-                                      MultipartFile jrxmlFile,
-                                      MultipartFile jasperFile) throws Exception {
-        Reportes reporte = repo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Reporte no encontrado"));
-
-        // Actualizamos nombre y descripción si llegan
-        if (nombre != null && !nombre.isEmpty()) {
-            reporte.setNombre(nombre);
-        }
-        if (descripcion != null && !descripcion.isEmpty()) {
-            reporte.setDescripcion(descripcion);
-        }
-
-        // Si subieron un nuevo JRXML, reemplazar
-        if (jrxmlFile != null && !jrxmlFile.isEmpty()) {
-            reporte.setArchivoJrxml(jrxmlFile.getBytes());
-        }
-
-        // Si subieron un nuevo JASPER, reemplazar y recalcular parámetros
-        if (jasperFile != null && !jasperFile.isEmpty()) {
-            reporte.setArchivoJasper(jasperFile.getBytes());
-
-            // Extraer parámetros dinámicamente
-            InputStream jasperStream = new ByteArrayInputStream(jasperFile.getBytes());
-            JasperReport jasperReport = (JasperReport) JRLoader.loadObject(jasperStream);
-
-            List<Map<String, Object>> parametros = new ArrayList<>();
-            for (JRParameter p : jasperReport.getParameters()) {
-                if (!p.isSystemDefined()) {
-                    Map<String, Object> param = new HashMap<>();
-                    param.put("nombre", p.getName());
-                    param.put("tipo", p.getValueClassName());
-                    parametros.add(param);
-                }
-            }
-            reporte.setParametros(new ObjectMapper().writeValueAsString(parametros));
-        }
-
-        return repo.save(reporte);
     }
 
 }
