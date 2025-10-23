@@ -14,6 +14,8 @@ import com.vladmihalcea.hibernate.type.json.JsonType;
 @Table(name = "reportes")
 @Getter
 @Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class Reportes {
 

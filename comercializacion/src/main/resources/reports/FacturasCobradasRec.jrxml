@@ -80,6 +80,7 @@ WHERE
 		<parameter name="hasta" class="java.util.Date"/>
 		<parameter name="hdesde" class="java.sql.Time"/>
 		<parameter name="hhasta" class="java.sql.Time"/>
+		<parameter name="usuariocobro" class="java.lang.Integer"/>
 		<queryString>
 			<![CDATA[WITH facturas_validas AS (
     SELECT DISTINCT f.idfactura, f.swiva
@@ -87,6 +88,7 @@ WHERE
     WHERE f.fechacobro BETWEEN $P{desde} AND $P{hasta}
       AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
       AND f.estado <> 3 
+      AND f.usuariocobro = $P{usuariocobro} 
       AND f.fechaeliminacion IS NULL 
       AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde})
 )
@@ -112,9 +114,10 @@ JOIN Facturas f ON f.idfactura = rf.idfactura_facturas
 JOIN Rubros r ON r.idrubro = rf.idrubro_rubros 
 
 WHERE 
-    f.fechacobro BETWEEN $P{desde} AND $P{hasta}
+    f.fechacobro  BETWEEN $P{desde} AND $P{hasta}
     AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
     AND f.estado <> 3 
+    AND f.usuariocobro = $P{usuariocobro} 
     AND f.fechaeliminacion IS NULL 
     AND (f.fechaanulacion IS NULL OR f.fechaanulacion <= $P{desde});]]>
 		</queryString>
@@ -139,6 +142,7 @@ WHERE
 	<parameter name="idusuario" class="java.lang.Integer"/>
 	<parameter name="hdesde" class="java.sql.Time"/>
 	<parameter name="hhasta" class="java.sql.Time"/>
+	<parameter name="usuariocobro" class="java.lang.Integer"/>
 	<queryString language="SQL">
 		<![CDATA[WITH recaudo_unico AS (
     SELECT DISTINCT ON (fr.idfactura)
@@ -171,6 +175,7 @@ FROM
 WHERE
     f.fechacobro BETWEEN $P{desde} AND $P{hasta}
     AND f.horacobro BETWEEN $P{hdesde} AND $P{hhasta}
+   AND f.usuariocobro = $P{usuariocobro}
     AND rf.idrubro_rubros NOT IN (5, 165)
 GROUP BY
     f.idfactura,
@@ -262,10 +267,10 @@ ORDER BY
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="15" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA["FACTURAS COBRADAS GENERAL "]]></textFieldExpression>
+				<textFieldExpression><![CDATA["FACTURAS COBRADAS - INDIVIDUAL "]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="2" y="140" width="550" height="21" uuid="aa724cf0-0eeb-40ad-a524-e8aff061a486"/>
+				<reportElement x="2" y="140" width="550" height="21" uuid="6fc6d20a-dca2-43f8-ba31-1cedf7532e27"/>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8" isBold="true"/>
 				</textElement>
@@ -281,7 +286,7 @@ ORDER BY
 		<band splitType="Stretch"/>
 	</pageHeader>
 	<columnHeader>
-		<band height="17" splitType="Stretch">
+		<band height="15" splitType="Stretch">
 			<staticText>
 				<reportElement x="0" y="0" width="50" height="15" uuid="1cd218a8-de9d-4366-9f64-39adb295ed2b">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="84e66144-3d47-41a2-bf62-b120ed8e0caa"/>
@@ -295,7 +300,7 @@ ORDER BY
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[PLANILLA]]></text>
 			</staticText>
@@ -311,7 +316,7 @@ ORDER BY
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[NOMBRE CLIENTE]]></text>
 			</staticText>
@@ -327,7 +332,7 @@ ORDER BY
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[NRO FACTURA]]></text>
 			</staticText>
@@ -343,12 +348,12 @@ ORDER BY
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[F. COBRO]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="350" y="0" width="60" height="15" uuid="816b7491-350c-47d2-a267-11ba51b18b61">
+				<reportElement x="350" y="0" width="50" height="15" uuid="816b7491-350c-47d2-a267-11ba51b18b61">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b4c5147a-0c69-476a-912d-1b2fa36465c4"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -359,12 +364,12 @@ ORDER BY
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[FECHA C.]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="454" y="0" width="46" height="15" uuid="c130c71b-582e-44ca-bf26-69c33054ef92">
+				<reportElement x="444" y="0" width="46" height="15" uuid="c130c71b-582e-44ca-bf26-69c33054ef92">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dada4363-7412-4631-95f7-65bc2ccbffbc"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -375,12 +380,12 @@ ORDER BY
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[VALOR]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="500" y="0" width="55" height="15" uuid="d935b93d-7f80-48bd-b407-207d4e55d837">
+				<reportElement x="490" y="0" width="65" height="15" uuid="d935b93d-7f80-48bd-b407-207d4e55d837">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="42b34650-21f6-46b1-96c2-752a3a3b6824"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -391,12 +396,12 @@ ORDER BY
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[RECAUDADOR]]></text>
 			</staticText>
 			<staticText>
-				<reportElement x="410" y="0" width="44" height="15" uuid="86243e9e-8fb9-4212-838f-36238d3c828b">
+				<reportElement x="400" y="0" width="44" height="15" uuid="379c7a7c-91f2-4730-9ed4-c6892a28c8f6">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b4c5147a-0c69-476a-912d-1b2fa36465c4"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -407,14 +412,14 @@ ORDER BY
 					<rightPen lineWidth="1.0" lineStyle="Solid" lineColor="#000000"/>
 				</box>
 				<textElement textAlignment="Center" verticalAlignment="Middle">
-					<font isBold="true"/>
+					<font size="8" isBold="true"/>
 				</textElement>
 				<text><![CDATA[HORA C.]]></text>
 			</staticText>
 		</band>
 	</columnHeader>
 	<detail>
-		<band height="16" splitType="Stretch">
+		<band height="15" splitType="Stretch">
 			<textField>
 				<reportElement x="0" y="0" width="50" height="15" uuid="eb8fadd0-9ae3-434a-8499-60a43ad9c0ba">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="84e66144-3d47-41a2-bf62-b120ed8e0caa"/>
@@ -464,7 +469,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{nrofactura}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="295" y="0" width="55" height="15" uuid="f20c6347-fe6d-4643-be92-0c5fcd1f094e">
+				<reportElement style="Table_CH" x="295" y="0" width="55" height="15" backcolor="#FFFFFF" uuid="f20c6347-fe6d-4643-be92-0c5fcd1f094e">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="64b08e91-4131-464c-8d68-6db6c3be29c9"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -480,7 +485,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{formacobro}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="350" y="0" width="60" height="15" uuid="c403483e-b04b-4e40-b676-90d198c5888e">
+				<reportElement x="350" y="0" width="50" height="15" uuid="c403483e-b04b-4e40-b676-90d198c5888e">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b4c5147a-0c69-476a-912d-1b2fa36465c4"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -493,10 +498,10 @@ ORDER BY
 				<textElement textAlignment="Center" verticalAlignment="Middle">
 					<font size="8"/>
 				</textElement>
-				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd-MMMM-yyyy", new java.util.Locale("es", "EC")).format($F{fechacobro})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[new java.text.SimpleDateFormat("dd-MMMM", new java.util.Locale("es", "EC")).format($F{fechacobro})]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="454" y="0" width="46" height="15" uuid="76beb605-8405-49b3-8203-a2fecdd17fd1">
+				<reportElement x="444" y="0" width="46" height="15" uuid="76beb605-8405-49b3-8203-a2fecdd17fd1">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="dada4363-7412-4631-95f7-65bc2ccbffbc"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -512,7 +517,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[String.format("%.2f", $F{valor}.add($F{interescobrado}).add($F{swiva})) + " $"]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="500" y="0" width="55" height="15" uuid="dad0fb28-3b4e-4f09-8584-76c76fa3e744">
+				<reportElement x="490" y="0" width="65" height="15" uuid="dad0fb28-3b4e-4f09-8584-76c76fa3e744">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="42b34650-21f6-46b1-96c2-752a3a3b6824"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -528,7 +533,7 @@ ORDER BY
 				<textFieldExpression><![CDATA[$F{nomusu}]]></textFieldExpression>
 			</textField>
 			<textField>
-				<reportElement x="410" y="0" width="44" height="15" uuid="9b5c0f6d-6b52-4dc9-80f1-7117671e1cf0">
+				<reportElement x="400" y="0" width="44" height="15" uuid="aa700811-e071-422b-bc00-1f74fe2292e5">
 					<property name="com.jaspersoft.studio.spreadsheet.connectionID" value="b4c5147a-0c69-476a-912d-1b2fa36465c4"/>
 					<property name="com.jaspersoft.studio.unit.height" value="px"/>
 				</reportElement>
@@ -642,6 +647,50 @@ ORDER BY
 					</jr:column>
 				</jr:table>
 			</componentElement>
+			<componentElement>
+				<reportElement x="303" y="15" width="251" height="19" uuid="240243aa-3753-4895-9fb7-7ed90bc23ceb">
+					<property name="com.jaspersoft.studio.layout" value="com.jaspersoft.studio.editor.layout.VerticalRowLayout"/>
+					<property name="com.jaspersoft.studio.table.style.table_header" value="Table_TH"/>
+					<property name="com.jaspersoft.studio.table.style.column_header" value="Table_CH"/>
+					<property name="com.jaspersoft.studio.table.style.detail" value="Table_TD"/>
+				</reportElement>
+				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
+					<datasetRun subDataset="Usuario" uuid="564a64ab-902d-4ea6-939b-e4319250f20d">
+						<datasetParameter name="idusuario">
+							<datasetParameterExpression><![CDATA[$P{usuariocobro}]]></datasetParameterExpression>
+						</datasetParameter>
+						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
+					</datasetRun>
+					<jr:column width="90" uuid="4ce11a90-4fbb-420b-afd9-7b00a1c09a16">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column1"/>
+						<jr:detailCell style="Table_TD" height="15">
+							<staticText>
+								<reportElement x="0" y="0" width="90" height="15" uuid="89ba02cd-2c62-4fa6-b2ef-633878884f0e">
+									<property name="com.jaspersoft.studio.unit.width" value="pixel"/>
+								</reportElement>
+								<box leftPadding="5"/>
+								<textElement verticalAlignment="Middle">
+									<font size="8" isBold="true"/>
+								</textElement>
+								<text><![CDATA[Usuario Cobro]]></text>
+							</staticText>
+						</jr:detailCell>
+					</jr:column>
+					<jr:column width="150" uuid="fca9b6d9-d587-4d48-9251-e03d5b9580b5">
+						<property name="com.jaspersoft.studio.components.table.model.column.name" value="Column2"/>
+						<jr:detailCell style="Table_TD" height="15">
+							<textField>
+								<reportElement x="0" y="0" width="150" height="15" uuid="7eaf24cb-5453-4110-9c16-bbc37ac31cdf"/>
+								<box leftPadding="5" rightPadding="5"/>
+								<textElement verticalAlignment="Middle">
+									<font size="8"/>
+								</textElement>
+								<textFieldExpression><![CDATA[$F{nomusu}]]></textFieldExpression>
+							</textField>
+						</jr:detailCell>
+					</jr:column>
+				</jr:table>
+			</componentElement>
 		</band>
 	</pageFooter>
 	<summary>
@@ -683,7 +732,7 @@ ORDER BY
 					<property name="com.jaspersoft.studio.table.style.detail" value="Table 1_TD"/>
 				</reportElement>
 				<jr:table xmlns:jr="http://jasperreports.sourceforge.net/jasperreports/components" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports/components http://jasperreports.sourceforge.net/xsd/components.xsd">
-					<datasetRun subDataset="TotalesRubros" uuid="53eb55ce-233c-4c08-98c8-8d1948d3d287">
+					<datasetRun subDataset="TotalesRubros" uuid="a64338a8-ba20-4186-a903-7ae559d3d25d">
 						<datasetParameter name="desde">
 							<datasetParameterExpression><![CDATA[$P{desde}]]></datasetParameterExpression>
 						</datasetParameter>
@@ -695,6 +744,9 @@ ORDER BY
 						</datasetParameter>
 						<datasetParameter name="hhasta">
 							<datasetParameterExpression><![CDATA[$P{hhasta}]]></datasetParameterExpression>
+						</datasetParameter>
+						<datasetParameter name="usuariocobro">
+							<datasetParameterExpression><![CDATA[$P{usuariocobro}]]></datasetParameterExpression>
 						</datasetParameter>
 						<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
 					</datasetRun>
