@@ -10,9 +10,9 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class RecaudacionDTO {
     private BigDecimal totalpagar;
-    private BigDecimal recibo;
-    private BigDecimal cambio;
-    private Long formapago;
-    private BigDecimal valor;
+    private BigDecimal recibo; // no obligatorio
+    private BigDecimal cambio; // no obligatorio
+    private Long formapago; // 1 por defecto
+    private BigDecimal valor;//no obligatorio
 
 }

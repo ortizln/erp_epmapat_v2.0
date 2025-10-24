@@ -8,10 +8,8 @@ import com.erp.pagosonline.interfaces.LastConection_int;
 import com.erp.pagosonline.models.*;
 import com.erp.pagosonline.repositories.RubroxfacR;
 import com.erp.pagosonline.repositories.TmpinteresxfacR;
-import com.erp.pagosonline.services.CajasService;
-import com.erp.pagosonline.services.FacturasService;
-import com.erp.pagosonline.services.ImpuestoService;
-import com.erp.pagosonline.services.RecaudacionService;
+import com.erp.pagosonline.services.*;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,10 +19,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -42,6 +37,8 @@ public class FacturasApi {
     private ImpuestoService impuestoService;
     @Autowired
     private RubroxfacR rubroxfacR;
+    @Autowired
+    private FacxrecaudaService facxrecaudaService;
     @GetMapping("/sincobrar")
     public ResponseEntity<Object> getFacturasSinCobro(@RequestParam Long user,@RequestParam Long cuenta){
         Object datos = facturasService.findFacturasSinCobro(user, cuenta);
@@ -56,14 +53,18 @@ public class FacturasApi {
     }
 
     @PutMapping("/cobrar")
-    public ResponseEntity<Map<String, Object>> cobrarFactura(@RequestBody FacturaRequestDTO facturaRequest) {
+    public ResponseEntity<Map<String, Object>> cobrar_Factura(@RequestBody FacturaRequestDTO facturaRequest) {
         Map<String, Object> respuesta = new HashMap<>();
         LastConection_int lastConection = cajasService.getLastConectionByUduario(facturaRequest.getAutentification());
         //DECLARAR NUEVA RECAUDACION
         Recaudacion recaudacion = new Recaudacion();
         LocalDateTime date = LocalDateTime.now();
         LocalTime hora = LocalTime.now();
-        if(lastConection.getEstado() == 1){
+        if(lastConection == null){
+            respuesta.put("mensaje", "Caja cerrada no se puede cobrar");
+            return ResponseEntity.ok(respuesta);
+        }
+        if(lastConection.getEstado() == 1) {
             try {
                 // Imprimir las claves "facturas"
                 List<Long> facturas = facturaRequest.getFacturas();
@@ -74,14 +75,14 @@ public class FacturasApi {
                 recaudacion.setFechacobro(date);
                 recaudacion.setRecaudador(facturaRequest.getAutentification());
                 recaudacion.setTotalpagar(facturaRequest.getRecaudacion().getTotalpagar());
-                recaudacion.setValor(facturaRequest.getRecaudacion().getValor());
-                recaudacion.setFormapago(facturaRequest.getRecaudacion().getFormapago());
-                recaudacion.setRecibo(facturaRequest.getRecaudacion().getRecibo());
-                recaudacion.setCambio(facturaRequest.getRecaudacion().getCambio());
+                recaudacion.setValor(facturaRequest.getRecaudacion().getTotalpagar());
+                recaudacion.setFormapago(1L);
+                recaudacion.setRecibo(BigDecimal.valueOf(0));
+                recaudacion.setCambio(BigDecimal.valueOf(0));
                 recaudacion.setFeccrea(date);
                 recaudacion.setUsucrea(facturaRequest.getAutentification());
                 Recaudacion recaudacion_saved = recaudacionService.save(recaudacion);
-                if(recaudacion_saved != null) {
+                if (recaudacion_saved != null) {
                     // Aquí podrías agregar la lógica para cobrar cada factura
                     for (Long facturaId : facturas) {
                         Facturas _factura = facturasService.findFacturaById(facturaId).orElseThrow();
@@ -102,8 +103,8 @@ public class FacturasApi {
                                 Rubros rubro = new Rubros();
                                 Facturas factura = new Facturas();
                                 factura.setIdfactura(facturaId);
-                                Rubroxfac  rxf = new Rubroxfac();
-                                rubro.setIdrubro(6L);
+                                Rubroxfac rxf = new Rubroxfac();
+                                rubro.setIdrubro(5L);
                                 rxf.setIdfactura_facturas(factura);
                                 rxf.setCantidad(BigDecimal.ONE);
                                 rxf.setValorunitario(interesapagar);
@@ -120,7 +121,7 @@ public class FacturasApi {
                         }
                     }
                     respuesta.put("mensaje", "Facturas cobradas con éxito");
-                }else{
+                } else {
                     respuesta.put("mensaje", "No se puede cobrar porque la forma de cobro no existe");
                 }
                 return ResponseEntity.ok(respuesta);
@@ -128,7 +129,8 @@ public class FacturasApi {
                 respuesta.put("error", e.getMessage());
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(respuesta);
             }
-        }else{
+        }
+        else{
             respuesta.put("mensaje", "Caja cerrada no se puede cobrar");
             return ResponseEntity.ok(respuesta);
         }

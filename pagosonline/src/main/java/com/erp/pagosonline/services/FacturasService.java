@@ -102,7 +102,6 @@ public class FacturasService {
         }
 
         BigDecimal subtotal = calculateSubtotal(facturas);
-        //BigDecimal interes = calculateTotalInteres(facturas);
         List<Long> facturaIds = extractFacturaIds(facturas);
 
         return FacturaDTO.builder()
