@@ -39,8 +39,8 @@ spring:
           - Path=/abonados/**, /aboxsuspension/**, /aguatramite/**, /anulpagos/**, /airxrete/**, /cajas/**, /catalogoitems/**, /categorias/**,/ccertificaciones/**,/clasificador/**, /clientes/**, /condmultasintereses/**, /convenios/**, /ctramites/**, /cuotas/**, /emisiones/**, /emisionindividual/**, /estadom/**, /facturas/**, /facelectro/**, /facturacion/**, /facturamodificaciones/**, /facxconvenio/**, /facxnc/**, /facxrecauda/**, /facdetallesimpuestos/**, /facturadetalles/**, /facturapagos/**, /fec_factura/**, /fec_retenciones/**, /fec_reteimpu/**,  /formacobro/**, /ifinan/**, /impuestos/**, /intereses/**, /itemxfact/**, /jasperReports/**, /lecturas/**, /liquidafac/**, /liquidatramite/**, /modulos/**, /novedades/**, /ntacredito/**, /nacionalidades/**, /personeriajuridica/**, /pliego24/**, /pliego/**, /ptoemision/**, /recaudacion/**, /recaudaxcaja/**, /reclamos/**, /retenciones/**, /rubroadicional/**, /rubros/**, /rutas/**, /rutasxemision/**, /rubroxfac/**, /servicios1/**, /suspensiones/**, /tipopago/**, /tipotramite/**, /tmpinteresxfac/**, /tpcertifica/**, /tpidentifica/**, /tpreclamo/**, /tramites1/**, /tramitenuevo/**, /ubicacionm/**, /usoitems/**, /valoresnc/**
 
         - id: msvc-pagosonline
-          uri: http://msvc-pagosonline:9094
-          #uri: http://localhost:9094
+          uri: http://msvc-pagosonline:32
+          #uri: http://localhost:32
           predicates:
             - Path=/api/pagonline/facturas/**
 

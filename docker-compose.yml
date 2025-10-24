@@ -157,7 +157,7 @@ services:
     image: msvc-pagosonline:latest
     container_name: msvc-pagosonline
     ports:
-      - "9094:32"
+      - "32:32"
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
