@@ -25,7 +25,7 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.165:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=Epmapat2025
     healthcheck:
@@ -49,10 +49,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.165/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=Epmapat2025
-      - HOST=http://192.168.0.69
+      - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
@@ -77,10 +77,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.165:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=Epmapat2025
-      - HOST=http://192.168.0.69
+      - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
@@ -105,10 +105,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.165:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=Epmapat2025
-      - HOST=http://192.168.0.69
+      - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
@@ -133,10 +133,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.165:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=Epmapat2025
-      - HOST=http://192.168.0.69
+      - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
@@ -161,10 +161,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.165:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=Epmapat2025
-      - HOST=http://192.168.0.69
+      - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
@@ -189,10 +189,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.165:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=Epmapat2025
-      - HOST=http://192.168.0.69
+      - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
@@ -217,10 +217,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.69:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.165:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=Epmapat2025
-      - HOST=http://192.168.0.69
+      - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
