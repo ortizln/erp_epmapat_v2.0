@@ -41,7 +41,9 @@ app:
     # opcional:
     display-name: EPMAPA-T
     reply-to: facturacion@epmapatulcan.gob.ec
-
+interes:
+  tarea:
+    cron: 0 */1 * * * *
 sri:
   ambiente: 2 # 1=PRUEBAS, 2=PRODUCCIÓN
   polling:

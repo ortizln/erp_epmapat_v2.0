@@ -115,7 +115,8 @@ public class FacturasApi {
                             facxrecauda.setEstado(1L);
                             facxrecauda.setIdfactura(facCobrada);
                             facxrecauda.setIdrecaudacion(recaudacion_saved);
-                            respuesta.put("Facturas cobradas:", facturas);
+                            respuesta.put("status", "00");
+                            respuesta.put("message", "TRANSACCIÓN CON ÉXITO");
                         } else {
                             respuesta.put("Facturas no cobradas: ", _factura.getIdfactura());
                         }

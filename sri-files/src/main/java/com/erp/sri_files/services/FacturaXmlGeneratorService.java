@@ -6,15 +6,22 @@ import com.erp.sri_files.models.*;
 import com.erp.sri_files.models.TotalConImpuestos.TotalImpuesto;
 import com.erp.sri_files.repositories.DefinirR;
 import com.erp.sri_files.repositories.FacturaDetalleR;
+import com.erp.sri_files.repositories.FacturaR;
+import com.erp.sri_files.repositories.FacturasR;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.Marshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.awt.print.Pageable;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -25,6 +32,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.PageRequest;
 
 @Service
 public class FacturaXmlGeneratorService {
@@ -39,6 +47,30 @@ public class FacturaXmlGeneratorService {
     private static final DateTimeFormatter DD_MM_YYYY = DateTimeFormatter.ofPattern("dd/MM/yyyy");  // para XML
     @Autowired private DefinirR definirR;
     @Autowired private FacturaDetalleR fDetalleR;
+    @Autowired private FacturaR facturaR;
+
+    //@Transactional
+    //@Scheduled(cron = "${interes.tarea.cron}") // ej: 0 */5 * * * *
+    public void automatizacionEnvioFacturasElectonicas() {
+        System.out.println("⏰ Ejecutando envío de facturas : " + LocalDateTime.now());
+        try {
+            PageRequest limit = PageRequest.of(0, 5); // primera "página" de 5
+            Page<Factura> page = facturaR.findByEstado("I", limit);
+            List<Factura> facturas = page.getContent();
+
+            for (Factura f : facturas) {
+                System.out.println("Procesando factura ID: " + f.getIdfactura());
+                System.out.println("Clave acceso: " + f.getClaveacceso());
+                // Generar el xml, firmar y enviar al sri.
+                String xmlString = generarXmlFactura(f);
+            }
+            System.out.println("✅ Intereses actualizados correctamente");
+        } catch (Exception e) {
+            System.err.println("❌ Error en la tarea programada: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
     /* ==========================================================
      * API PRINCIPAL
      * ========================================================== */
