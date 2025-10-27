@@ -19,7 +19,7 @@ import com.erp.modelo.administracion.Ventanas;
 import com.erp.servicio.administracion.VentanaServicio;
 
 @RestController
-@RequestMapping("/ventanas")
+@RequestMapping("/com-ventanas")
 
 
 public class VentanasApi {

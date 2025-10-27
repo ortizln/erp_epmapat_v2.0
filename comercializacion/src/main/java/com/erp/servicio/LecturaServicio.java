@@ -9,6 +9,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 import com.erp.interfaces.*;
+import com.erp.modelo.administracion.Definir;
+import com.erp.repositorio.administracion.DefinirR;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +40,8 @@ public class LecturaServicio {
 	private FacturasR dao_facturas;
 	@Autowired
 	private RubroxfacR dao_rubroxfac;
+    @Autowired
+    private DefinirR dao_definir;
 
 	// Lectura por Planilla
 	public Lecturas findOnefactura(Long idfactura) {
@@ -197,7 +201,7 @@ public class LecturaServicio {
      * CUENTA, CATEGORIA, SWADULTOMAYOR, SWMUNICIPIO, L.ANTERIOR, L.ACTUAL, ESTADO,
      * IDFACTURA, m3
      */
-    private static final BigDecimal[] porcResidencial = {
+    static final BigDecimal[] porcResidencial = {
             BigDecimal.valueOf(0.777), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78),
             BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.778), BigDecimal.valueOf(0.778),
             BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.68),
@@ -283,7 +287,6 @@ public class LecturaServicio {
 
         return total.setScale(2, RoundingMode.HALF_UP);
     }
-
 
     /* AGUA POTABLE - versión optimizada */
     public BigDecimal aguaPotable(EmisionOfCuentaDTO valoresEmision) {
@@ -572,19 +575,18 @@ public class LecturaServicio {
         List<Long> idfacturas = dao_facturas.findSinCobroAbo(cuentas);
         long nroPendientes = idfacturas.size();
         BigDecimal multa = BigDecimal.ZERO;
-        if (nroPendientes == 3) {
+        /*if (nroPendientes == 3) {
             multa = BigDecimal.valueOf(2);
-        }
-        /*
-         * if (nroPendientes > 2) {
-         * Definir definir = dao_definir.findTopByOrderByIddefinirDesc(); // 👈 último
-         * registro
-         * if (definir != null) {
-         * BigDecimal rbu = definir.getRbu();
-         * multa = multa.add(rbu.multiply(BigDecimal.valueOf(0.01)));
-         * }
-         * }
-         */
+        }*/
+
+         if (nroPendientes > 2) {
+         Definir definir = dao_definir.findTopByOrderByIddefinirDesc();
+         if (definir != null) {
+         BigDecimal rbu = definir.getRbu();
+         multa = multa.add(rbu.multiply(BigDecimal.valueOf(0.005)));
+         }
+         }
+
 
         return multa;
     }
@@ -624,7 +626,4 @@ public class LecturaServicio {
 
         return emiI; // devolvemos la lista ya procesada
     }
-
-
-
 }

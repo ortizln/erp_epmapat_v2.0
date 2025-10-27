@@ -3,6 +3,7 @@ package com.erp.servicio.administracion;
 import java.io.IOException;
 import java.util.Optional;
 
+import com.erp.interfaces.DefinirProjection;
 import jakarta.persistence.EntityNotFoundException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,5 +75,8 @@ public class DefinirServicio {
     public String encriptar(String clave) throws Exception {
         String claveCifrada = AESUtil.cifrar(clave);
         return claveCifrada;
+    }
+    public DefinirProjection findDefinirWithoutFirma(Long iddefinir){
+        return dao.findDefinirWithoutFirma(iddefinir);
     }
 }

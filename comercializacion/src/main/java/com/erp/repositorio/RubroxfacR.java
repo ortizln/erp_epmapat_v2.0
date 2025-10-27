@@ -8,6 +8,7 @@ import java.util.Map;
 
 import com.erp.interfaces.EmisionesInterface;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -272,4 +273,9 @@ public interface RubroxfacR extends JpaRepository<Rubroxfac, Long> {
 			""", nativeQuery = true)
     List<EmisionesInterface> GetCuentasCeros(Long idemision);
 
+
+    // borra los rubros que recalculas para esa factura (evita findOne por cada rubro)
+    @Modifying
+    @Query("delete from Rubroxfac r where r.idfactura_facturas.idfactura = :id and r.idrubro_rubros.idrubro in :rubros")
+    void deleteRubrosFactura(@Param("id") Long idfactura, @Param("rubros") List<Long> rubros);
 }

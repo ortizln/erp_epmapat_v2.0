@@ -44,4 +44,12 @@ public class Definir {
     private String ubidigi;
     private String ubimagenes;
     private String swpreingsin;
+    @Lob
+    @Basic(fetch = FetchType.LAZY)
+    @Column(name = "firma")
+    private byte[] firma;
+    private String clave_firma;
+    private String email;
+    private String clave_email;
+    private BigDecimal rbu;
 }

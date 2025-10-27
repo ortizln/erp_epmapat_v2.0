@@ -3,9 +3,11 @@ package com.erp.controlador;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import com.erp.interfaces.*;
+import com.erp.servicio.EmisionLoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -26,12 +28,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 @RequestMapping("/lecturas")
-
-
 public class LecturasApi {
 
 	@Autowired
 	LecturaServicio lecServicio;
+    // Por ejemplo, desde un endpoint o tarea programada
+    @Autowired
+    EmisionLoteService emisionLoteService;
 
 	// Busca por Planilla (Es una a una)
 	@GetMapping("/onePlanilla/{idfactura}")
@@ -242,5 +245,12 @@ public class LecturasApi {
     @GetMapping("/swalcantarillado")
     public List<EmisionesInterface> getSWalcatarillados(@RequestParam Long idemision) {
         return lecServicio.getSWalcatarillados(idemision);
+    }
+
+    @GetMapping("/emision/recalcular")
+    public ResponseEntity<?> recalcular(@RequestParam Long idemision) {
+        emisionLoteService.recalcularEmision(idemision);
+        System.out.println("Recalculando ");
+        return ResponseEntity.ok(Map.of("status","OK"));
     }
 }

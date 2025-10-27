@@ -2,11 +2,15 @@ package com.erp.repositorio;
 
 import java.util.List;
 
+import com.erp.interfaces.EmisionesInterface;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import com.erp.interfaces.ResEmisiones;
 import com.erp.modelo.Emisiones;
+import org.springframework.data.repository.query.Param;
 
 public interface EmisionesR extends JpaRepository<Emisiones, Long> {
 
@@ -64,4 +68,42 @@ public interface EmisionesR extends JpaRepository<Emisiones, Long> {
 						""", nativeQuery = true)
 	public List<ResEmisiones> ResumenEmisiones(Long limit);
 
+    // Ajusta el SELECT a tu proyección EmisionesInterface
+    @Query(
+            value = """
+      SELECT
+        l.idabonado_abonados AS cuenta,
+        f.idfactura          AS idfactura,
+        sum(l.lecturaactual-l.lecturaanterior) AS m3,
+        l.idcategoria        AS categoria,
+        coalesce(a.municipio, false)          AS swMunicipio,
+        coalesce(a.adultomayor, false)       AS swAdultoMayor,
+        coalesce( a.swalcantarillado, false)        AS swAguapotable
+      FROM emisiones e
+      JOIN lecturas  l ON l.idemision = e.idemision
+      JOIN facturas  f ON f.idfactura = l.idfactura
+      JOIN abonados  a ON a.idabonado = l.idabonado_abonados
+      WHERE e.idemision = :idemision
+      group by l.idabonado_abonados, f.idfactura, l.idcategoria, a.municipio, a.adultomayor, a.swalcantarillado
+      ORDER BY f.idfactura
+      """,
+            countQuery = """
+      SELECT COUNT(*)
+      FROM emisiones e
+      JOIN lecturas  l ON l.idemision = e.idemision
+      JOIN facturas  f ON f.idfactura = l.idfactura
+      JOIN abonados  a ON a.idabonado = l.idabonado_abonados
+      WHERE e.idemision = :idemision
+      GROUP BY
+        l.idabonado_abonados,
+        f.idfactura,
+        l.idcategoria,
+        a.municipio,
+        a.adultomayor,
+        a.swalcantarillado
+      """,
+            nativeQuery = true
+    )
+    Page<EmisionesInterface> getSWalcatarilladosPaginado(@Param("idemision") Long idemision,
+                                                         Pageable pageable);
 }
