@@ -18,10 +18,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -177,76 +174,98 @@ public class EmisionLoteService {
     // ================== Motor de cálculo ==================
 
     private CalculoDetalle calcular(EmisionOfCuentaDTO dto, BigDecimal multa) {
-        // % residencial si cat 1 o 9 (por m3)
-        if(dto.getM3() < 0){
-            dto.setM3(0);
+        System.out.println("Calculando: " + dto.getCuenta());
+
+        // ---- Validaciones base ----
+        if (dto == null) {
+            throw new IllegalArgumentException("DTO de emisión no puede ser null");
         }
-        System.out.println("Calculando: " + dto.getCuenta() );
+        if (dto.getM3() <= 0) {
+            throw new IllegalArgumentException("Los m3 deben ser mayores a cero. Cuenta: " + dto.getCuenta());
+        }
+        if (dto.getPliego24() == null) {
+            throw new IllegalStateException(
+                    "No existe Pliego24 vigente para la cuenta " + dto.getCuenta() +
+                            " (cat=" + dto.getCategoria() + ", m3=" + dto.getM3() + ")."
+            );
+        }
+        // Normaliza multa nula
+        if (multa == null) {
+            multa = BigDecimal.ZERO;
+        }
+
+        // ---- Accesos seguros a Pliego ----
+        var pliego = dto.getPliego24();
+        Objects.requireNonNull(pliego.getPorc(),         "Pliego24.porc requerido");
+        Objects.requireNonNull(pliego.getAgua(),         "Pliego24.agua requerido");
+        Objects.requireNonNull(pliego.getSaneamiento(),  "Pliego24.saneamiento requerido");
+
+        // ---- % residencial si cat 1 o 9 (por m3) ----
         BigDecimal porcCatRes = null;
         if (dto.getCategoria() == 1 || dto.getCategoria() == 9) {
             int idx = Math.min(dto.getM3(), PORC_RESIDENCIAL.length - 1);
             porcCatRes = PORC_RESIDENCIAL[idx];
         }
-        BigDecimal porc = (porcCatRes != null) ? porcCatRes : dto.getPliego24().getPorc();
+        BigDecimal porc = (porcCatRes != null) ? porcCatRes : pliego.getPorc();
 
-        // Agua potable
+        // ---- Agua potable ----
         BigDecimal apFijo = dto.getCategorias().getFijoagua()
                 .subtract(TarifasConst.TEN_CENTS, TarifasConst.MC)
                 .multiply(porc, TarifasConst.MC);
 
         BigDecimal apVar = BigDecimal.valueOf(dto.getM3())
-                .multiply(dto.getPliego24().getAgua(), TarifasConst.MC)
-                .multiply(dto.getPliego24().getPorc(), TarifasConst.MC);
+                .multiply(pliego.getAgua(), TarifasConst.MC)
+                .multiply(pliego.getPorc(), TarifasConst.MC);
 
         BigDecimal ap = apFijo.add(apVar, TarifasConst.MC);
         if (dto.getCategoria() == 4 && dto.isSwMunicipio()) ap = ap.multiply(TarifasConst.HALF, TarifasConst.MC);
-        if (dto.getCategoria() == 9) ap = ap.multiply(TarifasConst.HALF, TarifasConst.MC);
+        if (dto.getCategoria() == 9)                         ap = ap.multiply(TarifasConst.HALF, TarifasConst.MC);
 
-        // Alcantarillado (si NO es swAguapotable)
+        // ---- Alcantarillado (si NO es swAguapotable) ----
         BigDecimal alc = BigDecimal.ZERO;
         if (!dto.isSwAguapotable()) {
             BigDecimal fijo = dto.getCategorias().getFijosanea()
                     .subtract(TarifasConst.FIFTY_CENTS, TarifasConst.MC)
-                    .multiply(dto.getPliego24().getPorc(), TarifasConst.MC);
+                    .multiply(pliego.getPorc(), TarifasConst.MC);
 
             BigDecimal variable = BigDecimal.valueOf(dto.getM3())
-                    .multiply(dto.getPliego24().getSaneamiento().multiply(TarifasConst.HALF, TarifasConst.MC), TarifasConst.MC)
-                    .multiply(dto.getPliego24().getPorc(), TarifasConst.MC);
+                    .multiply(pliego.getSaneamiento().multiply(TarifasConst.HALF, TarifasConst.MC), TarifasConst.MC)
+                    .multiply(pliego.getPorc(), TarifasConst.MC);
 
             alc = fijo.add(variable, TarifasConst.MC);
             if (dto.getCategoria() == 4 && dto.isSwMunicipio()) alc = alc.multiply(TarifasConst.HALF, TarifasConst.MC);
-            if (dto.getCategoria() == 9) alc = alc.multiply(TarifasConst.HALF, TarifasConst.MC);
+            if (dto.getCategoria() == 9)                         alc = alc.multiply(TarifasConst.HALF, TarifasConst.MC);
 
             // Hidrosuccionador (0.50 * porc) se suma al final de alcantarillado
-            alc = alc.add(TarifasConst.FIFTY_CENTS.multiply(dto.getPliego24().getPorc(), TarifasConst.MC), TarifasConst.MC);
+            alc = alc.add(TarifasConst.FIFTY_CENTS.multiply(pliego.getPorc(), TarifasConst.MC), TarifasConst.MC);
         }
 
-        // Saneamiento (si NO es swAguapotable)
+        // ---- Saneamiento (si NO es swAguapotable) ----
         BigDecimal san = BigDecimal.ZERO;
         if (!dto.isSwAguapotable()) {
             san = BigDecimal.valueOf(dto.getM3())
-                    .multiply(dto.getPliego24().getSaneamiento().multiply(TarifasConst.HALF, TarifasConst.MC), TarifasConst.MC)
-                    .multiply(dto.getPliego24().getPorc(), TarifasConst.MC);
+                    .multiply(pliego.getSaneamiento().multiply(TarifasConst.HALF, TarifasConst.MC), TarifasConst.MC)
+                    .multiply(pliego.getPorc(), TarifasConst.MC);
             if (dto.getCategoria() == 4 && dto.isSwMunicipio()) san = san.multiply(TarifasConst.HALF, TarifasConst.MC);
-            if (dto.getCategoria() == 9) san = san.multiply(TarifasConst.HALF, TarifasConst.MC);
+            if (dto.getCategoria() == 9)                         san = san.multiply(TarifasConst.HALF, TarifasConst.MC);
         }
 
-        // Conservación de fuentes (0.10)
+        // ---- Conservación de fuentes (0.10) ----
         BigDecimal cf = new BigDecimal("0.10");
 
-        // Excedente (solo cat 9 + adulto mayor + 34 < m3 ≤ 70)
+        // ---- Excedente (solo cat 9 + adulto mayor + 34 < m3 ≤ 70) ----
         BigDecimal exc = BigDecimal.ZERO;
         if (dto.getCategoria() == 9 && dto.isSwAdultoMayor() && dto.getM3() > 34 && dto.getM3() <= 70) {
             exc = calcularExcedente(dto);
         }
 
+        // ---- Total y redondeos finales ----
         BigDecimal total = ap.add(alc, TarifasConst.MC)
                 .add(san, TarifasConst.MC)
                 .add(cf, TarifasConst.MC)
                 .add(exc, TarifasConst.MC)
                 .add(multa, TarifasConst.MC);
 
-        // Redondear solo al final
         return new CalculoDetalle(
                 ap.setScale(TarifasConst.SCALE_MONEY, RoundingMode.HALF_UP),
                 alc.setScale(TarifasConst.SCALE_MONEY, RoundingMode.HALF_UP),
@@ -257,7 +276,6 @@ public class EmisionLoteService {
                 total.setScale(TarifasConst.SCALE_MONEY, RoundingMode.HALF_UP)
         );
     }
-
     private BigDecimal calcularExcedente(EmisionOfCuentaDTO base) {
         System.out.println("Calculando exedentes ");
         EmisionOfCuentaDTO dto1 = cloneForExcedente(base, base.getM3());
