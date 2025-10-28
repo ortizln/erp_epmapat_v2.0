@@ -41,8 +41,7 @@ public class InteresesApi {
 
 	@Autowired
 	private InteresServicio inteServicio;
-    @Autowired
-    private TmpinteresxfacService tmpService;
+
     @Autowired
     private InteresBatchService batchService;
 

@@ -1,7 +1,6 @@
 package com.erp.interfaces;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public interface Fecfactura {
     Long getIdfactura();
