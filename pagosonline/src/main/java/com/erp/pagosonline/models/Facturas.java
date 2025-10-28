@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -54,4 +55,7 @@ public class Facturas {
     private BigDecimal interescobrado;
     private BigDecimal swiva;
     private Boolean swcondonar;
+    private BigDecimal valornotacredito;
+    private String secuencialfacilito;
+    private Timestamp fechacompensacion;
 }

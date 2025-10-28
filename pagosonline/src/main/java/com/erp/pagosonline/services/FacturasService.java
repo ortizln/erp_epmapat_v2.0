@@ -16,8 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -42,7 +41,7 @@ public class FacturasService {
     public FacturasService(FacturasR dao) {
         this.dao = dao;
     }
-    @Value("${eureka.service-url}")
+    @Value("${host}")
     private String eurekaServiceUrl;
     public Object findFacturasSinCobro(Long user, Long cuenta) {
         validateInput(user, cuenta);
@@ -57,6 +56,10 @@ public class FacturasService {
             return respuesta.put("mensaje", "Caja no iniciada");
         }
 
+    }
+    public List<Long> getListaPlanillas(Long cuenta){
+        System.out.println("Obteniendo lista de facturasId ");
+        return dao.findPlanillas(cuenta);
     }
 
     private void validateInput(Long user, Long cuenta) {
@@ -109,8 +112,8 @@ public class FacturasService {
                 .responsablepago(facturas.get(0).getNombre())
                 .total(subtotal.add(interes))
                 .facturas(facturaIds)
-                .interes(interes)
-                .subtotal(subtotal)
+                .cedula(facturas.get(0).getCedula())
+                .direccion(facturas.get(0).getDireccion())
                 .build();
     }
 
@@ -142,7 +145,7 @@ public class FacturasService {
     @Autowired
     private RestTemplate restTemplate;
 
-    public <S extends Facturas> Facturas cobrarFactura(S factura){
+    public <S extends Facturas> Facturas __cobrarFactura(S factura){
         if(factura.getNrofactura() == null){
             NroFactura_int _nroFactura = cajasR.buildNroFactura(factura.getUsuariocobro());
             String secuencial = fSecuencial(_nroFactura.getSecuencial());
@@ -176,6 +179,46 @@ public class FacturasService {
 
         return savedFactura;
     }
+    public <S extends Facturas> Facturas cobrarFactura(S factura) {
+        if (factura.getNrofactura() == null) {
+            NroFactura_int _nroFactura = cajasR.buildNroFactura(factura.getUsuariocobro());
+            String secuencial = fSecuencial(_nroFactura.getSecuencial());
+            String puntoEmision = fPemiCaja(_nroFactura.getEstablecimiento());
+            String codigo = fPemiCaja(_nroFactura.getCodigo());
+            String nrofactura = puntoEmision + '-' + codigo + '-' + secuencial;
+            rxc_service.updateLastfactFinFac(factura.getUsuariocobro(), Long.valueOf(secuencial));
+            factura.setNrofactura(nrofactura);
+        }
+
+        // Guardamos la factura primero
+        Facturas savedFactura = dao.save(factura);
+
+        // Llamada opcional al microservicio (sin detener flujo)
+        try {
+            String url = eurekaServiceUrl + ":8080/fec_factura/createFacElectro?idfactura=" + savedFactura.getIdfactura();
+            // Intentar consumir el microservicio
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+
+            if (response.getStatusCode().is2xxSuccessful()) {
+                System.out.println("✅ Factura electrónica creada correctamente en el microservicio: " + response.getBody());
+            } else {
+                System.out.println("⚠️ Microservicio respondió con estado: " + response.getStatusCode());
+            }
+
+        } catch (ResourceAccessException e) {
+            // Error de conexión (microservicio no disponible)
+            System.out.println("⚠️ No se pudo conectar con el microservicio fec_factura. Continuando proceso localmente...");
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            // Errores HTTP (404, 500, etc.)
+            System.out.println("⚠️ El microservicio devolvió error HTTP: " + e.getStatusCode());
+        } catch (Exception e) {
+            // Cualquier otro error inesperado
+            System.out.println("⚠️ Ocurrió un problema al intentar emitir factura electrónica: " + e.getMessage());
+        }
+
+        return savedFactura;
+    }
+
 
     public <S extends Facturas> Facturas _cobrarFactura(S factura){
         if(factura.getNrofactura() == null){

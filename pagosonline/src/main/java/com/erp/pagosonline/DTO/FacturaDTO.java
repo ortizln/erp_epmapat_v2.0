@@ -16,7 +16,7 @@ public class FacturaDTO {
     private BigDecimal total;
     private String responsablepago;
     private List<Long> facturas;
-    private BigDecimal interes;
-    private BigDecimal subtotal;
+    private String cedula;
+    private String direccion;
 
 }

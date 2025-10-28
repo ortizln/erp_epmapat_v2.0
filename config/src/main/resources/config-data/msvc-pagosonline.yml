@@ -1,8 +1,9 @@
 server:
-  port: 32
+  port: 9094
 spring:
   application:
     name: msvc-pagosonline
+host: ${HOST}
 eureka:
   instance:
     hostname: msvc-pagosonline  # El nombre del contenedor o el servicio en Docker Compose

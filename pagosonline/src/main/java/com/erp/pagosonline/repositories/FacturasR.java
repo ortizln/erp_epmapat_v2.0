@@ -14,68 +14,95 @@ import java.util.List;
 
 public interface FacturasR extends JpaRepository<Facturas, Long> {
     @Query(value = """
-            select
-                f.idfactura,
-                sum(rf.cantidad * rf.valorunitario) as subtotal,
-                f.formapago,
-                f.feccrea,
-                f.fechatransferencia,
-                c.nombre,
-                coalesce(ti.interesapagar, 0) as interes
-            from facturas f
-            join abonados a\s
-                on f.idabonado = a.idabonado
-            join clientes c\s
-                on a.idresponsable = c.idcliente
-            join rubroxfac rf\s
-                on f.idfactura = rf.idfactura_facturas
-            left join tmpinteresxfac ti\s
-                on ti.idfactura = f.idfactura
-            where
-                f.idabonado = ?1
-                and (((f.estado = 1 or f.estado = 2) and f.fechacobro is null)
-                     or f.estado = 3)
-                and f.fechaconvenio is null
-                and f.fechaeliminacion is null
-            group by
-                f.idfactura,
-                f.formapago,
-                f.feccrea,
-                f.fechatransferencia,
-                c.nombre,
-                ti.interesapagar
-            order by
-                f.idfactura;
-            """, nativeQuery = true)
+    select
+        f.idfactura,
+        CEIL(sum(rf.cantidad * rf.valorunitario) * 100) / 100 as subtotal,
+        f.formapago,
+        f.feccrea,
+        f.fechatransferencia,
+        c.nombre,
+        c.cedula,
+        a.direccionubicacion as direccion,
+        CEIL(coalesce(ti.interesapagar, 0) * 100) / 100 as interes
+    from facturas f
+    join abonados a
+        on f.idabonado = a.idabonado
+    join clientes c
+        on a.idresponsable = c.idcliente
+    join rubroxfac rf
+        on f.idfactura = rf.idfactura_facturas
+    left join tmpinteresxfac ti
+        on ti.idfactura = f.idfactura
+    where
+        f.idabonado = ?1
+        and (((f.estado = 1 or f.estado = 2) and f.fechacobro is null)
+             or f.estado = 3)
+        and f.fechaconvenio is null
+        and f.fechaeliminacion is null
+    group by
+        f.idfactura,
+        f.formapago,
+        f.feccrea,
+        f.fechatransferencia,
+        c.nombre,
+        c.cedula,
+        a.direccionubicacion,
+        ti.interesapagar
+    order by
+        f.idfactura;
+    """, nativeQuery = true)
     public List<FacturasSinCobroInter> findFacturasSinCobro(Long cuenta);
+    @Query(value = """
+    select
+        f.idfactura
+    from facturas f
+    where
+        f.idabonado = ?1
+        and (((f.estado = 1 or f.estado = 2) and f.fechacobro is null)
+             or f.estado = 3)
+        and f.fechaconvenio is null
+        and f.fechaeliminacion is null and f.totaltarifa > 0
+    order by
+        f.idfactura;
+    """, nativeQuery = true)
+    List<Long> findPlanillas(Long cuenta);
 
     @Query(value = """
-            select
-            	count (rf.idrubro_rubros) as nrubros,
-            	sum(rf.cantidad * rf.valorunitario) valortotal,
-            	f.idfactura as planilla,
-            	f.nrofactura,
-            	f.secuencialfacilito,
-            	f.fechacobro ,
-            	f.horacobro,\s
-            	u.nomusu as usuario, 
-            	c.nombre
-            from
-            	facturas f
-            join rubroxfac rf on
-            	f.idfactura = rf.idfactura_facturas
-            join usuarios u on\s
-            	f.usuariocobro = u.idusuario
-            join clientes c on 
-                f.idcliente = c.idcliente
-            where
-            	f.usuariocobro = ?1
-            	and f.fechacobro between ?2 and ?3
-            	and f.horacobro between ?4 and ?5
-            group by
-            	f.idfactura,\s
-            	u.nomusu, c.nombre\s
-            """, nativeQuery = true)
-    public List<FacturasCobradas> getReporteFacturasCobradas(Long idusuario, LocalDate df, LocalDate hf, LocalTime dh, LocalTime hh);
+    select
+        CEIL(count(rf.idrubro_rubros) * 100) / 100 as nrubros,
+        CEIL(sum(rf.cantidad * rf.valorunitario) * 100) / 100 as valortotal,
+        f.idfactura as planilla,
+        f.nrofactura,
+        f.secuencialfacilito,
+        f.fechacobro,
+        f.horacobro,
+        u.nomusu as usuario,
+        c.nombre
+    from
+        facturas f
+    join rubroxfac rf
+        on f.idfactura = rf.idfactura_facturas
+    join usuarios u
+        on f.usuariocobro = u.idusuario
+    join clientes c
+        on f.idcliente = c.idcliente
+    where
+        f.usuariocobro = ?1
+        and f.fechacobro between ?2 and ?3
+        and f.horacobro between ?4 and ?5
+    group by
+        f.idfactura,
+        u.nomusu,
+        c.nombre
+    order by
+        f.idfactura
+    """, nativeQuery = true)
+    public List<FacturasCobradas> getReporteFacturasCobradas(
+            Long idusuario,
+            LocalDate df,
+            LocalDate hf,
+            LocalTime dh,
+            LocalTime hh);
+
 
 }

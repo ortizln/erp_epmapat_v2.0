@@ -10,5 +10,7 @@ public interface FacturasSinCobroInter {
     LocalDate getFeccrea();
     LocalDate getFechatransferencia();
     String getNombre();
+    String getCedula();
+    String getDireccion();
     BigDecimal getInteres();
 }

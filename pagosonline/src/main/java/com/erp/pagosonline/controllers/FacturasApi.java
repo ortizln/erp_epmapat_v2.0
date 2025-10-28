@@ -39,93 +39,88 @@ public class FacturasApi {
     @Autowired
     private RubroxfacR rubroxfacR;
 
+
+
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
-    public ResponseEntity<String> home() {
+    public ResponseEntity<String> _home() {
         StringBuilder html = new StringBuilder();
-        html.append("<html><head><title>📋 API FacturasController</title>");
+        html.append("<!doctype html><html lang='es'><head><meta charset='utf-8'>");
+        html.append("<title>📋 API Cobros Electrónicos</title>");
         html.append("<style>");
-        html.append("body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f7f9fb; padding: 20px; color: #333; }");
-        html.append("h1 { color: #2c3e50; }");
-        html.append(".endpoint { background: white; padding: 15px 20px; margin: 15px 0; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }");
-        html.append(".method { font-weight: bold; padding: 3px 8px; border-radius: 5px; color: white; }");
-        html.append(".GET { background: #27ae60; }");
-        html.append(".POST { background: #2980b9; }");
-        html.append(".PUT { background: #f39c12; }");
-        html.append("code { background: #eef; padding: 3px 5px; border-radius: 5px; }");
-        html.append("a { color: #3498db; text-decoration: none; }");
-        html.append("a:hover { text-decoration: underline; }");
-        html.append(".example { background: #f8f9fa; border-left: 4px solid #3498db; padding: 10px; font-size: 0.9em; border-radius: 5px; margin-top: 8px; }");
+        html.append("body{font-family:'Segoe UI',Arial,sans-serif;background:#f5f7fb;margin:0;padding:32px;color:#2c3e50}");
+        html.append("h1{margin:0 0 16px} .muted{color:#6b7280;font-size:14px}");
+        html.append(".grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;margin-top:16px}");
+        html.append(".card{background:#fff;border-radius:12px;padding:18px;box-shadow:0 6px 18px rgba(0,0,0,.06)}");
+        html.append(".method{font-weight:700;padding:2px 8px;border-radius:6px;color:#fff;margin-right:8px}");
+        html.append(".GET{background:#27ae60}.POST{background:#2980b9}.PUT{background:#f39c12}");
+        html.append("code{background:#eef;border-radius:6px;padding:2px 6px}");
+        html.append("pre{background:#0b1020;color:#e5e7eb;padding:12px;border-radius:10px;overflow:auto}");
+        html.append("a{color:#0ea5e9;text-decoration:none} a:hover{text-decoration:underline}");
+        html.append("table{width:100%;border-collapse:collapse;margin-top:8px} th,td{padding:6px 8px;border-bottom:1px solid #eef}");
+        html.append(".tag{display:inline-block;background:#eef;border-radius:999px;padding:2px 8px;margin:0 6px 6px 0;font-size:12px}");
         html.append("</style></head><body>");
 
-        html.append("<h1>📋 Endpoints disponibles en <i>FacturasController</i></h1>");
-        html.append("<p>Última actualización: ").append(LocalDateTime.now()).append("</p>");
+        html.append("<h1>📋 Endpoints de <i>pagos eletrónicos</i></h1>");
+        html.append("<div class='muted'>Última actualización: ").append(LocalDateTime.now()).append("</div>");
+        html.append("<div class='grid'>");
 
-        // --- Endpoint 1 ---
-        html.append("<div class='endpoint'>");
-        html.append("<span class='method GET'>GET</span> ");
-        html.append("<code>/facturas/sincobrar?user={idUsuario}&cuenta={idCuenta}</code>");
-        html.append("<p>Obtiene las facturas pendientes de cobro para un usuario y cuenta. Retorna <b>'Caja no iniciada'</b> si no hay sesión activa.</p>");
-        html.append("<p><b>Ejemplo:</b></p>");
-        html.append("<div class='example'>");
-        html.append("GET <a href='/facturas/sincobrar?user=1&cuenta=1001' target='_blank'>/facturas/sincobrar?user=1&cuenta=1001</a>");
-        html.append("</div>");
-        html.append("</div>");
+        // ---------- Endpoint: /facturas/sincobrar ----------
+        html.append("<section class='card'>");
+        html.append("<div><span class='method GET'>GET</span><code>/facturas/sincobrar?user={idUsuario}&cuenta={idCuenta}</code></div>");
+        html.append("<p>Obtiene las facturas pendientes de cobro para una <b>cuenta</b>, validando que la caja del <b>usuario</b> esté abierta.</p>");
+        html.append("<div><span class='tag'>Query</span> <code>user</code> (Long), <code>cuenta</code> (Long)</div>");
+        html.append("<h4>Respuesta</h4>");
+        html.append("<table><tr><th>HTTP</th><th>Body</th></tr>");
+        html.append("<tr><td>200</td><td><code>{...lista o detalle de facturas...}</code> o <code>{\"mensaje\":\"Caja no iniciada\"}</code></td></tr>");
+        html.append("</table>");
+        html.append("<h4>Ejemplo real</h4>");
+        html.append("<pre>{\n"
+                + "  \"cuenta\": 12,\n"
+                + "  \"total\": 10.8,\n"
+                + "  \"responsablepago\": \"DIAZ  GENNY CECILIA\",\n"
+                + "  \"facturas\": [2824638],\n"
+                + "  \"cedula\": \"0400801346\",\n"
+                + "  \"direccion\": \"CDLA. PADRE CARLOS DE LA 24\"\n"
+                + "}</pre>");
+        html.append("<h4>Ejemplo de request</h4>");
+        html.append("<pre>GET /facturas/sincobrar?user=10041&cuenta=12</pre>");
+        html.append("<h4>cURL</h4>");
+        html.append("<pre>curl -X GET \"http://localhost:8080/facturas/sincobrar?user=10041&cuenta=12\"</pre>");
+        html.append("</section>");
 
-        // --- Endpoint 2 ---
-        html.append("<div class='endpoint'>");
-        html.append("<span class='method PUT'>PUT</span> ");
-        html.append("<code>/facturas/cobrar</code>");
-        html.append("<p>Cobra una o varias facturas. Requiere un objeto <b>FacturaRequestDTO</b> con autenticación, recaudación y lista de facturas.</p>");
-        html.append("<p><b>Ejemplo de cuerpo JSON:</b></p>");
-        html.append("<div class='example'>");
-        html.append("{<br>");
-        html.append("&nbsp;&nbsp;\"autentification\": 1,<br>");
-        html.append("&nbsp;&nbsp;\"facturas\": [101, 102, 103],<br>");
-        html.append("&nbsp;&nbsp;\"recaudacion\": { \"totalpagar\": 45.50 }<br>");
-        html.append("}");
-        html.append("</div>");
-        html.append("<p>Consumo (cURL):</p>");
-        html.append("<div class='example'>");
-        html.append("curl -X PUT http://localhost:8080/facturas/cobrar -H \"Content-Type: application/json\" -d '{\"autentification\":1,\"facturas\":[101,102],\"recaudacion\":{\"totalpagar\":45.50}}'");
-        html.append("</div>");
-        html.append("</div>");
+        // ---------- Endpoint: /facturas/cobrar ----------
+        html.append("<section class='card'>");
+        html.append("<div><span class='method PUT'>PUT</span><code>/facturas/cobrar</code></div>");
+        html.append("<p>Cobra una o varias facturas asociadas a una cuenta. Crea la <b>Recaudación</b>, marca facturas como pagadas, registra interés si existe.</p>");
+        html.append("<div><span class='tag'>Body (JSON)</span></div>");
+        html.append("<pre>{\n  \"autentification\": 10041,\n  \"cuenta\": 1001,\n  \"secuencial\": \"ABC-001-0000123\",\n  \"fechacompensacion\": \"2025-10-28\",\n  \"recaudacion\": { \"totalpagar\": 45.50 }\n}</pre>");
+        html.append("<h4>Respuestas</h4>");
+        html.append("<table><tr><th>HTTP</th><th>Body</th></tr>");
+        html.append("<tr><td>200</td><td><code>{\"status\":\"00\",\"message\":\"TRANSACCIÓN CON ÉXITO\",\"mensaje\":\"Facturas cobradas con éxito\"}</code></td></tr>");
+        html.append("<tr><td>200</td><td><code>{\"mensaje\":\"Caja cerrada no se puede cobrar\"}</code></td></tr>");
+        html.append("<tr><td>400</td><td><code>{\"error\":\"&lt;detalle&gt;\"}</code></td></tr>");
+        html.append("</table>");
+        html.append("<h4>cURL</h4>");
+        html.append("<pre>curl -X PUT http://localhost:8080/facturas/cobrar \\\n -H \"Content-Type: application/json\" \\\n -d '{\n   \"autentification\":10041,\n   \"cuenta\":1001,\n   \"secuencial\":\"ABC-001-0000123\",\n   \"fechacompensacion\":\"2025-10-28\",\n   \"recaudacion\":{\"totalpagar\":45.50}\n }'</pre>");
+        html.append("</section>");
 
-        // --- Endpoint 3 ---
-        html.append("<div class='endpoint'>");
-        html.append("<span class='method POST'>POST</span> ");
-        html.append("<code>/facturas/reporte</code>");
-        html.append("<p>Genera un reporte de facturas cobradas en un rango de fechas. Requiere un cuerpo con <b>idusuario</b>, <b>df</b>, <b>hf</b>, <b>dh</b>, <b>hh</b>.</p>");
-        html.append("<p><b>Ejemplo de cuerpo JSON:</b></p>");
-        html.append("<div class='example'>");
-        html.append("{<br>");
-        html.append("&nbsp;&nbsp;\"idusuario\": 1,<br>");
-        html.append("&nbsp;&nbsp;\"df\": \"2025-10-01\",<br>");
-        html.append("&nbsp;&nbsp;\"hf\": \"2025-10-25\",<br>");
-        html.append("&nbsp;&nbsp;\"dh\": \"08:00:00\",<br>");
-        html.append("&nbsp;&nbsp;\"hh\": \"17:00:00\"<br>");
-        html.append("}");
-        html.append("</div>");
-        html.append("<p>Consumo (cURL):</p>");
-        html.append("<div class='example'>");
-        html.append("curl -X POST http://localhost:8080/facturas/reporte -H \"Content-Type: application/json\" -d '{\"idusuario\":1,\"df\":\"2025-10-01\",\"hf\":\"2025-10-25\",\"dh\":\"08:00:00\",\"hh\":\"17:00:00\"}'");
-        html.append("</div>");
-        html.append("</div>");
+        // ---------- Endpoint: /facturas/reporte ----------
+        html.append("<section class='card'>");
+        html.append("<div><span class='method POST'>POST</span><code>/facturas/reporte</code></div>");
+        html.append("<p>Genera reporte de facturas cobradas por usuario en un rango de fecha y hora.</p>");
+        html.append("<div><span class='tag'>Body (JSON)</span></div>");
+        html.append("<pre>{\n  \"idusuario\": 10041,\n  \"df\": \"2025-10-01\",\n  \"hf\": \"2025-10-25\",\n  \"dh\": \"08:00:00\",\n  \"hh\": \"17:00:00\"\n}</pre>");
+        html.append("<h4>Respuesta</h4>");
+        html.append("<p>Lista de objetos <code>FacturasCobradas</code> con campos como <code>nrubros</code>, <code>valortotal</code>, <code>planilla</code>, <code>usuario</code>, <code>nombre</code>, etc.</p>");
+        html.append("<h4>cURL</h4>");
+        html.append("<pre>curl -X POST http://localhost:8080/facturas/reporte \\\n -H \"Content-Type: application/json\" \\\n -d '{\n   \"idusuario\":10041,\n   \"df\":\"2025-10-01\",\n   \"hf\":\"2025-10-25\",\n   \"dh\":\"08:00:00\",\n   \"hh\":\"17:00:00\"\n }'</pre>");
+        html.append("</section>");
 
-        // --- Endpoint 4 ---
-        html.append("<div class='endpoint'>");
-        html.append("<span class='method GET'>GET</span> ");
-        html.append("<code>/facturas/reporteCobradas</code>");
-        html.append("<p>Retorna las facturas cobradas (pendiente de implementación).</p>");
-        html.append("<p><b>Ejemplo:</b></p>");
-        html.append("<div class='example'>");
-        html.append("GET <a href='/facturas/reporteCobradas' target='_blank'>/facturas/reporteCobradas</a>");
-        html.append("</div>");
-        html.append("</div>");
-
+        html.append("</div>"); // grid
+        html.append("<p class='muted' style='margin-top:24px'>Tip: usa la cabecera <code>Content-Type: application/json</code> en peticiones con cuerpo.</p>");
         html.append("</body></html>");
         return ResponseEntity.ok(html.toString());
     }
-
 
     @GetMapping("/sincobrar")
     public ResponseEntity<Object> getFacturasSinCobro(@RequestParam Long user,@RequestParam Long cuenta){
@@ -155,7 +150,9 @@ public class FacturasApi {
         if(lastConection.getEstado() == 1) {
             try {
                 // Imprimir las claves "facturas"
-                List<Long> facturas = facturaRequest.getFacturas();
+                //List<Long> facturas = facturaRequest.getFacturas();
+                List<Long> facturas = facturasService.getListaPlanillas(facturaRequest.getCuenta());
+                System.out.println("SIZE: "+facturas.size());
                 //Aqui voy a crear la lógica para crear una nueva recaudacion
                 Usuarios recuadador = new Usuarios();
                 recuadador.setIdusuario(facturaRequest.getAutentification());
@@ -186,6 +183,8 @@ public class FacturasApi {
                             _factura.setHoracobro(hora);
                             _factura.setUsuariocobro(facturaRequest.getAutentification());
                             _factura.setInterescobrado(interesapagar);
+                            _factura.setSecuencialfacilito(facturaRequest.getSecuencial());
+                            _factura.setFechacompensacion(facturaRequest.getFechacompensacion());
                             _factura.setSwiva(impuestoService.calcularIva(facturaId));
                             if (interesapagar.compareTo(BigDecimal.ZERO) > 0) {
                                 Rubros rubro = new Rubros();
@@ -234,8 +233,4 @@ public class FacturasApi {
         LocalTime hh = datos.getHh();
         return ResponseEntity.ok(facturasService.getReporteFacturasCobradas(idusuario,df,hf,dh, hh));
     }
-
-    @GetMapping("/reporteCobradas")
-    public ResponseEntity<List<FacturasCobradas>> getFacturasCobradas(){ return null;}
-
 }
