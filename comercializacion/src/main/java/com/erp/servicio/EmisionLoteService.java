@@ -180,7 +180,8 @@ public class EmisionLoteService {
         if (dto == null) {
             throw new IllegalArgumentException("DTO de emisión no puede ser null");
         }
-        if (dto.getM3() <= 0) {
+        if (dto.getM3() < 0) {
+            dto.setM3(0);
             throw new IllegalArgumentException("Los m3 deben ser mayores a cero. Cuenta: " + dto.getCuenta());
         }
         if (dto.getPliego24() == null) {
@@ -258,6 +259,7 @@ public class EmisionLoteService {
         if (dto.getCategoria() == 9 && dto.isSwAdultoMayor() && dto.getM3() > 34 && dto.getM3() <= 70) {
             exc = calcularExcedente(dto);
         }
+        System.out.println("Agua Potable: " + ap + " Alcantarillado: "+ alc +" Saneamiento: " + san);
 
         // ---- Total y redondeos finales ----
         BigDecimal total = ap.add(alc, TarifasConst.MC)
@@ -348,7 +350,7 @@ public class EmisionLoteService {
         }
 
         BigDecimal cf = new BigDecimal("0.10");
-System.out.println("Cuenta: "+dto.getCuenta()+" Valor: "+ap.add(alc, TarifasConst.MC).add(san, TarifasConst.MC).add(cf, TarifasConst.MC));
+        System.out.println("Cuenta: "+dto.getCuenta()+" Valor: "+ap.add(alc, TarifasConst.MC).add(san, TarifasConst.MC).add(cf, TarifasConst.MC));
         return ap.add(alc, TarifasConst.MC).add(san, TarifasConst.MC).add(cf, TarifasConst.MC);
     }
 }

@@ -12,6 +12,7 @@ import com.erp.pagosonline.services.*;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -37,8 +38,95 @@ public class FacturasApi {
     private ImpuestoService impuestoService;
     @Autowired
     private RubroxfacR rubroxfacR;
-    @Autowired
-    private FacxrecaudaService facxrecaudaService;
+
+    @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
+    public ResponseEntity<String> home() {
+        StringBuilder html = new StringBuilder();
+        html.append("<html><head><title>📋 API FacturasController</title>");
+        html.append("<style>");
+        html.append("body { font-family: 'Segoe UI', Arial, sans-serif; background-color: #f7f9fb; padding: 20px; color: #333; }");
+        html.append("h1 { color: #2c3e50; }");
+        html.append(".endpoint { background: white; padding: 15px 20px; margin: 15px 0; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }");
+        html.append(".method { font-weight: bold; padding: 3px 8px; border-radius: 5px; color: white; }");
+        html.append(".GET { background: #27ae60; }");
+        html.append(".POST { background: #2980b9; }");
+        html.append(".PUT { background: #f39c12; }");
+        html.append("code { background: #eef; padding: 3px 5px; border-radius: 5px; }");
+        html.append("a { color: #3498db; text-decoration: none; }");
+        html.append("a:hover { text-decoration: underline; }");
+        html.append(".example { background: #f8f9fa; border-left: 4px solid #3498db; padding: 10px; font-size: 0.9em; border-radius: 5px; margin-top: 8px; }");
+        html.append("</style></head><body>");
+
+        html.append("<h1>📋 Endpoints disponibles en <i>FacturasController</i></h1>");
+        html.append("<p>Última actualización: ").append(LocalDateTime.now()).append("</p>");
+
+        // --- Endpoint 1 ---
+        html.append("<div class='endpoint'>");
+        html.append("<span class='method GET'>GET</span> ");
+        html.append("<code>/facturas/sincobrar?user={idUsuario}&cuenta={idCuenta}</code>");
+        html.append("<p>Obtiene las facturas pendientes de cobro para un usuario y cuenta. Retorna <b>'Caja no iniciada'</b> si no hay sesión activa.</p>");
+        html.append("<p><b>Ejemplo:</b></p>");
+        html.append("<div class='example'>");
+        html.append("GET <a href='/facturas/sincobrar?user=1&cuenta=1001' target='_blank'>/facturas/sincobrar?user=1&cuenta=1001</a>");
+        html.append("</div>");
+        html.append("</div>");
+
+        // --- Endpoint 2 ---
+        html.append("<div class='endpoint'>");
+        html.append("<span class='method PUT'>PUT</span> ");
+        html.append("<code>/facturas/cobrar</code>");
+        html.append("<p>Cobra una o varias facturas. Requiere un objeto <b>FacturaRequestDTO</b> con autenticación, recaudación y lista de facturas.</p>");
+        html.append("<p><b>Ejemplo de cuerpo JSON:</b></p>");
+        html.append("<div class='example'>");
+        html.append("{<br>");
+        html.append("&nbsp;&nbsp;\"autentification\": 1,<br>");
+        html.append("&nbsp;&nbsp;\"facturas\": [101, 102, 103],<br>");
+        html.append("&nbsp;&nbsp;\"recaudacion\": { \"totalpagar\": 45.50 }<br>");
+        html.append("}");
+        html.append("</div>");
+        html.append("<p>Consumo (cURL):</p>");
+        html.append("<div class='example'>");
+        html.append("curl -X PUT http://localhost:8080/facturas/cobrar -H \"Content-Type: application/json\" -d '{\"autentification\":1,\"facturas\":[101,102],\"recaudacion\":{\"totalpagar\":45.50}}'");
+        html.append("</div>");
+        html.append("</div>");
+
+        // --- Endpoint 3 ---
+        html.append("<div class='endpoint'>");
+        html.append("<span class='method POST'>POST</span> ");
+        html.append("<code>/facturas/reporte</code>");
+        html.append("<p>Genera un reporte de facturas cobradas en un rango de fechas. Requiere un cuerpo con <b>idusuario</b>, <b>df</b>, <b>hf</b>, <b>dh</b>, <b>hh</b>.</p>");
+        html.append("<p><b>Ejemplo de cuerpo JSON:</b></p>");
+        html.append("<div class='example'>");
+        html.append("{<br>");
+        html.append("&nbsp;&nbsp;\"idusuario\": 1,<br>");
+        html.append("&nbsp;&nbsp;\"df\": \"2025-10-01\",<br>");
+        html.append("&nbsp;&nbsp;\"hf\": \"2025-10-25\",<br>");
+        html.append("&nbsp;&nbsp;\"dh\": \"08:00:00\",<br>");
+        html.append("&nbsp;&nbsp;\"hh\": \"17:00:00\"<br>");
+        html.append("}");
+        html.append("</div>");
+        html.append("<p>Consumo (cURL):</p>");
+        html.append("<div class='example'>");
+        html.append("curl -X POST http://localhost:8080/facturas/reporte -H \"Content-Type: application/json\" -d '{\"idusuario\":1,\"df\":\"2025-10-01\",\"hf\":\"2025-10-25\",\"dh\":\"08:00:00\",\"hh\":\"17:00:00\"}'");
+        html.append("</div>");
+        html.append("</div>");
+
+        // --- Endpoint 4 ---
+        html.append("<div class='endpoint'>");
+        html.append("<span class='method GET'>GET</span> ");
+        html.append("<code>/facturas/reporteCobradas</code>");
+        html.append("<p>Retorna las facturas cobradas (pendiente de implementación).</p>");
+        html.append("<p><b>Ejemplo:</b></p>");
+        html.append("<div class='example'>");
+        html.append("GET <a href='/facturas/reporteCobradas' target='_blank'>/facturas/reporteCobradas</a>");
+        html.append("</div>");
+        html.append("</div>");
+
+        html.append("</body></html>");
+        return ResponseEntity.ok(html.toString());
+    }
+
+
     @GetMapping("/sincobrar")
     public ResponseEntity<Object> getFacturasSinCobro(@RequestParam Long user,@RequestParam Long cuenta){
         Object datos = facturasService.findFacturasSinCobro(user, cuenta);
