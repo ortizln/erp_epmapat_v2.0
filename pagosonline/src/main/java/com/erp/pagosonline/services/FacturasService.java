@@ -45,14 +45,25 @@ public class FacturasService {
     private String eurekaServiceUrl;
     public Object findFacturasSinCobro(Long user, Long cuenta) {
         validateInput(user, cuenta);
+        Map<String, Object> respuesta = new HashMap<>();
         Map<String, Object> connection = (Map<String, Object>) cajasService.testIfLogin(user);
         Boolean test = validateCajaStatus(connection);
         if (test) {
+            boolean cuentaExist = dao.cuentaExist(cuenta);
+            if(!cuentaExist){
+                respuesta.put("status", 200);
+                respuesta.put("message","La cuenta: " +cuenta+" no existe.");
+                return respuesta;
+            }
             List<FacturasSinCobroInter> facturas = dao.findFacturasSinCobro(cuenta);
+            if(facturas.isEmpty()){
+                respuesta.put("status", 200);
+                respuesta.put("message","No tiene deudas pendientes");
+                return respuesta;
+            }
             return buildResponse(cuenta, facturas);
 
         } else {
-            Map<String, Object> respuesta = new HashMap<>();
             return respuesta.put("mensaje", "Caja no iniciada");
         }
 

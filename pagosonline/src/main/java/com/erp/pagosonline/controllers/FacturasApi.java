@@ -152,7 +152,6 @@ public class FacturasApi {
                 // Imprimir las claves "facturas"
                 //List<Long> facturas = facturaRequest.getFacturas();
                 List<Long> facturas = facturasService.getListaPlanillas(facturaRequest.getCuenta());
-                System.out.println("SIZE: "+facturas.size());
                 //Aqui voy a crear la lógica para crear una nueva recaudacion
                 Usuarios recuadador = new Usuarios();
                 recuadador.setIdusuario(facturaRequest.getAutentification());

@@ -103,6 +103,9 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
             LocalDate hf,
             LocalTime dh,
             LocalTime hh);
+    @Query(value = "SELECT CASE WHEN EXISTS (SELECT 1 FROM abonados WHERE idabonado = ?1) THEN TRUE ELSE FALSE END", nativeQuery = true)
+    boolean cuentaExist(Long cuenta);
+
 
 
 }
