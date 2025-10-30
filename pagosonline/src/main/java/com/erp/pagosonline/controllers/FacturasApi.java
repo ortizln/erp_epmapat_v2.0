@@ -3,6 +3,7 @@ package com.erp.pagosonline.controllers;
 import com.erp.pagosonline.DTO.FacturaRequestDTO;
 import com.erp.pagosonline.DTO.RecaudacionDTO;
 import com.erp.pagosonline.DTO.ReportdataDTO;
+import com.erp.pagosonline.config.AESUtil;
 import com.erp.pagosonline.interfaces.FacturasCobradas;
 import com.erp.pagosonline.interfaces.LastConection_int;
 import com.erp.pagosonline.models.*;
@@ -123,8 +124,10 @@ public class FacturasApi {
     }
 
     @GetMapping("/sincobrar")
-    public ResponseEntity<Object> getFacturasSinCobro(@RequestParam Long user,@RequestParam Long cuenta){
-        Object datos = facturasService.findFacturasSinCobro(user, cuenta);
+    public ResponseEntity<Object> getFacturasSinCobro(@RequestParam Long user,@RequestParam Long cuenta) throws Exception {
+        System.out.println(AESUtil.cifrar(String.valueOf(user)));
+        Long _user = Long.valueOf(AESUtil.descifrar(String.valueOf(user)));
+        Object datos = facturasService.findFacturasSinCobro(_user, cuenta);
         if(datos == null){
             Map<String, Object> respuesta = new HashMap<>();
             respuesta.put("mensaje","Caja no iniciada");
