@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class FacturaRequestDTO {
     //private List<Long> facturas;
-    private Long autentification;
+    private String autentification;
     private RecaudacionDTO recaudacion;
     private Long cuenta;
     private String secuencial;

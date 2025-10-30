@@ -124,8 +124,7 @@ public class FacturasApi {
     }
 
     @GetMapping("/sincobrar")
-    public ResponseEntity<Object> getFacturasSinCobro(@RequestParam Long user,@RequestParam Long cuenta) throws Exception {
-        System.out.println(AESUtil.cifrar(String.valueOf(user)));
+    public ResponseEntity<Object> getFacturasSinCobro(@RequestParam String user,@RequestParam Long cuenta) throws Exception {
         Long _user = Long.valueOf(AESUtil.descifrar(String.valueOf(user)));
         Object datos = facturasService.findFacturasSinCobro(_user, cuenta);
         if(datos == null){
@@ -139,9 +138,11 @@ public class FacturasApi {
     }
 
     @PutMapping("/cobrar")
-    public ResponseEntity<Map<String, Object>> cobrar_Factura(@RequestBody FacturaRequestDTO facturaRequest) {
+    public ResponseEntity<Map<String, Object>> cobrar_Factura(@RequestBody FacturaRequestDTO facturaRequest) throws Exception {
         Map<String, Object> respuesta = new HashMap<>();
-        LastConection_int lastConection = cajasService.getLastConectionByUduario(facturaRequest.getAutentification());
+        Long _user = Long.valueOf(AESUtil.descifrar(facturaRequest.getAutentification()));
+
+        LastConection_int lastConection = cajasService.getLastConectionByUduario(_user);
         //DECLARAR NUEVA RECAUDACION
         Recaudacion recaudacion = new Recaudacion();
         LocalDateTime date = LocalDateTime.now();
@@ -157,17 +158,17 @@ public class FacturasApi {
                 List<Long> facturas = facturasService.getListaPlanillas(facturaRequest.getCuenta());
                 //Aqui voy a crear la lógica para crear una nueva recaudacion
                 Usuarios recuadador = new Usuarios();
-                recuadador.setIdusuario(facturaRequest.getAutentification());
+                recuadador.setIdusuario(_user);
                 recaudacion.setEstado(1L);
                 recaudacion.setFechacobro(date);
-                recaudacion.setRecaudador(facturaRequest.getAutentification());
+                recaudacion.setRecaudador(_user);
                 recaudacion.setTotalpagar(facturaRequest.getRecaudacion().getTotalpagar());
                 recaudacion.setValor(facturaRequest.getRecaudacion().getTotalpagar());
                 recaudacion.setFormapago(1L);
                 recaudacion.setRecibo(BigDecimal.valueOf(0));
                 recaudacion.setCambio(BigDecimal.valueOf(0));
                 recaudacion.setFeccrea(date);
-                recaudacion.setUsucrea(facturaRequest.getAutentification());
+                recaudacion.setUsucrea(_user);
                 Recaudacion recaudacion_saved = recaudacionService.save(recaudacion);
                 if (recaudacion_saved != null) {
                     // Aquí podrías agregar la lógica para cobrar cada factura
@@ -183,7 +184,7 @@ public class FacturasApi {
                             _factura.setPagado(1);
                             _factura.setFechacobro(date);
                             _factura.setHoracobro(hora);
-                            _factura.setUsuariocobro(facturaRequest.getAutentification());
+                            _factura.setUsuariocobro(_user);
                             _factura.setInterescobrado(interesapagar);
                             _factura.setSecuencialfacilito(facturaRequest.getSecuencial());
                             _factura.setFechacompensacion(facturaRequest.getFechacompensacion());

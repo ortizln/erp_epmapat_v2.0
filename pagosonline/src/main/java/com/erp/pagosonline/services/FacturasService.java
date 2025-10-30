@@ -69,7 +69,6 @@ public class FacturasService {
 
     }
     public List<Long> getListaPlanillas(Long cuenta){
-        System.out.println("Obteniendo lista de facturasId ");
         return dao.findPlanillas(cuenta);
     }
 
