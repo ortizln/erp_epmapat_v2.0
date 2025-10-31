@@ -14,42 +14,31 @@ import java.util.List;
 
 public interface FacturasR extends JpaRepository<Facturas, Long> {
     @Query(value = """
-    select
-        f.idfactura,
-        CEIL(sum(rf.cantidad * rf.valorunitario) * 100) / 100 as subtotal,
-        f.formapago,
-        f.feccrea,
-        f.fechatransferencia,
-        c.nombre,
-        c.cedula,
-        a.direccionubicacion as direccion,
-        CEIL(coalesce(ti.interesapagar, 0) * 100) / 100 as interes
-    from facturas f
-    join abonados a
-        on f.idabonado = a.idabonado
-    join clientes c
-        on a.idresponsable = c.idcliente
-    join rubroxfac rf
-        on f.idfactura = rf.idfactura_facturas
-    left join tmpinteresxfac ti
-        on ti.idfactura = f.idfactura
-    where
-        f.idabonado = ?1
-        and (((f.estado = 1 or f.estado = 2) and f.fechacobro is null)
-             or f.estado = 3)
-        and f.fechaconvenio is null
-        and f.fechaeliminacion is null
-    group by
-        f.idfactura,
-        f.formapago,
-        f.feccrea,
-        f.fechatransferencia,
-        c.nombre,
-        c.cedula,
-        a.direccionubicacion,
-        ti.interesapagar
-    order by
-        f.idfactura;
+            select
+              f.idfactura,
+              sum(round((rf.cantidad::numeric * rf.valorunitario::numeric), 2)) as subtotal,
+              f.formapago,
+              f.feccrea,
+              f.fechatransferencia,
+              c.nombre,
+              c.cedula,
+              a.direccionubicacion as direccion,
+              round(coalesce(ti.interesapagar::numeric, 0), 2) as interes
+            from facturas f
+            join abonados a on f.idabonado = a.idabonado
+            join clientes c on a.idresponsable = c.idcliente
+            join rubroxfac rf on f.idfactura = rf.idfactura_facturas
+            left join tmpinteresxfac ti on ti.idfactura = f.idfactura
+            where
+              f.idabonado = ?1
+              and ( ((f.estado in (1,2)) and f.fechacobro is null) or f.estado = 3 )
+              and f.fechaconvenio is null
+              and f.fechaeliminacion is null
+            group by
+              f.idfactura, f.formapago, f.feccrea, f.fechatransferencia,
+              c.nombre, c.cedula, a.direccionubicacion, ti.interesapagar
+            order by f.idfactura;
+            
     """, nativeQuery = true)
     public List<FacturasSinCobroInter> findFacturasSinCobro(Long cuenta);
     @Query(value = """
