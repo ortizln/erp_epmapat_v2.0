@@ -16,15 +16,24 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
     @Query(value = """
             select
               f.idfactura,
-              sum(round((rf.cantidad::numeric * rf.valorunitario::numeric), 2)) as subtotal,
+              ROUND(CAST(
+                        SUM(
+                          CASE
+                            WHEN rf.idrubro_rubros = 165 THEN 0
+                            WHEN f.swcondonar IS TRUE AND rf.idrubro_rubros = 6 THEN 0
+                            ELSE CAST(COALESCE(rf.valorunitario, 0) AS NUMERIC)
+                               * CAST(COALESCE(rf.cantidad, 0) AS NUMERIC)
+                          END
+                        ) AS NUMERIC
+                      ), 2) as subtotal,
               f.formapago,
               f.feccrea,
               f.fechatransferencia,
               c.nombre,
               c.cedula,
               a.direccionubicacion as direccion,
-              round(coalesce(ti.interesapagar::numeric, 0), 2) as interes
-            from facturas f
+                 ROUND(CAST(COALESCE(MAX(ti.interesapagar), 0) AS NUMERIC), 2) AS interes
+                                        from facturas f
             join abonados a on f.idabonado = a.idabonado
             join clientes c on a.idresponsable = c.idcliente
             join rubroxfac rf on f.idfactura = rf.idfactura_facturas

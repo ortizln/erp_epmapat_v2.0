@@ -125,8 +125,7 @@ public class FacturasApi {
 
     @GetMapping("/sincobrar")
     public ResponseEntity<Object> getFacturasSinCobro(@RequestParam String user,@RequestParam Long cuenta) throws Exception {
-        Long _user = Long.valueOf(AESUtil.descifrar(String.valueOf(user)));
-        Object datos = facturasService.findFacturasSinCobro(_user, cuenta);
+        Object datos = facturasService.findFacturasSinCobro(1L, cuenta);
         if(datos == null){
             Map<String, Object> respuesta = new HashMap<>();
             respuesta.put("mensaje","Caja no iniciada");
