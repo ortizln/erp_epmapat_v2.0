@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 LABEL authors="Alexis Ortiz"
 ARG JAR_FILE=target/login-0.0.1.jar
 COPY ${JAR_FILE} app_login.jar

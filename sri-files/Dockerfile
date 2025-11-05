@@ -1,4 +1,4 @@
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk-jammy
 LABEL authors="Alexis Ortiz"
 
 # Instalar librerías necesarias para JasperReports
