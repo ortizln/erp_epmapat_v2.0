@@ -43,6 +43,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
               and ( ((f.estado in (1,2)) and f.fechacobro is null) or f.estado = 3 )
               and f.fechaconvenio is null
               and f.fechaeliminacion is null
+              and f.feccrea <= CURRENT_DATE
             group by
               f.idfactura, f.formapago, f.feccrea, f.fechatransferencia,
               c.nombre, c.cedula, a.direccionubicacion, ti.interesapagar
