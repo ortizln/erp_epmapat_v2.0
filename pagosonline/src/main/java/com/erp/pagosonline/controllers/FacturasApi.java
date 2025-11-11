@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -145,7 +146,7 @@ public class FacturasApi {
         //DECLARAR NUEVA RECAUDACION
         Recaudacion recaudacion = new Recaudacion();
         LocalDateTime date = LocalDateTime.now();
-        LocalTime hora = LocalTime.now();
+        LocalTime hora = LocalTime.now(ZoneId.of("America/Guayaquil"));
         if(lastConection == null){
             respuesta.put("mensaje", "Caja cerrada no se puede cobrar");
             return ResponseEntity.ok(respuesta);
@@ -163,7 +164,7 @@ public class FacturasApi {
                 recaudacion.setRecaudador(_user);
                 recaudacion.setTotalpagar(facturaRequest.getRecaudacion().getTotalpagar());
                 recaudacion.setValor(facturaRequest.getRecaudacion().getTotalpagar());
-                recaudacion.setFormapago(1L);
+                recaudacion.setFormapago(6L);
                 recaudacion.setRecibo(BigDecimal.valueOf(0));
                 recaudacion.setCambio(BigDecimal.valueOf(0));
                 recaudacion.setFeccrea(date);
