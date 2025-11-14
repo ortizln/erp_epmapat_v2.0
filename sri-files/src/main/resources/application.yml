@@ -10,17 +10,19 @@ spring:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASS}
+
   mail:
-    host: ${MAIL_HOST:smtp.elasticemail.com}
-    port: ${MAIL_PORT:465}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    host: smtp.gmail.com
+    port: 587
+    username: locote.fumadote81@gmail.com
+    password: Agress@366
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
-      mail.smtp.ssl.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.ssl.enable: false
       mail.smtp.ssl.checkserveridentity: true
-      mail.smtp.ssl.trust: ${MAIL_HOST:smtp.elasticemail.com}
+      mail.smtp.ssl.trust: smtp.gmail.com
       mail.smtp.connectiontimeout: 8000
       mail.smtp.timeout: 8000
       mail.smtp.writetimeout: 8000

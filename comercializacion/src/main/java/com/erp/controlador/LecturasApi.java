@@ -7,13 +7,10 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import com.erp.interfaces.*;
-import com.erp.servicio.EmisionLoteService;
 import com.erp.servicio.EmisionServicioOptimizado;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @RestController
 @RequestMapping("/lecturas")
 public class LecturasApi {
-    private final EmisionLoteService emisionLoteService;
     private final LecturaServicio lecServicio;
     private final EmisionServicioOptimizado emisionServicioOptimizado;
 
@@ -253,12 +249,6 @@ public class LecturasApi {
         return lecServicio.getSWalcatarillados(idemision);
     }
 
-    @GetMapping("/emision/recalcular")
-    public ResponseEntity<?> recalcular(@RequestParam Long idemision) {
-        emisionLoteService.recalcularEmision(idemision);
-        System.out.println("Recalculando ");
-        return ResponseEntity.ok(Map.of("status","OK"));
-    }
     @GetMapping("/duplicatos-emision")
     public ResponseEntity<List<EmisionesInterface>> getDuplicatosToEmision(@RequestParam Long idemision,
                                                                            @RequestParam Long top) {

@@ -87,71 +87,14 @@ public class SRI_Controller {
         return list.item(0).getTextContent().replaceAll("\\s+", "");
     }
 
-    // ===================== 1) ENVIAR XML YA FIRMADO =====================
-    @PostMapping(
-            path = "/enviar"
-    )
-    public ResponseEntity<?> enviarComprobante(@RequestParam("file") MultipartFile file,
-                                               @RequestParam(value = "ambiente", required = false) Integer ambienteForzado) {
-        try {
-            // 1) Leer el XML firmado (String y bytes)
-            String xmlFirmado = toUtf8String(file);
-            byte[] xmlBytes = xmlFirmado.getBytes(StandardCharsets.UTF_8);
-
-            // 2) Ambiente: si te lo pasan, lo usas; sino lo deduces del XML
-            if (ambienteForzado != null) {
-                sendXmlToSriService.setAmbiente(ambienteForzado == 2 ? 2 : 1);
-            } else {
-                sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
-            }
-
-            // 3) Recepción
-            RespuestaSolicitud respuesta = sendXmlToSriService.enviarFacturaFirmada(xmlBytes);
-
-            // 4) Si RECIBIDA, intenta autorización con polling
-            if ("RECIBIDA".equalsIgnoreCase(respuesta.getEstado())) {
-                RespuestaComprobante autorizacion = sendXmlToSriService.consultarAutorizacionConEspera(
-                        xmlFirmado,
-                        clave -> {
-                            try { return sendXmlToSriService.consultarAutorizacion(clave); }
-                            catch (Exception e) { throw new RuntimeException(e); }
-                        },
-                        10,   // intentos
-                        4000  // ms entre intentos
-                );
-                return ResponseEntity.ok(autorizacion);
-            } else {
-                return ResponseEntity.badRequest().body(respuesta);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of(
-                    "error", "Error al enviar comprobante firmado",
-                    "detalle", e.getMessage()
-            ));
-        }
-    }
+    /*
+     * ========================================================================================================
+                      * FACTURAS
+     * ========================================================================================================
+     */
 
 
-    // ===================== 2) SOLO FIRMAR → XML =====================
-    @PostMapping(
-            path = "/factura/firmar/upload.xml"
-    )
-    public String firmarFacturaUploadXml(
-            @RequestPart("xml") MultipartFile xmlFile,
-            @RequestParam(value = "modo", required = false, defaultValue = "XADES_BES") String modo,
-            @RequestParam(value = "definirId", required = false) Long definirId
-    ) throws Exception {
-
-        String xmlPlano = toUtf8String(xmlFile);
-        ModoFirma mf = "XMLDSIG".equalsIgnoreCase(modo) ? ModoFirma.XMLDSIG : ModoFirma.XADES_BES;
-
-        return (definirId == null)
-                ? firmaService.firmarFactura(xmlPlano, mf)
-                : firmaService.firmarFactura(xmlPlano, mf);
-    }
-
-    // ===================== 3) FIRMAR Y ENVIAR EN UNO SOLO =====================
+    // ===================== 1) FACTURA FIRMAR Y ENVIAR EN UNO SOLO XML-FILE =====================
     @PostMapping(
             path = "/factura/xml"
     )
@@ -210,7 +153,7 @@ public class SRI_Controller {
         }
     }
 
-    // ===================== 4) FIRMAR Y ENVIAR RECIBIENDO XML EN STRING =====================
+    // ===================== 2)  FACTURA FIRMAR Y ENVIAR EN UNO SOLO XML-STRING =====================
     @PostMapping(
             path = "/factura/string"
     )
@@ -275,7 +218,89 @@ public class SRI_Controller {
         }
     }
 
-    // ===================== 5) FIRMAR Y ENVIAR RETENCIÓN (solo retorna XML autorizado) =====================
+    // ===================== 3) FIRMAR Y ENVIAR RECIBIENDO XML EN STRING =====================
+    @PostMapping(
+            path = "/factura"
+    )
+    public ResponseEntity<?> firmarYEnviarFactura(
+            @RequestBody String xmlPlano,
+            @RequestParam(value = "modo", required = false, defaultValue = "XADES_BES") String modo,
+            @RequestParam(value = "definirId", required = false, defaultValue = "1") Long definirId,
+            @RequestParam(value = "ambiente", required = false) Integer ambienteForzado
+    ) {
+        try {
+            // Limpia BOM si existe (importante para parseo/firma)
+            if (xmlPlano != null && !xmlPlano.isEmpty() && xmlPlano.charAt(0) == '\uFEFF') {
+                xmlPlano = xmlPlano.substring(1);
+            }
+
+            // 1) Elegir modo de firma
+            ModoFirma mf = "XMLDSIG".equalsIgnoreCase(modo) ? ModoFirma.XMLDSIG : ModoFirma.XADES_BES;
+
+            // 2) Firmar (usa definirId correcto)
+            String xmlFirmado = firmaService.firmarFactura(xmlPlano, mf);
+
+            // 2) Ambiente
+            if (ambienteForzado != null) {
+                sendXmlToSriService.setAmbiente(ambienteForzado == 2 ? 2 : 1);
+            } else {
+                sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
+            }
+
+            // 4) Enviar a recepción
+            RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
+
+            // Si NO fue recibida, devolvemos error resumido (JSON)
+            if (!"RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "estado", recepcion.getEstado(),
+                        "errores", resumenErroresRecepcion(recepcion)
+                ));
+            }
+
+            // 5) Polling/consulta de autorización
+            RespuestaComprobante rc = sendXmlToSriService.consultarAutorizacionConEspera(
+                    xmlFirmado,
+                    clave -> {
+                        try { return sendXmlToSriService.consultarAutorizacion(clave); }
+                        catch (Exception e) { throw new RuntimeException(e); }
+                    },
+                    10,   // intentos
+                    4000  // ms entre intentos
+            );
+
+            // 6) Extraer el XML autorizado (si existe)
+            String xmlAutorizado = extraerXmlAutorizado(rc);
+            if (xmlAutorizado != null) {
+                // ✅ SOLO devolvemos el XML autorizado
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_XML)
+                        .body(xmlAutorizado);
+            }
+
+            // Si no hay autorización aún, devuelve 202 con mensaje breve
+            return ResponseEntity.status(202).body(Map.of(
+                    "estado", "PENDIENTE",
+                    "detalle", "La autorización aún no está disponible."
+            ));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Error al firmar/enviar comprobante",
+                    "detalle", e.getMessage()
+            ));
+        }
+    }
+
+
+    /*
+    * ========================================================================================================
+                                            * RETENCIONES
+    * ========================================================================================================
+    */
+
+    // ===================== 1) FIRMAR Y ENVIAR RETENCIÓN (solo retorna XML autorizado) =====================
     @PostMapping(
             path = "/retencion",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -353,80 +378,7 @@ public class SRI_Controller {
     }
 
 
-    // ===================== 7) FIRMAR Y ENVIAR RECIBIENDO XML EN STRING =====================
-@PostMapping(
-        path = "/factura"
-)
-public ResponseEntity<?> firmarYEnviarFactura(
-        @RequestBody String xmlPlano,
-        @RequestParam(value = "modo", required = false, defaultValue = "XADES_BES") String modo,
-        @RequestParam(value = "definirId", required = false, defaultValue = "1") Long definirId,
-        @RequestParam(value = "ambiente", required = false) Integer ambienteForzado
-) {
-    try {
-        // Limpia BOM si existe (importante para parseo/firma)
-        if (xmlPlano != null && !xmlPlano.isEmpty() && xmlPlano.charAt(0) == '\uFEFF') {
-            xmlPlano = xmlPlano.substring(1);
-        }
 
-        // 1) Elegir modo de firma
-        ModoFirma mf = "XMLDSIG".equalsIgnoreCase(modo) ? ModoFirma.XMLDSIG : ModoFirma.XADES_BES;
-
-        // 2) Firmar (usa definirId correcto)
-        String xmlFirmado = firmaService.firmarFactura(xmlPlano, mf);
-
-        // 2) Ambiente
-        if (ambienteForzado != null) {
-            sendXmlToSriService.setAmbiente(ambienteForzado == 2 ? 2 : 1);
-        } else {
-            sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
-        }
-
-        // 4) Enviar a recepción
-        RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
-
-        // Si NO fue recibida, devolvemos error resumido (JSON)
-        if (!"RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
-            return ResponseEntity.badRequest().body(Map.of(
-                    "estado", recepcion.getEstado(),
-                    "errores", resumenErroresRecepcion(recepcion)
-            ));
-        }
-
-        // 5) Polling/consulta de autorización
-        RespuestaComprobante rc = sendXmlToSriService.consultarAutorizacionConEspera(
-                xmlFirmado,
-                clave -> {
-                    try { return sendXmlToSriService.consultarAutorizacion(clave); }
-                    catch (Exception e) { throw new RuntimeException(e); }
-                },
-                10,   // intentos
-                4000  // ms entre intentos
-        );
-
-        // 6) Extraer el XML autorizado (si existe)
-        String xmlAutorizado = extraerXmlAutorizado(rc);
-        if (xmlAutorizado != null) {
-            // ✅ SOLO devolvemos el XML autorizado
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_XML)
-                    .body(xmlAutorizado);
-        }
-
-        // Si no hay autorización aún, devuelve 202 con mensaje breve
-        return ResponseEntity.status(202).body(Map.of(
-                "estado", "PENDIENTE",
-                "detalle", "La autorización aún no está disponible."
-        ));
-
-    } catch (Exception e) {
-        e.printStackTrace();
-        return ResponseEntity.status(500).body(Map.of(
-                "error", "Error al firmar/enviar comprobante",
-                "detalle", e.getMessage()
-        ));
-    }
-}
 
     // ===================== 8) CREAR XML FIRMAR Y ENVIAR =====================
     @GetMapping(path = "/factura_electronica")
