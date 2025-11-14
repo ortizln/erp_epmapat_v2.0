@@ -14,8 +14,6 @@ import com.erp.servicio.administracion.ColorServicio;
 
 @RestController
 @RequestMapping("/colores")
-
-
 public class ColoresApi {
 
    @Autowired

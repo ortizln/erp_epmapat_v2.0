@@ -13,16 +13,14 @@ import com.erp.servicio.administracion.AccesoServicio;
 
 @RestController
 @RequestMapping("/acceso")
-
-
 public class AccesoApi {
 
-   @Autowired
-   AccesoServicio accServicio;
+    @Autowired
+    AccesoServicio accServicio;
 
-   @GetMapping
-   public List<Acceso> getAll() {
-      return accServicio.findAll();
-   }
+    @GetMapping
+    public List<Acceso> getAll() {
+        return accServicio.findAll();
+    }
 
 }

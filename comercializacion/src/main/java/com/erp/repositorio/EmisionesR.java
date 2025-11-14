@@ -106,4 +106,23 @@ public interface EmisionesR extends JpaRepository<Emisiones, Long> {
     )
     Page<EmisionesInterface> getSWalcatarilladosPaginado(@Param("idemision") Long idemision,
                                                          Pageable pageable);
+
+    @Query(value = """
+			SELECT
+			    f.idabonado                                  AS cuenta,
+			    f.idfactura                                  AS idfactura,
+			    (l.lecturaactual - l.lecturaanterior)        AS m3,
+			    a.idcategoria                                AS categoria,
+			    COALESCE(a.sw_municipio,    false)           AS swMunicipio,
+			    COALESCE(a.sw_adultomayor,  false)           AS swAdultoMayor,
+			    COALESCE(a.sw_aguapotable,  false)           AS swAguapotable
+			FROM lecturas l
+			JOIN facturas  f ON f.idfactura = l.idfactura
+			JOIN emisiones e ON e.idemision = l.idemision
+			LEFT JOIN abonados a ON a.idabonado = f.idabonado
+			WHERE e.idemision = ?1
+			  AND f.fechaeliminacion IS NULL
+			ORDER BY f.idabonado
+			""", nativeQuery = true)
+    List<EmisionesInterface> getSwAguapotable(Long idemision);
 }

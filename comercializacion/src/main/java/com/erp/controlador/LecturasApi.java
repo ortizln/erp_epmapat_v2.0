@@ -8,6 +8,8 @@ import java.util.concurrent.CompletableFuture;
 
 import com.erp.interfaces.*;
 import com.erp.servicio.EmisionLoteService;
+import com.erp.servicio.EmisionServicioOptimizado;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.query.Param;
 import org.springframework.http.ResponseEntity;
@@ -25,16 +27,13 @@ import com.erp.excepciones.ResourceNotFoundExcepciones;
 import com.erp.modelo.Lecturas;
 import com.erp.servicio.LecturaServicio;
 import org.springframework.web.bind.annotation.RequestParam;
-
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/lecturas")
 public class LecturasApi {
-
-	@Autowired
-	LecturaServicio lecServicio;
-    // Por ejemplo, desde un endpoint o tarea programada
-    @Autowired
-    EmisionLoteService emisionLoteService;
+    private final EmisionLoteService emisionLoteService;
+    private final LecturaServicio lecServicio;
+    private final EmisionServicioOptimizado emisionServicioOptimizado;
 
 	// Busca por Planilla (Es una a una)
 	@GetMapping("/onePlanilla/{idfactura}")
@@ -236,12 +235,19 @@ public class LecturasApi {
 	public ResponseEntity<List<CountRubrosByEmision>> getCuentaRubrosByEmision(@RequestParam Long idemision) {
 		return ResponseEntity.ok(lecServicio.getCuentaRubrosByEmision(idemision));
 	}
+    @PostMapping("/valoresEmisiones")
+    public ResponseEntity<BigDecimal> getValoresEmision(@RequestBody EmisionOfCuentaDTO datos) {
+        return ResponseEntity
+                .ok(emisionServicioOptimizado.calcularValores(datos.getCuenta(), datos.getIdfactura(), datos.getM3(),
+                        datos.getCategoria(), datos.isSwMunicipio(), datos.isSwAdultoMayor(), datos.isSwAguapotable()));
+    }
 
-	@PostMapping("/valoresEmisiones")
-	public ResponseEntity<BigDecimal> getValoresEmision(@RequestBody EmisionOfCuentaDTO datos) {
-		return ResponseEntity.ok(lecServicio.calcularValores(datos.getCuenta(), datos.getIdfactura(), datos.getM3(),
-				datos.getCategoria(), datos.isSwMunicipio(), datos.isSwAdultoMayor(), datos.isSwAguapotable()));
-	}
+    @PutMapping("/valores_Emisiones")
+    public ResponseEntity<BigDecimal> getValores_Emision(@RequestBody EmisionOfCuentaDTO datos) {
+        return ResponseEntity
+                .ok(emisionServicioOptimizado.calcularValores(datos.getCuenta(), datos.getIdfactura(), datos.getM3(),
+                        datos.getCategoria(), datos.isSwMunicipio(), datos.isSwAdultoMayor(), datos.isSwAguapotable()));
+    }
     @GetMapping("/swalcantarillado")
     public List<EmisionesInterface> getSWalcatarillados(@RequestParam Long idemision) {
         return lecServicio.getSWalcatarillados(idemision);
@@ -252,5 +258,10 @@ public class LecturasApi {
         emisionLoteService.recalcularEmision(idemision);
         System.out.println("Recalculando ");
         return ResponseEntity.ok(Map.of("status","OK"));
+    }
+    @GetMapping("/duplicatos-emision")
+    public ResponseEntity<List<EmisionesInterface>> getDuplicatosToEmision(@RequestParam Long idemision,
+                                                                           @RequestParam Long top) {
+        return ResponseEntity.ok(lecServicio.getDuplicadosToRecalculate(idemision, top));
     }
 }

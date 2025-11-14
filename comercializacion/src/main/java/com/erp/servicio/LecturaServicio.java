@@ -30,178 +30,172 @@ import com.erp.repositorio.RubroxfacR;
 @Service
 public class LecturaServicio {
 
-	@Autowired
-	private LecturasR dao;
-	@Autowired
-	private Pliego24R dao_pliego;
-	@Autowired
-	private CategoriaR dao_categoria;
-	@Autowired
-	private FacturasR dao_facturas;
-	@Autowired
-	private RubroxfacR dao_rubroxfac;
+    @Autowired
+    private LecturasR dao;
+    @Autowired
+    private Pliego24R dao_pliego;
+    @Autowired
+    private CategoriaR dao_categoria;
+    @Autowired
+    private FacturasR dao_facturas;
     @Autowired
     private DefinirR dao_definir;
+    @Autowired
+    private RubroxfacR dao_rubroxfac;
 
-	// Lectura por Planilla
-	public Lecturas findOnefactura(Long idfactura) {
-		return dao.findOnefactura(idfactura);
-	}
+    // Lectura por Planilla
+    public Lecturas findOnefactura(Long idfactura) {
+        return dao.findOnefactura(idfactura);
+    }
 
-	public List<Lecturas> findByIdrutaxemision(Long idrutaxemision) {
-		return dao.findByIdrutaxemision(idrutaxemision);
-	}
+    public List<Lecturas> findByIdrutaxemision(Long idrutaxemision) {
+        return dao.findByIdrutaxemision(idrutaxemision);
+    }
 
-	public List<Lecturas> findByIdabonado(Long idabonado, Long limit) {
-		return dao.findByIdabonado(idabonado, limit);
-	}
+    public List<Lecturas> findByIdabonado(Long idabonado, Long limit) {
+        return dao.findByIdabonado(idabonado, limit);
+    }
 
-	public List<Lecturas> findByMonth() {
-		return dao.findByMonth();
-	}
+    public List<Lecturas> findByMonth() {
+        return dao.findByMonth();
+    }
 
-	public List<Lecturas> findByIdRutasxEmision(Long idrutaxemision) {
-		return dao.findByIdRutasxEmision(idrutaxemision);
-	}
+    public List<Lecturas> findByIdRutasxEmision(Long idrutaxemision) {
+        return dao.findByIdRutasxEmision(idrutaxemision);
+    }
 
-	public List<Lecturas> findLecturasByIdAbonados(Long idabonado) {
-		return dao.findLecturasByIdAbonados(idabonado);
-	}
+    public List<Lecturas> findLecturasByIdAbonados(Long idabonado) {
+        return dao.findLecturasByIdAbonados(idabonado);
+    }
 
-	public List<Lecturas> findByRutas(Long idrutas) {
-		return dao.findByRutas(idrutas);
-	}
+    public List<Lecturas> findByRutas(Long idrutas) {
+        return dao.findByRutas(idrutas);
+    }
 
-	public List<Lecturas> findByIdAbonado(Long idabonado) {
-		return dao.findByIdAbonado(idabonado);
-	}
+    public List<Lecturas> findByIdAbonado(Long idabonado) {
+        return dao.findByIdAbonado(idabonado);
+    }
 
-	public List<Lecturas> findByNCliente(String nombre) {
-		return dao.findByNCliente(nombre);
-	}
+    public List<Lecturas> findByNCliente(String nombre) {
+        return dao.findByNCliente(nombre);
+    }
 
-	// Lectura por Planilla
-	public List<Lecturas> findByIdfactura(Long idfactura) {
-		return dao.findByIdfactura(idfactura);
-	}
+    // Lectura por Planilla
+    public List<Lecturas> findByIdfactura(Long idfactura) {
+        return dao.findByIdfactura(idfactura);
+    }
 
-	// Lecuras de una Emision
-	public List<Lecturas> findByIdemision(Long idemision) {
-		return dao.findByIdemision(idemision);
-	}
+    // Lecuras de una Emision
+    public List<Lecturas> findByIdemision(Long idemision) {
+        return dao.findByIdemision(idemision);
+    }
 
-	public List<Lecturas> findByIdemisionIdAbonado(Long idemision, Long idabonado) {
-		return dao.findByIdemisionIdAbonado(idemision, idabonado);
-	}
+    public List<Lecturas> findByIdemisionIdAbonado(Long idemision, Long idabonado) {
+        return dao.findByIdemisionIdAbonado(idemision, idabonado);
+    }
 
-	public Lecturas getById(Long id) {
-		return null;
-	}
+    public Lecturas getById(Long id) {
+        return null;
+    }
 
-	public Optional<Lecturas> findById(Long id) {
-		return dao.findById(id);
-	}
+    public Optional<Lecturas> findById(Long id) {
+        return dao.findById(id);
+    }
 
-	public <S extends Lecturas> S saveLectura(S entity) {
-		return dao.save(entity);
-	}
+    public <S extends Lecturas> S saveLectura(S entity) {
+        return dao.save(entity);
+    }
 
-	// Ultima lectura de un Abonado
-	public Long ultimaLectura(Long idabonado) {
-		return dao.ultimaLectura(idabonado);
-	}
+    // Ultima lectura de un Abonado
+    public Long ultimaLectura(Long idabonado) {
+        return dao.ultimaLectura(idabonado);
+    }
 
-	public Long ultimaLecturaByIdemision(Long idabonado, Long idemision) {
-		return dao.ultimaLecturaByIdemision(idabonado, idemision);
-	}
+    public Long ultimaLecturaByIdemision(Long idabonado, Long idemision) {
+        return dao.ultimaLecturaByIdemision(idabonado, idemision);
+    }
 
-	public BigDecimal totalEmisionXFactura(Long idemision) {
-		return dao.totalEmisionXFactura(idemision);
-	}
+    public BigDecimal totalEmisionXFactura(Long idemision) {
+        return dao.totalEmisionXFactura(idemision);
+    }
 
-	public List<Object[]> RubrosEmitidos(Long idemision) {
-		return dao.RubrosEmitidos(idemision);
-	}
+    public List<Object[]> RubrosEmitidos(Long idemision) {
+        return dao.RubrosEmitidos(idemision);
+    }
 
-	public List<Object[]> R_EmisionFinal(Long idemision) {
-		return dao.R_EmisionFinal(idemision);
-	}
+    public List<Object[]> R_EmisionFinal(Long idemision) {
+        return dao.R_EmisionFinal(idemision);
+    }
 
-	public List<Object[]> R_EmisionActual(Long idemision) {
-		return dao.R_EmisionActual(idemision);
-	}
+    public List<Object[]> R_EmisionActual(Long idemision) {
+        return dao.R_EmisionActual(idemision);
+    }
 
-	/* OBTENER LISTADOD DE FACTURAS DE CONSUMO DE AGUA POR RUTAS, DEUDORES */
-	public List<Lecturas> findDeudoresByRuta(Long idrutas) {
-		return dao.findDeudoresByRuta(idrutas);
-	}
+    /* OBTENER LISTADOD DE FACTURAS DE CONSUMO DE AGUA POR RUTAS, DEUDORES */
+    public List<Lecturas> findDeudoresByRuta(Long idrutas) {
+        return dao.findDeudoresByRuta(idrutas);
+    }
 
-	/* buscar la fecha de una emision por el id de una factura */
-	public Date findDateByIdfactura(Long idfactura) {
-		return dao.findDateByIdfactura(idfactura);
-	}
+    /* buscar la fecha de una emision por el id de una factura */
+    public Date findDateByIdfactura(Long idfactura) {
+        return dao.findDateByIdfactura(idfactura);
+    }
 
-	public List<FecEmision> getEmisionByIdfactura(Long idfactura) {
-		return dao.getEmisionByIdfactura(idfactura);
-	}
+    public List<FecEmision> getEmisionByIdfactura(Long idfactura) {
+        return dao.getEmisionByIdfactura(idfactura);
+    }
 
-	public List<Lecturas> findByIdEmisiones(Long idemision) {
-		return dao.findByIdEmisiones(idemision);
-	}
+    public List<Lecturas> findByIdEmisiones(Long idemision) {
+        return dao.findByIdEmisiones(idemision);
+    }
 
-	public List<RepFacEliminadasByEmision> findByIdEmisionesR(Long idemision) {
-		return dao.findByIdEmisionesR(idemision);
-	}
+    public List<RepFacEliminadasByEmision> findByIdEmisionesR(Long idemision) {
+        return dao.findByIdEmisionesR(idemision);
+    }
 
-	public CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision) {
-		return dao.getAllRubrosEmisionInicial(idemision);
-	}
+    public CompletableFuture<List<RubroxfacIReport>> getAllRubrosEmisionInicial(Long idemision) {
+        return dao.getAllRubrosEmisionInicial(idemision);
+    }
 
-	public CompletableFuture<List<RubroxfacIReport>> getCuentaM3AllEmiInicial(Long idemision) {
-		return dao.getCuentaM3AllEmiInicial(idemision);
-	}
+    public CompletableFuture<List<RubroxfacIReport>> getCuentaM3AllEmiInicial(Long idemision) {
+        return dao.getCuentaM3AllEmiInicial(idemision);
+    }
 
-	public CompletableFuture<List<RubroxfacIReport>> getAllNewLecturas(Long idemision) {
-		return dao.getAllNewLecturas(idemision);
-	}
+    public CompletableFuture<List<RubroxfacIReport>> getAllNewLecturas(Long idemision) {
+        return dao.getAllNewLecturas(idemision);
+    }
 
-	public CompletableFuture<List<RubroxfacIReport>> getAllDeleteLecturas(Long idemision) {
-		return dao.getAllDeleteLecturas(idemision);
-	}
+    public CompletableFuture<List<RubroxfacIReport>> getAllDeleteLecturas(Long idemision) {
+        return dao.getAllDeleteLecturas(idemision);
+    }
 
-	public CompletableFuture<List<RubroxfacIReport>> getAllActual(Long idemision) {
-		return dao.getAllActual(idemision);
-	}
+    public CompletableFuture<List<RubroxfacIReport>> getAllActual(Long idemision) {
+        return dao.getAllActual(idemision);
+    }
 
-	public List<FacIntereses> getForIntereses(Long idfactura) {
-		return dao.getForIntereses(idfactura);
-	}
+    public List<FacIntereses> getForIntereses(Long idfactura) {
+        return dao.getForIntereses(idfactura);
+    }
 
-	public List<RepEmisionEmi> getReporteValEmitidosxEmision(Long idemision) {
-		return dao.getReporteValEmitidosxEmision(idemision);
-	}
+    public List<RepEmisionEmi> getReporteValEmitidosxEmision(Long idemision) {
+        return dao.getReporteValEmitidosxEmision(idemision);
+    }
 
-	public List<ConsumoxCat_int> getConsumoxCategoria(Long idemision) {
-		return dao.getConsumoxCategoria(idemision);
-	}
+    public List<ConsumoxCat_int> getConsumoxCategoria(Long idemision) {
+        return dao.getConsumoxCategoria(idemision);
+    }
 
-	public List<CountRubrosByEmision> getCuentaRubrosByEmision(long idemision) {
-		return dao.getCuentaRubrosByEmision(idemision);
-	}
+    public List<CountRubrosByEmision> getCuentaRubrosByEmision(long idemision) {
+        return dao.getCuentaRubrosByEmision(idemision);
+    }
 
-	/* CALCULO DEL PLIEGO TARIFARIO */
-	/*
-	 * PARAMETROS GENERALES:
-	 * CUENTA, CATEGORIA, SWADULTOMAYOR, SWMUNICIPIO, L.ANTERIOR, L.ACTUAL, ESTADO,
-	 * IDFACTURA, m3
-	 */
     /* CALCULO DEL PLIEGO TARIFARIO */
     /*
      * PARAMETROS GENERALES:
      * CUENTA, CATEGORIA, SWADULTOMAYOR, SWMUNICIPIO, L.ANTERIOR, L.ACTUAL, ESTADO,
      * IDFACTURA, m3
      */
-    static final BigDecimal[] porcResidencial = {
+    private static final BigDecimal[] porcResidencial = {
             BigDecimal.valueOf(0.777), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78),
             BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.778), BigDecimal.valueOf(0.778),
             BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.78), BigDecimal.valueOf(0.68),
@@ -458,8 +452,6 @@ public class LecturaServicio {
         BigDecimal valor = BigDecimal.ZERO;
         BigDecimal fijo, variable;
         BigDecimal porcentaje;
-        Rubroxfac rubroxfac = new Rubroxfac();
-        Rubros rubro = new Rubros();
         // Hidrosuccionador siempre se suma al final
         porcentaje = valoresEmision.getPliego24().getPorc();
         if (!valoresEmision.isSwAguapotable()) {
@@ -498,12 +490,8 @@ public class LecturaServicio {
     public BigDecimal exsaneamiento(EmisionOfCuentaDTO valoresEmision) {
         BigDecimal valor = BigDecimal.ZERO;
         BigDecimal porcentaje = BigDecimal.ZERO;
-        Rubroxfac rubroxfac = new Rubroxfac();
-        Rubros rubro = new Rubros();
         if (!valoresEmision.isSwAguapotable()) {
-
             porcentaje = valoresEmision.getPliego24().getPorc();
-
             // Cálculo común de variable
             valor = BigDecimal.valueOf(valoresEmision.getM3())
                     .multiply(valoresEmision.getPliego24().getSaneamiento().divide(BigDecimal.valueOf(2)))
@@ -547,7 +535,6 @@ public class LecturaServicio {
     /* EXCEDENTE */
     public BigDecimal excedente(EmisionOfCuentaDTO valoresExcedente1) {
         valoresExcedente1.setCategoria(1);
-        BigDecimal valor = BigDecimal.ZERO;
         valoresExcedente1.setCategoria(1);
         Pliego24 pliego = dao_pliego._findBloque(valoresExcedente1.getCategoria(), valoresExcedente1.getM3());
         valoresExcedente1.setPliego24(pliego);
@@ -575,18 +562,19 @@ public class LecturaServicio {
         List<Long> idfacturas = dao_facturas.findSinCobroAbo(cuentas);
         long nroPendientes = idfacturas.size();
         BigDecimal multa = BigDecimal.ZERO;
-        /*if (nroPendientes == 3) {
-            multa = BigDecimal.valueOf(2);
-        }*/
+        /*
+         * if (nroPendientes == 3) {
+         * multa = BigDecimal.valueOf(2);
+         * }
+         */
 
-         if (nroPendientes > 2) {
-         Definir definir = dao_definir.findTopByOrderByIddefinirDesc();
-         if (definir != null) {
-         BigDecimal rbu = definir.getRbu();
-         multa = multa.add(rbu.multiply(BigDecimal.valueOf(0.005)));
-         }
-         }
-
+        if (nroPendientes > 2) {
+            Definir definir = dao_definir.findTopByOrderByIddefinirDesc(); // 👈 último
+            if (definir != null) {
+                BigDecimal rbu = definir.getRbu();
+                multa = multa.add(rbu.multiply(BigDecimal.valueOf(0.005)));
+            }
+        }
 
         return multa;
     }
@@ -616,14 +604,18 @@ public class LecturaServicio {
             calcularValores(
                     e.getCuenta(),
                     e.getIdfactura(),
-                    e.getM3(),  // Mejor si es Integer
+                    e.getM3(), // Mejor si es Integer
                     e.getCategoria(),
                     e.getSwMunicipio(),
                     e.getSwAdultoMayor(),
-                    e.getSwAguapotable()
-            );
+                    e.getSwAguapotable());
         });
 
         return emiI; // devolvemos la lista ya procesada
     }
+
+    public List<EmisionesInterface> getDuplicadosToRecalculate(Long idemision, Long top) {
+        return dao.getDuplicadosToRecalculate(idemision, top);
+    }
+
 }
