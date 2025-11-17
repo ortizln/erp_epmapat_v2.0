@@ -722,41 +722,63 @@ public class SRI_Controller {
     }
 
     // ========== 1) Consultar por CLAVE DE ACCESO ==========
-    @GetMapping(value = "/autorizacion",     produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE })
-    public ResponseEntity<?> consultarAutorizacion(
+    @GetMapping(
+            value = "/__autorizacion",
+            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE }
+    )
+    public ResponseEntity<?> __consultarAutorizacion(
             @RequestParam String claveAcceso,
             @RequestParam(defaultValue = "false") boolean wait,        // true = polling
             @RequestParam(defaultValue = "60") int attempts,           // intentos de polling
-            @RequestParam(defaultValue = "80000") long sleepMillis,     // pausa entre intentos (ms)
-            @RequestParam(defaultValue = "true") boolean returnXml,   // true = retornar application/xml
+            @RequestParam(defaultValue = "8000") long sleepMillis,     // pausa base entre intentos (ms)
+            @RequestParam(defaultValue = "true") boolean returnXml,    // true = retornar application/xml
             @RequestParam(defaultValue = "false") boolean download     // true = forzar descarga
     ) {
         try {
             RespuestaComprobante rc;
+            System.out.println("CONSULTANDO...");
+            // =========================
+            // 1) Consulta con o sin polling
+            // =========================
             if (wait) {
-                // Polling: consultamos varias veces hasta tener respuesta con autorizaciones
-                rc = sendXmlToSriService.consultarAutorizacionConEspera(
-                        /*xmlFirmado no se usa en tu impl de polling*/ "<na>",
-                        _claveAcceso -> {
-                            try { return sendXmlToSriService.consultarAutorizacion(claveAcceso); }
-                            catch (Exception e) { throw new RuntimeException(e); }
-                        },
-                        attempts,
-                        sleepMillis
+                // Polling por CLAVE usando tu helper consultarAutorizacionConEsperaPorClave
+                rc = sendXmlToSriService.consultarAutorizacionConEsperaPorClave(
+                        claveAcceso.trim(),
+                        attempts,                    // intentos
+                        sleepMillis,                 // sleep inicial
+                        sleepMillis * 4,             // sleep máx
+                        1.5,                         // backoff
+                        true                         // cortar si NO AUTORIZADO
                 );
             } else {
-                // Consulta simple
-                rc = sendXmlToSriService.consultarAutorizacion(claveAcceso);
+                // Consulta simple (un solo hit al WS de AUTORIZACIÓN)
+                rc = sendXmlToSriService.consultarAutorizacion(claveAcceso.trim());
             }
 
-            // Normalizamos número de comprobantes
+            if (rc == null) {
+                return ResponseEntity.status(500).body(Map.of(
+                        "error", "Respuesta nula del servicio de autorización del SRI",
+                        "claveAcceso", claveAcceso
+                ));
+            }
+
+            // =========================
+            // 2) Normalizar número de comprobantes
+            // =========================
             int num = 0;
             try {
-                num = (rc.getNumeroComprobantes() == null) ? 0 : Integer.parseInt(rc.getNumeroComprobantes().trim());
-            } catch (NumberFormatException ignore) {}
+                num = (rc.getNumeroComprobantes() == null)
+                        ? 0
+                        : Integer.parseInt(rc.getNumeroComprobantes().trim());
+            } catch (NumberFormatException ignore) {
+            }
 
-            // Si SRI aún no tiene respuesta
-            if (num <= 0 || rc.getAutorizaciones() == null || rc.getAutorizaciones().getAutorizacion() == null) {
+            // Si SRI aún no tiene respuesta útil
+            if (num <= 0
+                    || rc.getAutorizaciones() == null
+                    || rc.getAutorizaciones().getAutorizacion() == null
+                    || rc.getAutorizaciones().getAutorizacion().isEmpty()) {
+
                 return ResponseEntity.status(202).body(Map.of(
                         "estado", "PENDIENTE",
                         "detalle", "Aún no hay autorizaciones disponibles para la clave.",
@@ -764,15 +786,18 @@ public class SRI_Controller {
                 ));
             }
 
-            // Buscamos una autorización AUTORIZADO (si no, devolvemos la primera como diagnóstico)
             var lista = rc.getAutorizaciones().getAutorizacion();
+
+            // =========================
+            // 3) Intentar encontrar una AUTORIZADO
+            // =========================
             var autorizada = lista.stream()
                     .filter(a -> "AUTORIZADO".equalsIgnoreCase(safeStr(a.getEstado())))
                     .findFirst()
                     .orElse(null);
 
             if (autorizada == null) {
-                // No hubo “AUTORIZADO”, devolvemos diagnóstico de la primera
+                // No hubo “AUTORIZADO”, devolvemos diagnóstico de la primera autorización
                 var a0 = lista.get(0);
                 var mensajes = (a0.getMensajes() != null && a0.getMensajes().getMensaje() != null)
                         ? a0.getMensajes().getMensaje().stream().map(m -> Map.of(
@@ -785,15 +810,19 @@ public class SRI_Controller {
                 return ResponseEntity.status(400).body(Map.of(
                         "estadoAutorizacion", safeStr(a0.getEstado()),
                         "numeroAutorizacion", safeStr(a0.getNumeroAutorizacion()),
-                        "fechaAutorizacion", (a0.getFechaAutorizacion() != null ? a0.getFechaAutorizacion().toString() : ""),
+                        "fechaAutorizacion", (a0.getFechaAutorizacion() != null
+                                ? a0.getFechaAutorizacion().toString()
+                                : ""),
                         "ambiente", safeStr(a0.getAmbiente()),
                         "mensajes", mensajes,
                         "claveAcceso", claveAcceso
                 ));
             }
 
-            // Extraemos el XML autorizado (el comprobante viene en CDATA dentro de <comprobante>)
-            String xmlAutorizado = extraerXmlAutorizado(rc);
+            // =========================
+            // 4) Extraer XML autorizado (factura dentro de <comprobante><![CDATA[...]]>)
+            // =========================
+            String xmlAutorizado = sendXmlToSriService.extraerXmlAutorizado(rc);
             if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
                 return ResponseEntity.status(500).body(Map.of(
                         "error", "No se pudo extraer el XML autorizado del SRI.",
@@ -801,8 +830,17 @@ public class SRI_Controller {
                 ));
             }
 
-            // --- modos de respuesta ---
-            // 1) Forzar descarga
+            String numeroAutorizacion = safeStr(autorizada.getNumeroAutorizacion());
+            String fechaAutorizacion = (autorizada.getFechaAutorizacion() != null
+                    ? autorizada.getFechaAutorizacion().toString()
+                    : "");
+            String ambiente = safeStr(autorizada.getAmbiente());
+
+            // =========================
+            // 5) Modos de respuesta
+            // =========================
+
+            // 1) Forzar descarga del XML autorizado
             if (download) {
                 String nombre = "autorizado_" + claveAcceso + ".xml";
                 return ResponseEntity.ok()
@@ -811,19 +849,19 @@ public class SRI_Controller {
                         .body(xmlAutorizado);
             }
 
-            // 2) Retornar directamente el XML como application/xml
+            // 2) Retornar directamente el XML como application/xml (solo la factura)
             if (returnXml) {
                 return ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_XML)
                         .body(xmlAutorizado);
             }
 
-            // 3) Resumen JSON (sin XML)
+            // 3) Resumen JSON (sin XML), incluyendo número y fecha de autorización
             return ResponseEntity.ok(Map.of(
                     "estado", "AUTORIZADO",
-                    "numeroAutorizacion", safeStr(autorizada.getNumeroAutorizacion()),
-                    "fechaAutorizacion", (autorizada.getFechaAutorizacion() != null ? autorizada.getFechaAutorizacion().toString() : ""),
-                    "ambiente", safeStr(autorizada.getAmbiente()),
+                    "numeroAutorizacion", numeroAutorizacion,
+                    "fechaAutorizacion", fechaAutorizacion,
+                    "ambiente", ambiente,
                     "claveAcceso", claveAcceso
             ));
 
@@ -837,7 +875,178 @@ public class SRI_Controller {
         }
     }
 
-    private static String safeStr(Object o) { return (o == null) ? "" : o.toString(); }
+    // ========== 1) Consultar por CLAVE DE ACCESO ==========
+    @GetMapping(
+            value = "/autorizacion",
+            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE }
+    )
+    public ResponseEntity<?> consultarAutorizacion(
+            @RequestParam String claveAcceso,
+            @RequestParam(defaultValue = "false") boolean wait,        // true = polling
+            @RequestParam(defaultValue = "60") int attempts,           // intentos de polling
+            @RequestParam(defaultValue = "8000") long sleepMillis,     // pausa base entre intentos (ms)
+            @RequestParam(defaultValue = "true") boolean returnXml,    // true = retornar application/xml
+            @RequestParam(defaultValue = "false") boolean download     // true = forzar descarga
+    ) {
+        try {
+            RespuestaComprobante rc;
+            System.out.println("CONSULTANDO...");
+
+            // =========================
+            // 1) Consulta con o sin polling
+            // =========================
+            if (wait) {
+                rc = sendXmlToSriService.consultarAutorizacionConEsperaPorClave(
+                        claveAcceso.trim(),
+                        attempts,
+                        sleepMillis,
+                        sleepMillis * 4,
+                        1.5,
+                        true
+                );
+            } else {
+                rc = sendXmlToSriService.consultarAutorizacion(claveAcceso.trim());
+            }
+
+            if (rc == null) {
+                return ResponseEntity.status(500).body(Map.of(
+                        "error", "Respuesta nula del servicio de autorización del SRI",
+                        "claveAcceso", claveAcceso
+                ));
+            }
+
+            // =========================
+            // 2) Normalizar número de comprobantes
+            // =========================
+            int num = 0;
+            try {
+                num = (rc.getNumeroComprobantes() == null)
+                        ? 0
+                        : Integer.parseInt(rc.getNumeroComprobantes().trim());
+            } catch (NumberFormatException ignore) { }
+
+            if (num <= 0
+                    || rc.getAutorizaciones() == null
+                    || rc.getAutorizaciones().getAutorizacion() == null
+                    || rc.getAutorizaciones().getAutorizacion().isEmpty()) {
+
+                return ResponseEntity.status(202).body(Map.of(
+                        "estado", "PENDIENTE",
+                        "detalle", "Aún no hay autorizaciones disponibles para la clave.",
+                        "claveAcceso", claveAcceso
+                ));
+            }
+
+            var lista = rc.getAutorizaciones().getAutorizacion();
+
+            // =========================
+            // 3) Intentar encontrar una AUTORIZADO
+            // =========================
+            var autorizada = lista.stream()
+                    .filter(a -> "AUTORIZADO".equalsIgnoreCase(safeStr(a.getEstado())))
+                    .findFirst()
+                    .orElse(null);
+
+            if (autorizada == null) {
+                // No hubo “AUTORIZADO”, devolvemos diagnóstico de la primera autorización
+                var a0 = lista.get(0);
+                var mensajes = (a0.getMensajes() != null && a0.getMensajes().getMensaje() != null)
+                        ? a0.getMensajes().getMensaje().stream().map(m -> Map.of(
+                        "identificador", safeStr(m.getIdentificador()),
+                        "mensaje", safeStr(m.getMensaje()),
+                        "informacionAdicional", safeStr(m.getInformacionAdicional())
+                )).toList()
+                        : java.util.List.of();
+
+                return ResponseEntity.status(400).body(Map.of(
+                        "estadoAutorizacion", safeStr(a0.getEstado()),
+                        "numeroAutorizacion", safeStr(a0.getNumeroAutorizacion()),
+                        "fechaAutorizacion", (a0.getFechaAutorizacion() != null
+                                ? a0.getFechaAutorizacion().toString()
+                                : ""),
+                        "ambiente", safeStr(a0.getAmbiente()),
+                        "mensajes", mensajes,
+                        "claveAcceso", claveAcceso
+                ));
+            }
+
+            // =========================
+            // 4) Construir XML COMPLETO DE AUTORIZACIÓN
+            // =========================
+
+            // El comprobante (factura) viene como String en <comprobante><![CDATA[...]]>
+            String xmlFactura = safeStr(autorizada.getComprobante());
+            if (xmlFactura.isBlank()) {
+                return ResponseEntity.status(500).body(Map.of(
+                        "error", "La autorización no contiene XML de comprobante.",
+                        "claveAcceso", claveAcceso
+                ));
+            }
+
+            String estado = safeStr(autorizada.getEstado());
+            String numeroAutorizacion = safeStr(autorizada.getNumeroAutorizacion());
+            String fechaAutorizacion = (autorizada.getFechaAutorizacion() != null
+                    ? autorizada.getFechaAutorizacion().toXMLFormat()
+                    : "");
+            String ambiente = safeStr(autorizada.getAmbiente());
+
+            // XML completo como lo devuelve el SRI (wrapper <autorizacion> + comprobante en CDATA)
+            String xmlAutorizacionCompleta =
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                            "<autorizacion>\n" +
+                            "  <estado>" + estado + "</estado>\n" +
+                            "  <numeroAutorizacion>" + numeroAutorizacion + "</numeroAutorizacion>\n" +
+                            "  <fechaAutorizacion>" + fechaAutorizacion + "</fechaAutorizacion>\n" +
+                            "  <ambiente>" + ambiente + "</ambiente>\n" +
+                            "  <comprobante><![CDATA[" + xmlFactura + "]]></comprobante>\n" +
+                            "</autorizacion>";
+
+            // =========================
+            // 5) Modos de respuesta
+            // =========================
+
+            // 1) Forzar descarga del XML **COMPLETO**
+            if (download) {
+                String nombre = "autorizacion_" + claveAcceso + ".xml";
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_XML)
+                        .header("Content-Disposition", "attachment; filename=\"" + nombre + "\"")
+                        .body(xmlAutorizacionCompleta);
+            }
+
+            // 2) Retornar directamente el XML como application/xml (wrapper + fecha + número + factura)
+            if (returnXml) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_XML)
+                        .body(xmlAutorizacionCompleta);
+            }
+
+            // 3) Resumen JSON (sin XML), incluyendo número y fecha de autorización
+            return ResponseEntity.ok(Map.of(
+                    "estado", "AUTORIZADO",
+                    "numeroAutorizacion", numeroAutorizacion,
+                    "fechaAutorizacion", fechaAutorizacion,
+                    "ambiente", ambiente,
+                    "claveAcceso", claveAcceso
+            ));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Error consultando autorización en SRI",
+                    "detalle", e.getMessage(),
+                    "claveAcceso", claveAcceso
+            ));
+        }
+    }
+
+
+    // helper simple si no lo tienes:
+    private String safeStr(Object o) {
+        return (o == null) ? "" : o.toString().trim();
+    }
+
+
 
 
     // ========== 2) Consultar por XML (extrae <claveAcceso>) ==========
@@ -880,9 +1089,7 @@ public class SRI_Controller {
             } else {
                 rc = sendXmlToSriService.consultarAutorizacion(clave);
             }
-
             return ResponseEntity.ok( mapRespuestaAutorizacion(rc, includeXml) );
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of(
@@ -899,6 +1106,7 @@ public class SRI_Controller {
     @GetMapping("/generar-pdf")
     public ResponseEntity<?> generarPdf(@RequestParam Long idfactura) {
         try {
+            System.out.println("GENERANDO PDF");
             // 1) Traer la factura del otro microservicio
             String url = eurekaServiceUrl + ":8080/fec_factura/factura?idfactura=" + idfactura;
             FecFacturaDTO factura = restTemplate.getForObject(url, FecFacturaDTO.class);
@@ -920,10 +1128,13 @@ public class SRI_Controller {
 
             ByteArrayOutputStream pdfStream;
             if (fechaEmision != null && fechaEmision.isBefore(fechaLimite)) {
+                System.out.println("ONE");
                 pdfStream = xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado);
             } else {
+                System.out.println("TWO");
+
                 // igual para == y > usamos la plantilla nueva
-                pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
+                pdfStream = xmlToPdfService.generarFacturaPDF_v3(xmlAutorizado);
             }
 
             if (pdfStream == null || pdfStream.size() == 0) {

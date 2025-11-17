@@ -15,7 +15,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: locote.fumadote81@gmail.com
-    password: Agress@366
+    password: cson fgjh bzwb pikr
     properties:
       mail.smtp.auth: true
       mail.smtp.starttls.enable: true
@@ -39,10 +39,12 @@ app:
   reports:
     path: /home/epmapaadmin/reportsEpmapat
   mail:
-    from: facturacion@epmapatulcan.gob.ec
+    #from: facturacion@epmapatulcan.gob.ec
+    from: locote.fumadote81@gmail.com
     # opcional:
     display-name: EPMAPA-T
-    reply-to: facturacion@epmapatulcan.gob.ec
+    #reply-to: facturacion@epmapatulcan.gob.ec
+    reply-to: locote.fumadote81@gmail.com
 interes:
   tarea:
     cron: 0 */1 * * * *

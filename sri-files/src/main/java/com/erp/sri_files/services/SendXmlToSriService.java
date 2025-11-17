@@ -1,5 +1,7 @@
 package com.erp.sri_files.services;
 
+import com.erp.sri_files.dto.AutorizacionSriResult;
+import ec.gob.sri.ws.autorizacion.Autorizacion;
 import ec.gob.sri.ws.autorizacion.AutorizacionComprobantesOffline;
 import ec.gob.sri.ws.autorizacion.AutorizacionComprobantesOfflineService;
 import ec.gob.sri.ws.autorizacion.RespuestaComprobante;
@@ -153,8 +155,10 @@ public class SendXmlToSriService {
     // Autorización
     // ======================================================
     /** Consultar autorización por clave de acceso */
-    public RespuestaComprobante consultarAutorizacion(String claveAcceso) throws Exception {
+    public RespuestaComprobante consultar___Autorizacion(String claveAcceso) throws Exception {
         URL wsdlURL = classpathUrl(wsdlLocalAutorizacion);
+
+        //esta se llama en envio batch
         QName qname = new QName("http://ec.gob.sri.ws.autorizacion", "AutorizacionComprobantesOfflineService");
 
         AutorizacionComprobantesOfflineService service =
@@ -167,6 +171,22 @@ public class SendXmlToSriService {
 
         return port.autorizacionComprobante(claveAcceso.trim());
     }
+    public RespuestaComprobante consultarAutorizacion(String claveAcceso) throws Exception {
+        URL wsdlURL = classpathUrl(wsdlLocalAutorizacion);
+
+        QName qname = new QName("http://ec.gob.sri.ws.autorizacion", "AutorizacionComprobantesOfflineService");
+
+        AutorizacionComprobantesOfflineService service =
+                new AutorizacionComprobantesOfflineService(wsdlURL, qname);
+        AutorizacionComprobantesOffline port =
+                service.getAutorizacionComprobantesOfflinePort();
+
+        applyTimeouts(port);
+        overrideEndpoint(port, /* autorizacion */ true);
+
+        return port.autorizacionComprobante(claveAcceso.trim());
+    }
+
 
     /**
      * Polling por autorización usando una función de consulta (infiere la clave desde el XML)
@@ -194,8 +214,62 @@ public class SendXmlToSriService {
         }
         return ultimo; // podría venir sin autorizaciones (pendiente)
     }
+    public AutorizacionSriResult consultar_Autorizacion(String claveAcceso) throws Exception {
+        AutorizacionSriResult result = new AutorizacionSriResult();
 
-    
+        // Llamas a tu método actual
+        RespuestaComprobante resp = consultarAutorizacion(claveAcceso);
+
+        if (resp == null || resp.getAutorizaciones() == null ||
+                resp.getAutorizaciones().getAutorizacion().isEmpty()) {
+
+            result.setAutorizado(false);
+            result.setMensaje("Sin autorizaciones devueltas por el SRI");
+            return result;
+        }
+
+        Autorizacion aut = resp.getAutorizaciones().getAutorizacion().get(0);
+
+        String estado = (aut.getEstado() == null ? "" : aut.getEstado().trim());
+        result.setMensaje(estado);
+
+        if ("AUTORIZADO".equalsIgnoreCase(estado)) {
+            result.setAutorizado(true);
+
+            // Número de autorización
+            //result.setNumeroAutorizacion(
+                 //   aut.getNumeroAutorizacion() == null ? "" : aut.getNumeroAutorizacion().trim()
+            //);
+
+            // Fecha/hora de autorización
+            if (aut.getFechaAutorizacion() != null) {
+                result.setFechaAutorizacion(
+                        aut.getFechaAutorizacion()
+                                .toGregorianCalendar()
+                                .toZonedDateTime()
+                                .toLocalDateTime()
+                );
+            }
+
+            // XML autorizado (contenido de <comprobante>)
+            String xml = aut.getComprobante();
+            if (xml != null) {
+                xml = xml.trim();
+                if (xml.startsWith("<![CDATA[")) xml = xml.substring(9);
+                if (xml.endsWith("]]>")) xml = xml.substring(0, xml.length()-3);
+            }
+            result.setXmlAutorizado(xml);
+
+        } else {
+            result.setAutorizado(false);
+            // NO AUTORIZADO, EN PROCESO, etc.
+        }
+
+        return result;
+    }
+
+
+
 
     /**
      * Polling de autorización por clave de acceso con backoff exponencial y jitter.
@@ -208,6 +282,8 @@ public class SendXmlToSriService {
      * @param cortarEnNoAutorizado true = cortamos si llega NO AUTORIZADO
      * @return RespuestaComprobante del último intento (idealmente con estado definitivo)
      */
+
+    //llamando desde controller
     public RespuestaComprobante consultarAutorizacionConEsperaPorClave(
             String claveAcceso,
             int maxIntentos,
@@ -262,6 +338,8 @@ public class SendXmlToSriService {
         return rc.getAutorizaciones().getAutorizacion().stream().findFirst().orElse(null);
     }
 
+
+
     private static String _s(String v){ return v == null ? "" : v.trim(); }
     // ---- Helper: extraer XML AUTORIZADO (CDATA de <comprobante>) ----
     public String _extraerXmlAutorizado(RespuestaComprobante rc) {
@@ -296,6 +374,51 @@ public class SendXmlToSriService {
 
     private boolean isDefinitivo(String estado){
         return "AUTORIZADO".equalsIgnoreCase(estado) || "NO AUTORIZADO".equalsIgnoreCase(estado);
+    }
+
+
+    public AutorizacionSriResult consultar_sutorizacion(String claveAcceso) {
+        AutorizacionSriResult result = new AutorizacionSriResult();
+
+        try {
+            // 👉 Usamos tu propio método que ya arma el port y llama al SRI
+            RespuestaComprobante resp = consultarAutorizacion(claveAcceso);
+
+            if (resp == null || resp.getAutorizaciones() == null ||
+                    resp.getAutorizaciones().getAutorizacion() == null ||
+                    resp.getAutorizaciones().getAutorizacion().isEmpty()) {
+
+                result.setAutorizado(false);
+                result.setMensaje("Sin autorizaciones devueltas por el SRI");
+                return result;
+            }
+
+            Autorizacion aut = resp.getAutorizaciones().getAutorizacion().get(0);
+
+            if ("AUTORIZADO".equalsIgnoreCase(s(aut.getEstado()))) {
+                result.setAutorizado(true);
+                result.setXmlAutorizado(aut.getComprobante());
+                result.setMensaje("AUTORIZADO");
+
+                if (aut.getFechaAutorizacion() != null) {
+                    result.setFechaAutorizacion(
+                            aut.getFechaAutorizacion()
+                                    .toGregorianCalendar()
+                                    .toZonedDateTime()
+                                    .toLocalDateTime()
+                    );
+                }
+            } else {
+                result.setAutorizado(false);
+                result.setMensaje(s(aut.getEstado())); // NO AUTORIZADO, EN PROCESO, etc.
+            }
+
+        } catch (Exception e) {
+            result.setAutorizado(false);
+            result.setMensaje("Error al consultar SRI: " + e.getMessage());
+        }
+
+        return result;
     }
 
     /** Devuelve el XML autorizado (comprobante dentro de CDATA) o null. */
