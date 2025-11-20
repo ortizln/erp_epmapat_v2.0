@@ -70,8 +70,6 @@ public class Fec_facturaService {
       return dao.getNroFactura(idfactura);
    }
 
-
-
     // CREAR LAS FACTURAS
     public Map<String, Object> generarFecFactura(Long idfactura) {
         Map<String, Object> response = new HashMap<>();

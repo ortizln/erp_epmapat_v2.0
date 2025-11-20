@@ -338,24 +338,6 @@ public class SendXmlToSriService {
         return rc.getAutorizaciones().getAutorizacion().stream().findFirst().orElse(null);
     }
 
-
-
-    private static String _s(String v){ return v == null ? "" : v.trim(); }
-    // ---- Helper: extraer XML AUTORIZADO (CDATA de <comprobante>) ----
-    public String _extraerXmlAutorizado(RespuestaComprobante rc) {
-        var a = getFirstAuth(rc);
-        if (a == null) return null;
-        if (!"AUTORIZADO".equalsIgnoreCase(s(a.getEstado()))) return null;
-        var comp = a.getComprobante();
-        if (comp == null) return null;
-        String xml = comp.trim();
-        // algunos servicios retornan con CDATA; limpiar
-        if (xml.startsWith("<![CDATA[")) xml = xml.substring(9);
-        if (xml.endsWith("]]>")) xml = xml.substring(0, xml.length()-3);
-        return xml.trim();
-    }
-
-
     // === Helpers breves ===
     private static String s(String v){ return v == null ? "" : v.trim(); }
 
@@ -374,51 +356,6 @@ public class SendXmlToSriService {
 
     private boolean isDefinitivo(String estado){
         return "AUTORIZADO".equalsIgnoreCase(estado) || "NO AUTORIZADO".equalsIgnoreCase(estado);
-    }
-
-
-    public AutorizacionSriResult consultar_sutorizacion(String claveAcceso) {
-        AutorizacionSriResult result = new AutorizacionSriResult();
-
-        try {
-            // 👉 Usamos tu propio método que ya arma el port y llama al SRI
-            RespuestaComprobante resp = consultarAutorizacion(claveAcceso);
-
-            if (resp == null || resp.getAutorizaciones() == null ||
-                    resp.getAutorizaciones().getAutorizacion() == null ||
-                    resp.getAutorizaciones().getAutorizacion().isEmpty()) {
-
-                result.setAutorizado(false);
-                result.setMensaje("Sin autorizaciones devueltas por el SRI");
-                return result;
-            }
-
-            Autorizacion aut = resp.getAutorizaciones().getAutorizacion().get(0);
-
-            if ("AUTORIZADO".equalsIgnoreCase(s(aut.getEstado()))) {
-                result.setAutorizado(true);
-                result.setXmlAutorizado(aut.getComprobante());
-                result.setMensaje("AUTORIZADO");
-
-                if (aut.getFechaAutorizacion() != null) {
-                    result.setFechaAutorizacion(
-                            aut.getFechaAutorizacion()
-                                    .toGregorianCalendar()
-                                    .toZonedDateTime()
-                                    .toLocalDateTime()
-                    );
-                }
-            } else {
-                result.setAutorizado(false);
-                result.setMensaje(s(aut.getEstado())); // NO AUTORIZADO, EN PROCESO, etc.
-            }
-
-        } catch (Exception e) {
-            result.setAutorizado(false);
-            result.setMensaje("Error al consultar SRI: " + e.getMessage());
-        }
-
-        return result;
     }
 
     /** Devuelve el XML autorizado (comprobante dentro de CDATA) o null. */

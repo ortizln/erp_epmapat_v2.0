@@ -377,6 +377,7 @@ public class EnvioSriBatchService {
                     if (pdfStream == null || pdfStream.size() == 0) {
                         // si falla PDF, deja al menos la factura autorizada guardada
                         f.setErrores("Factura autorizada, pero error generando PDF");
+                        f.setEstado("O");
                         facturaR.save(f);
                         return;
                     }
@@ -416,13 +417,52 @@ public class EnvioSriBatchService {
                             + safeStr(f.getSecuencial());
 
                     String htmlBody =
-                            "<h1>Factura electrónica autorizada</h1>" +
-                                    "<p>Estimado/a " +
-                                    (f.getRazonsocialcomprador() != null ? f.getRazonsocialcomprador() : "cliente") +
-                                    ",</p>" +
-                                    "<p>Adjuntamos su comprobante electrónico en formato PDF y XML.</p>" +
-                                    "<p>Estado SRI: AUTORIZADO</p>" +
-                                    "<p>Saludos,<br>EPMAPA-T</p>";
+                            "<div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px;'>"
+
+                                    // Logo
+                                    + "<div style='text-align: center; margin-bottom: 20px;'>"
+                                    + "    <img src='https://epmapatulcan.gob.ec/wp/wp-content/uploads/2021/05/LOGO-HORIZONTAL.png' alt='EPMAPA-T' style='max-width: 180px;'/>"
+                                    + "</div>"
+
+                                    // Título
+                                    + "<h2 style='color: #0b5394; text-align: center;'>Factura Electrónica Autorizada</h2>"
+
+                                    // Saludo
+                                    + "<p>Estimado/a <strong>"
+                                    + (f.getRazonsocialcomprador() != null ? f.getRazonsocialcomprador() : "cliente")
+                                    + "</strong>,</p>"
+
+                                    + "<p>Adjuntamos su comprobante electrónico en formato PDF y XML correspondiente a su compra realizada.</p>"
+
+                                    // Estado SRI
+                                    + "<p><strong>Estado SRI:</strong> <span style='color: green;'>AUTORIZADO</span></p>"
+
+                                    // Separador
+                                    + "<hr style='border: none; border-top: 1px solid #ccc; margin: 25px 0;'>"
+
+                                    // Información de la empresa
+                                    + "<h3 style='color: #0b5394;'>Información de la Empresa</h3>"
+                                    + "<p>"
+                                    + "EPMAPA-T<br>"
+                                    + "Empresa Pública Municipal de Agua Potable y Alcantarillado de Tulcán<br>"
+                                    + "Dirección: Ca. Juan Ramón Arellano y Bolívar, Tulcán – Ecuador<br>"
+                                    + "Horario de atención: Lunes a Viernes 07h30 - 16h30<br>"
+                                    + "Teléfono: (06) 298 0440<br>"
+                                    + "Correo: <a href='mailto:info@epmapatulcan.gob.ec'>info@epmapatulcan.gob.ec</a>"
+                                    + "</p>"
+
+                                    // Redes sociales
+                                    + "<h4 style='margin-top: 20px;'>Síguenos en nuestras redes sociales:</h4>"
+                                    + "<p>"
+                                    + "Facebook: <a href='https://www.facebook.com/epmapat2023' target='_blank'>facebook.com/epmapat2023</a><br>"
+                                    + "Instagram: <a href='https://www.instagram.com/epmapat_/' target='_blank'>@epmapat_</a><br>"
+                                    + "</p>"
+
+                                    // Despedida
+                                    + "<p style='margin-top: 30px;'>Gracias por confiar en nosotros.<br>Atentamente,<br><strong>EPMAPA-T</strong></p>"
+
+                                    + "</div>";
+
 
                     Map<String,String> inlineImages = Collections.emptyMap();
 

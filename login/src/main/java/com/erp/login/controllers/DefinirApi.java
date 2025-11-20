@@ -20,6 +20,7 @@ public class DefinirApi {
 
     @GetMapping("/{iddefinir}")
     public ResponseEntity<Definir> getByIddefinir(@PathVariable Long iddefinir) {
+        System.out.println("Consultando definir");
         Definir definir = defServicio.findById(iddefinir).orElse(null);
         return definir != null ? ResponseEntity.ok(definir) : ResponseEntity.noContent().build();
     }
