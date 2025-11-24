@@ -186,6 +186,7 @@ public class FacturasApi {
                             _factura.setHoracobro(hora);
                             _factura.setUsuariocobro(_user);
                             _factura.setInterescobrado(interesapagar);
+                            _factura.setFormapago(6L);
                             _factura.setSecuencialfacilito(facturaRequest.getSecuencial());
                             _factura.setFechacompensacion(facturaRequest.getFechacompensacion());
                             _factura.setSwiva(impuestoService.calcularIva(facturaId));

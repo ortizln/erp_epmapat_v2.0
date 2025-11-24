@@ -23,7 +23,7 @@ import java.util.function.Function;
 public class SendXmlToSriService {
 
     /** 1 = PRUEBAS, 2 = PRODUCCIÓN */
-    private int ambiente = 1;
+    private int ambiente = 2;
 
     // === WSDL locales (classpath) ===
     @Value("${sri.wsdl.local.recepcion:wsdl/RecepcionComprobantesOffline.wsdl}")
@@ -46,7 +46,7 @@ public class SendXmlToSriService {
     private String epAutorizacionProd;
 
     // Ambiente por properties (1|2)
-    @Value("${sri.ambiente:1}")
+    @Value("${sri.ambiente:2}")
     public void setAmbiente(int ambiente) { this.ambiente = (ambiente == 2) ? 2 : 1; }
     public int getAmbiente() { return ambiente; }
 

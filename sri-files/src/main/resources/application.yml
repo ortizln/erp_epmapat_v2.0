@@ -49,7 +49,7 @@ interes:
   tarea:
     cron: 0 */1 * * * *
 sri:
-  ambiente: 1 # 1=PRUEBAS, 2=PRODUCCIÓN
+  ambiente: 2 # 1=PRUEBAS, 2=PRODUCCIÓN
   polling:
     attempts: 40          # intentos máx
     initialSleepMs: 2000  # primera espera
