@@ -1,8 +1,10 @@
 package com.erp.sri_files.utils;
 
 import com.erp.sri_files.dto.AutorizacionInfo;
+import com.erp.sri_files.dto.AutorizacionSriResult;
 import ec.gob.sri.ws.autorizacion.RespuestaComprobante;
 import javax.xml.datatype.XMLGregorianCalendar;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +38,42 @@ public final class SriAutorizacionAdapter {
 
         return Optional.of(new AutorizacionInfo(ok, numAut, fecha, xmlAut, mensajes));
     }
+    public static Optional<AutorizacionInfo> from_Resultado(AutorizacionSriResult rc) {
+        if (rc == null) return Optional.empty();
+
+        boolean ok = rc.isAutorizado();
+// En el adapter, si no hay número de autorización en el DTO:
+        String numAut = rc.getNumeroAutorizacion();
+        if ((numAut == null || numAut.isBlank()) && rc.getXmlAutorizado() != null) {
+            // ejemplo: extraer <claveAcceso>...</claveAcceso> del comprobante
+            numAut = extraerClaveDesdeXml(rc.getXmlAutorizado());
+        }
+        LocalDateTime fecha = rc.getFechaAutorizacion();
+
+        byte[] xmlAut = null;
+        try {
+            if (rc.getXmlAutorizado() != null) {
+                xmlAut = rc.getXmlAutorizado().getBytes(StandardCharsets.UTF_8);
+            }
+        } catch (Exception ignored) {}
+
+        String mensajes = rc.getMensaje() == null ? "" : rc.getMensaje();
+
+        return Optional.of(new AutorizacionInfo(ok, numAut, fecha, xmlAut, mensajes));
+    }
+    private static String extraerClaveDesdeXml(String xml) {
+        try {
+            int i = xml.indexOf("<claveAcceso>");
+            int j = xml.indexOf("</claveAcceso>");
+            if (i >= 0 && j > i) {
+                return xml.substring(i + "<claveAcceso>".length(), j).trim();
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+
+
 
     private static LocalDateTime parseFecha(Object raw) {
         try {

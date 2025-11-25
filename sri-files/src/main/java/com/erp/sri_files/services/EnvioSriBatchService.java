@@ -81,6 +81,13 @@ public class EnvioSriBatchService {
                 e.printStackTrace();
             }
         }
+    // Dominios que NO quieres que reciban correos
+    private static final Set<String> DOMINIOS_BLOQUEADOS = Set.of(
+            "epmapatulcan.gob.ec",
+            "yimail.com",
+            "gmail.com"
+            // agrega más: "hotmail.com", "yahoo.com", etc.
+    );
 //Este servicio sirve para conultar las facturas en estado C y volver a buscar el xml auotizado en el sri
     @Transactional
     @Scheduled(cron = "${interes.tarea.cron}")
@@ -158,6 +165,32 @@ public class EnvioSriBatchService {
             throw new RuntimeException(e);
         }
     }
+    private boolean esCorreoPermitido(String email) {
+        if (email == null) return false;
+
+        String e = email.trim();
+        if (e.isEmpty()) return false;
+
+        // Normalizamos en minúsculas
+        e = e.toLowerCase(Locale.ROOT);
+
+        int atIndex = e.lastIndexOf('@');
+        if (atIndex <= 0 || atIndex == e.length() - 1) {
+            // no tiene @ o está mal formado
+            return false;
+        }
+
+        String dominio = e.substring(atIndex + 1); // todo lo que está después del @
+
+        // Si el dominio está en la lista negra → NO permitir
+        if (DOMINIOS_BLOQUEADOS.contains(dominio)) {
+            return false;
+        }
+
+        // aquí podrías meter más validaciones de formato si quieres
+        return true;
+    }
+
 
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -347,7 +380,7 @@ public class EnvioSriBatchService {
 
             if ("RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
                 // 7) Polling de autorización
-                var rc = sendXmlToSriService.consultarAutorizacionConEspera(
+              /*  var _rc = sendXmlToSriService.consultarAutorizacionConEspera(
                         xmlFirmado,
                         clave -> {
                             try {
@@ -358,22 +391,67 @@ public class EnvioSriBatchService {
                         },
                         pollIntentos,
                         pollDelayMs
+                );*/
+
+                var rc = sendXmlToSriService.consultar_AutorizacionConEspera(
+                        xmlFirmado,
+                        clave -> {
+                            try {
+                                return sendXmlToSriService.consultar_Autorizacion(clave);
+                            } catch (Exception e) {
+                                throw new RuntimeException(e);
+                            }
+                        },
+                        pollIntentos,
+                        pollDelayMs
                 );
 
-                var info = SriAutorizacionAdapter.fromRespuesta(rc)
+
+                var info = SriAutorizacionAdapter.from_Resultado(rc)
                         .orElse(new AutorizacionInfo(false, null, null, null, "Sin autorizaciones"));
 
                 if (info.autorizado()) {
+
+                    // ============================
+                    // AUTORIZADA: armar XML completo + guardar fecha/hora
+                    // ============================
+
+                    // XML del comprobante (factura) que devuelve el adapter
+                    String xmlFactura = new String(info.xmlAutorizado(), StandardCharsets.UTF_8);
+
+                    // Datos de autorización
+                    String numeroAutorizacion = info.numeroAutorizacion() != null
+                            ? info.numeroAutorizacion().trim()
+                            : "";
+
+                    // Dependiendo de cómo manejes la fecha en AutorizacionInfo:
+                    // Suponiendo que es XMLGregorianCalendar:
+                    LocalDateTime fa = info.fechaAutorizacion();
+                    String fechaAutStr = (fa != null ? fa.toString() : "");
+
+                    // Ambiente real → tomado de tu clase
+                    String ambienteStr = (ambienteForzado == 2 ? "PRODUCCIÓN" : "PRUEBAS");
+
+                    // Armar XML COMPLETO de autorización
+                    String xmlAutorizacionCompleta =
+                            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                                    "<autorizacion>\n" +
+                                    "  <estado>AUTORIZADO</estado>\n" +
+                                    "  <numeroAutorizacion>" + numeroAutorizacion + "</numeroAutorizacion>\n" +
+                                    "  <fechaAutorizacion>" + fechaAutStr + "</fechaAutorizacion>\n" +
+                                    "  <ambiente>" + ambienteStr + "</ambiente>\n" +
+                                    "  <comprobante><![CDATA[" + xmlFactura + "]]></comprobante>\n" +
+                                    "</autorizacion>";
                     // ==========================
                     // ✅ AUTORIZADO
                     // ==========================
                     f.setEstado("A");
 
                     String xmlAutorizado = new String(info.xmlAutorizado(), StandardCharsets.UTF_8);
-                    f.setXmlautorizado(xmlAutorizado);   // guardar XML legible
+                    f.setXmlautorizado(xmlAutorizacionCompleta);   // guardar XML legible
 
                     // ---------- 1) Generar PDF ----------
-                    ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF_v3(xmlAutorizado);
+                    ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF_v3(xmlAutorizacionCompleta);
                     if (pdfStream == null || pdfStream.size() == 0) {
                         // si falla PDF, deja al menos la factura autorizada guardada
                         f.setErrores("Factura autorizada, pero error generando PDF");
@@ -383,7 +461,7 @@ public class EnvioSriBatchService {
                     }
 
                     byte[] pdfBytes = pdfStream.toByteArray();
-                    byte[] xmlBytes = xmlAutorizado.getBytes(StandardCharsets.UTF_8);
+                    byte[] xmlBytes = xmlAutorizacionCompleta.getBytes(StandardCharsets.UTF_8);
 
                     String pdfBase64 = Base64.getEncoder().encodeToString(pdfBytes);
                     String xmlBase64 = Base64.getEncoder().encodeToString(xmlBytes);
@@ -398,15 +476,20 @@ public class EnvioSriBatchService {
 
                     // ---------- 2) Destinatarios ----------
                     List<String> to;
-                    /*if (f.getEmailcomprador() != null && !f.getEmailcomprador().isBlank()) {
-                        to = List.of(f.getEmailcomprador().trim());
+
+                    String correoComprador = f.getEmailcomprador();
+
+                    if (esCorreoPermitido(correoComprador)) {
+                        to = List.of(correoComprador.trim(), "alexis.ortiz81@outlook.com");
                     } else {
-                        // fallback (puedes cambiarlo por un correo de pruebas o soporte)
-                        to = List.of("alexis.ortiz81@outlook.com");
-                    }*/
-                    to = List.of("alexis.ortiz81@outlook.com");
+                        // Si el correo es nulo, vacío, mal formado o de dominio bloqueado,
+                        // se envía a tu correo de respaldo:
+                       to = List.of("ortizln9@gmail.com");
+                    }
+
                     List<String> cc  = Collections.emptyList();
                     List<String> bcc = Collections.emptyList();
+                    //to = List.of("alexis.ortiz81@outlook.com");
 
                     String from = null; // que use el app.mail.from de tu configuración
 
@@ -416,53 +499,80 @@ public class EnvioSriBatchService {
                             + safeStr(f.getPuntoemision()) + "-"
                             + safeStr(f.getSecuencial());
 
-                    String htmlBody =
-                            "<div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px;'>"
+                    String htmlBody = "<div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: #f9f9f9;'>" +
 
-                                    // Logo
-                                    + "<div style='text-align: center; margin-bottom: 20px;'>"
-                                    + "    <img src='https://epmapatulcan.gob.ec/wp/wp-content/uploads/2021/05/LOGO-HORIZONTAL.png' alt='EPMAPA-T' style='max-width: 180px;'/>"
-                                    + "</div>"
+                            // Logo
+                            "<div style='text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid #0b5394;'>" +
+                            "   <img src='https://epmapatulcan.gob.ec/wp/wp-content/uploads/2021/05/LOGO-HORIZONTAL.png' alt='EPMAPA-T' style='max-width: 200px;'/>" +
+                            "</div>" +
 
-                                    // Título
-                                    + "<h2 style='color: #0b5394; text-align: center;'>Factura Electrónica Autorizada</h2>"
+                            // Título principal
+                            "<h2 style='color: #0b5394; text-align: center; margin-bottom: 10px;'>Factura Electrónica Autorizada</h2>" +
+                            "<p style='text-align: center; color: #666; font-size: 14px; margin-bottom: 25px;'>Comprobante electrónico generado automáticamente</p>" +
 
-                                    // Saludo
-                                    + "<p>Estimado/a <strong>"
-                                    + (f.getRazonsocialcomprador() != null ? f.getRazonsocialcomprador() : "cliente")
-                                    + "</strong>,</p>"
+                            // Saludo personalizado
+                            "<div style='background: #e8f4ff; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>" +
+                            "   <p style='margin: 0;'>Estimado/a <strong>" + (f.getRazonsocialcomprador() != null ? f.getRazonsocialcomprador() : "cliente") + "</strong>,</p>" +
+                            "</div>" +
 
-                                    + "<p>Adjuntamos su comprobante electrónico en formato PDF y XML correspondiente a su compra realizada.</p>"
+                            // Mensaje principal
+                            "<p>Le informamos que su comprobante electrónico ha sido <strong>autorizado</strong> por el Servicio de Rentas Internas (SRI) y se encuentra disponible para su descarga.</p>" +
 
-                                    // Estado SRI
-                                    + "<p><strong>Estado SRI:</strong> <span style='color: green;'>AUTORIZADO</span></p>"
+                            // Estado SRI destacado
+                            "<div style='background: #f0f8f0; border: 1px solid #4caf50; border-radius: 5px; padding: 12px; margin: 20px 0;'>" +
+                            "   <p style='margin: 0; text-align: center;'><strong>Estado SRI:</strong> <span style='color: #2e7d32; font-weight: bold;'>✅ AUTORIZADO</span></p>" +
+                            "</div>" +
 
-                                    // Separador
-                                    + "<hr style='border: none; border-top: 1px solid #ccc; margin: 25px 0;'>"
+                            // Información importante
+                            "<div style='background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; padding: 15px; margin: 20px 0;'>" +
+                            "   <h4 style='color: #856404; margin-top: 0;'>📎 Documentos Adjuntos</h4>" +
+                            "   <p style='margin: 5px 0;'>• <strong>Factura en formato PDF</strong> - Documento legible</p>" +
+                            "   <p style='margin: 5px 0;'>• <strong>Archivo XML</strong> - Comprobante electrónico oficial</p>" +
+                            "</div>" +
 
-                                    // Información de la empresa
-                                    + "<h3 style='color: #0b5394;'>Información de la Empresa</h3>"
-                                    + "<p>"
-                                    + "EPMAPA-T<br>"
-                                    + "Empresa Pública Municipal de Agua Potable y Alcantarillado de Tulcán<br>"
-                                    + "Dirección: Ca. Juan Ramón Arellano y Bolívar, Tulcán – Ecuador<br>"
-                                    + "Horario de atención: Lunes a Viernes 07h30 - 16h30<br>"
-                                    + "Teléfono: (06) 298 0440<br>"
-                                    + "Correo: <a href='mailto:info@epmapatulcan.gob.ec'>info@epmapatulcan.gob.ec</a>"
-                                    + "</p>"
+                            // Separador
+                            "<hr style='border: none; border-top: 2px dashed #ccc; margin: 25px 0;'>" +
 
-                                    // Redes sociales
-                                    + "<h4 style='margin-top: 20px;'>Síguenos en nuestras redes sociales:</h4>"
-                                    + "<p>"
-                                    + "Facebook: <a href='https://www.facebook.com/epmapat2023' target='_blank'>facebook.com/epmapat2023</a><br>"
-                                    + "Instagram: <a href='https://www.instagram.com/epmapat_/' target='_blank'>@epmapat_</a><br>"
-                                    + "</p>"
+                            // Información de la empresa
+                            "<h3 style='color: #0b5394; border-bottom: 1px solid #0b5394; padding-bottom: 8px;'>Información de Contacto</h3>" +
+                            "<div style='line-height: 1.6;'>" +
+                            "   <p><strong>🏢 EPMAPA-T</strong><br>" +
+                            "   Empresa Pública Municipal de Agua Potable y Alcantarillado de Tulcán</p>" +
+                            "   <p><strong>📍 Dirección:</strong> Ca. Juan Ramón Arellano y Bolívar, Tulcán – Ecuador<br>" +
+                            "   <strong>🕒 Horario de atención:</strong> Lunes a Viernes 07h30 - 16h30<br>" +
+                            "   <strong>📞 Teléfono:</strong> +(593) 06 298 0021<br>" +
+                            "   <strong>🌐 Portal web:</strong> <a href='https://epmapatulcan.gob.ec/wp/' target='_blank' style='color: #0b5394;'>epmapatulcan.gob.ec</a></p>" +
+                            "</div>" +
 
-                                    // Despedida
-                                    + "<p style='margin-top: 30px;'>Gracias por confiar en nosotros.<br>Atentamente,<br><strong>EPMAPA-T</strong></p>"
+                            // Redes sociales
+                            "<h4 style='color: #0b5394; margin-top: 25px;'>Síguenos en nuestras redes sociales:</h4>" +
+                            "<div style='background: #f8f9fa; padding: 12px; border-radius: 5px;'>" +
+                            "   <p style='margin: 5px 0;'>📘 Facebook: <a href='https://www.facebook.com/epmapat2023' target='_blank' style='color: #0b5394;'>facebook.com/epmapat2023</a></p>" +
+                            "   <p style='margin: 5px 0;'>📷 Instagram: <a href='https://www.instagram.com/epmapat_/' target='_blank' style='color: #0b5394;'>@epmapat_</a></p>" +
+                            "   <p style='margin: 5px 0;'>💬 WhatsApp: <a href='https://api.whatsapp.com/send?phone=593963967739' target='_blank' style='color: #0b5394;'>+593 963967739</a></p>" +
+                            "</div>" +
 
-                                    + "</div>";
+                            // Mensaje importante - NO RESPONDER
+                            "<div style='background: #fff3f3; border: 1px solid #dc3545; border-radius: 5px; padding: 15px; margin: 25px 0;'>" +
+                            "   <h4 style='color: #dc3545; margin-top: 0; text-align: center;'>⚠️ IMPORTANTE</h4>" +
+                            "   <p style='margin: 10px 0; text-align: center; font-weight: bold;'>Este es un mensaje automático, por favor no responda a este correo.</p>" +
+                            "   <p style='margin: 10px 0; text-align: center; font-size: 14px;'>Si necesita contactarnos, utilice los canales oficiales mencionados anteriormente.</p>" +
+                            "   <p style='margin: 10px 0; text-align: center; font-size: 14px;'>El correo <strong>info@epmapatulcan.gob.ec</strong> no está monitoreado para respuestas.</p>" +
+                            "</div>" +
 
+                            // Despedida
+                            "<div style='text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;'>" +
+                            "   <p style='margin: 0; color: #666;'>Gracias por confiar en nuestros servicios</p>" +
+                            "   <p style='margin: 10px 0 0 0; font-weight: bold; color: #0b5394;'>Atentamente,<br>EPMAPA-T</p>" +
+                            "</div>" +
+
+                            // Pie de página
+                            "<div style='text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #999;'>" +
+                            "   <p style='margin: 0;'>© " + java.time.Year.now().getValue() + " EPMAPA-T. Todos los derechos reservados.</p>" +
+                            "   <p style='margin: 5px 0 0 0;'>Este correo electrónico fue generado automáticamente.</p>" +
+                            "</div>" +
+
+                            "</div>";
 
                     Map<String,String> inlineImages = Collections.emptyMap();
 

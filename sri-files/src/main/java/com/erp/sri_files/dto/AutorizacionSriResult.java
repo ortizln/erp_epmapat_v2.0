@@ -11,4 +11,7 @@ public class AutorizacionSriResult {
     private String xmlAutorizado;
     private String mensaje;
     private LocalDateTime fechaAutorizacion;
+    private String numeroAutorizacion;
+
+
 }

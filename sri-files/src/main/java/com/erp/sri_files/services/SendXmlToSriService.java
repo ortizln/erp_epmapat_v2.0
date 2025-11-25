@@ -155,22 +155,6 @@ public class SendXmlToSriService {
     // Autorización
     // ======================================================
     /** Consultar autorización por clave de acceso */
-    public RespuestaComprobante consultar___Autorizacion(String claveAcceso) throws Exception {
-        URL wsdlURL = classpathUrl(wsdlLocalAutorizacion);
-
-        //esta se llama en envio batch
-        QName qname = new QName("http://ec.gob.sri.ws.autorizacion", "AutorizacionComprobantesOfflineService");
-
-        AutorizacionComprobantesOfflineService service =
-                new AutorizacionComprobantesOfflineService(wsdlURL, qname);
-        AutorizacionComprobantesOffline port =
-                service.getAutorizacionComprobantesOfflinePort();
-
-        applyTimeouts(port);
-        overrideEndpoint(port, /* autorizacion */ true);
-
-        return port.autorizacionComprobante(claveAcceso.trim());
-    }
     public RespuestaComprobante consultarAutorizacion(String claveAcceso) throws Exception {
         URL wsdlURL = classpathUrl(wsdlLocalAutorizacion);
 
@@ -214,6 +198,31 @@ public class SendXmlToSriService {
         }
         return ultimo; // podría venir sin autorizaciones (pendiente)
     }
+    public AutorizacionSriResult consultar_AutorizacionConEspera(
+            String xmlFirmado,
+            Function<String, AutorizacionSriResult> consultaFn,
+            int maxIntentos,
+            long sleepMillis) throws Exception {
+
+        String clave = extraerClaveAcceso(xmlFirmado).trim();
+        AutorizacionSriResult ultimo = null;
+
+        for (int i = 1; i <= maxIntentos; i++) {
+
+            ultimo = consultaFn.apply(clave);
+
+            if (ultimo != null && ultimo.isAutorizado()) {
+                return ultimo; // ya autorizado
+            }
+
+            Thread.sleep(sleepMillis);
+        }
+
+        return ultimo; // retorna el último intento
+    }
+
+
+
     public AutorizacionSriResult consultar_Autorizacion(String claveAcceso) throws Exception {
         AutorizacionSriResult result = new AutorizacionSriResult();
 
