@@ -13,7 +13,7 @@ import java.util.Properties;
 @EnableRetry
 public class EmailConfig {
 
-    /*
+    /*CONFIGURACION PARA EL HOST
     *   mail:
     host: ${MAIL_HOST:smtp.elasticemail.com}
     port: ${MAIL_PORT:465}
@@ -25,6 +25,25 @@ public class EmailConfig {
       mail.smtp.ssl.enable: true
       mail.smtp.ssl.checkserveridentity: true
       mail.smtp.ssl.trust: ${MAIL_HOST:smtp.elasticemail.com}
+      mail.smtp.connectiontimeout: 8000
+      mail.smtp.timeout: 8000
+      mail.smtp.writetimeout: 8000
+      mail.debug: true
+    * */
+
+    /*CONFIGURACION PARA EL GMAIL
+    *   mail:
+    host: smtp.gmail.com
+    port: 587
+    username: locote.fumadote81@gmail.com
+    password: cson fgjh bzwb pikr
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+      mail.smtp.ssl.enable: false
+      mail.smtp.ssl.checkserveridentity: true
+      mail.smtp.ssl.trust: smtp.gmail.com
       mail.smtp.connectiontimeout: 8000
       mail.smtp.timeout: 8000
       mail.smtp.writetimeout: 8000
@@ -57,7 +76,7 @@ public class EmailConfig {
         sender.setUsername(username);
         sender.setPassword(password);
 
-       /* Properties props = sender.getJavaMailProperties();
+       Properties props = sender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.ssl.enable", "true");
@@ -67,33 +86,23 @@ public class EmailConfig {
         props.put("mail.debug", String.valueOf(debug));
         props.put("mail.smtp.connectiontimeout", "5000");
         props.put("mail.smtp.timeout", "5000");
-        props.put("mail.smtp.writetimeout", "5000");*/
+        props.put("mail.smtp.writetimeout", "5000");
 
-
+/*  CONFIGURACION PARA EL GMAIL
         Properties props = sender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");
         props.put("mail.smtp.auth", "true");
-
-// Gmail usa STARTTLS, no SSL puro
         props.put("mail.smtp.starttls.enable", "true");   // activar STARTTLS
         props.put("mail.smtp.starttls.required", "true");
-
-// No activar SSL directo (solo si usaras puerto 465)
         props.put("mail.smtp.ssl.enable", "false");
-
-// Trust host
         props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
-
-// Identidad del servidor (opcional)
         props.put("mail.smtp.ssl.checkserveridentity", "true");
 
-// Debug
         props.put("mail.debug", String.valueOf(debug));
 
-// Timeouts
         props.put("mail.smtp.connectiontimeout", "5000");
         props.put("mail.smtp.timeout", "5000");
-        props.put("mail.smtp.writetimeout", "5000");
+        props.put("mail.smtp.writetimeout", "5000");*/
 
 
         return sender;
