@@ -475,23 +475,30 @@ public class EnvioSriBatchService {
                     );
 
                     // ---------- 2) Destinatarios ----------
-                    List<String> to;
+                    //List<String> to;
+// ---------- 2) Destinatarios ----------
+                    List<String> to = Collections.emptyList(); // por defecto: NO enviar a nadie
+                    boolean enviarCorreo = false;
 
                     String correoComprador = f.getEmailcomprador();
 
                     if (esCorreoPermitido(correoComprador)) {
+                        // Correo válido y permitido → enviar
                         to = List.of(correoComprador.trim());
+                        enviarCorreo = true;
                     } else {
-                        // Si el correo es nulo, vacío, mal formado o de dominio bloqueado,
-                        // se envía a tu correo de respaldo:
-                       to = List.of("ortizln9@gmail.com");
+                        // Correo no permitido → NO enviar
+                        enviarCorreo = false;
+
+                        // IMPORTANTE: simplemente seguimos procesando la factura sin enviar correo
+                        System.out.println("⚠️ Correo bloqueado o inválido (" + correoComprador +
+                                ") → No se enviará correo para la factura " + f.getIdfactura());
                     }
 
                     List<String> cc  = Collections.emptyList();
                     List<String> bcc = Collections.emptyList();
-                    //to = List.of("alexis.ortiz81@outlook.com");
+                    String from = null; // usa el app.mail.from
 
-                    String from = null; // que use el app.mail.from de tu configuración
 
                     // ---------- 3) Asunto y cuerpo ----------
                     String subject = "Factura electrónica #"
@@ -589,7 +596,17 @@ public class EnvioSriBatchService {
 
                     try {
                         // si tu MailService tiene send(...) como en el controller:
-                        mailService.send(mailReq);
+                        if (enviarCorreo) {
+                            try {
+                                mailService.send(mailReq);  // solo si enviarCorreo == true
+                            } catch (Exception mailEx) {
+                                f.setEstado("O");
+                                String err = "Error enviando correo: " + mailEx.getMessage();
+                                f.setErrores((f.getErrores() == null) ? err : (f.getErrores() + " | " + err));
+                            }
+                        } else {
+                            System.out.println("ℹ️ Saltando correo para factura " + f.getIdfactura());
+                        }
                     } catch (Exception mailEx) {
                         // si falla el correo, marca como "O" (opcional)
                         f.setEstado("O");

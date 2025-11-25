@@ -180,7 +180,8 @@ services:
           - msvc-pagosonline
   msvc-sri:
     build:
-      context: sri-files
+      context: sri-
+
       dockerfile: Dockerfile
     image: msvc-sri:latest
     container_name: msvc-sri
