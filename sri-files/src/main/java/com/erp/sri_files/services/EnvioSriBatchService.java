@@ -480,7 +480,7 @@ public class EnvioSriBatchService {
                     String correoComprador = f.getEmailcomprador();
 
                     if (esCorreoPermitido(correoComprador)) {
-                        to = List.of(correoComprador.trim(), "alexis.ortiz81@outlook.com");
+                        to = List.of(correoComprador.trim());
                     } else {
                         // Si el correo es nulo, vacío, mal formado o de dominio bloqueado,
                         // se envía a tu correo de respaldo:
