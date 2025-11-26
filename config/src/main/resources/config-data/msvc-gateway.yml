@@ -20,7 +20,7 @@ spring:
         locator:
           enabled: false
       routes:
-        - id: msvc-login
+        - id: msvc-loginy
           uri: http://msvc-login:9091
           #uri: http://localhost:9091
           predicates:
