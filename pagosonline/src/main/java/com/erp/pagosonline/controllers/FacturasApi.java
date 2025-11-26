@@ -139,6 +139,7 @@ public class FacturasApi {
 
     @PutMapping("/cobrar")
     public ResponseEntity<Map<String, Object>> cobrar_Factura(@RequestBody FacturaRequestDTO facturaRequest) throws Exception {
+        LocalTime hora = LocalTime.now(ZoneId.of("America/Guayaquil")).withNano(0);
         Map<String, Object> respuesta = new HashMap<>();
         Long _user = Long.valueOf(AESUtil.descifrar(facturaRequest.getAutentification()));
 
@@ -146,7 +147,7 @@ public class FacturasApi {
         //DECLARAR NUEVA RECAUDACION
         Recaudacion recaudacion = new Recaudacion();
         LocalDateTime date = LocalDateTime.now();
-        LocalTime hora = LocalTime.now(ZoneId.of("America/Guayaquil"));
+       // LocalTime hora = LocalTime.now(ZoneId.of("America/Guayaquil"));
         if(lastConection == null){
             respuesta.put("mensaje", "Caja cerrada no se puede cobrar");
             return ResponseEntity.ok(respuesta);

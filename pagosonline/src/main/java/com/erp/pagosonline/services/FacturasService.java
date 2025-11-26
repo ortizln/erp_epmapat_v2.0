@@ -171,8 +171,8 @@ public class FacturasService {
 
         try {
             // Construimos la URL del microservicio
-            String url = eurekaServiceUrl + ":8080/fec_factura/createFacElectro?idfactura=" + savedFactura.getIdfactura();
-
+          //  String url = eurekaServiceUrl + ":8080/fec_factura/createFacElectro?idfactura=" + savedFactura.getIdfactura();
+            String url ="192.168.0.88:8080/fec_factura/createFacElectro?idfactura=" + savedFactura.getIdfactura();
 
             // Consumimos el microservicio (POST sin body, pero puedes ajustar si requiere JSON)
             ResponseEntity<String> response = restTemplate.getForEntity(url, null, String.class);
