@@ -61,6 +61,4 @@ public class Abonados {
     private Boolean swalcantarillado;
     private Long promedio;
     private String geolocalizacion;
-
-
 }
