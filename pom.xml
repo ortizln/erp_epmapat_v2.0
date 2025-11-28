@@ -24,6 +24,7 @@
   <module>gestiondocumental</module>
   <module>reportes-jr</module>
   <module>sri-files</module>
+    <module>epmapaApi</module>
 </modules>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

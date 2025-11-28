@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: epmapaApi
+  config:
+    import: optional:configserver:http://config-server:8888
+  #autoconfigure:
+  # exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfigura
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+  jackson:
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false #esto sirve para evitar el jsonignore
+  jpa:
+    database: POSTGRESQL
+    #database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate.jdbc.batch_size: 1000
+      hibernate.order_inserts: true
+      hibernate.order_updates: true
+      hibernate.jdbc.fetch_size: 1000
+      open-in-view: false
+  servlet:
+    multipart:
+      max-file-size : 10MB
+      max-request-size: 10MB
+# Database backup configuration
+backup:
+  db:
+    password: Epmapat2025
+    username: postgres
+    url: jdbc:postgresql://192.168.0.88:5432/
+    name:  ErpEpmapaT
+    host: 192.168.0.88
+    port: 5432
+xml:
+  storage:
+    path: /carpeta/xml

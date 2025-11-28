@@ -8,6 +8,7 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="reportes-jr" />
+        <module name="epmapaApi" />
         <module name="gestiondocumental" />
         <module name="eureka" />
         <module name="pagosonline" />
@@ -28,6 +29,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="comercializacion" options="-parameters" />
       <module name="config" options="-parameters" />
+      <module name="epmapaApi" options="-parameters" />
       <module name="eureka" options="-parameters" />
       <module name="gateway" options="-parameters" />
       <module name="gestiondocumental" options="-parameters" />
