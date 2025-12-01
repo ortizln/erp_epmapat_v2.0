@@ -16,7 +16,7 @@ declare -A module_services=(
   ["recaudacion"]="msvc-recaudacion"
   ["gateway"]="msvc-gateway"
   ["reportes-jr"]="msvc-reportesjr"
-  ["epmapaApi"]="msvc-epmapaapi"
+  ["epmapaapi"]="msvc-epmapaapi"
 )
 
 # Colores para output
