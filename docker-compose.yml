@@ -238,10 +238,10 @@ services:
     build:
       context: epmapaapi
       dockerfile: Dockerfile
-    image: msvc-reportesjr:latest
+    image: msvc-epmapaapi:latest
     container_name: msvc-epmapaapi
     ports:
-      - "9097:9097"
+      - "9098:9098"
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -261,7 +261,7 @@ services:
     networks:
       epmapat-nw:
         aliases:
-          - msvc-reportesjr
+          - msvc-epmapaapi
 networks:
   epmapat-nw:
     driver: bridge

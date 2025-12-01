@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Lista de módulos (carpetas)
-modules=("config" "sri-files" "comercializacion" "eureka" "gestiondocumental" "login" "pagosonline" "recaudacion" "gateway" "reportes-jr")
+modules=("config" "sri-files" "comercializacion" "eureka" "gestiondocumental" "login" "pagosonline" "recaudacion" "gateway" "reportes-jr" "epmapaApi")
 #26-novmiebre-2025
 # Mapa módulo → nombre de servicio en docker-compose
 # Ajusta estos nombres si en tu docker-compose.yml usan otros
@@ -16,6 +16,7 @@ declare -A module_services=(
   ["recaudacion"]="msvc-recaudacion"
   ["gateway"]="msvc-gateway"
   ["reportes-jr"]="msvc-reportesjr"
+  ["epmapaApi"]="msvc-epmapaapi"
 )
 
 # Colores para output
@@ -112,6 +113,7 @@ main() {
 
     # ==== Preguntar antes de detener contenedores Docker ====
     log_info "Verificando contenedores Docker en ejecución..."
+
     if docker-compose ps | grep -q "Up"; then
         log_warning "Se detectaron contenedores Docker en ejecución:"
         docker-compose ps
@@ -122,9 +124,10 @@ main() {
         else
             log_info "No se detendrán los contenedores existentes."
         fi
-    else:
+    else
         log_info "No hay contenedores Docker en ejecución."
     fi
+
 
     local failed_modules=()
     local successful_modules=()

@@ -17,7 +17,4 @@ public interface FacturaR extends JpaRepository<Factura, Long>{
     List<Factura> _findByEstado(@Param("estado") String estado, Pageable pageable);
     Page<Factura> findByEstado(String estado, PageRequest pageable);
 
-
-
-
 }

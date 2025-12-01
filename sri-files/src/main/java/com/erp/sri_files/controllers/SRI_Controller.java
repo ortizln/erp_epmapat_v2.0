@@ -10,10 +10,10 @@ import com.erp.sri_files.utils.FirmaComprobantesService.ModoFirma;
 import ec.gob.sri.ws.autorizacion.RespuestaComprobante;
 import ec.gob.sri.ws.recepcion.RespuestaSolicitud;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,40 +30,28 @@ import java.io.ByteArrayOutputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/singsend")
 public class SRI_Controller {
 
     private final SendXmlToSriService sendXmlToSriService;
     private final FirmaComprobantesService firmaService;
     private final RestTemplate restTemplate;
-
-    @Autowired
-    private FacturaR fecFacturaR;
-    @Autowired
-    private FacturaXmlGeneratorService facturaXmlGeneratorService;
-    @Autowired
-    private FacturasService facturasService;
-    @Autowired
-    private XmlToPdfService xmlToPdfService;
-    @Autowired
-    private DefinirR definirService;
-    @Autowired
-    private MailService mailService;
+    private final FacturaR fecFacturaR;
+    private final FacturaXmlGeneratorService facturaXmlGeneratorService;
+    private final FacturasService facturasService;
+    private final XmlToPdfService xmlToPdfService;
+    private final DefinirR definirService;
+    private final MailService mailService;
 
 
     @Value("${eureka.service-url}")
     private String eurekaServiceUrl;
 
-    public SRI_Controller(SendXmlToSriService sendXmlToSriService,
-                          FirmaComprobantesService firmaService, RestTemplate restTemplate) {
-        this.sendXmlToSriService = sendXmlToSriService;
-        this.firmaService = firmaService;
-        this.restTemplate = restTemplate;
-    }
 
     // ===== Helpers / DTOs =====
     public record FirmarResp(String xmlFirmado) {}
@@ -723,160 +711,6 @@ public class SRI_Controller {
 
     // ========== 1) Consultar por CLAVE DE ACCESO ==========
     @GetMapping(
-            value = "/__autorizacion",
-            produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE }
-    )
-    public ResponseEntity<?> __consultarAutorizacion(
-            @RequestParam String claveAcceso,
-            @RequestParam(defaultValue = "false") boolean wait,        // true = polling
-            @RequestParam(defaultValue = "60") int attempts,           // intentos de polling
-            @RequestParam(defaultValue = "8000") long sleepMillis,     // pausa base entre intentos (ms)
-            @RequestParam(defaultValue = "true") boolean returnXml,    // true = retornar application/xml
-            @RequestParam(defaultValue = "false") boolean download     // true = forzar descarga
-    ) {
-        try {
-            RespuestaComprobante rc;
-            System.out.println("CONSULTANDO...");
-            // =========================
-            // 1) Consulta con o sin polling
-            // =========================
-            if (wait) {
-                // Polling por CLAVE usando tu helper consultarAutorizacionConEsperaPorClave
-                rc = sendXmlToSriService.consultarAutorizacionConEsperaPorClave(
-                        claveAcceso.trim(),
-                        attempts,                    // intentos
-                        sleepMillis,                 // sleep inicial
-                        sleepMillis * 4,             // sleep máx
-                        1.5,                         // backoff
-                        true                         // cortar si NO AUTORIZADO
-                );
-            } else {
-                // Consulta simple (un solo hit al WS de AUTORIZACIÓN)
-                rc = sendXmlToSriService.consultarAutorizacion(claveAcceso.trim());
-            }
-
-            if (rc == null) {
-                return ResponseEntity.status(500).body(Map.of(
-                        "error", "Respuesta nula del servicio de autorización del SRI",
-                        "claveAcceso", claveAcceso
-                ));
-            }
-
-            // =========================
-            // 2) Normalizar número de comprobantes
-            // =========================
-            int num = 0;
-            try {
-                num = (rc.getNumeroComprobantes() == null)
-                        ? 0
-                        : Integer.parseInt(rc.getNumeroComprobantes().trim());
-            } catch (NumberFormatException ignore) {
-            }
-
-            // Si SRI aún no tiene respuesta útil
-            if (num <= 0
-                    || rc.getAutorizaciones() == null
-                    || rc.getAutorizaciones().getAutorizacion() == null
-                    || rc.getAutorizaciones().getAutorizacion().isEmpty()) {
-
-                return ResponseEntity.status(202).body(Map.of(
-                        "estado", "PENDIENTE",
-                        "detalle", "Aún no hay autorizaciones disponibles para la clave.",
-                        "claveAcceso", claveAcceso
-                ));
-            }
-
-            var lista = rc.getAutorizaciones().getAutorizacion();
-
-            // =========================
-            // 3) Intentar encontrar una AUTORIZADO
-            // =========================
-            var autorizada = lista.stream()
-                    .filter(a -> "AUTORIZADO".equalsIgnoreCase(safeStr(a.getEstado())))
-                    .findFirst()
-                    .orElse(null);
-
-            if (autorizada == null) {
-                // No hubo “AUTORIZADO”, devolvemos diagnóstico de la primera autorización
-                var a0 = lista.get(0);
-                var mensajes = (a0.getMensajes() != null && a0.getMensajes().getMensaje() != null)
-                        ? a0.getMensajes().getMensaje().stream().map(m -> Map.of(
-                        "identificador", safeStr(m.getIdentificador()),
-                        "mensaje", safeStr(m.getMensaje()),
-                        "informacionAdicional", safeStr(m.getInformacionAdicional())
-                )).toList()
-                        : java.util.List.of();
-
-                return ResponseEntity.status(400).body(Map.of(
-                        "estadoAutorizacion", safeStr(a0.getEstado()),
-                        "numeroAutorizacion", safeStr(a0.getNumeroAutorizacion()),
-                        "fechaAutorizacion", (a0.getFechaAutorizacion() != null
-                                ? a0.getFechaAutorizacion().toString()
-                                : ""),
-                        "ambiente", safeStr(a0.getAmbiente()),
-                        "mensajes", mensajes,
-                        "claveAcceso", claveAcceso
-                ));
-            }
-
-            // =========================
-            // 4) Extraer XML autorizado (factura dentro de <comprobante><![CDATA[...]]>)
-            // =========================
-            String xmlAutorizado = sendXmlToSriService.extraerXmlAutorizado(rc);
-            if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
-                return ResponseEntity.status(500).body(Map.of(
-                        "error", "No se pudo extraer el XML autorizado del SRI.",
-                        "claveAcceso", claveAcceso
-                ));
-            }
-
-            String numeroAutorizacion = safeStr(autorizada.getNumeroAutorizacion());
-            String fechaAutorizacion = (autorizada.getFechaAutorizacion() != null
-                    ? autorizada.getFechaAutorizacion().toString()
-                    : "");
-            String ambiente = safeStr(autorizada.getAmbiente());
-
-            // =========================
-            // 5) Modos de respuesta
-            // =========================
-
-            // 1) Forzar descarga del XML autorizado
-            if (download) {
-                String nombre = "autorizado_" + claveAcceso + ".xml";
-                return ResponseEntity.ok()
-                        .contentType(MediaType.APPLICATION_XML)
-                        .header("Content-Disposition", "attachment; filename=\"" + nombre + "\"")
-                        .body(xmlAutorizado);
-            }
-
-            // 2) Retornar directamente el XML como application/xml (solo la factura)
-            if (returnXml) {
-                return ResponseEntity.ok()
-                        .contentType(MediaType.APPLICATION_XML)
-                        .body(xmlAutorizado);
-            }
-
-            // 3) Resumen JSON (sin XML), incluyendo número y fecha de autorización
-            return ResponseEntity.ok(Map.of(
-                    "estado", "AUTORIZADO",
-                    "numeroAutorizacion", numeroAutorizacion,
-                    "fechaAutorizacion", fechaAutorizacion,
-                    "ambiente", ambiente,
-                    "claveAcceso", claveAcceso
-            ));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of(
-                    "error", "Error consultando autorización en SRI",
-                    "detalle", e.getMessage(),
-                    "claveAcceso", claveAcceso
-            ));
-        }
-    }
-
-    // ========== 1) Consultar por CLAVE DE ACCESO ==========
-    @GetMapping(
             value = "/autorizacion",
             produces = { MediaType.APPLICATION_JSON_VALUE, MediaType.APPLICATION_XML_VALUE }
     )
@@ -1108,8 +942,9 @@ public class SRI_Controller {
         try {
             System.out.println("GENERANDO PDF");
             // 1) Traer la factura del otro microservicio
-            String url = eurekaServiceUrl + ":8080/fec_factura/factura?idfactura=" + idfactura;
-            FecFacturaDTO factura = restTemplate.getForObject(url, FecFacturaDTO.class);
+            Factura factura = fecFacturaR.findByIdfactura(idfactura);
+            //String url = eurekaServiceUrl + ":8080/fec_factura/factura?idfactura=" + idfactura;
+            //FecFacturaDTO _factura = restTemplate.getForObject(url, FecFacturaDTO.class);
 
             if (factura == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -1123,7 +958,7 @@ public class SRI_Controller {
             }
 
             // 2) Determinar plantilla según fecha
-            LocalDate fechaEmision = factura.getFechaemision(); // asumiendo LocalDate en el DTO
+            LocalDate fechaEmision = LocalDate.from(factura.getFechaemision()); // asumiendo LocalDate en el DTO
             LocalDate fechaLimite  = LocalDate.of(2025, 5, 6);
 
             ByteArrayOutputStream pdfStream;

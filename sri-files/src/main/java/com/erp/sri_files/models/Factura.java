@@ -20,7 +20,6 @@ public class Factura {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idfactura;
-    
     private String claveacceso;
     private String secuencial;
     private String xmlautorizado;
