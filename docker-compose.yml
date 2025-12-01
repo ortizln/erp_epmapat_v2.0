@@ -236,7 +236,7 @@ services:
           - msvc-reportesjr
   msvc-epmapaapi:
     build:
-      context: epmapaApi
+      context: epmapaapi
       dockerfile: Dockerfile
     image: msvc-epmapaapi:latest
     container_name: msvc-epmapaapi
