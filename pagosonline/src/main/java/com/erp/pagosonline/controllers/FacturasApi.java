@@ -1,7 +1,6 @@
 package com.erp.pagosonline.controllers;
 
 import com.erp.pagosonline.DTO.FacturaRequestDTO;
-import com.erp.pagosonline.DTO.RecaudacionDTO;
 import com.erp.pagosonline.DTO.ReportdataDTO;
 import com.erp.pagosonline.config.AESUtil;
 import com.erp.pagosonline.interfaces.FacturasCobradas;
@@ -10,7 +9,6 @@ import com.erp.pagosonline.models.*;
 import com.erp.pagosonline.repositories.RubroxfacR;
 import com.erp.pagosonline.repositories.TmpinteresxfacR;
 import com.erp.pagosonline.services.*;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -23,7 +21,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/pagonline/facturas")

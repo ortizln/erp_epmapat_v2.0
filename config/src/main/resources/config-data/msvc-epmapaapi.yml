@@ -2,11 +2,10 @@ server:
   port: 9098
 spring:
   application:
-    name: msvc-pagosonline
-host: ${HOST}
+    name: msvc-epmapaapi
 eureka:
   instance:
-    hostname: msvc-pagosonline  # El nombre del contenedor o el servicio en Docker Compose
+    hostname: msvc-epmapaapi  # El nombre del contenedor o el servicio en Docker Compose
   client:
     service-url:
       defaultZone: ${EUREKA_SERVICEURL}:8761/eureka/  # Usar el nombre del servicio Docker
