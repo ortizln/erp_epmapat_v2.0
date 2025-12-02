@@ -25,9 +25,6 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://66.85.156.59:5432/ErpEpmapaT
-      - DB_USER=postgres
-      - DB_PASS=EpmapaT2025
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s

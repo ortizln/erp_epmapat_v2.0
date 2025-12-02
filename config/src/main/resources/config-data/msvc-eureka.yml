@@ -1,8 +1,18 @@
 server:
   port: 8761
+
+spring:
+  application:
+    name: msvc-eureka
+  config:
+    import: optional:configserver:http://config-server:8888
+  cloud:
+    config:
+      enabled: false   # <- desactiva el cliente viejo que intenta localhost:8888
+
 eureka:
   instance:
-    hostname: msvc-eureka  # Nombre del servicio en Docker
+    hostname: msvc-eureka
     prefer-ip-address: false
   client:
     register-with-eureka: false
