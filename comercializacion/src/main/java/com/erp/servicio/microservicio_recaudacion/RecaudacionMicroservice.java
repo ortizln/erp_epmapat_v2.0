@@ -21,10 +21,10 @@ public class RecaudacionMicroservice {
 	private RestTemplate restTemplate;
 	@Autowired
 	private MicroserviceConfig config;
-	private final String URL_FACTURA = "http://localhost:8081/facturas";
-	private final String URL_CAJA = "http://localhost:8081/cajas";
-	private final String URL_INTERES = "http://localhost:8081/interes";
-	private final String URL_IMPUESTOS = "http://localhost:8081/impuestos";
+	private final String URL_FACTURA = "http://66.85.156.59:8081/facturas";
+	private final String URL_CAJA = "http://66.85.156.59:8081/cajas";
+	private final String URL_INTERES = "http://66.85.156.59:8081/interes";
+	private final String URL_IMPUESTOS = "http://66.85.156.59:8081/impuestos";
 
 
 

@@ -16,4 +16,4 @@ spring:
       ddl-auto: none
 app:
   api:
-    base-url: "http://localhost:9092"
+    base-url: "http://66.85.156.59:9092"

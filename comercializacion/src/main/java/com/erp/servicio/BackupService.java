@@ -35,7 +35,7 @@ public class BackupService {
     @Value("${backup.db.password}")
     private String dbPassword;
 
-    @Value("${backup.db.host:localhost}")
+    @Value("${backup.db.host:66.85.156.59}")
     private String dbHost;
 
     @Value("${backup.db.port:5432}")
