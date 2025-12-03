@@ -3,6 +3,7 @@ package com.erp.repositorio;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import jakarta.transaction.Transactional;
 
@@ -194,5 +195,7 @@ public interface ClientesR extends JpaRepository<Clientes, Long> {
 				) as sub
 			""", nativeQuery = true)
 	Page<CVClientes> getCVOfNCliente(LocalDate fecha, String nombre, Pageable pageable);
+
+    Optional<Clientes> findByUsername(String username);
 
 }
