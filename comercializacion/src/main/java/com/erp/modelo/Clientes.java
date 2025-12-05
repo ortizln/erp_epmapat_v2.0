@@ -46,7 +46,6 @@ public class Clientes {
 	private PersonJuridica idpjuridica_personeriajuridica;
     private String username;
     private String password;
-    private Boolean activo;
+    private boolean activo;
     private String rol;
-
 }

@@ -36,7 +36,7 @@ public class AuthSevice {
         Clientes c = clienteRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Usuario o contraseña inválidos"));
 
-        if (Boolean.FALSE.equals(c.getActivo())) {
+        if (!c.isActivo()) {
             throw new IllegalArgumentException("Usuario inactivo");
         }
 

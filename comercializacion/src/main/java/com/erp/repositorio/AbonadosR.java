@@ -104,4 +104,6 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 
 	@Query(value = "select a.estado, count(*) as ncuentas from abonados a group by a.estado", nativeQuery = true)
 	public List<EstadisticasAbonados> getCuentasByEstado();
+    @Query(value = "select a.idabonado from abonados a where a.idresponsable = ?1", nativeQuery = true)
+    public List<AbonadoI> getCuentaList(Long idcliente);
 }

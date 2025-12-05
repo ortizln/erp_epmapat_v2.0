@@ -5,6 +5,7 @@ import com.erp.DTO.RegistroClienteRequest;
 import com.erp.modelo.Clientes;
 import com.erp.servicio.AuthSevice;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,7 +27,7 @@ public class AuthController {
         try {
             Clientes c = authService.registrarCliente(req);
             return ResponseEntity.ok(Map.of(
-                    "id", c.getIdcliente(),
+                    "idcliente", c.getIdcliente(),
                     "username", c.getUsername(),
                     "email", c.getEmail()
             ));
@@ -40,13 +41,12 @@ public class AuthController {
         try {
             Clientes c = authService.validarLogin(req.getUsername(), req.getPassword());
 
-            // 🔹 Aquí puedes usar tu token mock o un JWT real
             String fakeToken = "fake-token-" + c.getIdcliente();
 
             Map<String, Object> user = Map.of(
-                    "id", c.getIdcliente(),
+                    "idcliente", c.getIdcliente(),
                     "username", c.getUsername(),
-                    "email", c.getEmail()
+                    "email", c.getEmail() != null ? c.getEmail() : ""
             );
 
             Map<String, Object> resp = Map.of(
@@ -55,9 +55,14 @@ public class AuthController {
             );
 
             return ResponseEntity.ok(resp);
-        } catch (Exception e) {
-            return ResponseEntity.ok()
+
+        } catch (RuntimeException e) {
+            // Usuario/clave incorrectos, etc.
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
+
 }

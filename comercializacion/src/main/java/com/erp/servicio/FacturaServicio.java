@@ -634,4 +634,13 @@ public class FacturaServicio {
 		return dao.getIdsFromFacturasSincobrar();
 	}
 
+    public List<FacElectronicas>getFacturasElectronicasByIdcliente(Long idcliente){
+        return dao.getFacturasElectronicasByIdcliente(idcliente);
+    }
+    public List<FacElectronicas>getFacturasElectronicasByIdabonado(Long idabonado){
+        return dao.getFacturasElectronicasByIdabonado(idabonado);
+    }
+
+
+
 }

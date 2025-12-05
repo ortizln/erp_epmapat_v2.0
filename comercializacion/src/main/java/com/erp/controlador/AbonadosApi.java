@@ -3,6 +3,7 @@ package com.erp.controlador;
 import java.util.List;
 import java.util.Map;
 
+import com.erp.interfaces.FacElectronicas;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
@@ -222,4 +223,10 @@ public class AbonadosApi {
 	public ResponseEntity<List<Abonados>> getAbonadosByEstado(@PathVariable Long estado) {
 		return ResponseEntity.ok(aboServicio.findByEstado(estado));
 	}
+    @GetMapping("/cuentasOfCliente")
+    public ResponseEntity<List<AbonadoI>> getCuentaList(@RequestParam Long idcliente){
+        return ResponseEntity.ok(aboServicio.getCuetasList(idcliente));
+    }
+
+
 }

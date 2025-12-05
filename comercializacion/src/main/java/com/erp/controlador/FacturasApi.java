@@ -675,4 +675,13 @@ public class FacturasApi {
 		return facServicio.getTotalesByAbonadoDatos(cuenta);
 	}
 
+    @GetMapping("fac_electronicas-cli")
+    public ResponseEntity<List<FacElectronicas>> getFacturasElectronicasByIdcliente(@RequestParam Long idcliente){
+        return ResponseEntity.ok(facServicio.getFacturasElectronicasByIdcliente(idcliente));
+    }
+    @GetMapping("fac_electronicas-abo")
+    public ResponseEntity<List<FacElectronicas>> getFacturasElectronicasByIdabonado(@RequestParam Long idabonado){
+        return ResponseEntity.ok(facServicio.getFacturasElectronicasByIdabonado(idabonado));
+    }
+
 }

@@ -191,5 +191,8 @@ public class AbonadoServicio {
 	public List<Abonados> findByEstado(Long estado) {
 		return dao.findByEstado(estado);
 	}
+    public List<AbonadoI> getCuetasList(Long idcliente){
+        return dao.getCuentaList(idcliente);
+    }
 
 }
