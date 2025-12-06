@@ -642,51 +642,55 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
       f.idfactura, f.formapago, e.feccrea, f.fechatransferencia
 """, nativeQuery = true)
     List<FacLite> getSinCobrarLite();
-@Query(value = """
-        select
-        	f.idfactura ,
-        	f.nrofactura,
-        	ff.razonsocialcomprador,
-        	ff.emailcomprador,
-        	ff.fechaemision,
-        	ff.estado,\s
-        	ff.xmlautorizado,\s
-        	ff.referencia,\s
-        	ff.direccioncomprador,\s
-        	ffp.total
-        from
-        	facturas f
-        join fec_factura ff\s
-        on f.idfactura = ff.idfactura\s
-        join fec_factura_pagos ffp on
-        f.idfactura = ffp.idfactura
-        where
-        	f.idabonado = ?1
-        """, nativeQuery = true)
-    public List<FacElectronicas> getFacturasElectronicasByIdabonado(Long idabonado);
+    @Query(value = """
+    select
+        f.idfactura,
+        f.nrofactura,
+        ff.razonsocialcomprador,
+        ff.emailcomprador,
+        ff.fechaemision,
+        ff.estado, 
+        ff.xmlautorizado, 
+        ff.referencia, 
+        ff.direccioncomprador,
+        ffp.total
+    from facturas f
+    join fec_factura ff 
+        on f.idfactura = ff.idfactura 
+    join fec_factura_pagos ffp 
+        on f.idfactura = ffp.idfactura
+    where
+        f.idabonado = :idabonado
+    order by ff.fechaemision desc
+    """,
+            nativeQuery = true)
+    List<FacElectronicas> getFacturasElectronicasByIdabonado(@Param("idabonado") Long idabonado);
+
 
     @Query(value = """
-        select
-        	f.idfactura ,
-        	f.nrofactura,
-        	ff.razonsocialcomprador,
-        	ff.emailcomprador,
-        	ff.fechaemision,
-        	ff.estado,\s
-        	ff.xmlautorizado,\s
-        	ff.referencia,\s
-        	ff.direccioncomprador\s
-        	ffp.total
-        from
-        	facturas f
-        join fec_factura ff\s
-        on f.idfactura = ff.idfactura\s
-        join fec_factura_pagos ffp on
-        f.idfactura = ffp.idfactura
-        where
-        	f.idabonado = 0
-        	and f.idcliente
-        """, nativeQuery = true)
-    public List<FacElectronicas> getFacturasElectronicasByIdcliente(Long idcliente);
+    select
+        f.idfactura,
+        f.nrofactura,
+        ff.razonsocialcomprador,
+        ff.emailcomprador,
+        ff.fechaemision,
+        ff.estado,
+        ff.xmlautorizado, 
+        ff.referencia, 
+        ff.direccioncomprador,
+        ffp.total
+    from facturas f
+    join fec_factura ff 
+        on f.idfactura = ff.idfactura 
+    join fec_factura_pagos ffp 
+        on f.idfactura = ffp.idfactura
+    where
+        f.idabonado = 0 and
+        f.idcliente = :idcliente
+    order by ff.fechaemision desc
+    """,
+            nativeQuery = true)
+    List<FacElectronicas> getFacturasElectronicasByIdcliente(@Param("idcliente") Long idcliente);
+
 
 }

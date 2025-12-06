@@ -676,12 +676,30 @@ public class FacturasApi {
 	}
 
     @GetMapping("fac_electronicas-cli")
-    public ResponseEntity<List<FacElectronicas>> getFacturasElectronicasByIdcliente(@RequestParam Long idcliente){
-        return ResponseEntity.ok(facServicio.getFacturasElectronicasByIdcliente(idcliente));
+    public ResponseEntity<List<FacElectronicas>> getFacturasElectronicasByIdcliente(
+            @RequestParam Long idcliente) {
+
+        List<FacElectronicas> facs = facServicio.getFacturasElectronicasByIdcliente(idcliente);
+
+        if (facs == null || facs.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204
+        }
+
+        return ResponseEntity.ok(facs); // 200
     }
+
+
     @GetMapping("fac_electronicas-abo")
-    public ResponseEntity<List<FacElectronicas>> getFacturasElectronicasByIdabonado(@RequestParam Long idabonado){
-        return ResponseEntity.ok(facServicio.getFacturasElectronicasByIdabonado(idabonado));
+    public ResponseEntity<List<FacElectronicas>> getFacturasElectronicasByIdabonado(
+            @RequestParam Long idabonado) {
+
+        List<FacElectronicas> facs = facServicio.getFacturasElectronicasByIdabonado(idabonado);
+
+        if (facs == null || facs.isEmpty()) {
+            return ResponseEntity.noContent().build(); // 204
+        }
+
+        return ResponseEntity.ok(facs); // 200
     }
 
 }

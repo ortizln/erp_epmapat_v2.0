@@ -941,40 +941,48 @@ public class SRI_Controller {
     public ResponseEntity<?> generarPdf(@RequestParam Long idfactura) {
         try {
             System.out.println("GENERANDO PDF");
-            // 1) Traer la factura del otro microservicio
+
+            // 1) Traer la factura del microservicio/repositorio
             Factura factura = fecFacturaR.findByIdfactura(idfactura);
-            //String url = eurekaServiceUrl + ":8080/fec_factura/factura?idfactura=" + idfactura;
-            //FecFacturaDTO _factura = restTemplate.getForObject(url, FecFacturaDTO.class);
 
             if (factura == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "No se encontró la factura", "idfactura", idfactura));
+                        .body(Map.of(
+                                "codigo", "FACTURA_NO_ENCONTRADA",
+                                "error", "No se encontró la factura",
+                                "idfactura", idfactura
+                        ));
             }
 
             String xmlAutorizado = factura.getXmlautorizado();
             if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                        .body(Map.of("error", "No se encontró XML autorizado para la factura", "idfactura", idfactura));
+                // Factura sí existe, pero aún no tiene XML autorizado
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(Map.of(
+                                "codigo", "XML_AUTORIZADO_NO_ENCONTRADO",
+                                "error", "La factura aún no cuenta con XML autorizado",
+                                "idfactura", idfactura
+                        ));
             }
 
             // 2) Determinar plantilla según fecha
-            LocalDate fechaEmision = LocalDate.from(factura.getFechaemision()); // asumiendo LocalDate en el DTO
+            LocalDate fechaEmision = LocalDate.from(factura.getFechaemision());
             LocalDate fechaLimite  = LocalDate.of(2025, 5, 6);
 
             ByteArrayOutputStream pdfStream;
             if (fechaEmision != null && fechaEmision.isBefore(fechaLimite)) {
-                System.out.println("ONE");
                 pdfStream = xmlToPdfService.generarFacturaPDF_v2(xmlAutorizado);
             } else {
-                System.out.println("TWO");
-
-                // igual para == y > usamos la plantilla nueva
                 pdfStream = xmlToPdfService.generarFacturaPDF_v3(xmlAutorizado);
             }
 
             if (pdfStream == null || pdfStream.size() == 0) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                        .body(Map.of("error", "No se pudo generar el PDF (stream vacío)."));
+                        .body(Map.of(
+                                "codigo", "PDF_VACIO",
+                                "error", "No se pudo generar el PDF (stream vacío).",
+                                "idfactura", idfactura
+                        ));
             }
 
             // 3) Preparar la descarga
@@ -991,14 +999,20 @@ public class SRI_Controller {
 
         } catch (org.springframework.web.client.RestClientException ex) {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY)
-                    .body(Map.of("error", "No se pudo consultar el microservicio de facturas",
+                    .body(Map.of(
+                            "codigo", "ERROR_COMUNICACION_MS",
+                            "error", "No se pudo consultar el microservicio de facturas",
                             "detalle", ex.getMessage(),
-                            "idfactura", idfactura));
+                            "idfactura", idfactura
+                    ));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Map.of("error", "Error generando el PDF",
+                    .body(Map.of(
+                            "codigo", "ERROR_GENERANDO_PDF",
+                            "error", "Error generando el PDF",
                             "detalle", e.getMessage(),
-                            "idfactura", idfactura));
+                            "idfactura", idfactura
+                    ));
         }
     }
 
