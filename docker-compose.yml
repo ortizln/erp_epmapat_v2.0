@@ -49,8 +49,7 @@ services:
       - DB_URL=jdbc:postgresql://172.30.10.4/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=EpmapaT2025
-      - HOST=https://epmapatulcan.gob.ec
-      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
+      - HOST=http://172.30.10.4      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
     healthcheck:
@@ -77,7 +76,7 @@ services:
       - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=EpmapaT2025
-      - HOST=https://epmapatulcan.gob.ec
+      - HOST=http://172.30.10.4
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
@@ -105,7 +104,7 @@ services:
       - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=EpmapaT2025
-      - HOST=https://epmapatulcan.gob.ec
+      - HOST=http://172.30.10.4
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
@@ -133,7 +132,7 @@ services:
       - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=EpmapaT2025
-      - HOST=https://epmapatulcan.gob.ec
+      - HOST=http://172.30.10.4
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
@@ -161,7 +160,7 @@ services:
       - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=EpmapaT2025
-      - HOST=https://epmapatulcan.gob.ec
+      - HOST=http://172.30.10.4
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
@@ -189,7 +188,7 @@ services:
       - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=EpmapaT2025
-      - HOST=https://epmapatulcan.gob.ec
+      - HOST=http://172.30.10.4
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
@@ -217,7 +216,7 @@ services:
       - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=Epmapat2024
-      - HOST=https://epmapatulcan.gob.ec
+      - HOST=http://172.30.10.4
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
@@ -245,7 +244,7 @@ services:
       - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=EpmapaT2025
-      - HOST=https://epmapatulcan.gob.ec
+      - HOST=http://172.30.10.4
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST:smtp.elasticemail.com
