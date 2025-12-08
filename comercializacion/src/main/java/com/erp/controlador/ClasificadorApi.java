@@ -20,7 +20,7 @@ import com.erp.modelo.Clasificador;
 import com.erp.servicio.ClasificadorServicio;
 
 @RestController
-@RequestMapping("/clasificador")
+@RequestMapping("/api/clasificador")
 
 
 public class ClasificadorApi {

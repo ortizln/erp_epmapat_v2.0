@@ -15,7 +15,7 @@ import com.erp.modelo.rrhh.Tpcontratos;
 import com.erp.servicio.rrhh.TpcontratosServicio;
 
 @RestController
-@RequestMapping("/tpcontratos")
+@RequestMapping("/api/tpcontratos")
 
 public class TpcontratosApi {
     @Autowired

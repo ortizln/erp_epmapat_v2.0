@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/tabla4")
+@RequestMapping("/api/tabla4")
 
 public class Tabla4Api {
     @Autowired

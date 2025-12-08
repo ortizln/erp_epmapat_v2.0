@@ -16,7 +16,7 @@ import com.erp.modelo.contabilidad.Fec_reteimpu;
 import com.erp.servicio.contabilidad.Fec_reteimpuServicio;
 
 @RestController
-@RequestMapping("/fec_reteimpu")
+@RequestMapping("/api/fec_reteimpu")
 
 
 public class Fec_reteimpuApi {

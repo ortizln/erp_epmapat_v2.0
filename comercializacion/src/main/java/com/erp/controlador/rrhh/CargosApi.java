@@ -15,7 +15,7 @@ import com.erp.modelo.rrhh.Cargos;
 import com.erp.servicio.rrhh.CargosServicio;
 
 @RestController
-@RequestMapping("/cargos")
+@RequestMapping("/api/cargos")
 
 public class CargosApi {
     @Autowired

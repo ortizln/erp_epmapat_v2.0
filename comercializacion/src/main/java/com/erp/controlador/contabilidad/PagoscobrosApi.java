@@ -14,7 +14,7 @@ import com.erp.modelo.contabilidad.Pagoscobros;
 import com.erp.servicio.contabilidad.PagoscobroServicio;
 
 @RestController
-@RequestMapping("/pagoscobros")
+@RequestMapping("/api/pagoscobros")
 
 
 public class PagoscobrosApi {

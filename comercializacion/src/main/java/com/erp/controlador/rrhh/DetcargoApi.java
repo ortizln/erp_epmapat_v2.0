@@ -15,7 +15,7 @@ import com.erp.modelo.rrhh.Detcargo;
 import com.erp.servicio.rrhh.DetcargoServicio;
 
 @RestController
-@RequestMapping("/detcargo")
+@RequestMapping("/api/detcargo")
 
 public class DetcargoApi {
     @Autowired

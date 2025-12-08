@@ -18,7 +18,7 @@ import com.erp.modelo.SuspensionesM;
 import com.erp.servicio.SuspensionesS;
 
 @RestController
-@RequestMapping("/suspensiones")
+@RequestMapping("/api/suspensiones")
 
 
 public class SuspensionesC {

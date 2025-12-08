@@ -18,7 +18,7 @@ import com.erp.modelo.Facxconvenio;
 import com.erp.servicio.FacxconvenioServicio;
 
 @RestController
-@RequestMapping("/facxconvenio")
+@RequestMapping("/api/facxconvenio")
 public class FacxconvenioApi {
 
    @Autowired

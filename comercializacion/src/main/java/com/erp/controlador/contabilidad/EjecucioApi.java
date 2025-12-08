@@ -27,7 +27,7 @@ import com.erp.servicio.contabilidad.EjecucioServicio;
 import com.erp.servicio.contabilidad.PresupueServicio;
 
 @RestController
-@RequestMapping("/ejecucio")
+@RequestMapping("/api/ejecucio")
 
 
 public class EjecucioApi {

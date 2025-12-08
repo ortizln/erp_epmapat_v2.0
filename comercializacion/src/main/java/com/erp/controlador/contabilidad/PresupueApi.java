@@ -21,7 +21,7 @@ import com.erp.servicio.contabilidad.PresupueServicio;
 
 //OJO: No debería existir: Hay PreingresosApi y PregastosApi y las llamadas desde el front end se hacen con la ruta preingreso o pregasto, nunca con presupue
 @RestController
-@RequestMapping("/presupue")
+@RequestMapping("/api/presupue")
 
 
 public class PresupueApi {

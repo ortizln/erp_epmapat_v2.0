@@ -21,7 +21,7 @@ import com.erp.modelo.contabilidad.Beneficiarios;
 import com.erp.servicio.contabilidad.BeneficiarioServicio;
 
 @RestController
-@RequestMapping("/beneficiarios")
+@RequestMapping("/api/beneficiarios")
 
 
 public class BeneficiariosApi {

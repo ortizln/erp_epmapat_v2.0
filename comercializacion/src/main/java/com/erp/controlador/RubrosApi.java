@@ -20,7 +20,7 @@ import com.erp.modelo.Rubros;
 import com.erp.servicio.RubroServicio;
 
 @RestController
-@RequestMapping("/rubros")
+@RequestMapping("/api/rubros")
 
 
 public class RubrosApi {

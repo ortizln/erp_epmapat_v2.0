@@ -11,7 +11,7 @@ import com.erp.servicio.TmpinteresxfacService;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/tmpinteresxfac")
+@RequestMapping("/api/tmpinteresxfac")
 
 public class TmpinteresxfacApi {
     @Autowired

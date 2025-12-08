@@ -16,7 +16,7 @@ import com.erp.modelo.coactivas.Facxremi;
 import com.erp.servicio.coactivas.FacxremiServicio;
 
 @RestController
-@RequestMapping("/facxremi")
+@RequestMapping("/api/facxremi")
 
 public class FacxremiApi {
     @Autowired

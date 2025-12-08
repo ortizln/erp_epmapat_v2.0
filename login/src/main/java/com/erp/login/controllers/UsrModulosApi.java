@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/usrxmodulos")
+@RequestMapping("/api/usrxmodulos")
 
 public class UsrModulosApi {
     @Autowired

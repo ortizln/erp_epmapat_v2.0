@@ -21,7 +21,7 @@ import com.erp.modelo.PtoEmisionM;
 import com.erp.servicio.PtoEmisionS;
 
 @RestController
-@RequestMapping("/ptoemision")
+@RequestMapping("/api/ptoemision")
 
 
 public class PtoEmisionApi {

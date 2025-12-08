@@ -12,7 +12,7 @@ import com.erp.modelo.contabilidad.Niveles;
 import com.erp.servicio.contabilidad.NivelServicio;
 
 @RestController
-@RequestMapping("/niveles")
+@RequestMapping("/api/niveles")
 
 
 public class NivelesApi {

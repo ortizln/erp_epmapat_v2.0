@@ -23,7 +23,7 @@ import com.erp.modelo.Categorias;
 import com.erp.servicio.CategoriaServicio;
 
 @RestController
-@RequestMapping("/categorias")
+@RequestMapping("/api/categorias")
 
 
 public class CategoriasApi {

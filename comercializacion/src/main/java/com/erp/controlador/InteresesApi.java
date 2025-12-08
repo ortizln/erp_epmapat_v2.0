@@ -34,7 +34,7 @@ import com.erp.modelo.Intereses;
 import com.erp.servicio.InteresServicio;
 
 @RestController
-@RequestMapping("/intereses")
+@RequestMapping("/api/intereses")
 
 
 public class InteresesApi {

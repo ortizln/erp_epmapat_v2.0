@@ -12,7 +12,7 @@ import com.erp.modelo.Formacobro;
 import com.erp.servicio.FormacobroServicio;
 
 @RestController
-@RequestMapping("/formacobro")
+@RequestMapping("/api/formacobro")
 public class FormacobroApi {
 
    @Autowired

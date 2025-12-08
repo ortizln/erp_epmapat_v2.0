@@ -13,7 +13,7 @@ import com.erp.modelo.administracion.Colores;
 import com.erp.servicio.administracion.ColorServicio;
 
 @RestController
-@RequestMapping("/colores")
+@RequestMapping("/api/colores")
 public class ColoresApi {
 
    @Autowired

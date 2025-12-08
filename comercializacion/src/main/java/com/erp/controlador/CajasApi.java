@@ -22,7 +22,7 @@ import com.erp.modelo.Cajas;
 import com.erp.servicio.CajaServicio;
 
 @RestController
-@RequestMapping("/cajas")
+@RequestMapping("/api/cajas")
 
 
 public class CajasApi {

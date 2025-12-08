@@ -24,7 +24,7 @@ import com.erp.modelo.AguaTramite;
 import com.erp.servicio.AguaTramiteServicio;
 
 @RestController
-@RequestMapping("/aguatramite")
+@RequestMapping("/api/aguatramite")
 
 
 public class AguaTramiteApi {

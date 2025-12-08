@@ -21,7 +21,7 @@ import com.erp.modelo.contabilidad.BenexTran;
 import com.erp.servicio.contabilidad.BenexTranServicio;
 
 @RestController
-@RequestMapping("/benextran")
+@RequestMapping("/api/benextran")
 
 
 public class BenexTranApi {

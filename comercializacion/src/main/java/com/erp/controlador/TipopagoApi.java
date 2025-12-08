@@ -19,7 +19,7 @@ import com.erp.modelo.Tipopago;
 import com.erp.servicio.TipopagoServicio;
 
 @RestController
-@RequestMapping("/tipopago")
+@RequestMapping("/api/tipopago")
 
 
 public class TipopagoApi {

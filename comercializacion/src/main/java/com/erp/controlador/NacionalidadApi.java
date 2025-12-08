@@ -27,7 +27,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.data.domain.Sort;
 
 @RestController
-@RequestMapping("/nacionalidades")
+@RequestMapping("/api/nacionalidades")
 
 
 public class NacionalidadApi {

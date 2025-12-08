@@ -22,7 +22,7 @@ import com.erp.modelo.Ntacredito;
 import com.erp.servicio.NtacreditoServicio;
 
 @RestController
-@RequestMapping("/ntacredito")
+@RequestMapping("/api/ntacredito")
 
 public class NtacreditoApi {
     @Autowired

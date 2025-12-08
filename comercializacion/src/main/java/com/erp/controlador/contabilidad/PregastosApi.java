@@ -21,7 +21,7 @@ import com.erp.modelo.contabilidad.Presupue;
 import com.erp.servicio.contabilidad.PresupueServicio;
 
 @RestController
-@RequestMapping("/pregastos")
+@RequestMapping("/api/pregastos")
 
 
 public class PregastosApi {

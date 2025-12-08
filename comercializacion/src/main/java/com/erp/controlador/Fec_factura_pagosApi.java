@@ -10,7 +10,7 @@ import com.erp.modelo.Fec_factura_pagos;
 import com.erp.servicio.Fec_factura_pagosService;
 
 @RestController
-@RequestMapping("/facturapagos")
+@RequestMapping("/api/facturapagos")
 public class Fec_factura_pagosApi {
     @Autowired
     private Fec_factura_pagosService fecfpagosService;

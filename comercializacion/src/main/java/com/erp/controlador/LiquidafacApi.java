@@ -16,7 +16,7 @@ import com.erp.modelo.Liquidafac;
 import com.erp.servicio.LiquidafacServicio;
 
 @RestController
-@RequestMapping("/liquidafac")
+@RequestMapping("/api/liquidafac")
 
 
 public class LiquidafacApi {

@@ -15,7 +15,7 @@ import com.erp.modelo.Facturamodificaciones;
 import com.erp.servicio.FacturamodificacionesServicio;
 
 @RestController
-@RequestMapping("/facturamodificaciones")
+@RequestMapping("/api/facturamodificaciones")
 
 public class FacturamodificacionesApi {
     @Autowired

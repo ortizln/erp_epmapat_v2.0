@@ -19,7 +19,7 @@ import com.erp.modelo.Ubicacionm;
 import com.erp.servicio.UbicacionmServicio;
 
 @RestController
-@RequestMapping("/ubicacionm")
+@RequestMapping("/api/ubicacionm")
 
 
 public class UbicacionmApi {

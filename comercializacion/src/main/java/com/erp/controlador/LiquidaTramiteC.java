@@ -17,7 +17,7 @@ import com.erp.modelo.LiquidaTramite;
 import com.erp.servicio.LiquidaTramiteS;
 
 @RestController
-@RequestMapping("/liquidatramite")
+@RequestMapping("/api/liquidatramite")
 
 
 public class LiquidaTramiteC {

@@ -21,49 +21,49 @@ spring:
           enabled: false
       routes:
         - id: msvc-login
-          #uri: http://msvc-login:9091
-          uri: http://localhost:9091
+          uri: http://msvc-login:9091
+          #uri: http://localhost:9091
           predicates:
-          - Path=/acceso/**, /colores/**, /definir/**, /documentos/**, /erpmodulos/**, /tabla4/**, /usrxmodulos/**, /usuarios/** , /ventanas/**
+          - Path=/api/acceso/**, /api/colores/**, /api/definir/**, /api/documentos/**, /api/erpmodulos/**, /api/tabla4/**, /api/usrxmodulos/**, /api/usuarios/** , /api/ventanas/**
 
         - id: msvc-recaudacion
-          #uri: http://msvc-recaudacion:9092
-          uri: http://localhost:9092
+          uri: http://msvc-recaudacion:9092
+          #uri: http://localhost:9092
           predicates:
           - Path=/api/rec/cajas/**, /api/rec/facturas/**, /api/rec/interes/**, /api/rec/impuestos/**
 
         - id: msvc-comercializacion
-          #uri: http://msvc-comercializacion:9093
-          uri: http://localhost:9093
+          uri: http://msvc-comercializacion:9093
+          #uri: http://localhost:9093
           predicates:
-          - Path=/abonados/**, /aboxsuspension/**, /aguatramite/**, /anulpagos/**, /airxrete/**, /cajas/**, /catalogoitems/**, /categorias/**,/ccertificaciones/**,/clasificador/**, /clientes/**, /condmultasintereses/**, /convenios/**, /ctramites/**, /cuotas/**, /emisiones/**, /emisionindividual/**, /estadom/**, /facturas/**, /facelectro/**, /facturacion/**, /facturamodificaciones/**, /facxconvenio/**, /facxnc/**, /facxrecauda/**, /facdetallesimpuestos/**, /facturadetalles/**, /facturapagos/**, /fec_factura/**, /fec_retenciones/**, /fec_reteimpu/**,  /formacobro/**, /ifinan/**, /impuestos/**, /intereses/**, /itemxfact/**, /jasperReports/**, /auth/**, /lecturas/**, /liquidafac/**, /liquidatramite/**, /modulos/**, /novedades/**, /ntacredito/**, /nacionalidades/**, /personeriajuridica/**, /pliego24/**, /pliego/**, /ptoemision/**, /recaudacion/**, /recaudaxcaja/**, /reclamos/**, /retenciones/**, /rubroadicional/**, /rubros/**, /rutas/**, /rutasxemision/**, /rubroxfac/**, /servicios1/**, /suspensiones/**, /tipopago/**, /tipotramite/**, /tmpinteresxfac/**, /tpcertifica/**, /tpidentifica/**, /tpreclamo/**, /tramites1/**, /tramitenuevo/**, /ubicacionm/**, /usoitems/**, /valoresnc/**
+          - Path=/api/abonados/**, /api/aboxsuspension/**, /api/aguatramite/**, /api/anulpagos/**, /api/airxrete/**, /api/cajas/**, /api/catalogoitems/**, /api/categorias/**, /api/ccertificaciones/**, /api/clasificador/**, /api/clientes/**, /api/condmultasintereses/**, /api/convenios/**, /api/ctramites/**, /api/cuotas/**, /api/emisiones/**, /api/emisionindividual/**, /api/estadom/**, /api/facturas/**, /api/facelectro/**, /api/facturacion/**, /api/facturamodificaciones/**, /api/facxconvenio/**, /api/facxnc/**, /api/facxrecauda/**, /api/facdetallesimpuestos/**, /api/facturadetalles/**, /api/facturapagos/**, /api/fec_factura/**, /api/fec_retenciones/**, /api/fec_reteimpu/**,  /api/formacobro/**, /api/ifinan/**, /api/impuestos/**, /api/intereses/**, /api/itemxfact/**, /api/jasperReports/**, /auth/**, /api/lecturas/**, /api/liquidafac/**, /api/liquidatramite/**, /api/modulos/**, /api/novedades/**, /api/ntacredito/**, /api/nacionalidades/**, /api/personeriajuridica/**, /api/pliego24/**, /api/pliego/**, /api/ptoemision/**, /api/recaudacion/**, /api/recaudaxcaja/**, /api/reclamos/**, /api/retenciones/**, /api/rubroadicional/**, /api/rubros/**, /api/rutas/**, /api/rutasxemision/**, /api/rubroxfac/**, /api/servicios1/**, /api/suspensiones/**, /api/tipopago/**, /api/tipotramite/**, /api/tmpinteresxfac/**, /api/tpcertifica/**, /api/tpidentifica/**, /api/tpreclamo/**, /api/tramites1/**, /api/tramitenuevo/**, /api/ubicacionm/**, /api/usoitems/**, /api/valoresnc/**
 
         - id: msvc-pagosonline
-          #uri: http://msvc-pagosonline:32
-          uri: http://localhost:9094
+          uri: http://msvc-pagosonline:32
+          #uri: http://localhost:9094
           predicates:
             - Path=/api/pagonline/facturas/**
 
         - id: msvc-gestiondocumental
-          #uri: http://msvc-gestiondocumental:9095
-          uri: http://localhost:9095
+          uri: http://msvc-gestiondocumental:9095
+          #uri: http://localhost:9095
           predicates:
-            - Path=/conservacion_documental/**, /gdcajas/**, /ingreso_documento/**, /inventario/**, /seccion/**, /series/**,  /subsecciones/**, /subseries/**
+            - Path=/api/conservacion_documental/**, /api/gdcajas/**, /api/ingreso_documento/**, /api/inventario/**, /api/seccion/**, /api/series/**,  /api/subsecciones/**, /api/subseries/**
 
         - id: msvc-sri
-          #uri: http://msvc-sri:9096
-          uri: http://localhost:9096
+          uri: http://msvc-sri:9096
+          #uri: http://localhost:9096
           predicates:
             - Path=/api/sri/**, /api/singsend/**
 
         - id: msvc-reportesjr
-          #uri: http://msvc-reportesjr:9097
-          uri: http://localhost:9097
+          uri: http://msvc-reportesjr:9097
+          #uri: http://localhost:9097
           predicates:
-            - Path=/jasperReports/**, /api/jasper/**
+            - Path=/api/jasperReports/**, /api/jasper/**
 
         - id: msvc-epmapaapi
-          #uri: http://msvc-epmapaapi:9098
-          uri: http://localhost:9098
+          uri: http://msvc-epmapaapi:9098
+          #uri: http://localhost:9098
           predicates:
             - Path=/api/epmapaweb/**

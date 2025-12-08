@@ -19,7 +19,7 @@ import com.erp.modelo.contabilidad.NiifCuentas;
 import com.erp.servicio.contabilidad.NiifCuentaServicio;
 
 @RestController
-@RequestMapping("/niifcuentas")
+@RequestMapping("/api/niifcuentas")
 
 
 public class NiifCuentasApi {

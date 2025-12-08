@@ -22,7 +22,7 @@ import com.erp.modelo.TipoTramite;
 import com.erp.servicio.TipoTramiteS;
 
 @RestController
-@RequestMapping("/tipotramite")
+@RequestMapping("/api/tipotramite")
 
 
 public class TipoTramiteC {

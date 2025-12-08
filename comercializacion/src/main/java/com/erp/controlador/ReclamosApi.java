@@ -21,7 +21,7 @@ import com.erp.modelo.Reclamos;
 import com.erp.servicio.ReclamosS;
 
 @RestController
-@RequestMapping("/reclamos")
+@RequestMapping("/api/reclamos")
 
 
 public class ReclamosApi {

@@ -20,7 +20,7 @@ import com.erp.modelo.coactivas.Remision;
 import com.erp.servicio.coactivas.RemisionServicio;
 
 @RestController
-@RequestMapping("/remisiones")
+@RequestMapping("/api/remisiones")
 
 public class RemisionApi {
     @Autowired

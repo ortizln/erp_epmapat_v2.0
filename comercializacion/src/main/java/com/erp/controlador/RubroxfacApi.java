@@ -28,7 +28,7 @@ import com.erp.servicio.RubroxfacServicio;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
-@RequestMapping("/rubroxfac")
+@RequestMapping("/api/rubroxfac")
 
 
 public class RubroxfacApi {

@@ -20,7 +20,7 @@ import com.erp.modelo.contabilidad.Ifinan;
 import com.erp.servicio.IfinanServicio;
 
 @RestController
-@RequestMapping("/ifinan")
+@RequestMapping("/api/ifinan")
 
 
 public class IfinanApi {

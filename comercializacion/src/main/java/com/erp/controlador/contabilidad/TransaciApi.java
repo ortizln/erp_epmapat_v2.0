@@ -17,7 +17,7 @@ import com.erp.modelo.contabilidad.Transaci;
 import com.erp.servicio.contabilidad.TransaciServicio;
 
 @RestController
-@RequestMapping("/transaci")
+@RequestMapping("/api/transaci")
 
 
 public class TransaciApi {

@@ -19,7 +19,7 @@ import com.erp.modelo.contabilidad.Reformas;
 import com.erp.servicio.contabilidad.ReformaServicio;
 
 @RestController
-@RequestMapping("/reformas")
+@RequestMapping("/api/reformas")
 
 
 public class ReformasApi {

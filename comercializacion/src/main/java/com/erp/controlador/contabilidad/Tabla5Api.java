@@ -18,7 +18,7 @@ import com.erp.modelo.contabilidad.Tabla5;
 import com.erp.servicio.contabilidad.Tabla5Servicio;
 
 @RestController
-@RequestMapping("/tabla5")
+@RequestMapping("/api/tabla5")
 
 
 public class Tabla5Api {

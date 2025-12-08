@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/erpmodulos")
+@RequestMapping("/api/erpmodulos")
 
 public class ErpmodulosApi {
     @Autowired

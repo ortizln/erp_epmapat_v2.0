@@ -19,7 +19,7 @@ import com.erp.modelo.Tpreclamo;
 import com.erp.servicio.TpreclamoServicio;
 
 @RestController
-@RequestMapping("/tpreclamo")
+@RequestMapping("/api/tpreclamo")
 
 
 public class TpreclamoApi {

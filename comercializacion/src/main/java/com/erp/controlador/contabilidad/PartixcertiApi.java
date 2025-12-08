@@ -19,7 +19,7 @@ import com.erp.modelo.contabilidad.Partixcerti;
 import com.erp.servicio.contabilidad.PartixcertiServicio;
 
 @RestController
-@RequestMapping("/partixcerti")
+@RequestMapping("/api/partixcerti")
 
 
 public class PartixcertiApi {

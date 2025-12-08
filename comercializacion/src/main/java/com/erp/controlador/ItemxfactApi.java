@@ -15,7 +15,7 @@ import com.erp.modelo.Itemxfact;
 import com.erp.servicio.ItemxfactServicio;
 
 @RestController
-@RequestMapping("/itemxfact")
+@RequestMapping("/api/itemxfact")
 
 
 public class ItemxfactApi {

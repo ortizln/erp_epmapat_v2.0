@@ -13,7 +13,7 @@ import com.erp.modelo.RubroAdicionalM;
 import com.erp.servicio.RubroAdicionalS;
 
 @RestController
-@RequestMapping("/rubroadicional")
+@RequestMapping("/api/rubroadicional")
 
 
 public class RubroAdicionalC {

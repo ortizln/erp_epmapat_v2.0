@@ -20,7 +20,7 @@ import com.erp.modelo.contabilidad.Tramipresu;
 import com.erp.servicio.contabilidad.TramipresuServicio;
 
 @RestController
-@RequestMapping("/tramipresu")
+@RequestMapping("/api/tramipresu")
 
 
 public class TramipresuApi {

@@ -21,7 +21,7 @@ import com.erp.servicio.FacturacionServicio;
 import java.util.Date;
 
 @RestController
-@RequestMapping("/facturacion")
+@RequestMapping("/api/facturacion")
 public class FacturacionApi {
 
    @Autowired

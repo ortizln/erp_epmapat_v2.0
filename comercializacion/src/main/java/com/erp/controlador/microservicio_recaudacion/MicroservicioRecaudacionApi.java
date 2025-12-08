@@ -16,7 +16,7 @@ import com.erp.modelo.microserviceRecaudacion.FacturaRequest;
 import com.erp.servicio.microservicio_recaudacion.RecaudacionMicroservice;
 
 @RestController
-@RequestMapping("/mrecaudacion")
+@RequestMapping("/api/mrecaudacion")
 
 public class MicroservicioRecaudacionApi {
     @Autowired

@@ -24,7 +24,7 @@ import com.erp.modelo.Convenios;
 import com.erp.servicio.ConvenioServicio;
 
 @RestController
-@RequestMapping("/convenios")
+@RequestMapping("/api/convenios")
 
 public class ConveniosApi {
 

@@ -29,8 +29,7 @@ import com.erp.modelo.Abonados;
 import com.erp.servicio.AbonadoServicio;
 
 @RestController
-@RequestMapping("/abonados")
-
+@RequestMapping("/api/abonados")
 public class AbonadosApi {
 
 	@Autowired

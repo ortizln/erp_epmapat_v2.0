@@ -22,7 +22,7 @@ import com.erp.modelo.Recaudaxcaja;
 import com.erp.servicio.RecaudaxcajaServicio;
 
 @RestController
-@RequestMapping("/recaudaxcaja")
+@RequestMapping("/api/recaudaxcaja")
 
 public class RecaudaxcajaApi {
 

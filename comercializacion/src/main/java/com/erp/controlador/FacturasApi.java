@@ -55,7 +55,7 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 
 @RestController
-@RequestMapping("/facturas")
+@RequestMapping("/api/facturas")
 
 public class FacturasApi {
 

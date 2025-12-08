@@ -12,7 +12,7 @@ import com.erp.modelo.TpCertifica;
 import com.erp.servicio.TpCertificaServicio;
 
 @RestController
-@RequestMapping("/tpcertifica")
+@RequestMapping("/api/tpcertifica")
 
 
 public class TpCertificaApi {

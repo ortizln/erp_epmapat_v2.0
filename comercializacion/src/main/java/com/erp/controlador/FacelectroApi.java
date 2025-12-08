@@ -16,7 +16,7 @@ import com.erp.modelo.Facelectro;
 import com.erp.servicio.FacelectroServicio;
 
 @RestController
-@RequestMapping("/facelectro")
+@RequestMapping("/api/facelectro")
 
 
 public class FacelectroApi {

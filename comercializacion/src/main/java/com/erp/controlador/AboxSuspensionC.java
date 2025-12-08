@@ -15,7 +15,7 @@ import com.erp.modelo.AboxSuspensionM;
 import com.erp.servicio.AboxSuspensionS;
 
 @RestController
-@RequestMapping("/aboxsuspension")
+@RequestMapping("/api/aboxsuspension")
 
 public class AboxSuspensionC {
 

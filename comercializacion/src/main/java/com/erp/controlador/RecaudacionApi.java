@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
 
 @RestController
-@RequestMapping("/recaudacion")
+@RequestMapping("/api/recaudacion")
 
 
 public class RecaudacionApi {

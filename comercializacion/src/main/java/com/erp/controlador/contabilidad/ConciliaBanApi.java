@@ -17,7 +17,7 @@ import com.erp.modelo.contabilidad.Cuentas;
 import com.erp.servicio.contabilidad.ConciliaBanServicio;
 
 @RestController
-@RequestMapping("/conciliaban")
+@RequestMapping("/api/conciliaban")
 
 
 public class ConciliaBanApi {
