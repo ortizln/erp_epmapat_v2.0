@@ -676,7 +676,6 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
         ff.fechaemision,
         ff.estado,
         ff.xmlautorizado, 
-        ff.referencia, 
         ff.direccioncomprador,
         ffp.total
     from facturas f

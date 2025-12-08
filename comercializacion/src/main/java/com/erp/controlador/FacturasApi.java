@@ -678,7 +678,7 @@ public class FacturasApi {
     @GetMapping("fac_electronicas-cli")
     public ResponseEntity<List<FacElectronicas>> getFacturasElectronicasByIdcliente(
             @RequestParam Long idcliente) {
-
+System.out.println("BUSCANDO FACTURAS CLIENTE");
         List<FacElectronicas> facs = facServicio.getFacturasElectronicasByIdcliente(idcliente);
 
         if (facs == null || facs.isEmpty()) {
@@ -692,6 +692,7 @@ public class FacturasApi {
     @GetMapping("fac_electronicas-abo")
     public ResponseEntity<List<FacElectronicas>> getFacturasElectronicasByIdabonado(
             @RequestParam Long idabonado) {
+        System.out.println("BUSCANDO FACTURASA ABONADO");
 
         List<FacElectronicas> facs = facServicio.getFacturasElectronicasByIdabonado(idabonado);
 
