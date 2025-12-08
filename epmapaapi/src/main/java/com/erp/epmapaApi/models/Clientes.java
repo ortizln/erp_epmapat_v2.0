@@ -42,4 +42,8 @@ public class Clientes {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="idpjuridica_personeriajuridica")
     private PersonJuridica idpjuridica_personeriajuridica;
+    private String username;
+    private String password;
+    private boolean activo;
+    private String rol;
 }
