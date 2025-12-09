@@ -20,7 +20,7 @@ import com.erp.modelo.administracion.Tabla4;
 import com.erp.servicio.administracion.Tabla4Servicio;
 
 @RestController
-@RequestMapping("/tabla4")
+@RequestMapping("/api/tabla4")
 
 
 public class Tabla4Api {

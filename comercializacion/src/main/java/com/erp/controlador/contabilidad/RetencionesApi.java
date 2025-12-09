@@ -22,7 +22,7 @@ import com.erp.modelo.contabilidad.Retenciones;
 import com.erp.servicio.contabilidad.RetencionesServicio;
 
 @RestController
-@RequestMapping("/retenciones")
+@RequestMapping("/api/retenciones")
 
 
 public class RetencionesApi {

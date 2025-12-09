@@ -20,7 +20,7 @@ import com.erp.servicio.RubroServicio;
 import com.erp.servicio.Tramites1S;
 
 @RestController
-@RequestMapping("/tramites1")
+@RequestMapping("/api/tramites1")
 
 
 public class Tramites1C {

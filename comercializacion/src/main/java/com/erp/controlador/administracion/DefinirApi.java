@@ -14,7 +14,7 @@ import com.erp.modelo.administracion.Definir;
 import com.erp.servicio.administracion.DefinirServicio;
 
 @RestController
-@RequestMapping("/definir")
+@RequestMapping("/api/definir")
 public class DefinirApi {
 
     @Autowired

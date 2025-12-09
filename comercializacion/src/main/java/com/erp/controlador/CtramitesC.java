@@ -24,7 +24,7 @@ import com.erp.modelo.CtramitesM;
 import com.erp.servicio.CtramitesS;
 
 @RestController
-@RequestMapping("/ctramites")
+@RequestMapping("/api/ctramites")
 
 
 public class CtramitesC {

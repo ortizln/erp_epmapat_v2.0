@@ -17,7 +17,7 @@ import com.erp.modelo.Clientes;
 import com.erp.servicio.ClienteServicio;
 
 @RestController
-@RequestMapping("/clientes")
+@RequestMapping("/api/clientes")
 public class ClientesApi {
 
 	@Autowired

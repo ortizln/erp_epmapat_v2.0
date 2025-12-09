@@ -24,7 +24,7 @@ import com.erp.modelo.Emisiones;
 import com.erp.servicio.EmisionServicio;
 
 @RestController
-@RequestMapping("/emisiones")
+@RequestMapping("/api/emisiones")
 
 
 public class EmisionesApi {

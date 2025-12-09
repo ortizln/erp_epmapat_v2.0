@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping("/emisionindividual")
+@RequestMapping("/api/emisionindividual")
 
 public class EmisionIndividualApi {
     @Autowired

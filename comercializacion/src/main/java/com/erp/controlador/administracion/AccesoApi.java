@@ -12,7 +12,7 @@ import com.erp.modelo.administracion.Acceso;
 import com.erp.servicio.administracion.AccesoServicio;
 
 @RestController
-@RequestMapping("/acceso")
+@RequestMapping("/api/acceso")
 public class AccesoApi {
 
     @Autowired

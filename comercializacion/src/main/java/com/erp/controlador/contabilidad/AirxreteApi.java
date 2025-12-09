@@ -16,7 +16,7 @@ import com.erp.modelo.contabilidad.Airxrete;
 import com.erp.servicio.contabilidad.AirxreteServicio;
 
 @RestController
-@RequestMapping("/airxrete")
+@RequestMapping("/api/airxrete")
 
 
 public class AirxreteApi {

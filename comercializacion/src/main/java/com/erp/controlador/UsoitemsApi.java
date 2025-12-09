@@ -19,7 +19,7 @@ import com.erp.modelo.Usoitems;
 import com.erp.servicio.UsoitemsServicio;
 
 @RestController
-@RequestMapping("/usoitems")
+@RequestMapping("/api/usoitems")
 
 
 public class UsoitemsApi {

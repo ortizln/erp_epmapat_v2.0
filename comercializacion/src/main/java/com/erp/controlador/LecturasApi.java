@@ -26,7 +26,7 @@ import com.erp.servicio.LecturaServicio;
 import org.springframework.web.bind.annotation.RequestParam;
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/lecturas")
+@RequestMapping("/api/lecturas")
 public class LecturasApi {
     private final LecturaServicio lecServicio;
     private final EmisionServicioOptimizado emisionServicioOptimizado;

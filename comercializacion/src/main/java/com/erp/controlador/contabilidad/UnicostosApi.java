@@ -13,7 +13,7 @@ import com.erp.modelo.contabilidad.Unicostos;
 import com.erp.servicio.contabilidad.UnicostosServicio;
 
 @RestController
-@RequestMapping("/unicostos")
+@RequestMapping("/api/unicostos")
 
 
 public class UnicostosApi {

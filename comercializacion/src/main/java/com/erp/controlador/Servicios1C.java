@@ -20,7 +20,7 @@ import com.erp.modelo.Servicios1M;
 import com.erp.servicio.Servicios1S;
 
 @RestController
-@RequestMapping("/servicios1")
+@RequestMapping("/api/servicios1")
 
 
 public class Servicios1C {

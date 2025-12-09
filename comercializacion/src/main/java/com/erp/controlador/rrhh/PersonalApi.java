@@ -15,7 +15,7 @@ import com.erp.modelo.rrhh.Personal;
 import com.erp.servicio.rrhh.PersonalServicio;
 
 @RestController
-@RequestMapping("/personal")
+@RequestMapping("/api/personal")
 
 public class PersonalApi {
     @Autowired

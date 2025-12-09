@@ -20,7 +20,7 @@ import com.erp.modelo.PrecioxCatM;
 import com.erp.servicio.PrecioxCatS;
 
 @RestController
-@RequestMapping("/pliego")
+@RequestMapping("/api/pliego")
 
 
 public class PrecioxCatApi {

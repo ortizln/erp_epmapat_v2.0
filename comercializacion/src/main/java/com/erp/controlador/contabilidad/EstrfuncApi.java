@@ -22,7 +22,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.repository.query.Param;
 
 @RestController
-@RequestMapping("/estrfunc")
+@RequestMapping("/api/estrfunc")
 
 
 public class EstrfuncApi {

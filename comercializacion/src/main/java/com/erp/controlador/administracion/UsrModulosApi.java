@@ -17,7 +17,7 @@ import com.erp.modelo.administracion.Usrxmodulos;
 import com.erp.servicio.administracion.UsrxmodulosServicio;
 
 @RestController
-@RequestMapping("/usrxmodulos")
+@RequestMapping("/api/usrxmodulos")
 
 public class UsrModulosApi {
     @Autowired

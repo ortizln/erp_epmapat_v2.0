@@ -20,7 +20,7 @@ import com.erp.modelo.contabilidad.Cuentas;
 import com.erp.servicio.contabilidad.CuentaServicio;
 
 @RestController
-@RequestMapping("/cuentas")
+@RequestMapping("/api/cuentas")
 
 
 public class CuentasApi {

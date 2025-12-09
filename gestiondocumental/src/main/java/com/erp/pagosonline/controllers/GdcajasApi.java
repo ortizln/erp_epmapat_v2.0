@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/gdcajas")
+@RequestMapping("/api/gdcajas")
 
 public class GdcajasApi {
     @Autowired
@@ -26,7 +26,7 @@ public class GdcajasApi {
             return ResponseEntity.noContent().build();
         }
     }
-    @RequestMapping("/{idgdcaja}")
+    @RequestMapping("/api/{idgdcaja}")
     public ResponseEntity<Optional<Gdcajas>> getById(@PathVariable Long idgdcaja){
         Optional<Gdcajas> gdcajas = gdcajasService.findById(idgdcaja);
         if(gdcajas.isPresent()){

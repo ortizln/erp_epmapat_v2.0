@@ -20,7 +20,7 @@ import com.erp.modelo.contabilidad.Gruposbene;
 import com.erp.servicio.contabilidad.GrupobeneServicio;
 
 @RestController
-@RequestMapping("/gruposbene")
+@RequestMapping("/api/gruposbene")
 
 
 public class GruposbeneApi {

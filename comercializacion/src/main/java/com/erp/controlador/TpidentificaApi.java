@@ -19,7 +19,7 @@ import com.erp.modelo.Tpidentifica;
 import com.erp.servicio.TpidentificaServicio;
 
 @RestController
-@RequestMapping("/tpidentifica")
+@RequestMapping("/api/tpidentifica")
 
 
 public class TpidentificaApi {

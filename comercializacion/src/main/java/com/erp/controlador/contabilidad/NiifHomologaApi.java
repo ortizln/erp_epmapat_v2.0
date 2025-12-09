@@ -20,7 +20,7 @@ import com.erp.modelo.contabilidad.NiifHomologa;
 import com.erp.servicio.contabilidad.NiifHomologaServicio;
 
 @RestController
-@RequestMapping("/niifhomologa")
+@RequestMapping("/api/niifhomologa")
 
 
 public class NiifHomologaApi {

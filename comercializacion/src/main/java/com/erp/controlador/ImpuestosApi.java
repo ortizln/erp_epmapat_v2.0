@@ -11,7 +11,7 @@ import com.erp.modelo.Impuestos;
 import com.erp.servicio.ImpuestosServicio;
 
 @RestController
-@RequestMapping("/impuestos")
+@RequestMapping("/api/impuestos")
 
 public class ImpuestosApi {
     @Autowired

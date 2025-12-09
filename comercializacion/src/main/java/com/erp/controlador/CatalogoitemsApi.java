@@ -19,7 +19,7 @@ import com.erp.modelo.Catalogoitems;
 import com.erp.servicio.CatalogoitemServicio;
 
 @RestController
-@RequestMapping("/catalogoitems")
+@RequestMapping("/api/catalogoitems")
 
 
 public class CatalogoitemsApi {

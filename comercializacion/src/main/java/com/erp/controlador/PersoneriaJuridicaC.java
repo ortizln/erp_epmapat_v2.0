@@ -14,7 +14,7 @@ import com.erp.modelo.PersonJuridica;
 import com.erp.servicio.PersonJuridicaServicio;
 
 @RestController
-@RequestMapping("/personeriajuridica")
+@RequestMapping("/api/personeriajuridica")
 
 
 public class PersoneriaJuridicaC {

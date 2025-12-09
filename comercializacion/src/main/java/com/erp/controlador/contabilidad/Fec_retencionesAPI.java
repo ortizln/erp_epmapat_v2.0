@@ -16,7 +16,7 @@ import com.erp.modelo.contabilidad.Fec_retenciones;
 import com.erp.servicio.contabilidad.Fec_retencionesServicio;
 
 @RestController
-@RequestMapping("/fec_retenciones")
+@RequestMapping("/api/fec_retenciones")
 public class Fec_retencionesAPI {
    
    @Autowired

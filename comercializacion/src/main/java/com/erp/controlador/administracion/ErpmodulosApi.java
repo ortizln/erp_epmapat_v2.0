@@ -13,7 +13,7 @@ import com.erp.modelo.administracion.Erpmodulos;
 import com.erp.servicio.administracion.ErpmodulosServicio;
 
 @RestController
-@RequestMapping("/erpmodulos")
+@RequestMapping("/api/erpmodulos")
 
 public class ErpmodulosApi {
     @Autowired

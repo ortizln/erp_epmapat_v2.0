@@ -23,7 +23,7 @@ import com.erp.modelo.contabilidad.Certipresu;
 import com.erp.servicio.contabilidad.CertipresuServicio;
 
 @RestController
-@RequestMapping("/certipresu")
+@RequestMapping("/api/certipresu")
 
 
 public class CertipresuApi {

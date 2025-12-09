@@ -3,7 +3,6 @@ package com.erp.sri_files.dto;
 import lombok.Data;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 @Data
 public class FecFacturaDTO {
     private Long idfactura;

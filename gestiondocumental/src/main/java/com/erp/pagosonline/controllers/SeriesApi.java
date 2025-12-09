@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/series")
+@RequestMapping("/api/series")
 
 public class SeriesApi {
     @Autowired
@@ -25,7 +25,7 @@ public class SeriesApi {
             return ResponseEntity.noContent().build();
         }
     }
-    @RequestMapping("/{idseries}")
+    @RequestMapping("/api/{idseries}")
     public ResponseEntity<Optional<Series>> getById(@PathVariable Long idseries){
         Optional<Series> Series = seriesService.findById(idseries);
         if(Series.isPresent()){

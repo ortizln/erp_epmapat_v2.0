@@ -22,7 +22,7 @@ import com.erp.modelo.Ccertificaciones;
 import com.erp.servicio.CcertificacionServicio;
 
 @RestController
-@RequestMapping("/ccertificaciones")
+@RequestMapping("/api/ccertificaciones")
 
 
 public class CcertificacionesApi {

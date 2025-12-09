@@ -19,7 +19,7 @@ import com.erp.modelo.Estadom;
 import com.erp.servicio.EstadomServicio;
 
 @RestController
-@RequestMapping("/estadom")
+@RequestMapping("/api/estadom")
 
 
 public class EstadomApi {

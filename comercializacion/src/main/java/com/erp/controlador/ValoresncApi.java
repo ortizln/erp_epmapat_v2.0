@@ -17,7 +17,7 @@ import com.erp.modelo.Valoresnc;
 import com.erp.servicio.ValoresncServicio;
 
 @RestController
-@RequestMapping("/valoresnc")
+@RequestMapping("/api/valoresnc")
 
 public class ValoresncApi {
     @Autowired

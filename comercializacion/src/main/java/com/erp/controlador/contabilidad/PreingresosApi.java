@@ -20,7 +20,7 @@ import com.erp.modelo.contabilidad.Presupue;
 import com.erp.servicio.contabilidad.PresupueServicio;
 
 @RestController
-@RequestMapping("/preingresos")
+@RequestMapping("/api/preingresos")
 
 
 public class PreingresosApi {

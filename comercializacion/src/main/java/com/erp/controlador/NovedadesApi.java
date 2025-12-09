@@ -23,7 +23,7 @@ import com.erp.modelo.Novedad;
 import com.erp.servicio.NovedadServicio;
 
 @RestController
-@RequestMapping("/novedades")
+@RequestMapping("/api/novedades")
 
 
 public class NovedadesApi {

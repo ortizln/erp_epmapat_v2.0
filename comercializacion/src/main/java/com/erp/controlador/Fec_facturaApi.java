@@ -19,7 +19,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @RestController
-@RequestMapping("/fec_factura")
+@RequestMapping("/api/fec_factura")
 public class Fec_facturaApi {
 
    @Autowired

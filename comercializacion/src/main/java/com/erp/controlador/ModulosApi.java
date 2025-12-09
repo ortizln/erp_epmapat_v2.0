@@ -15,7 +15,7 @@ import com.erp.modelo.Modulos;
 import com.erp.servicio.ModuloServicio;
 
 @RestController
-@RequestMapping("/modulos")
+@RequestMapping("/api/modulos")
 
 
 public class ModulosApi {

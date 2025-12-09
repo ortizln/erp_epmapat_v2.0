@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/conservacion_documental")
+@RequestMapping("/api/conservacion_documental")
 
 public class Conservacion_documentalApi {
     @Autowired
@@ -25,7 +25,7 @@ public class Conservacion_documentalApi {
             return ResponseEntity.noContent().build();
         }
     }
-    @RequestMapping("/{idconservaciondocumental}")
+    @RequestMapping("/api/{idconservaciondocumental}")
     public ResponseEntity<Optional<Conservacion_documental>> getById(@PathVariable Long idconservaciondocumental){
         Optional<Conservacion_documental> conservacionDocumental = conservacionDocumentalService.findById(idconservaciondocumental);
         if(conservacionDocumental.isPresent()){

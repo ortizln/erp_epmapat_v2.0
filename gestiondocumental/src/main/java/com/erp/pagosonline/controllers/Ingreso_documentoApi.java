@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/ingreso_documento")
+@RequestMapping("/api/ingreso_documento")
 
 public class Ingreso_documentoApi {
     @Autowired
@@ -25,7 +25,7 @@ public class Ingreso_documentoApi {
             return ResponseEntity.noContent().build();
         }
     }
-    @RequestMapping("/{idingresodocumentos}")
+    @RequestMapping("/api/{idingresodocumentos}")
     public ResponseEntity<Optional<Ingreso_documentos>> getById(@PathVariable Long idingresodocumentos){
         Optional<Ingreso_documentos> ingresodocumentos = ingresoDocumentosService.findById(idingresodocumentos);
         if(ingresodocumentos.isPresent()){

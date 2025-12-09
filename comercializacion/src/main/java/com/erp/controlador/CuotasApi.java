@@ -15,7 +15,7 @@ import com.erp.modelo.Cuotas;
 import com.erp.servicio.CuotaServicio;
 
 @RestController
-@RequestMapping("/cuotas")
+@RequestMapping("/api/cuotas")
 
 
 public class CuotasApi {

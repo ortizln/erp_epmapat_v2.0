@@ -34,7 +34,7 @@ import com.erp.jasperReports.DTO.JasperDTO;
 import com.erp.jasperReports.services.BuildReports;
 
 @RestController
-@RequestMapping("/jasperReports")
+@RequestMapping("/api/jasperReports")
 
 public class BuildReportsApi {
     @Autowired

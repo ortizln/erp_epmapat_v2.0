@@ -15,7 +15,7 @@ import com.erp.modelo.Rutas;
 import com.erp.servicio.RutaServicio;
 
 @RestController
-@RequestMapping("/rutas")
+@RequestMapping("/api/rutas")
 
 
 public class RutasApi {

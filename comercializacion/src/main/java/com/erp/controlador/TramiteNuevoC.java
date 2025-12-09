@@ -22,7 +22,7 @@ import com.erp.modelo.TramiteNuevo;
 import com.erp.servicio.TramiteNuevoS;
 
 @RestController
-@RequestMapping("/tramitenuevo")
+@RequestMapping("/api/tramitenuevo")
 
 
 public class TramiteNuevoC {

@@ -15,7 +15,7 @@ import com.erp.modelo.TpTramiteM;
 import com.erp.servicio.TpTramiteS;
 
 @RestController
-@RequestMapping("/tptramite")
+@RequestMapping("/api/tptramite")
 
 
 public class TpTramiteC {

@@ -14,7 +14,7 @@ import com.erp.modelo.Pliego24;
 import com.erp.servicio.Pliego24Servicio;
 
 @RestController
-@RequestMapping("/pliego24")
+@RequestMapping("/api/pliego24")
 
 
 public class Pliego24Api {

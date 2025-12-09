@@ -23,7 +23,7 @@ import com.erp.modelo.administracion.Usuarios;
 import com.erp.servicio.administracion.UsuarioServicio;
 
 @RestController
-@RequestMapping("/usuarios")
+@RequestMapping("/api/usuarios")
 
 
 public class UsuariosApi {

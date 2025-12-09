@@ -19,7 +19,7 @@ import com.erp.modelo.contabilidad.Asientos;
 import com.erp.servicio.contabilidad.AsientoServicio;
 
 @RestController
-@RequestMapping("/asientos")
+@RequestMapping("/api/asientos")
 
 
 public class AsientosApi {
