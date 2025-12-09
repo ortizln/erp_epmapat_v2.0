@@ -62,7 +62,7 @@
 			</textField>
 			<image>
 				<reportElement x="10" y="10" width="300" height="120" uuid="6700265d-f727-4443-a025-db96c081e74a"/>
-				<imageExpression><![CDATA["https://epmapatulcan.gob.ec/wp/wp-content/uploads/2021/05/LOGO-HORIZONTAL.png"]]></imageExpression>
+				<imageExpression><![CDATA["/LOGO-H.png"]]></imageExpression>
 			</image>
 			<textField>
 				<reportElement x="334" y="51" width="209" height="20" uuid="1fb19613-d210-4520-a430-4061ee4d0483"/>
