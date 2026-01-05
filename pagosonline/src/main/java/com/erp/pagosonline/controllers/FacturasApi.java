@@ -38,8 +38,6 @@ public class FacturasApi {
     @Autowired
     private RubroxfacR rubroxfacR;
 
-
-
     @GetMapping(produces = MediaType.TEXT_HTML_VALUE)
     public ResponseEntity<String> _home() {
         StringBuilder html = new StringBuilder();

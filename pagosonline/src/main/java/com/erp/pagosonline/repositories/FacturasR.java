@@ -61,6 +61,7 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
              or f.estado = 3)
         and f.fechaconvenio is null
         and f.fechaeliminacion is null and f.totaltarifa > 0
+        and f.feccrea <= CURRENT_DATE
     order by
         f.idfactura;
     """, nativeQuery = true)
