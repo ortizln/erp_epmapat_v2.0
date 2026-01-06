@@ -53,7 +53,7 @@ public class EnvioSriBatchService {
     private long pollDelayMs;
 
         @Transactional
-        //@Scheduled(cron = "${interes.tarea.cron}") // ej: 0 */5 * * * *
+        @Scheduled(cron = "${interes.tarea.cron}") // ej: 0 */5 * * * *
         public void automatizacionEnvioFacturasElectonicas() {
             System.out.println("⏰ Ejecutando envío de facturas : " + LocalDateTime.now());
             try {
@@ -90,7 +90,7 @@ public class EnvioSriBatchService {
     );
 //Este servicio sirve para conultar las facturas en estado C y volver a buscar el xml auotizado en el sri
     @Transactional
-    //@Scheduled(cron = "${interes.tarea.cron}")
+    @Scheduled(cron = "${interes.tarea.cron}")
     public void automatizacionConsultarXml() {
         System.out.println("Voy a consultar cada xml que aun no esta");
         try {
