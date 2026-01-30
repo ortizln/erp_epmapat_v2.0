@@ -375,7 +375,7 @@ public class FacturaXmlGeneratorService {
     /* ==========================================================
      * BLOQUE: detalles con impuestos
      * ========================================================== */
-    private List<Detalle> mapearDetalles(List<FacturaDetalle> detallesFactura) {
+    private List<Detalle> _mapearDetalles(List<FacturaDetalle> detallesFactura) {
         if (detallesFactura == null || detallesFactura.isEmpty()) return List.of();
 
         List<Detalle> lista = new ArrayList<>();
@@ -450,6 +450,120 @@ public class FacturaXmlGeneratorService {
         return lista;
     }
 
+    private List<Detalle> mapearDetalles(List<FacturaDetalle> detallesFactura) {
+        if (detallesFactura == null || detallesFactura.isEmpty()) return List.of();
+
+        List<Detalle> lista = new ArrayList<>();
+
+        // ===== acumulador para 1006 + 1007 =====
+        BigDecimal baseConsFuentes = BigDecimal.ZERO;
+        boolean huboConsFuentes = false;
+
+        for (FacturaDetalle d : detallesFactura) {
+            if (d == null) continue;
+
+            String codPrin = nvlStr(d.getCodigoprincipal(), "");
+
+            BigDecimal cantidad = nvl(d.getCantidad());
+            BigDecimal pUnit    = nvl(d.getPreciounitario());
+            BigDecimal desc     = nvl(d.getDescuento());
+
+            BigDecimal baseLinea = cantidad.multiply(pUnit).subtract(desc);
+            if (baseLinea.compareTo(BigDecimal.ZERO) < 0) baseLinea = BigDecimal.ZERO;
+            baseLinea = baseLinea.setScale(2, RoundingMode.HALF_UP);
+
+            // ✅ Si es 1006 o 1007, SOLO acumula y NO lo agregues a la lista
+            if ("1006".equals(codPrin) || "1007".equals(codPrin)) {
+                baseConsFuentes = baseConsFuentes.add(baseLinea);
+                huboConsFuentes = true;
+                continue;
+            }
+
+            // ===== detalle normal =====
+            Detalle det = new Detalle();
+            det.setCodigoPrincipal(nvlStr(d.getCodigoprincipal(), "SIN-CODIGO"));
+            det.setCodigoAuxiliar(nullIfBlank(d.getCodigoprincipal()));
+            det.setDescripcion(nvlStr(d.getDescripcion(), "SIN DESCRIPCION"));
+
+            det.setCantidad(cantidad);
+            det.setPrecioUnitario(pUnit);
+            det.setDescuento(desc);
+            det.setPrecioTotalSinImpuesto(baseLinea);
+
+            // ===== Impuestos por detalle =====
+            List<Detalle.Impuesto> imps = new ArrayList<>();
+            List<FacturaDetalleImpuesto> fuente = d.getImpuestos() == null ? List.of() : d.getImpuestos();
+
+            for (FacturaDetalleImpuesto i : fuente) {
+                if (i == null) continue;
+
+                String cod = nvlStr(i.getCodigoimpuesto(), "2");
+                String cp  = nvlStr(obtenerCodigoPorcentajeSeguro(i), "0");
+
+                BigDecimal base   = nvl(i.getBaseimponible());
+                if (base.compareTo(BigDecimal.ZERO) == 0) base = baseLinea;
+
+                BigDecimal tarifa = obtenerTarifaPorcentaje(cod, cp);
+                BigDecimal valor  = base.multiply(tarifa)
+                        .divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+
+                Detalle.Impuesto imp = new Detalle.Impuesto();
+                imp.setCodigo(cod);
+                imp.setCodigoPorcentaje(cp);
+                imp.setTarifa(tarifa);
+                imp.setBaseImponible(base.setScale(2, RoundingMode.HALF_UP));
+                imp.setValor(valor.setScale(2, RoundingMode.HALF_UP));
+                imps.add(imp);
+            }
+
+            if (imps.isEmpty()) {
+                Detalle.Impuesto imp0 = new Detalle.Impuesto();
+                imp0.setCodigo("2");
+                imp0.setCodigoPorcentaje("0");
+                imp0.setTarifa(BigDecimal.ZERO);
+                imp0.setBaseImponible(baseLinea);
+                imp0.setValor(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+                imps.add(imp0);
+            }
+
+            det.setImpuestos(imps);
+
+            // ===== Detalles adicionales (igual que tu código) =====
+            List<Detalle.DetalleAdicional> ads = new ArrayList<>();
+            det.setDetallesAdicionales(ads.isEmpty() ? null : ads);
+
+            lista.add(det);
+        }
+
+        // ✅ Al final, si hubo 1006/1007, crea 1 solo detalle consolidado (1004)
+        if (huboConsFuentes && baseConsFuentes.compareTo(BigDecimal.ZERO) > 0) {
+            baseConsFuentes = baseConsFuentes.setScale(2, RoundingMode.HALF_UP);
+
+            Detalle det = new Detalle();
+            det.setCodigoPrincipal("1004");
+            det.setCodigoAuxiliar(null); // o "1004" si lo necesitas
+            det.setDescripcion("Conservación de fuentes");
+
+            det.setCantidad(BigDecimal.ONE);                 // ✅ cantidad 1
+            det.setPrecioUnitario(baseConsFuentes);          // ✅ unitario = suma
+            det.setDescuento(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+            det.setPrecioTotalSinImpuesto(baseConsFuentes);  // ✅ base total
+
+            // ✅ 1 solo impuesto
+            Detalle.Impuesto imp0 = new Detalle.Impuesto();
+            imp0.setCodigo("2");
+            imp0.setCodigoPorcentaje("0");
+            imp0.setTarifa(BigDecimal.ZERO);
+            imp0.setBaseImponible(baseConsFuentes);
+            imp0.setValor(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+
+            det.setImpuestos(List.of(imp0));
+
+            lista.add(det);
+        }
+
+        return lista;
+    }
 
     /* ==========================================================
      * BLOQUE: info adicional
