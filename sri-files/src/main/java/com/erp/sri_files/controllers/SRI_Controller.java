@@ -4,6 +4,7 @@ import com.erp.sri_files.dto.*;
 import com.erp.sri_files.models.Factura;
 import com.erp.sri_files.repositories.DefinirR;
 import com.erp.sri_files.repositories.FacturaR;
+import com.erp.sri_files.retenciones.service.RetencionPdfService;
 import com.erp.sri_files.services.*;
 import com.erp.sri_files.utils.FirmaComprobantesService;
 import com.erp.sri_files.utils.FirmaComprobantesService.ModoFirma;
@@ -33,6 +34,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/singsend")
@@ -47,6 +51,7 @@ public class SRI_Controller {
     private final XmlToPdfService xmlToPdfService;
     private final DefinirR definirService;
     private final MailService mailService;
+    private final RetencionPdfService   retencionPdfService;
 
 
     @Value("${eureka.service-url}")
@@ -365,9 +370,6 @@ public class SRI_Controller {
         }
     }
 
-
-
-
     // ===================== 8) CREAR XML FIRMAR Y ENVIAR =====================
     @GetMapping(path = "/factura_electronica")
     public ResponseEntity<?> crear_firmar_enviarFactura(@RequestParam Long idfactura) {
@@ -564,7 +566,6 @@ public class SRI_Controller {
         }
     }
 
-
     // ===================== 5) FIRMAR Y ENVIAR RETENCIÓN (recibe XML como String) =====================
     @PostMapping(
             path = "/retencion/string",
@@ -707,6 +708,16 @@ public class SRI_Controller {
                     "detalle", e.getMessage()
             ));
         }
+    }
+
+
+    @PostMapping(value = "/retenciones/pdf", consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_PDF_VALUE)
+    public ResponseEntity<byte[]> pdf(@RequestBody String xmlAutorizacion) throws Exception {
+        byte[] pdf = retencionPdfService.generarPdfDesdeXmlAutorizado(xmlAutorizacion);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=retencion.pdf")
+                .body(pdf);
     }
 
     // ========== 1) Consultar por CLAVE DE ACCESO ==========
@@ -874,14 +885,164 @@ public class SRI_Controller {
         }
     }
 
+    @GetMapping(
+            value = "/descargar",
+            produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, MediaType.APPLICATION_PDF_VALUE, MediaType.APPLICATION_XML_VALUE }
+    )
+    public ResponseEntity<?> descargarRetencionAutorizada(
+            @RequestParam String claveAcceso,
+
+            // polling opcional
+            @RequestParam(defaultValue = "false") boolean wait,
+            @RequestParam(defaultValue = "60") int attempts,
+            @RequestParam(defaultValue = "8000") long sleepMillis,
+
+            // zip | pdf | xml
+            @RequestParam(defaultValue = "zip") String downloadType
+    ) {
+        try {
+            RespuestaComprobante rc;
+
+            // 1) Consulta SRI con o sin espera (polling)
+            if (wait) {
+                rc = sendXmlToSriService.consultarAutorizacionConEsperaPorClave(
+                        claveAcceso.trim(),
+                        attempts,
+                        sleepMillis,
+                        sleepMillis * 4,
+                        1.5,
+                        true
+                );
+            } else {
+                rc = sendXmlToSriService.consultarAutorizacion(claveAcceso.trim());
+            }
+
+            if (rc == null) {
+                return ResponseEntity.status(500).body(Map.of(
+                        "error", "Respuesta nula del servicio de autorización del SRI",
+                        "claveAcceso", claveAcceso
+                ));
+            }
+
+            // 2) Validar número de comprobantes
+            int num = 0;
+            try {
+                num = (rc.getNumeroComprobantes() == null) ? 0 : Integer.parseInt(rc.getNumeroComprobantes().trim());
+            } catch (NumberFormatException ignore) { }
+
+            if (num <= 0
+                    || rc.getAutorizaciones() == null
+                    || rc.getAutorizaciones().getAutorizacion() == null
+                    || rc.getAutorizaciones().getAutorizacion().isEmpty()) {
+
+                return ResponseEntity.status(202).body(Map.of(
+                        "estado", "PENDIENTE",
+                        "detalle", "Aún no hay autorizaciones disponibles para la clave.",
+                        "claveAcceso", claveAcceso
+                ));
+            }
+
+            var lista = rc.getAutorizaciones().getAutorizacion();
+
+            // 3) Buscar la AUTORIZADO
+            var autorizada = lista.stream()
+                    .filter(a -> "AUTORIZADO".equalsIgnoreCase(safeStr(a.getEstado())))
+                    .findFirst()
+                    .orElse(null);
+
+            if (autorizada == null) {
+                var a0 = lista.get(0);
+                return ResponseEntity.status(400).body(Map.of(
+                        "estadoAutorizacion", safeStr(a0.getEstado()),
+                        "numeroAutorizacion", safeStr(a0.getNumeroAutorizacion()),
+                        "fechaAutorizacion", (a0.getFechaAutorizacion() != null ? a0.getFechaAutorizacion().toString() : ""),
+                        "ambiente", safeStr(a0.getAmbiente()),
+                        "claveAcceso", claveAcceso
+                ));
+            }
+
+            // 4) Obtener comprobante (retención) del SRI
+            String xmlComprobante = safeStr(autorizada.getComprobante());
+            if (xmlComprobante.isBlank()) {
+                return ResponseEntity.status(500).body(Map.of(
+                        "error", "La autorización no contiene XML de comprobante.",
+                        "claveAcceso", claveAcceso
+                ));
+            }
+
+            String estado = safeStr(autorizada.getEstado());
+            String numeroAutorizacion = safeStr(autorizada.getNumeroAutorizacion());
+            String fechaAutorizacion = (autorizada.getFechaAutorizacion() != null
+                    ? autorizada.getFechaAutorizacion().toXMLFormat()
+                    : "");
+            String ambiente = safeStr(autorizada.getAmbiente());
+
+            // 5) XML completo (wrapper autorizacion)
+            String xmlAutorizacionCompleta =
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                            "<autorizacion>\n" +
+                            "  <estado>" + estado + "</estado>\n" +
+                            "  <numeroAutorizacion>" + numeroAutorizacion + "</numeroAutorizacion>\n" +
+                            "  <fechaAutorizacion>" + fechaAutorizacion + "</fechaAutorizacion>\n" +
+                            "  <ambiente>" + ambiente + "</ambiente>\n" +
+                            "  <comprobante><![CDATA[" + xmlComprobante + "]]></comprobante>\n" +
+                            "</autorizacion>";
+
+            String baseName = "retencion_" + claveAcceso;
+
+            // 6) Descargar SOLO XML
+            if ("xml".equalsIgnoreCase(downloadType)) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_XML)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + baseName + ".xml\"")
+                        .body(xmlAutorizacionCompleta);
+            }
+
+            // 7) Generar PDF
+            byte[] pdfBytes = retencionPdfService.generarPdfDesdeXmlAutorizado(xmlAutorizacionCompleta);
+
+            // 8) Descargar SOLO PDF
+            if ("pdf".equalsIgnoreCase(downloadType)) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_PDF)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + baseName + ".pdf\"")
+                        .body(pdfBytes);
+            }
+
+            // 9) Descargar ZIP (XML + PDF)
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+
+                zos.putNextEntry(new ZipEntry(baseName + ".xml"));
+                zos.write(xmlAutorizacionCompleta.getBytes(StandardCharsets.UTF_8));
+                zos.closeEntry();
+
+                zos.putNextEntry(new ZipEntry(baseName + ".pdf"));
+                zos.write(pdfBytes);
+                zos.closeEntry();
+            }
+
+            byte[] zipBytes = baos.toByteArray();
+            return ResponseEntity.ok()
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + baseName + ".zip\"")
+                    .body(zipBytes);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "Error generando descarga de retención",
+                    "detalle", e.getMessage(),
+                    "claveAcceso", claveAcceso
+            ));
+        }
+    }
+
 
     // helper simple si no lo tienes:
     private String safeStr(Object o) {
         return (o == null) ? "" : o.toString().trim();
     }
-
-
-
 
     // ========== 2) Consultar por XML (extrae <claveAcceso>) ==========
     @PostMapping(

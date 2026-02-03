@@ -51,8 +51,8 @@ spring:
             - Path=/api/conservacion_documental/**, /api/gdcajas/**, /api/ingreso_documento/**, /api/inventario/**, /api/seccion/**, /api/series/**,  /api/subsecciones/**, /api/subseries/**
 
         - id: msvc-sri
-          uri: http://msvc-sri:9096
-          #uri: http://localhost:9096
+          #uri: http://msvc-sri:9096
+          uri: http://localhost:9096
           predicates:
             - Path=/api/sri/**, /api/singsend/**
 
