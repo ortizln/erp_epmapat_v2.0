@@ -66,3 +66,11 @@ sri:
     autorizacion:
       pruebas: https://celcer.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline
       produccion: https://cel.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline
+
+net:
+  sf:
+    jasperreports:
+      awt:
+        ignore:
+          missing:
+            font=true:

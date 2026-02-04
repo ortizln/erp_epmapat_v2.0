@@ -28,6 +28,7 @@ import org.xml.sax.InputSource;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -885,25 +886,17 @@ public class SRI_Controller {
         }
     }
 
-    @GetMapping(
-            value = "/descargar",
-            produces = { MediaType.APPLICATION_OCTET_STREAM_VALUE, MediaType.APPLICATION_PDF_VALUE, MediaType.APPLICATION_XML_VALUE }
-    )
+    @GetMapping("/descargar")
     public ResponseEntity<?> descargarRetencionAutorizada(
             @RequestParam String claveAcceso,
-
-            // polling opcional
+            @RequestParam(defaultValue = "zip") String downloadType, // zip | pdf | xml
             @RequestParam(defaultValue = "false") boolean wait,
             @RequestParam(defaultValue = "60") int attempts,
-            @RequestParam(defaultValue = "8000") long sleepMillis,
-
-            // zip | pdf | xml
-            @RequestParam(defaultValue = "zip") String downloadType
+            @RequestParam(defaultValue = "8000") long sleepMillis
     ) {
         try {
             RespuestaComprobante rc;
 
-            // 1) Consulta SRI con o sin espera (polling)
             if (wait) {
                 rc = sendXmlToSriService.consultarAutorizacionConEsperaPorClave(
                         claveAcceso.trim(),
@@ -918,24 +911,22 @@ public class SRI_Controller {
             }
 
             if (rc == null) {
-                return ResponseEntity.status(500).body(Map.of(
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                         "error", "Respuesta nula del servicio de autorización del SRI",
                         "claveAcceso", claveAcceso
                 ));
             }
 
-            // 2) Validar número de comprobantes
             int num = 0;
             try {
                 num = (rc.getNumeroComprobantes() == null) ? 0 : Integer.parseInt(rc.getNumeroComprobantes().trim());
-            } catch (NumberFormatException ignore) { }
+            } catch (NumberFormatException ignore) {}
 
             if (num <= 0
                     || rc.getAutorizaciones() == null
                     || rc.getAutorizaciones().getAutorizacion() == null
                     || rc.getAutorizaciones().getAutorizacion().isEmpty()) {
-
-                return ResponseEntity.status(202).body(Map.of(
+                return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of(
                         "estado", "PENDIENTE",
                         "detalle", "Aún no hay autorizaciones disponibles para la clave.",
                         "claveAcceso", claveAcceso
@@ -944,7 +935,6 @@ public class SRI_Controller {
 
             var lista = rc.getAutorizaciones().getAutorizacion();
 
-            // 3) Buscar la AUTORIZADO
             var autorizada = lista.stream()
                     .filter(a -> "AUTORIZADO".equalsIgnoreCase(safeStr(a.getEstado())))
                     .findFirst()
@@ -952,7 +942,7 @@ public class SRI_Controller {
 
             if (autorizada == null) {
                 var a0 = lista.get(0);
-                return ResponseEntity.status(400).body(Map.of(
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of(
                         "estadoAutorizacion", safeStr(a0.getEstado()),
                         "numeroAutorizacion", safeStr(a0.getNumeroAutorizacion()),
                         "fechaAutorizacion", (a0.getFechaAutorizacion() != null ? a0.getFechaAutorizacion().toString() : ""),
@@ -961,10 +951,9 @@ public class SRI_Controller {
                 ));
             }
 
-            // 4) Obtener comprobante (retención) del SRI
             String xmlComprobante = safeStr(autorizada.getComprobante());
             if (xmlComprobante.isBlank()) {
-                return ResponseEntity.status(500).body(Map.of(
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                         "error", "La autorización no contiene XML de comprobante.",
                         "claveAcceso", claveAcceso
                 ));
@@ -977,7 +966,6 @@ public class SRI_Controller {
                     : "");
             String ambiente = safeStr(autorizada.getAmbiente());
 
-            // 5) XML completo (wrapper autorizacion)
             String xmlAutorizacionCompleta =
                     "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                             "<autorizacion>\n" +
@@ -990,47 +978,39 @@ public class SRI_Controller {
 
             String baseName = "retencion_" + claveAcceso;
 
-            // 6) Descargar SOLO XML
+            // ====== XML ======
             if ("xml".equalsIgnoreCase(downloadType)) {
+                byte[] xmlBytes = xmlAutorizacionCompleta.getBytes(StandardCharsets.UTF_8);
                 return ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_XML)
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + baseName + ".xml\"")
-                        .body(xmlAutorizacionCompleta);
+                        .contentLength(xmlBytes.length)
+                        .body(xmlBytes);
             }
 
-            // 7) Generar PDF
+            // ====== PDF ======
             byte[] pdfBytes = retencionPdfService.generarPdfDesdeXmlAutorizado(xmlAutorizacionCompleta);
 
-            // 8) Descargar SOLO PDF
             if ("pdf".equalsIgnoreCase(downloadType)) {
                 return ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_PDF)
                         .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + baseName + ".pdf\"")
+                        .contentLength(pdfBytes.length)
                         .body(pdfBytes);
             }
 
-            // 9) Descargar ZIP (XML + PDF)
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+            // ====== ZIP (XML + PDF) ======
+            byte[] zipBytes = buildZip(baseName, xmlAutorizacionCompleta, pdfBytes);
 
-                zos.putNextEntry(new ZipEntry(baseName + ".xml"));
-                zos.write(xmlAutorizacionCompleta.getBytes(StandardCharsets.UTF_8));
-                zos.closeEntry();
-
-                zos.putNextEntry(new ZipEntry(baseName + ".pdf"));
-                zos.write(pdfBytes);
-                zos.closeEntry();
-            }
-
-            byte[] zipBytes = baos.toByteArray();
             return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .contentType(MediaType.parseMediaType("application/zip"))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + baseName + ".zip\"")
+                    .contentLength(zipBytes.length)
                     .body(zipBytes);
 
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of(
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                     "error", "Error generando descarga de retención",
                     "detalle", e.getMessage(),
                     "claveAcceso", claveAcceso
@@ -1038,6 +1018,21 @@ public class SRI_Controller {
         }
     }
 
+    private static byte[] buildZip(String baseName, String xmlAutorizacionCompleta, byte[] pdfBytes) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ZipOutputStream zos = new ZipOutputStream(baos)) {
+            zos.putNextEntry(new ZipEntry(baseName + ".xml"));
+            zos.write(xmlAutorizacionCompleta.getBytes(StandardCharsets.UTF_8));
+            zos.closeEntry();
+
+            zos.putNextEntry(new ZipEntry(baseName + ".pdf"));
+            zos.write(pdfBytes);
+            zos.closeEntry();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return baos.toByteArray();
+    }
 
     // helper simple si no lo tienes:
     private String safeStr(Object o) {
