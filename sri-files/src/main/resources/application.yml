@@ -41,6 +41,7 @@ app:
     from: facturacion@epmapatulcan.gob.ec
     #from: locote.fumadote81@gmail.com
     # opcional:
+    username: facturacion
     display-name: EPMAPA-T
     reply-to: facturacion@epmapatulcan.gob.ec
     #reply-to: locote.fumadote81@gmail.com
