@@ -85,7 +85,6 @@ public class EnvioSriBatchService {
     private static final Set<String> DOMINIOS_BLOQUEADOS = Set.of(
             "epmapatulcan.gob.ec",
             "yimail.com",
-            "GMAIL.COM",
             "gamil.com",
             "yahoo.com.mx",
             "hotail.com",
