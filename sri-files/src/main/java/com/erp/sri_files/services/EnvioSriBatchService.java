@@ -85,7 +85,17 @@ public class EnvioSriBatchService {
     private static final Set<String> DOMINIOS_BLOQUEADOS = Set.of(
             "epmapatulcan.gob.ec",
             "yimail.com",
-            "gmail.com"
+            "GMAIL.COM",
+            "gamil.com",
+            "yahoo.com.mx",
+            "hotail.com",
+            "homail.com",
+            "outloock.com",
+            "gmaill.com",
+            "hotamil.es",
+            "hotmail.com.ar",
+            "yahoo.com.ar",
+            "YAHOO.COM"
             // agrega más: "hotmail.com", "yahoo.com", etc.
     );
 //Este servicio sirve para conultar las facturas en estado C y volver a buscar el xml auotizado en el sri
