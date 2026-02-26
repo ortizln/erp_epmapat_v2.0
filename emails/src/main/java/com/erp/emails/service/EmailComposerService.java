@@ -1,0 +1,87 @@
+package com.erp.emails.service;
+
+import com.erp.emails.dtos.AttachmentInput;
+import com.erp.emails.dtos.SendEmailRequest;
+import com.erp.emails.interfaces.AttachmentStorage;
+import com.erp.emails.model.EmailAttachment;
+import com.erp.emails.model.EmailMessage;
+import com.erp.emails.model.EmailStatus;
+import com.erp.emails.model.EmailType;
+import com.erp.emails.repository.EmailAttachmentR;
+import com.erp.emails.repository.EmailMessageR;
+import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Service;
+
+import java.util.Base64;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Service
+public class EmailComposerService {
+
+    private final EmailMessageR emailRepo;
+    private final EmailAttachmentR attachRepo;
+    private final TemplateService templateService;
+    private final AttachmentStorage storage;
+
+    public EmailComposerService(EmailMessageR emailRepo,
+                                EmailAttachmentR attachRepo,
+                                TemplateService templateService,
+                                AttachmentStorage storage) {
+        this.emailRepo = emailRepo;
+        this.attachRepo = attachRepo;
+        this.templateService = templateService;
+        this.storage = storage;
+    }
+
+    @Transactional
+    public UUID enqueue(EmailType type, SendEmailRequest req) {
+        EmailMessage msg = new EmailMessage();
+        msg.setType(type);
+        msg.setStatus(EmailStatus.PENDING);
+        msg.setToRecipients(join(req.to));
+        msg.setCcRecipients(join(req.cc));
+        msg.setBccRecipients(join(req.bcc));
+        msg.setSubject(req.subject);
+        msg.setCorrelationId(req.correlationId);
+        msg.setAttempts(0);
+
+        // cuerpo
+        String html = null;
+        String text = req.text;
+
+        if (req.templateKey != null && !req.templateKey.isBlank()) {
+            html = templateService.render(req.templateKey, req.variables);
+        } else if (req.html != null && !req.html.isBlank()) {
+            html = req.html;
+        }
+        msg.setBodyHtml(html);
+        msg.setBodyText(text);
+
+        EmailMessage saved = emailRepo.save(msg);
+
+        // adjuntos
+        if (req.attachments != null) {
+            for (AttachmentInput a : req.attachments) {
+                byte[] bytes = Base64.getDecoder().decode(a.base64);
+                var stored = storage.save(a.name, a.contentType, bytes);
+
+                EmailAttachment att = new EmailAttachment();
+                att.setEmail(saved);
+                att.setFilename(a.name);
+                att.setContentType(a.contentType);
+                att.setSize(stored.size());
+                att.setStorageRef(stored.storageRef());
+                att.setSha256(stored.sha256());
+                attachRepo.save(att);
+            }
+        }
+        return saved.getId();
+    }
+
+    private String join(List<String> xs) {
+        if (xs == null || xs.isEmpty()) return null;
+        return xs.stream().map(String::trim).filter(s -> !s.isBlank()).collect(Collectors.joining(","));
+    }
+}

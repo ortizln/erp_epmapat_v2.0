@@ -7,18 +7,27 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="reportes-jr" />
         <module name="epmapaapi" />
         <module name="epmapaApi" />
         <module name="gestiondocumental" />
         <module name="eureka" />
         <module name="pagosonline" />
-        <module name="recaudacion" />
         <module name="login" />
+        <module name="reportes-jr" />
+        <module name="recaudacion" />
         <module name="config" />
         <module name="gateway" />
         <module name="comercializacion" />
         <module name="sri-files" />
+      </profile>
+      <profile name="Annotation profile for erp_epmapat" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.32/lombok-1.18.32.jar" />
+        </processorPath>
+        <module name="emails" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
@@ -30,6 +39,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="comercializacion" options="-parameters" />
       <module name="config" options="-parameters" />
+      <module name="emails" options="-parameters" />
       <module name="epmapaApi" options="-parameters" />
       <module name="epmapaapi" options="-parameters" />
       <module name="eureka" options="-parameters" />

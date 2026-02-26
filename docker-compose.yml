@@ -259,6 +259,34 @@ services:
       epmapat-nw:
         aliases:
           - msvc-epmapaapi
+  msvc-emails:
+    build:
+      context: emails
+      dockerfile: Dockerfile
+    image: msvc-emails:latest
+    container_name: msvc-emails
+    ports:
+      - "9098:9098"
+    environment:
+      - EUREKA_SERVICEURL=http://msvc-eureka
+      - EUREKA_INSTANCE=msvc-eureka
+      - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
+      - DB_USER=postgres
+      - DB_PASS=
+      - HOST=http://172.30.10.4
+      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
+      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_HOST:smtp.elasticemail.com
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+    networks:
+      epmapat-nw:
+        aliases:
+          - msvc-emails
 networks:
   epmapat-nw:
     driver: bridge
