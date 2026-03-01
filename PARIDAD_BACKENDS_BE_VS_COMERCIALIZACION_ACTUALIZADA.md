@@ -1,20 +1,20 @@
-# PARIDAD ACTUALIZADA 2 - BE vs COMERCIALIZACION
-Fecha: 2026-03-01 17:42
+# PARIDAD ACTUALIZADA 3 - BE vs COMERCIALIZACION
+Fecha: 2026-03-01 17:47
 
-Archivos faltantes en micro: 9
+## Resumen
+- Archivos faltantes en micro por nombre: 0
+- Estado: paridad por nombres de archivo completada (BE -> comercializacion)
 
-## Faltantes actuales
-- ClienteDto.java
-- CorsConfig.java
-- EmisionServicioOptimizado_anterior.java
-- ErpEpmapatApplication.java
-- FecFacturaUpdateDto.java
-- HttpStatus.java
-- JasperReportLoader.java
-- LecturasByRutasRequest.java
-- ReportCache.java
+## Último bloque migrado
+- ClienteDto
+- FecFacturaUpdateDto
+- LecturasByRutasRequest
+- CorsConfig
+- HttpStatus
+- JasperReportLoader
+- ReportCache
+- ErpEpmapatApplication (compat legacy)
+- EmisionServicioOptimizado_anterior (stub legacy)
 
-## Avances recientes
-- DTOs compatibilidad agregados (LoginResponse, ClienteDuplicadoDTO, ClienteMergePreviewDTO, RutaDTO, LecturaDto).
-- LecturaMapper agregado.
-- Alias de rutas: /api/documentos y /api/ventanas.
+## Verificación
+- mvn -pl comercializacion -DskipTests compile => BUILD SUCCESS
