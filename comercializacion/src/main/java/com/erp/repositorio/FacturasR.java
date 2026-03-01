@@ -692,4 +692,6 @@ public interface FacturasR extends JpaRepository<Facturas, Long> {
     List<FacElectronicas> getFacturasElectronicasByIdcliente(@Param("idcliente") Long idcliente);
 
 
+    @Query(value = "select * from facturas f where f.idcliente = ?1 and f.pagado = 0", nativeQuery = true)
+    public List<Facturas> findSincobroToMerge(Long idcliente);
 }

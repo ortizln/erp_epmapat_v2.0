@@ -1,0 +1,12 @@
+package com.erp.DTO;
+
+import java.util.List;
+
+import lombok.Data;
+
+@Data
+public class ClienteMergeRequest {
+    private Long masterId;
+    private List<Long> duplicateIds;
+    private Long usuario;
+}

@@ -6,86 +6,123 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.erp.config.AESUtil;
 import com.erp.interfaces.CVClientes;
+import com.erp.interfaces.ClienteDuplicadoGrupoView;
+import com.erp.interfaces.ClienteDuplicadoView;
+import com.erp.interfaces.mobile.ClientesMobile;
 import com.erp.modelo.Clientes;
 import com.erp.repositorio.ClientesR;
 
 @Service
 public class ClienteServicio {
 
-	@Autowired
-	private ClientesR dao;
+    @Autowired
+    private ClientesR dao;
 
-	// Campos: id y nombre
-	public List<Map<String, Object>> obtenerCampos() {
-		return dao.findAllClientsFields();
-	}
+    public List<Map<String, Object>> obtenerCampos() {
+        return dao.findAllClientsFields();
+    }
 
-	// Buscar Clientes por Nombre o Identificacion
-	public List<Clientes> findByNombreIdentifi(String nombreIdentifi) {
-		return dao.findByNombreIdentifi(nombreIdentifi);
-	}
+    public List<Clientes> findByNombreIdentifi(String nombreIdentifi) {
+        return dao.findByNombreIdentifi(nombreIdentifi);
+    }
 
-	// Buscar Clientes por Identificacion
-	public List<Clientes> findByIdentificacion(String identificacion) {
-		return dao.findByIdentificacion(identificacion);
-	}
+    public List<Clientes> findByIdentificacion(String identificacion) {
+        return dao.findByIdentificacion(identificacion);
+    }
 
-	// Buscar Clientes por Nombre
-	public List<Clientes> findByNombre(String nombre) {
-		return dao.findByNombre(nombre);
-	}
+    public List<Clientes> findByNombre(String nombre) {
+        return dao.findByNombre(nombre);
+    }
 
-	// Valida Identificacion
-	public boolean valIdentificacion(String nombre) {
-		return dao.valIdentificacion(nombre);
-	}
+    public boolean valIdentificacion(String nombre) {
+        return dao.valIdentificacion(nombre);
+    }
 
-	// Valida Nombre
-	public boolean valNombre(String nombre) {
-		return dao.valNombre(nombre);
-	}
+    public boolean valNombre(String nombre) {
+        return dao.valNombre(nombre);
+    }
 
-	public <S extends Clientes> S save(S entity) {
-		return dao.save(entity);
-	}
+    public <S extends Clientes> S save(S entity) {
+        return dao.save(entity);
+    }
 
-	public Optional<Clientes> findById(Long id) {
-		return dao.findById(id);
-	}
+    public Optional<Clientes> findById(Long id) {
+        return dao.findById(id);
+    }
 
-	public void deleteById(Long id) {
-		dao.deleteByIdQ(id);
-	}
+    public void deleteById(Long id) {
+        dao.deleteByIdQ(id);
+    }
 
-	public List<Clientes> used(Long id) {
-		return dao.used(id);
-	}
+    public List<Clientes> used(Long id) {
+        return dao.used(id);
+    }
 
-	public Long totalclientes() {
-		return dao.totalClientes();
-	}
+    public Long totalclientes() {
+        return dao.totalClientes();
+    }
 
-	public List<CVClientes> getCVByCliente(LocalDate fecha) {
-		return dao.getCVByCliente(fecha);
-	}
+    public List<CVClientes> getCVByCliente(LocalDate fecha) {
+        return dao.getCVByCliente(fecha);
+    }
 
-	public Page<CVClientes> getCVOfClientes(LocalDate fecha, String name, int page, int size) {
-		// Validación defensiva para evitar índices negativos
-		if (page < 0) {
-			page = 0;
-		}
+    public Page<CVClientes> getCVOfClientes(LocalDate fecha, String name, int page, int size) {
+        if (page < 0) {
+            page = 0;
+        }
 
-		Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size);
 
-		if (name == null || name.isEmpty()) {
-			return dao.getCVOfClientes(fecha, pageable);
-		} else {
-			return dao.getCVOfNCliente(fecha, name, pageable);
-		}
-	}
+        if (name == null || name.isEmpty()) {
+            return dao.getCVOfClientes(fecha, pageable);
+        } else {
+            return dao.getCVOfNCliente(fecha, name, pageable);
+        }
+    }
 
+    public void actualizarCredenciales(Long idcliente, String username, String password) throws Exception {
+        Clientes c = dao.findById(idcliente)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+        c.setUsername(username);
+        c.setPassword(AESUtil.cifrar(password));
+
+        dao.save(c);
+    }
+
+    public Page<ClienteDuplicadoView> listarDuplicados(Pageable pageable) {
+        return dao.findDuplicados(pageable);
+    }
+
+    public Page<ClienteDuplicadoGrupoView> findDuplicadosAgrupados(Pageable pageable) {
+        return dao.findDuplicadosAgrupados(pageable);
+    }
+
+    public Page<ClienteDuplicadoGrupoView> listarDuplicadosFiltrados(String q, int page, int size) {
+
+        String filtro = (q == null) ? "" : q.trim();
+
+        Pageable pageable = PageRequest.of(
+                Math.max(page, 0),
+                Math.max(size, 1),
+                Sort.by(Sort.Direction.ASC, "cedula"));
+
+        return dao.findDuplicadosAgrupadosFiltrado(filtro, pageable);
+    }
+
+    public List<Clientes> findAll() {
+        return dao.findAll();
+    }
+
+    public List<ClientesMobile> getAllClientesMobile() {
+        return dao.findAllBy();
+    }
 }

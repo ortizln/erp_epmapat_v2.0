@@ -8,7 +8,9 @@ import java.util.concurrent.CompletableFuture;
 import com.erp.interfaces.*;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
+import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Async;
 
 import com.erp.modelo.Lecturas;
@@ -302,4 +304,27 @@ public interface LecturasR extends JpaRepository<Lecturas, Long> {
             @Param("idemision") Long idemision,
             @Param("top") Long top);
 
+    @Query(value = """
+              SELECT l.*
+              FROM lecturas l
+              JOIN facturas f ON f.idfactura = l.idfactura
+              WHERE l.idresponsable = :idcliente
+                AND f.pagado = 0
+            """, nativeQuery = true)
+    List<Lecturas> findPendientesByCliente(@Param("idcliente") Long idcliente);
+
+    @Modifying
+    @Transactional
+    @Query(value = """
+              UPDATE lecturas
+              SET idresponsable = :masterId
+              WHERE idresponsable = :dupId
+                AND idfactura IN (
+                  SELECT f.idfactura FROM facturas f WHERE f.pagado = 0
+                )
+            """, nativeQuery = true)
+    void reasignarCliente(@Param("dupId") Long dupId,
+                          @Param("masterId") Long masterId);
 }
+
+
