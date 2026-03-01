@@ -48,10 +48,10 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.88/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=Epmapat2024
+      - DB_PASS=${DB_PASS_2024}
       - HOST=http://192.168.0.88
-      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
@@ -76,10 +76,10 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=EpmapaT2025
+      - DB_PASS=${DB_PASS_2025}
       - HOST=http://172.30.10.4
-      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
@@ -104,10 +104,10 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=EpmapaT2025
+      - DB_PASS=${DB_PASS_2025}
       - HOST=http://172.30.10.4
-      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
@@ -132,10 +132,10 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=EpmapaT2025
+      - DB_PASS=${DB_PASS_2025}
       - HOST=http://172.30.10.4
-      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
@@ -160,10 +160,10 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.88:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=Epmapat2024
+      - DB_PASS=${DB_PASS_2024}
       - HOST=http://192.168.0.88
-      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
@@ -188,10 +188,10 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.88:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=Epmapat2024
+      - DB_PASS=${DB_PASS_2024}
       - HOST=http://192.168.0.88
-      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
@@ -216,10 +216,10 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.88:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=Epmapat2024
+      - DB_PASS=${DB_PASS_2024}
       - HOST=http://192.168.0.88
-      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health" ]
@@ -244,10 +244,10 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=EpmapaT2025
+      - DB_PASS=${DB_PASS_2025}
       - HOST=http://172.30.10.4
-      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health" ]
@@ -272,10 +272,10 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=
+      - DB_PASS=${DB_PASS}
       - HOST=http://172.30.10.4
-      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health" ]
@@ -293,6 +293,8 @@ networks:
     ipam:
       config:
         - subnet: 172.28.0.0/16
+
+
 
 
 
