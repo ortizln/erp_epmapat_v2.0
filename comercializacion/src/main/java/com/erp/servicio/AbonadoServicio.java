@@ -16,6 +16,7 @@ import com.erp.DTO.EstadisticasAbonadosDTO;
 import com.erp.DTO.ValorFactDTO;
 import com.erp.interfaces.AbonadoI;
 import com.erp.interfaces.EstadisticasAbonados;
+import com.erp.interfaces.mobile.AbonadosMobile;
 import com.erp.modelo.Abonados;
 import com.erp.repositorio.AbonadosR;
 // import com.epmapat.erp_epmapat.repositorio.ClientesR;
@@ -194,5 +195,10 @@ public class AbonadoServicio {
     public List<AbonadoI> getCuetasList(Long idcliente){
         return dao.getCuentaList(idcliente);
     }
+
 
+    public List<AbonadosMobile> getAllAbonadosMobile() {
+        return dao.getAllAbonadosMobile();
+    }
 }
+

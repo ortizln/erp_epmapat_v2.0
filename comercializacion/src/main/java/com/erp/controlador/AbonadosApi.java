@@ -25,6 +25,7 @@ import com.erp.DTO.ValorFactDTO;
 import com.erp.excepciones.ResourceNotFoundExcepciones;
 import com.erp.interfaces.AbonadoI;
 import com.erp.interfaces.EstadisticasAbonados;
+import com.erp.interfaces.mobile.AbonadosMobile;
 import com.erp.modelo.Abonados;
 import com.erp.servicio.AbonadoServicio;
 
@@ -222,6 +223,11 @@ public class AbonadosApi {
 	public ResponseEntity<List<Abonados>> getAbonadosByEstado(@PathVariable Long estado) {
 		return ResponseEntity.ok(aboServicio.findByEstado(estado));
 	}
+    @GetMapping("/allabonadosmobile")
+    public List<AbonadosMobile> getAllAbonadosMobile() {
+        return aboServicio.getAllAbonadosMobile();
+    }
+
     @GetMapping("/cuentasOfCliente")
     public ResponseEntity<List<AbonadoI>> getCuentaList(@RequestParam Long idcliente){
         return ResponseEntity.ok(aboServicio.getCuetasList(idcliente));
@@ -229,3 +235,5 @@ public class AbonadosApi {
 
 
 }
+
+

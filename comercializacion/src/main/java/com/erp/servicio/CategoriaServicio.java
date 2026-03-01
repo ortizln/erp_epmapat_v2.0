@@ -9,6 +9,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.erp.modelo.Categorias;
+import com.erp.interfaces.mobile.CategoriasMobile;
 import com.erp.repositorio.CategoriaR;
 
 @Service
@@ -52,5 +53,10 @@ public class CategoriaServicio {
 	// Suma totaltarifa
 	public BigDecimal sumTotalTarifa() {
 		return dao.sumTotalTarifa();
-	}
+	}
+
+    public List<CategoriasMobile> findAllCategorias() {
+        return dao.findAllCategorias();
+    }
 }
+

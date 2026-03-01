@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.erp.excepciones.ResourceNotFoundExcepciones;
 import com.erp.modelo.Estadom;
 import com.erp.servicio.EstadomServicio;
+import com.erp.interfaces.mobile.EstadomMobile;
 
 @RestController
 @RequestMapping("/api/estadom")
@@ -66,4 +67,9 @@ public class EstadomApi {
         return ResponseEntity.ok(!(EstmServicio.findById(idestadom) != null));
     }
 
+
+    @GetMapping("/estadommobile")
+    public List<EstadomMobile> findAllEstadomMobile() {
+        return EstmServicio.findAllEstadom();
+    }
 }

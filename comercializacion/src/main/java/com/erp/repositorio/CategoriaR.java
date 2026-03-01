@@ -11,6 +11,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import com.erp.modelo.Categorias;
+import com.erp.interfaces.mobile.CategoriasMobile;
 
 public interface CategoriaR extends JpaRepository<Categorias, Long> {
 
@@ -41,4 +42,6 @@ public interface CategoriaR extends JpaRepository<Categorias, Long> {
 
 	@Query(value = "SELECT * FROM categorias where idcategoria = ?1", nativeQuery = true)
 	Categorias getCategoriaById(int idcategoria);
+    @Query(value = "SELECT c.idcategoria AS idcategoria, c.descripcion AS descripcion FROM categorias c ORDER BY c.codigo", nativeQuery = true)
+    List<CategoriasMobile> findAllCategorias();
 }

@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.erp.excepciones.ResourceNotFoundExcepciones;
 import com.erp.modelo.Categorias;
 import com.erp.servicio.CategoriaServicio;
+import com.erp.interfaces.mobile.CategoriasMobile;
 
 @RestController
 @RequestMapping("/api/categorias")
@@ -94,4 +95,9 @@ public class CategoriasApi {
 		return ResponseEntity.ok(Boolean.TRUE);
 	}
 
+
+    @GetMapping("/categoriasmobile")
+    public List<CategoriasMobile> findAllCategoriasMobile() {
+        return cateServicio.findAllCategorias();
+    }
 }

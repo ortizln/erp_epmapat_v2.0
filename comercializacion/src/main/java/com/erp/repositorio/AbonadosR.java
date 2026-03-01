@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.erp.interfaces.AbonadoI;
 import com.erp.interfaces.EstadisticasAbonados;
+import com.erp.interfaces.mobile.AbonadosMobile;
 import com.erp.modelo.Abonados;
 // import com.epmapat.erp_epmapat.modelo.Clientes;
 
@@ -106,4 +107,8 @@ public interface AbonadosR extends JpaRepository<Abonados, Long> {
 	public List<EstadisticasAbonados> getCuentasByEstado();
     @Query(value = "select a.idabonado from abonados a where a.idresponsable = ?1", nativeQuery = true)
     public List<AbonadoI> getCuentaList(Long idcliente);
+    @Query(value = "SELECT a.idabonado AS idabonado, a.nromedidor AS nromedidor, a.estado AS estado, a.fechainstalacion AS fechainstalacion, a.direccionubicacion AS direccionubicacion, a.observacion AS observacion, a.idresponsable AS idresponsable, a.idcategoria_categorias AS idcategoria_categorias, a.idruta_rutas AS idruta_rutas, a.idcliente_clientes AS idcliente_clientes, a.idestadom_estadom AS idestadom_estadom, a.municipio AS municipio, a.adultomayor AS adultomayor, a.swalcantarillado AS swalcantarillado, a.geolocalizacion AS geolocalizacion FROM abonados a", nativeQuery = true)
+    List<AbonadosMobile> getAllAbonadosMobile();
 }
+
+
