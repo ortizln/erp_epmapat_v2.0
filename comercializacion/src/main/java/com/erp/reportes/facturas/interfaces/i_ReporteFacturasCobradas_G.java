@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.sql.SQLException;
 
-import com.erp.modelo.administracion.ReporteModelDTO;
+import com.erp.comercializacion.modelo.administracion.ReporteModelDTO;
 
 import net.sf.jasperreports.engine.JRException;
 
@@ -16,3 +16,4 @@ public interface i_ReporteFacturasCobradas_G {
     ReporteModelDTO obtenerFacturasCobradas_G(Map<String, Object> params) throws JRException, IOException, SQLException;
 
 }
+

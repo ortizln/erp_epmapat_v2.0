@@ -1,8 +1,8 @@
 package com.erp.DTO;
 
-import com.erp.modelo.Categorias;
-import com.erp.modelo.Facturas;
-import com.erp.modelo.Pliego24;
+import com.erp.comercializacion.modelo.Categorias;
+import com.erp.comercializacion.modelo.Facturas;
+import com.erp.comercializacion.modelo.Pliego24;
 
 import lombok.Data;
 import lombok.Getter;
@@ -23,4 +23,5 @@ public class EmisionOfCuentaDTO {
     Categorias categorias;
     Facturas factura;
 }
+
 

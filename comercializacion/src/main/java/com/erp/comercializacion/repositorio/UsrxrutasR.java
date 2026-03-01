@@ -1,0 +1,70 @@
+package com.erp.comercializacion.repositorio;
+
+import java.util.List;
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.erp.comercializacion.modelo.Usrxrutas;
+
+public interface UsrxrutasR extends JpaRepository<Usrxrutas, Long> {
+
+    @Query("""
+        SELECT u
+        FROM Usrxrutas u
+        WHERE u.idusuario_usuarios.idusuario = :idusuario
+          AND u.idemision_emisiones.idemision = :idemision
+    """)
+    Optional<Usrxrutas> findByUsuarioAndEmision(
+            @Param("idusuario") Long idusuario,
+            @Param("idemision") Long idemision);
+
+    @Query("""
+        SELECT u
+        FROM Usrxrutas u
+        WHERE u.idemision_emisiones.idemision = :idemision
+    """)
+    List<Usrxrutas> findByEmision(@Param("idemision") Long idemision);
+
+    @Query("""
+        SELECT u
+        FROM Usrxrutas u
+        WHERE u.idusuario_usuarios.idusuario = :idusuario
+    """)
+    List<Usrxrutas> findByUsuario(@Param("idusuario") Long idusuario);
+
+    @Query("""
+        SELECT CASE WHEN COUNT(u) > 0 THEN true ELSE false END
+        FROM Usrxrutas u
+        WHERE u.idusuario_usuarios.idusuario = :idusuario
+          AND u.idemision_emisiones.idemision = :idemision
+    """)
+    boolean existsByUsuarioAndEmision(
+            @Param("idusuario") Long idusuario,
+            @Param("idemision") Long idemision);
+
+    @Query(value = """
+        SELECT DISTINCT CAST(r->>'idruta' AS bigint) AS idruta
+        FROM usrxrutas u
+        CROSS JOIN LATERAL jsonb_array_elements(u.rutas) r
+        WHERE u.idemision_emisiones = :idemision
+          AND u.idusuario_usuarios <> :idusuario
+          AND CAST(r->>'idruta' AS bigint) IN (:idrutas)
+    """, nativeQuery = true)
+    List<Long> findRutasOcupadasEnEmisionPorOtros(
+            @Param("idemision") Long idemision,
+            @Param("idusuario") Long idusuario,
+            @Param("idrutas") List<Long> idrutas);
+
+    @Query(value = """
+        SELECT DISTINCT CAST(r->>'idruta' AS bigint) AS idruta
+        FROM usrxrutas u
+        CROSS JOIN LATERAL jsonb_array_elements(u.rutas) r
+        WHERE u.idemision_emisiones = :idemision
+    """, nativeQuery = true)
+    List<Long> findRutasOcupadasEnEmision(@Param("idemision") Long idemision);
+}
+
+

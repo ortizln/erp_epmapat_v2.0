@@ -6,7 +6,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.springframework.stereotype.Service;
 
-import com.erp.modelo.administracion.Definir;
+import com.erp.comercializacion.modelo.administracion.Definir;
 import com.erp.sri.models.Factura;
 
 @Service
@@ -81,3 +81,4 @@ public class ClaveAccesoGenerator {
     }
 
 }
+

@@ -4,7 +4,7 @@ import java.time.ZonedDateTime;
 
 import jakarta.persistence.*;
 
-import com.erp.modelo.Clasificador;
+import com.erp.comercializacion.modelo.Clasificador;
 
 // import com.epmapat.erp_epmapat.modelo.Clasificador;
 
@@ -209,4 +209,5 @@ public class Presupue {
    }
 
 }
+
 

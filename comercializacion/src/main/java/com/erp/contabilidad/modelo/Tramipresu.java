@@ -13,7 +13,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
-import com.erp.modelo.administracion.Documentos;
+import com.erp.comercializacion.modelo.administracion.Documentos;
 
 @Entity
 @Table(name = "tramites")
@@ -129,4 +129,5 @@ public class Tramipresu {
    }
    
 }
+
 

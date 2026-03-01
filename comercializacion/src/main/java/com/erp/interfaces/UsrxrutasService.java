@@ -3,7 +3,7 @@ package com.erp.interfaces;
 import java.util.List;
 import java.util.Optional;
 
-import com.erp.modelo.Usrxrutas;
+import com.erp.comercializacion.modelo.Usrxrutas;
 
 public interface UsrxrutasService {
 
@@ -27,3 +27,4 @@ public interface UsrxrutasService {
 
     List<Long> rutasOcupadasEnEmision(Long idemision);
 }
+

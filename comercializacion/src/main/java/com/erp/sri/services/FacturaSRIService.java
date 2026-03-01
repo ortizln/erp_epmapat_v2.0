@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.erp.modelo.administracion.Definir;
-import com.erp.repositorio.administracion.DefinirR;
+import com.erp.comercializacion.modelo.administracion.Definir;
+import com.erp.comercializacion.repositorio.administracion.DefinirR;
 import com.erp.sri.exceptions.FacturaElectronicaException;
 import com.erp.sri.interfaces.TotalSinImpuestos;
 import com.erp.sri.models.Comprobante;

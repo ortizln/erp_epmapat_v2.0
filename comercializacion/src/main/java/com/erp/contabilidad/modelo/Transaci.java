@@ -5,7 +5,7 @@ import java.time.LocalDate;
 
 import jakarta.persistence.*;
 
-import com.erp.modelo.administracion.Documentos;
+import com.erp.comercializacion.modelo.administracion.Documentos;
 
 @Entity
 @Table(name = "transaci")
@@ -262,4 +262,5 @@ public class Transaci {
 	}
 
 }
+
 

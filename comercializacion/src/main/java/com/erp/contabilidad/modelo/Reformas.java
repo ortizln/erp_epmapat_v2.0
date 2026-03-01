@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.format.annotation.DateTimeFormat.ISO;
 
-import com.erp.modelo.administracion.Documentos;
+import com.erp.comercializacion.modelo.administracion.Documentos;
 
 @Entity
 @Table(name = "reformas")
@@ -113,4 +113,5 @@ public class Reformas {
     }
     
 }
+
 

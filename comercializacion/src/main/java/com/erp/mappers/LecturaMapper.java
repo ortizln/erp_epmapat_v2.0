@@ -1,7 +1,7 @@
 package com.erp.mappers;
 
 import com.erp.DTO.LecturaDto;
-import com.erp.modelo.Lecturas;
+import com.erp.comercializacion.modelo.Lecturas;
 
 public class LecturaMapper {
 
@@ -59,3 +59,4 @@ public class LecturaMapper {
         return lectura;
     }
 }
+

@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.erp.commons.JasperReportManager;
-import com.erp.modelo.administracion.ReporteModelDTO;
+import com.erp.comercializacion.modelo.administracion.ReporteModelDTO;
 import com.erp.reportes.facturas.interfaces.i_ReporteFacturasCobradas_G;
 
 import net.sf.jasperreports.engine.JRException;
@@ -54,3 +54,4 @@ public class s_ReporteFacturasCobradas_G implements i_ReporteFacturasCobradas_G 
 	}
 
 }
+

@@ -21,7 +21,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 
-import com.erp.repositorio.contabilidad.Tabla15R;
+import com.erp.contabilidad.repositorio.Tabla15R;
 import com.itextpdf.html2pdf.HtmlConverter;
 
 import net.sf.jasperreports.engine.JRDataSource;
@@ -436,3 +436,4 @@ public class XmlToPdfService {
     }
 
 }
+
