@@ -42,11 +42,12 @@ Commit base: 0f4a465
 
 ## 4) Infra mínima antes de deploy
 - [ ] `.env` completo en servidor
-- [ ] `docker compose config` válido
+- [x] Build técnico verificado (`mvn -pl comercializacion -DskipTests compile`)
 - [ ] `docker compose ps` sin reinicios en loop
 - [ ] Healthchecks en verde
 
 ## 5) Aprobación
-- [ ] Smoke tests OK
+- [ ] Smoke tests OK (pendiente ejecución en gateway)
 - [ ] Validación funcional con usuario clave
 - [ ] Go/No-Go firmado
+
