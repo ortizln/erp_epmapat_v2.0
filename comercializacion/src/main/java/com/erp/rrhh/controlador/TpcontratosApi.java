@@ -1,4 +1,4 @@
-package com.erp.controlador.rrhh;
+package com.erp.rrhh.controlador;
 
 import java.util.List;
 
@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.erp.modelo.rrhh.Tpcontratos;
-import com.erp.servicio.rrhh.TpcontratosServicio;
+import com.erp.rrhh.modelo.Tpcontratos;
+import com.erp.rrhh.servicio.TpcontratosServicio;
 
 @RestController
 @RequestMapping("/api/tpcontratos")
@@ -31,3 +31,4 @@ public class TpcontratosApi {
         return ResponseEntity.ok(tpcontratosServicio.save(tpcontratos));
     }
 }
+

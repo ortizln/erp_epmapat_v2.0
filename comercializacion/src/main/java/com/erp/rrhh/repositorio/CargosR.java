@@ -1,9 +1,10 @@
-package com.erp.repositorio.rrhh;
+package com.erp.rrhh.repositorio;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.erp.modelo.rrhh.Cargos;
+import com.erp.rrhh.modelo.Cargos;
 
 public interface CargosR extends JpaRepository<Cargos, Long> {
     
 }
+

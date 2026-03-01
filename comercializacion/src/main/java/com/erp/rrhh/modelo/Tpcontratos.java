@@ -1,4 +1,4 @@
-package com.erp.modelo.rrhh;
+package com.erp.rrhh.modelo;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -21,3 +21,4 @@ public class Tpcontratos {
     private Long idtpcontratos;
     private String descripcion;
 }
+

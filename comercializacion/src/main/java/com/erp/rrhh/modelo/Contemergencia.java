@@ -1,4 +1,4 @@
-package com.erp.modelo.rrhh;
+package com.erp.rrhh.modelo;
 
 import jakarta.persistence.*;
 
@@ -18,3 +18,4 @@ public class Contemergencia {
     private String parentesco;
 
 }
+

@@ -1,12 +1,12 @@
-package com.erp.servicio.rrhh;
+package com.erp.rrhh.servicio;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.erp.modelo.rrhh.Cargos;
-import com.erp.repositorio.rrhh.CargosR;
+import com.erp.rrhh.modelo.Cargos;
+import com.erp.rrhh.repositorio.CargosR;
 
 @Service
 public class CargosServicio {
@@ -21,3 +21,4 @@ public class CargosServicio {
         return dao.save(cargos);
     }
 }
+

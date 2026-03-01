@@ -1,12 +1,12 @@
-package com.erp.servicio.rrhh;
+package com.erp.rrhh.servicio;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.erp.modelo.rrhh.Contemergencia;
-import com.erp.repositorio.rrhh.ContemergenciasR;
+import com.erp.rrhh.modelo.Contemergencia;
+import com.erp.rrhh.repositorio.ContemergenciasR;
 
 @Service
 public class ContemergenciaServicio {
@@ -25,3 +25,4 @@ public class ContemergenciaServicio {
         return dao.save(ce);
     }
 }
+

@@ -1,4 +1,4 @@
-package com.erp.modelo.rrhh;
+package com.erp.rrhh.modelo;
 
 import java.math.BigDecimal;
 
@@ -24,3 +24,4 @@ public class Detcargo {
     private BigDecimal sueldo;
 
 }
+

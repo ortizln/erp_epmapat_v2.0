@@ -1,9 +1,10 @@
-package com.erp.repositorio.rrhh;
+package com.erp.rrhh.repositorio;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.erp.modelo.rrhh.Tpcontratos;
+import com.erp.rrhh.modelo.Tpcontratos;
 
 public interface TpcontratosR extends JpaRepository<Tpcontratos, Long>{
     
 }
+

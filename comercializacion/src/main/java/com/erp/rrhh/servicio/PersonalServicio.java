@@ -1,12 +1,12 @@
-package com.erp.servicio.rrhh;
+package com.erp.rrhh.servicio;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.erp.modelo.rrhh.Personal;
-import com.erp.repositorio.rrhh.PersonalR;
+import com.erp.rrhh.modelo.Personal;
+import com.erp.rrhh.repositorio.PersonalR;
 
 @Service
 public class PersonalServicio {
@@ -21,3 +21,4 @@ public class PersonalServicio {
         return dao.save(p);
     }
 }
+

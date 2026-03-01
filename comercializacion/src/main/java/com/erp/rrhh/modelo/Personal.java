@@ -1,4 +1,4 @@
-package com.erp.modelo.rrhh;
+package com.erp.rrhh.modelo;
 
 import java.time.LocalDate;
 
@@ -45,3 +45,4 @@ public class Personal {
     private LocalDate fecfin;
     private String nomfirma;
 }
+

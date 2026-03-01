@@ -1,12 +1,12 @@
-package com.erp.servicio.rrhh;
+package com.erp.rrhh.servicio;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.erp.modelo.rrhh.Detcargo;
-import com.erp.repositorio.rrhh.DetcargoR;
+import com.erp.rrhh.modelo.Detcargo;
+import com.erp.rrhh.repositorio.DetcargoR;
 
 @Service
 public class DetcargoServicio {
@@ -21,3 +21,4 @@ public class DetcargoServicio {
         return dao.save(detcargo);
     }
 }
+

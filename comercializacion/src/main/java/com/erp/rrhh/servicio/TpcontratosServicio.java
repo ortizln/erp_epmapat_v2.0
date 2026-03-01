@@ -1,12 +1,12 @@
-package com.erp.servicio.rrhh;
+package com.erp.rrhh.servicio;
 
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.erp.modelo.rrhh.Tpcontratos;
-import com.erp.repositorio.rrhh.TpcontratosR;
+import com.erp.rrhh.modelo.Tpcontratos;
+import com.erp.rrhh.repositorio.TpcontratosR;
 
 @Service
 public class TpcontratosServicio {
@@ -21,3 +21,4 @@ public class TpcontratosServicio {
         return dao.save(tpcontratos);
     }
 }
+

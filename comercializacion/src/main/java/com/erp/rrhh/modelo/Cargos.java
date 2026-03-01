@@ -1,4 +1,4 @@
-package com.erp.modelo.rrhh;
+package com.erp.rrhh.modelo;
 
 import jakarta.persistence.*;
 
@@ -21,3 +21,4 @@ public class Cargos {
     @JoinColumn(name = "iddetcargo_detcargo")
     private Detcargo iddetcargo_detcargo; 
 }
+

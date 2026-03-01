@@ -1,4 +1,4 @@
-package com.erp.controlador.rrhh;
+package com.erp.rrhh.controlador;
 
 import java.util.List;
 
@@ -11,23 +11,24 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.erp.modelo.rrhh.Detcargo;
-import com.erp.servicio.rrhh.DetcargoServicio;
+import com.erp.rrhh.modelo.Personal;
+import com.erp.rrhh.servicio.PersonalServicio;
 
 @RestController
-@RequestMapping("/api/detcargo")
+@RequestMapping("/api/personal")
 
-public class DetcargoApi {
+public class PersonalApi {
     @Autowired
-    private DetcargoServicio detcargoServicio;
+    private PersonalServicio personalServicio;
 
     @GetMapping
-    public ResponseEntity<List<Detcargo>> getAll() {
-        return ResponseEntity.ok(detcargoServicio.findAll());
+    public ResponseEntity<List<Personal>> getAll() {
+        return ResponseEntity.ok(personalServicio.findAll());
     }
 
     @PostMapping
-    public ResponseEntity<Detcargo> save(@RequestBody Detcargo detcargo) {
-        return ResponseEntity.ok(detcargoServicio.save(detcargo));
+    public ResponseEntity<Personal> save(@RequestBody Personal p) {
+        return ResponseEntity.ok(personalServicio.save(p));
     }
 }
+
