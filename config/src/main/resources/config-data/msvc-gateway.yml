@@ -70,6 +70,6 @@ spring:
 
         - id: msvc-emails
           #uri: http://msvc-epmapaapi:9099
-          uri: http://localhost:9099
+          uri: http://msvc-emails:9099
           predicates:
             - Path=/api/v1/emails/**

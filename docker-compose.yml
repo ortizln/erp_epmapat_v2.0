@@ -52,7 +52,7 @@ services:
       - HOST=http://192.168.0.88
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
-      - MAIL_HOST:smtp.elasticemail.com
+      - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s
@@ -80,7 +80,7 @@ services:
       - HOST=http://172.30.10.4
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
-      - MAIL_HOST:smtp.elasticemail.com
+      - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s
@@ -108,7 +108,7 @@ services:
       - HOST=http://172.30.10.4
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
-      - MAIL_HOST:smtp.elasticemail.com
+      - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s
@@ -136,7 +136,7 @@ services:
       - HOST=http://172.30.10.4
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
-      - MAIL_HOST:smtp.elasticemail.com
+      - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s
@@ -164,7 +164,7 @@ services:
       - HOST=http://192.168.0.88
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
-      - MAIL_HOST:smtp.elasticemail.com
+      - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s
@@ -192,7 +192,7 @@ services:
       - HOST=http://192.168.0.88
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
-      - MAIL_HOST:smtp.elasticemail.com
+      - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: ["CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health"]
       interval: 30s
@@ -220,7 +220,7 @@ services:
       - HOST=http://192.168.0.88
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
-      - MAIL_HOST:smtp.elasticemail.com
+      - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health" ]
       interval: 30s
@@ -248,7 +248,7 @@ services:
       - HOST=http://172.30.10.4
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
-      - MAIL_HOST:smtp.elasticemail.com
+      - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health" ]
       interval: 30s
@@ -266,7 +266,7 @@ services:
     image: msvc-emails:latest
     container_name: msvc-emails
     ports:
-      - "9098:9098"
+      - "9099:9099"
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -276,7 +276,7 @@ services:
       - HOST=http://172.30.10.4
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
-      - MAIL_HOST:smtp.elasticemail.com
+      - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health" ]
       interval: 30s
@@ -293,3 +293,6 @@ networks:
     ipam:
       config:
         - subnet: 172.28.0.0/16
+
+
+
