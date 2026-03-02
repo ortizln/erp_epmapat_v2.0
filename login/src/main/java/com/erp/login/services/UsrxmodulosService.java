@@ -26,6 +26,10 @@ public class UsrxmodulosService {
         return dao.FindByUser(iduser);
     }
 
+    public List<String> getEnabledModules(Long userId, String platform) {
+        return dao.findEnabledModuleNamesByUserAndPlatform(userId, platform);
+    }
+
     @Transactional
     public Usrxmodulos save(Usrxmodulos usrxmodulos) {
         if (usrxmodulos == null || usrxmodulos.getIdusuario_usuarios() == null

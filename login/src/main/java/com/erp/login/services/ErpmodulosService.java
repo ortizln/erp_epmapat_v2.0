@@ -12,7 +12,6 @@ public class ErpmodulosService {
     @Autowired
     private ErpmodulosR dao;
 
-    public List<Erpmodulos> findAll() {
-        return dao.findAll();
-    }
+    public List<Erpmodulos> findAll() { return dao.findAll(); }
+    public List<Erpmodulos> findByPlatform(String platform) { return dao.findByPlatform(platform); }
 }

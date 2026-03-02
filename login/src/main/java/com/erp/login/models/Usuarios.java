@@ -8,6 +8,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+
 @Entity
 @Getter
 @Setter
@@ -34,4 +35,5 @@ public class Usuarios {
     private String perfil;
     private Long toolbarframe;
     private Long toolbarsheet;
+    private String plataform_access;
 }
