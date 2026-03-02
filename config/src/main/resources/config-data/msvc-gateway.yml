@@ -28,6 +28,20 @@ spring:
           filters:
           - RewritePath=/(?<segment>.*), /api/${segment}
 
+
+        - id: msvc-login-swagger
+          uri: http://localhost:9091
+          predicates:
+          - Path=/login/v3/api-docs, /login/swagger-ui/**, /login/swagger-ui.html
+          filters:
+          - RewritePath=/login/(?<segment>.*), /${segment}
+
+        - id: msvc-comercializacion-swagger
+          uri: http://localhost:9093
+          predicates:
+          - Path=/comercializacion/v3/api-docs, /comercializacion/swagger-ui/**, /comercializacion/swagger-ui.html
+          filters:
+          - RewritePath=/comercializacion/(?<segment>.*), /${segment}
         - id: msvc-rrhh-api
           uri: http://localhost:9101
           predicates:
@@ -120,6 +134,7 @@ spring:
           uri: http://localhost:9099
           predicates:
             - Path=/api/v1/emails/**
+
 
 
 
