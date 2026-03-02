@@ -3,9 +3,18 @@ package com.erp.rrhh.repositorio;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.erp.rrhh.modelo.ThEmployeeFile;
 
 public interface ThEmployeeFileR extends JpaRepository<ThEmployeeFile, Long> {
-    List<ThEmployeeFile> findByIdpersonal_personal_IdpersonalOrderByVersion_docDesc(Long idpersonal);
+
+    @Query("""
+            SELECT f
+            FROM ThEmployeeFile f
+            WHERE f.idpersonal_personal.idpersonal = :idpersonal
+            ORDER BY f.version_doc DESC
+            """)
+    List<ThEmployeeFile> findByPersonal(@Param("idpersonal") Long idpersonal);
 }

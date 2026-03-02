@@ -47,6 +47,7 @@ public class ThEmployeeFileServicio {
 
     @Transactional(readOnly = true)
     public List<ThEmployeeFile> byPersonal(Long idpersonal) {
-        return dao.findByIdpersonal_personal_IdpersonalOrderByVersion_docDesc(idpersonal);
+        return dao.findByPersonal(idpersonal);
     }
 }
+
