@@ -48,6 +48,13 @@ spring:
           predicates:
           - Path=/auth/**
 
+
+        - id: msvc-rrhh
+          uri: http://localhost:9101
+          predicates:
+          - Path=/personal/**, /cargos/**, /detcargo/**, /tpcontratos/**, /contemergencia/**
+          filters:
+          - RewritePath=/(?<segment>.*), /api/${segment}
         - id: msvc-pagosonline
           #uri: http://msvc-pagosonline:32
           uri: http://localhost:9094
@@ -82,6 +89,7 @@ spring:
           uri: http://localhost:9099
           predicates:
             - Path=/api/v1/emails/**
+
 
 
 

@@ -1,0 +1,11 @@
+server:
+  port: 9101
+spring:
+  application:
+    name: msvc-rrhh
+eureka:
+  instance:
+    hostname: msvc-rrhh
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVICEURL}:8761/eureka/

@@ -147,6 +147,31 @@ services:
       epmapat-nw:
         aliases:
           - msvc-comercializacion
+  msvc-rrhh:
+    build:
+      context: rrhh
+      dockerfile: Dockerfile
+    image: msvc-rrhh:latest
+    container_name: msvc-rrhh
+    ports:
+      - "9101:9101"
+    environment:
+      - EUREKA_SERVICEURL=http://msvc-eureka
+      - EUREKA_INSTANCE=msvc-eureka
+      - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
+      - DB_USER=postgres
+      - DB_PASS=${DB_PASS_2025}
+      - HOST=http://172.30.10.4
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://msvc-rrhh:9101/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+    networks:
+      epmapat-nw:
+        aliases:
+          - msvc-rrhh
   msvc-pagosonline:
     build:
       context: pagosonline
@@ -293,6 +318,7 @@ networks:
     ipam:
       config:
         - subnet: 172.28.0.0/16
+
 
 
 
