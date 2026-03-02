@@ -1,0 +1,11 @@
+server:
+  port: 9102
+spring:
+  application:
+    name: msvc-contabilidad
+eureka:
+  instance:
+    hostname: msvc-contabilidad
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVICEURL}:8761/eureka/

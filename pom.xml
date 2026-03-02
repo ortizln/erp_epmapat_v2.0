@@ -21,6 +21,7 @@
   <module>recaudacion</module>
   <module>comercializacion</module>
   <module>rrhh</module>
+  <module>contabilidad</module>
   <module>pagosonline</module>
   <module>gestiondocumental</module>
   <module>reportes-jr</module>
@@ -63,6 +64,7 @@
     </pluginManagement>
   </build>
 </project>
+
 
 
 
