@@ -42,6 +42,55 @@ spring:
           - Path=/comercializacion/v3/api-docs/**, /comercializacion/swagger-ui/**, /comercializacion/swagger-ui.html
           filters:
           - RewritePath=/comercializacion/(?<segment>.*), /${segment}
+
+        - id: msvc-recaudacion-swagger
+          uri: http://localhost:9092
+          predicates:
+          - Path=/recaudacion/v3/api-docs/**, /recaudacion/swagger-ui/**, /recaudacion/swagger-ui.html
+          filters:
+          - RewritePath=/recaudacion/(?<segment>.*), /${segment}
+
+        - id: msvc-gestiondocumental-swagger
+          uri: http://localhost:9095
+          predicates:
+          - Path=/gestiondocumental/v3/api-docs/**, /gestiondocumental/swagger-ui/**, /gestiondocumental/swagger-ui.html
+          filters:
+          - RewritePath=/gestiondocumental/(?<segment>.*), /${segment}
+
+        - id: msvc-sri-swagger
+          uri: http://localhost:9096
+          predicates:
+          - Path=/sri/v3/api-docs/**, /sri/swagger-ui/**, /sri/swagger-ui.html
+          filters:
+          - RewritePath=/sri/(?<segment>.*), /${segment}
+
+        - id: msvc-reportesjr-swagger
+          uri: http://localhost:9097
+          predicates:
+          - Path=/reportes/v3/api-docs/**, /reportes/swagger-ui/**, /reportes/swagger-ui.html
+          filters:
+          - RewritePath=/reportes/(?<segment>.*), /${segment}
+
+        - id: msvc-pagosonline-swagger
+          uri: http://localhost:9094
+          predicates:
+          - Path=/pagosonline/v3/api-docs/**, /pagosonline/swagger-ui/**, /pagosonline/swagger-ui.html
+          filters:
+          - RewritePath=/pagosonline/(?<segment>.*), /${segment}
+
+        - id: msvc-epmapaapi-swagger
+          uri: http://localhost:9098
+          predicates:
+          - Path=/epmapaapi/v3/api-docs/**, /epmapaapi/swagger-ui/**, /epmapaapi/swagger-ui.html
+          filters:
+          - RewritePath=/epmapaapi/(?<segment>.*), /${segment}
+
+        - id: msvc-emails-swagger
+          uri: http://localhost:9099
+          predicates:
+          - Path=/emails/v3/api-docs/**, /emails/swagger-ui/**, /emails/swagger-ui.html
+          filters:
+          - RewritePath=/emails/(?<segment>.*), /${segment}
         - id: msvc-rrhh-api
           uri: http://localhost:9101
           predicates:
@@ -134,6 +183,7 @@ spring:
           uri: http://localhost:9099
           predicates:
             - Path=/api/v1/emails/**
+
 
 
 

@@ -39,3 +39,10 @@ mailms:
     initial-backoff-seconds: 30
     backoff-multiplier: 2
     scheduler-fixed-delay-ms: 15000
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
