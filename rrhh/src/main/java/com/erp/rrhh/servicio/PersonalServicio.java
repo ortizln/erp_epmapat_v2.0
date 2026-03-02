@@ -3,6 +3,9 @@ package com.erp.rrhh.servicio;
 import java.time.LocalDate;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,6 +27,14 @@ public class PersonalServicio {
     }
 
     @Transactional(readOnly = true)
+    public Page<Personal> search(String q, Boolean estado, Integer page, Integer size) {
+        int p = (page == null || page < 0) ? 0 : page;
+        int s = (size == null || size <= 0 || size > 200) ? 20 : size;
+        Pageable pageable = PageRequest.of(p, s);
+        return dao.search(q == null ? "" : q.trim(), estado, pageable);
+    }
+
+    @Transactional(readOnly = true)
     public Personal findById(Long id) {
         return dao.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Personal no encontrado: " + id));
@@ -31,7 +42,7 @@ public class PersonalServicio {
 
     @Transactional
     public Personal save(Personal p) {
-        validarBasico(p, null);
+        validarBasico(p);
         if (Boolean.TRUE.equals(dao.existsByIdentificacion(p.getIdentificacion()))) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "La identificación ya existe: " + p.getIdentificacion());
@@ -49,7 +60,7 @@ public class PersonalServicio {
     public Personal update(Long id, Personal p) {
         Personal actual = findById(id);
 
-        validarBasico(p, id);
+        validarBasico(p);
         if (Boolean.TRUE.equals(dao.existsByIdentificacionAndIdpersonalNot(p.getIdentificacion(), id))) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "La identificación ya existe: " + p.getIdentificacion());
@@ -87,7 +98,7 @@ public class PersonalServicio {
         dao.save(actual);
     }
 
-    private void validarBasico(Personal p, Long idActual) {
+    private void validarBasico(Personal p) {
         if (p == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Body vacío");
         }

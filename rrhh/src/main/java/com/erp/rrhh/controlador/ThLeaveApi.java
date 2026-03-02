@@ -16,6 +16,7 @@ import com.erp.rrhh.modelo.ThLeaveRequest;
 import com.erp.rrhh.servicio.ThLeaveBalanceServicio;
 import com.erp.rrhh.servicio.ThLeaveRequestServicio;
 
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -41,6 +42,16 @@ public class ThLeaveApi {
         return ResponseEntity.ok(requestServicio.save(r));
     }
 
+    @PostMapping("/requests/{idrequest}/aprobar")
+    public ResponseEntity<ThLeaveRequest> aprobar(@PathVariable Long idrequest, @RequestBody AprobacionBody b) {
+        return ResponseEntity.ok(requestServicio.aprobar(idrequest, b.getAprobadorId(), b.getObservacion()));
+    }
+
+    @PostMapping("/requests/{idrequest}/rechazar")
+    public ResponseEntity<ThLeaveRequest> rechazar(@PathVariable Long idrequest, @RequestBody AprobacionBody b) {
+        return ResponseEntity.ok(requestServicio.rechazar(idrequest, b.getAprobadorId(), b.getObservacion()));
+    }
+
     @GetMapping("/requests/persona/{idpersonal}")
     public ResponseEntity<List<ThLeaveRequest>> requestsByPersona(@PathVariable Long idpersonal) {
         return ResponseEntity.ok(requestServicio.byPersonal(idpersonal));
@@ -49,5 +60,11 @@ public class ThLeaveApi {
     @GetMapping("/requests")
     public ResponseEntity<List<ThLeaveRequest>> requestsByEstado(@RequestParam String estado) {
         return ResponseEntity.ok(requestServicio.byEstado(estado));
+    }
+
+    @Data
+    public static class AprobacionBody {
+        private Long aprobadorId;
+        private String observacion;
     }
 }

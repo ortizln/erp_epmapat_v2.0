@@ -2,6 +2,7 @@ package com.erp.rrhh.controlador;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +28,15 @@ public class PersonalApi {
     @GetMapping
     public ResponseEntity<List<Personal>> getAll() {
         return ResponseEntity.ok(personalServicio.findAll());
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<Page<Personal>> search(
+            @RequestParam(required = false, defaultValue = "") String q,
+            @RequestParam(required = false) Boolean estado,
+            @RequestParam(required = false, defaultValue = "0") Integer page,
+            @RequestParam(required = false, defaultValue = "20") Integer size) {
+        return ResponseEntity.ok(personalServicio.search(q, estado, page, size));
     }
 
     @GetMapping("/{id}")

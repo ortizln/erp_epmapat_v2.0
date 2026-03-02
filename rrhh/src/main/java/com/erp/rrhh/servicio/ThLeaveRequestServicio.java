@@ -40,6 +40,38 @@ public class ThLeaveRequestServicio {
         return dao.save(r);
     }
 
+    @Transactional
+    public ThLeaveRequest aprobar(Long idrequest, Long aprobadorId, String observacion) {
+        ThLeaveRequest r = dao.findById(idrequest)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + idrequest));
+        if (!"SOLICITADA".equalsIgnoreCase(r.getEstado())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se puede aprobar una solicitud en estado SOLICITADA");
+        }
+        r.setEstado("APROBADA");
+        r.setAprobador_id(aprobadorId);
+        r.setFecha_aprobacion(LocalDate.now());
+        r.setObservacion_aprobacion(observacion);
+        r.setFecmodi(LocalDate.now());
+        r.setUsumodi(aprobadorId);
+        return dao.save(r);
+    }
+
+    @Transactional
+    public ThLeaveRequest rechazar(Long idrequest, Long aprobadorId, String observacion) {
+        ThLeaveRequest r = dao.findById(idrequest)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada: " + idrequest));
+        if (!"SOLICITADA".equalsIgnoreCase(r.getEstado())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se puede rechazar una solicitud en estado SOLICITADA");
+        }
+        r.setEstado("RECHAZADA");
+        r.setAprobador_id(aprobadorId);
+        r.setFecha_aprobacion(LocalDate.now());
+        r.setObservacion_aprobacion(observacion);
+        r.setFecmodi(LocalDate.now());
+        r.setUsumodi(aprobadorId);
+        return dao.save(r);
+    }
+
     @Transactional(readOnly = true)
     public List<ThLeaveRequest> byPersonal(Long idpersonal) {
         return dao.findByIdpersonal_personal_IdpersonalOrderByFeccreaDesc(idpersonal);
