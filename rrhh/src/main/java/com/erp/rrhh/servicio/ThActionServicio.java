@@ -48,7 +48,7 @@ public class ThActionServicio {
 
     @Transactional(readOnly = true)
     public List<ThAction> findByPersonal(Long idpersonal) {
-        return dao.findByIdpersonal_personal_IdpersonalOrderByFeccreaDesc(idpersonal);
+        return dao.findByPersonal(idpersonal);
     }
 
     private void validar(ThAction e) {
@@ -73,3 +73,4 @@ public class ThActionServicio {
         }
     }
 }
+

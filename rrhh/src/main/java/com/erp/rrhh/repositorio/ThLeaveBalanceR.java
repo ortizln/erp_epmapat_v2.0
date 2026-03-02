@@ -4,10 +4,27 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.erp.rrhh.modelo.ThLeaveBalance;
 
 public interface ThLeaveBalanceR extends JpaRepository<ThLeaveBalance, Long> {
-    List<ThLeaveBalance> findByIdpersonal_personal_IdpersonalOrderByAnioDesc(Long idpersonal);
-    Optional<ThLeaveBalance> findByIdpersonal_personal_IdpersonalAndAnio(Long idpersonal, Integer anio);
+
+    @Query("""
+            SELECT b
+            FROM ThLeaveBalance b
+            WHERE b.idpersonal_personal.idpersonal = :idpersonal
+            ORDER BY b.anio DESC
+            """)
+    List<ThLeaveBalance> findByPersonal(@Param("idpersonal") Long idpersonal);
+
+    @Query("""
+            SELECT b
+            FROM ThLeaveBalance b
+            WHERE b.idpersonal_personal.idpersonal = :idpersonal
+              AND b.anio = :anio
+            """)
+    Optional<ThLeaveBalance> findByPersonalAndAnio(@Param("idpersonal") Long idpersonal,
+                                                   @Param("anio") Integer anio);
 }

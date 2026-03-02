@@ -10,8 +10,22 @@ import org.springframework.data.repository.query.Param;
 import com.erp.rrhh.modelo.ThLeaveRequest;
 
 public interface ThLeaveRequestR extends JpaRepository<ThLeaveRequest, Long> {
-    List<ThLeaveRequest> findByIdpersonal_personal_IdpersonalOrderByFeccreaDesc(Long idpersonal);
-    List<ThLeaveRequest> findByEstadoOrderByFeccreaDesc(String estado);
+
+    @Query("""
+            SELECT r
+            FROM ThLeaveRequest r
+            WHERE r.idpersonal_personal.idpersonal = :idpersonal
+            ORDER BY r.feccrea DESC
+            """)
+    List<ThLeaveRequest> findByPersonal(@Param("idpersonal") Long idpersonal);
+
+    @Query("""
+            SELECT r
+            FROM ThLeaveRequest r
+            WHERE UPPER(r.estado) = UPPER(:estado)
+            ORDER BY r.feccrea DESC
+            """)
+    List<ThLeaveRequest> findByEstado(@Param("estado") String estado);
 
     @Query("""
             SELECT (count(r) > 0)

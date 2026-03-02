@@ -28,7 +28,7 @@ public class ThLeaveBalanceServicio {
         b.setIdpersonal_personal(personalR.findById(b.getIdpersonal_personal().getIdpersonal())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Personal no existe: " + b.getIdpersonal_personal().getIdpersonal())));
-        dao.findByIdpersonal_personal_IdpersonalAndAnio(b.getIdpersonal_personal().getIdpersonal(), b.getAnio())
+        dao.findByPersonalAndAnio(b.getIdpersonal_personal().getIdpersonal(), b.getAnio())
                 .ifPresent(x -> { throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe saldo para ese año"); });
         if (b.getDias_asignados() == null) b.setDias_asignados(BigDecimal.ZERO);
         if (b.getDias_usados() == null) b.setDias_usados(BigDecimal.ZERO);
@@ -40,7 +40,7 @@ public class ThLeaveBalanceServicio {
 
     @Transactional(readOnly = true)
     public List<ThLeaveBalance> byPersonal(Long idpersonal) {
-        return dao.findByIdpersonal_personal_IdpersonalOrderByAnioDesc(idpersonal);
+        return dao.findByPersonal(idpersonal);
     }
 
     private void validar(ThLeaveBalance b) {
@@ -50,3 +50,4 @@ public class ThLeaveBalanceServicio {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "anio es obligatorio");
     }
 }
+

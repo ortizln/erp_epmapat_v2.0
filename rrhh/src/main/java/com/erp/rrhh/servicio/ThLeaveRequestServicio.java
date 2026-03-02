@@ -60,7 +60,7 @@ public class ThLeaveRequestServicio {
         if ("VACACION".equalsIgnoreCase(r.getTipolicencia())) {
             int anio = r.getFechainicio().getYear();
             Long idpersonal = r.getIdpersonal_personal().getIdpersonal();
-            ThLeaveBalance b = balanceR.findByIdpersonal_personal_IdpersonalAndAnio(idpersonal, anio)
+            ThLeaveBalance b = balanceR.findByPersonalAndAnio(idpersonal, anio)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT,
                             "No existe saldo de vacaciones para el año " + anio));
 
@@ -105,12 +105,12 @@ public class ThLeaveRequestServicio {
 
     @Transactional(readOnly = true)
     public List<ThLeaveRequest> byPersonal(Long idpersonal) {
-        return dao.findByIdpersonal_personal_IdpersonalOrderByFeccreaDesc(idpersonal);
+        return dao.findByPersonal(idpersonal);
     }
 
     @Transactional(readOnly = true)
     public List<ThLeaveRequest> byEstado(String estado) {
-        return dao.findByEstadoOrderByFeccreaDesc(estado.toUpperCase());
+        return dao.findByEstado(estado.toUpperCase());
     }
 
     private void validar(ThLeaveRequest r) {
@@ -128,3 +128,4 @@ public class ThLeaveRequestServicio {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "fechainicio no puede ser mayor a fechafin");
     }
 }
+
