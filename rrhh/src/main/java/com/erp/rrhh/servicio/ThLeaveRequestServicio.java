@@ -25,6 +25,7 @@ public class ThLeaveRequestServicio {
     private final ThLeaveRequestR dao;
     private final PersonalR personalR;
     private final ThLeaveBalanceR balanceR;
+    private final ThAuditServicio auditServicio;
     private static final Set<String> TIPOS = Set.of("VACACION", "PERMISO", "LICENCIA");
 
     @Transactional
@@ -46,7 +47,10 @@ public class ThLeaveRequestServicio {
             long days = java.time.temporal.ChronoUnit.DAYS.between(r.getFechainicio(), r.getFechafin()) + 1;
             r.setDias_solicitados(BigDecimal.valueOf(days));
         }
-        return dao.save(r);
+        ThLeaveRequest saved = dao.save(r);
+        auditServicio.log("TH_LEAVE_REQUEST", saved.getIdrequest(), "CREATE",
+                saved.getTipolicencia() + " " + saved.getFechainicio() + "-" + saved.getFechafin(), saved.getUsucrea());
+        return saved;
     }
 
     @Transactional
@@ -84,7 +88,9 @@ public class ThLeaveRequestServicio {
         r.setObservacion_aprobacion(observacion);
         r.setFecmodi(LocalDate.now());
         r.setUsumodi(aprobadorId);
-        return dao.save(r);
+        ThLeaveRequest savedA = dao.save(r);
+        auditServicio.log("TH_LEAVE_REQUEST", savedA.getIdrequest(), "APPROVE", savedA.getObservacion_aprobacion(), aprobadorId);
+        return savedA;
     }
 
     @Transactional
@@ -100,7 +106,9 @@ public class ThLeaveRequestServicio {
         r.setObservacion_aprobacion(observacion);
         r.setFecmodi(LocalDate.now());
         r.setUsumodi(aprobadorId);
-        return dao.save(r);
+        ThLeaveRequest savedR = dao.save(r);
+        auditServicio.log("TH_LEAVE_REQUEST", savedR.getIdrequest(), "REJECT", savedR.getObservacion_aprobacion(), aprobadorId);
+        return savedR;
     }
 
     @Transactional(readOnly = true)
@@ -128,4 +136,3 @@ public class ThLeaveRequestServicio {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "fechainicio no puede ser mayor a fechafin");
     }
 }
-

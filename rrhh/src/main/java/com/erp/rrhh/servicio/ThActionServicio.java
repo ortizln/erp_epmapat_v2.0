@@ -21,6 +21,7 @@ public class ThActionServicio {
 
     private final ThActionR dao;
     private final PersonalR personalR;
+    private final ThAuditServicio auditServicio;
 
     private static final Set<String> TIPOS_VALIDOS = Set.of(
             "INGRESO", "MOVIMIENTO", "ENCARGO", "SUBROGACION", "DESVINCULACION", "REINCORPORACION");
@@ -37,7 +38,9 @@ public class ThActionServicio {
         if (entity.getEstado() == null) {
             entity.setEstado(true);
         }
-        return dao.save(entity);
+        ThAction saved = dao.save(entity);
+        auditServicio.log("TH_ACTION", saved.getIdaction(), "CREATE", saved.getTipoaccion()+" - "+(saved.getMotivo()==null?"":saved.getMotivo()), saved.getUsucrea());
+        return saved;
     }
 
     @Transactional(readOnly = true)
@@ -73,4 +76,5 @@ public class ThActionServicio {
         }
     }
 }
+
 
