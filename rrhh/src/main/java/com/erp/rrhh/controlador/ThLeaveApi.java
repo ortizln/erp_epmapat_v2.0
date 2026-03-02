@@ -1,0 +1,53 @@
+package com.erp.rrhh.controlador;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.erp.rrhh.modelo.ThLeaveBalance;
+import com.erp.rrhh.modelo.ThLeaveRequest;
+import com.erp.rrhh.servicio.ThLeaveBalanceServicio;
+import com.erp.rrhh.servicio.ThLeaveRequestServicio;
+
+import lombok.RequiredArgsConstructor;
+
+@RestController
+@RequiredArgsConstructor
+@RequestMapping("/api/th-leave")
+public class ThLeaveApi {
+
+    private final ThLeaveBalanceServicio balanceServicio;
+    private final ThLeaveRequestServicio requestServicio;
+
+    @PostMapping("/balances")
+    public ResponseEntity<ThLeaveBalance> createBalance(@RequestBody ThLeaveBalance b) {
+        return ResponseEntity.ok(balanceServicio.save(b));
+    }
+
+    @GetMapping("/balances/persona/{idpersonal}")
+    public ResponseEntity<List<ThLeaveBalance>> balancesByPersona(@PathVariable Long idpersonal) {
+        return ResponseEntity.ok(balanceServicio.byPersonal(idpersonal));
+    }
+
+    @PostMapping("/requests")
+    public ResponseEntity<ThLeaveRequest> createRequest(@RequestBody ThLeaveRequest r) {
+        return ResponseEntity.ok(requestServicio.save(r));
+    }
+
+    @GetMapping("/requests/persona/{idpersonal}")
+    public ResponseEntity<List<ThLeaveRequest>> requestsByPersona(@PathVariable Long idpersonal) {
+        return ResponseEntity.ok(requestServicio.byPersonal(idpersonal));
+    }
+
+    @GetMapping("/requests")
+    public ResponseEntity<List<ThLeaveRequest>> requestsByEstado(@RequestParam String estado) {
+        return ResponseEntity.ok(requestServicio.byEstado(estado));
+    }
+}
