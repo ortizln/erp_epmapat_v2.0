@@ -23,7 +23,10 @@ spring:
           #uri: http://msvc-login:9091
           uri: http://localhost:9091
           predicates:
-          - Path=/api/acceso/**, /api/colores/**, /api/definir/**, /api/documentos/**, /api/erpmodulos/**, /api/tabla4/**, /api/usrxmodulos/**, /api/usrxrutas/**, /api/usuarios/** , /api/ventanas/**
+          - Path=/acceso/**, /colores/**, /definir/**, /documentos/**, /erpmodulos/**, /tabla4/**, /usrxmodulos/**, /usrxrutas/**, /usuarios/** , /ventanas/**
+
+          filters:
+          - RewritePath=/(?<segment>.*), /api/${segment}
 
         - id: msvc-recaudacion
           #uri: http://msvc-recaudacion:9092
