@@ -32,14 +32,14 @@ spring:
         - id: msvc-login-swagger
           uri: http://localhost:9091
           predicates:
-          - Path=/login/v3/api-docs, /login/swagger-ui/**, /login/swagger-ui.html
+          - Path=/login/v3/api-docs/**, /login/swagger-ui/**, /login/swagger-ui.html
           filters:
           - RewritePath=/login/(?<segment>.*), /${segment}
 
         - id: msvc-comercializacion-swagger
           uri: http://localhost:9093
           predicates:
-          - Path=/comercializacion/v3/api-docs, /comercializacion/swagger-ui/**, /comercializacion/swagger-ui.html
+          - Path=/comercializacion/v3/api-docs/**, /comercializacion/swagger-ui/**, /comercializacion/swagger-ui.html
           filters:
           - RewritePath=/comercializacion/(?<segment>.*), /${segment}
         - id: msvc-rrhh-api
@@ -90,14 +90,14 @@ spring:
         - id: msvc-rrhh-swagger
           uri: http://localhost:9101
           predicates:
-          - Path=/rrhh/v3/api-docs, /rrhh/swagger-ui/**, /rrhh/swagger-ui.html
+          - Path=/rrhh/v3/api-docs/**, /rrhh/swagger-ui/**, /rrhh/swagger-ui.html
           filters:
           - RewritePath=/rrhh/(?<segment>.*), /${segment}
 
         - id: msvc-contabilidad-swagger
           uri: http://localhost:9102
           predicates:
-          - Path=/contabilidad/v3/api-docs, /contabilidad/swagger-ui/**, /contabilidad/swagger-ui.html
+          - Path=/contabilidad/v3/api-docs/**, /contabilidad/swagger-ui/**, /contabilidad/swagger-ui.html
           filters:
           - RewritePath=/contabilidad/(?<segment>.*), /${segment}
         - id: msvc-pagosonline
@@ -134,6 +134,7 @@ spring:
           uri: http://localhost:9099
           predicates:
             - Path=/api/v1/emails/**
+
 
 
 
