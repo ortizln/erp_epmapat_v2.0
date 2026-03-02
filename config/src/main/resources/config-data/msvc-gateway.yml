@@ -72,6 +72,20 @@ spring:
           - Path=/airxrete/**, /asientos/**, /beneficiarios/**, /benextran/**, /certipresu/**, /conciliaban/**, /cuentas/**, /ejecucio/**, /ejecucion/**, /estrfunc/**, /fec_reteimpu/**, /fec_retenciones/**, /gruposbene/**, /niifcuentas/**, /niifhomologa/**, /niveles/**, /pagoscobros/**, /partixcerti/**, /pregastos/**, /preingresos/**, /presupue/**, /reformas/**, /retenciones/**, /tabla01/**, /tabla10/**, /tabla15/**, /tabla17/**, /tabla5/**, /tabla5_concep/**, /tramipresu/**, /transaci/**, /unicostos/**
           filters:
           - RewritePath=/(?<segment>.*), /api/${segment}
+
+        - id: msvc-rrhh-swagger
+          uri: http://localhost:9101
+          predicates:
+          - Path=/rrhh/v3/api-docs, /rrhh/swagger-ui/**, /rrhh/swagger-ui.html
+          filters:
+          - RewritePath=/rrhh/(?<segment>.*), /${segment}
+
+        - id: msvc-contabilidad-swagger
+          uri: http://localhost:9102
+          predicates:
+          - Path=/contabilidad/v3/api-docs, /contabilidad/swagger-ui/**, /contabilidad/swagger-ui.html
+          filters:
+          - RewritePath=/contabilidad/(?<segment>.*), /${segment}
         - id: msvc-pagosonline
           #uri: http://msvc-pagosonline:32
           uri: http://localhost:9094
@@ -106,6 +120,7 @@ spring:
           uri: http://localhost:9099
           predicates:
             - Path=/api/v1/emails/**
+
 
 
 
