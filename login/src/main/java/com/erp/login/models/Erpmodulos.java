@@ -15,4 +15,6 @@ public class Erpmodulos {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long iderpmodulo;
     private String descripcion;
+    private String platform;
 }
+
