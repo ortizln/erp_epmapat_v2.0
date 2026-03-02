@@ -57,7 +57,7 @@ spring:
           #uri: http://msvc-comercializacion:9093
           uri: http://localhost:9093
           predicates:
-          - Path=/abonados/**, /aboxsuspension/**, /aguatramite/**, /anulpagos/**, /airxrete/**, /cajas/**, /catalogoitems/**, /categorias/**, /ccertificaciones/**, /clasificador/**, /clientes/**, /condmultasintereses/**, /convenios/**, /ctramites/**, /cuotas/**, /emisiones/**, /emisionindividual/**, /estadom/**, /facturas/**, /facelectro/**, /facturacion/**, /facturamodificaciones/**, /facxconvenio/**, /facxnc/**, /facxrecauda/**, /facdetallesimpuestos/**, /facturadetalles/**, /facturapagos/**, /fec_factura/**, /fec_retenciones/**, /fec_reteimpu/**,  /formacobro/**, /ifinan/**, /impuestos/**, /intereses/**, /itemxfact/**, /jasperReports/**,  /lecturas/**, /liquidafac/**, /liquidatramite/**, /modulos/**, /novedades/**, /ntacredito/**, /nacionalidades/**, /personeriajuridica/**, /pliego24/**, /pliego/**, /ptoemision/**, /recaudacion/**, /recaudaxcaja/**, /recargosxcuenta/**, /reclamos/**, /retenciones/**, /rubroadicional/**, /rubros/**, /rutas/**, /rutasxemision/**, /rubroxfac/**, /servicios1/**, /suspensiones/**, /tipopago/**, /tipotramite/**, /tmpinteresxfac/**, /tpcertifica/**, /tpidentifica/**, /tpreclamo/**, /tramites1/**, /tramitenuevo/**, /ubicacionm/**, /usoitems/**, /valoresnc/**
+          - Path=/abonados/**, /aboxsuspension/**, /aguatramite/**, /anulpagos/**, /airxrete/**, /cajas/**, /catalogoitems/**, /categorias/**, /ccertificaciones/**, /clasificador/**, /clientes/**, /condmultasintereses/**, /convenios/**, /ctramites/**, /cuotas/**, /emisiones/**, /emisionindividual/**, /estadom/**, /facturas/**, /facelectro/**, /facturacion/**, /facturamodificaciones/**, /facxconvenio/**, /facxnc/**, /facxrecauda/**, /facdetallesimpuestos/**, /facturadetalles/**, /facturapagos/**, /fec_factura/**, /fec_retenciones/**, /fec_reteimpu/**,  /formacobro/**, /impuestos/**, /intereses/**, /itemxfact/**, /jasperReports/**,  /lecturas/**, /liquidafac/**, /liquidatramite/**, /modulos/**, /novedades/**, /ntacredito/**, /nacionalidades/**, /personeriajuridica/**, /pliego24/**, /pliego/**, /ptoemision/**, /recaudacion/**, /recaudaxcaja/**, /recargosxcuenta/**, /reclamos/**, /retenciones/**, /rubroadicional/**, /rubros/**, /rutas/**, /rutasxemision/**, /rubroxfac/**, /servicios1/**, /suspensiones/**, /tipopago/**, /tipotramite/**, /tmpinteresxfac/**, /tpcertifica/**, /tpidentifica/**, /tpreclamo/**, /tramites1/**, /tramitenuevo/**, /ubicacionm/**, /usoitems/**, /valoresnc/**
 
           filters:
           - RewritePath=/(?<segment>.*), /api/${segment}
@@ -78,12 +78,12 @@ spring:
         - id: msvc-contabilidad-api
           uri: http://localhost:9102
           predicates:
-          - Path=/api/airxrete/**, /api/asientos/**, /api/beneficiarios/**, /api/benextran/**, /api/certipresu/**, /api/conciliaban/**, /api/cuentas/**, /api/ejecucio/**, /api/ejecucion/**, /api/estrfunc/**, /api/fec_reteimpu/**, /api/fec_retenciones/**, /api/gruposbene/**, /api/niifcuentas/**, /api/niifhomologa/**, /api/niveles/**, /api/pagoscobros/**, /api/partixcerti/**, /api/pregastos/**, /api/preingresos/**, /api/presupue/**, /api/reformas/**, /api/retenciones/**, /api/tabla01/**, /api/tabla10/**, /api/tabla15/**, /api/tabla17/**, /api/tabla5/**, /api/tabla5_concep/**, /api/tramipresu/**, /api/transaci/**, /api/unicostos/**
+          - Path=/api/airxrete/**, /api/asientos/**, /api/beneficiarios/**, /api/benextran/**, /api/certipresu/**, /api/conciliaban/**, /api/cuentas/**, /api/ejecucio/**, /api/ejecucion/**, /api/estrfunc/**, /api/fec_reteimpu/**, /api/fec_retenciones/**, /api/gruposbene/**, /api/niifcuentas/**, /api/niifhomologa/**, /api/niveles/**, /api/pagoscobros/**, /api/partixcerti/**, /api/pregastos/**, /api/preingresos/**, /api/presupue/**, /api/reformas/**, /api/retenciones/**, /api/tabla01/**, /api/tabla10/**, /api/tabla15/**, /api/tabla17/**, /api/tabla5/**, /api/tabla5_concep/**, /api/tramipresu/**, /api/transaci/**, /api/unicostos/**, /ifinan/**, /api/ifinan/**
 
         - id: msvc-contabilidad
           uri: http://localhost:9102
           predicates:
-          - Path=/airxrete/**, /asientos/**, /beneficiarios/**, /benextran/**, /certipresu/**, /conciliaban/**, /cuentas/**, /ejecucio/**, /ejecucion/**, /estrfunc/**, /fec_reteimpu/**, /fec_retenciones/**, /gruposbene/**, /niifcuentas/**, /niifhomologa/**, /niveles/**, /pagoscobros/**, /partixcerti/**, /pregastos/**, /preingresos/**, /presupue/**, /reformas/**, /retenciones/**, /tabla01/**, /tabla10/**, /tabla15/**, /tabla17/**, /tabla5/**, /tabla5_concep/**, /tramipresu/**, /transaci/**, /unicostos/**
+          - Path=/airxrete/**, /asientos/**, /beneficiarios/**, /benextran/**, /certipresu/**, /conciliaban/**, /cuentas/**, /ejecucio/**, /ejecucion/**, /estrfunc/**, /fec_reteimpu/**, /fec_retenciones/**, /gruposbene/**, /niifcuentas/**, /niifhomologa/**, /niveles/**, /pagoscobros/**, /partixcerti/**, /pregastos/**, /preingresos/**, /presupue/**, /reformas/**, /retenciones/**, /tabla01/**, /tabla10/**, /tabla15/**, /tabla17/**, /tabla5/**, /tabla5_concep/**, /tramipresu/**, /transaci/**, /unicostos/**, /ifinan/**
           filters:
           - RewritePath=/(?<segment>.*), /api/${segment}
 
@@ -134,6 +134,7 @@ spring:
           uri: http://localhost:9099
           predicates:
             - Path=/api/v1/emails/**
+
 
 
 

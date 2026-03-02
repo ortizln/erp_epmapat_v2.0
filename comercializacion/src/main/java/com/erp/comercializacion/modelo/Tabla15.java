@@ -1,4 +1,4 @@
-package com.erp.contabilidad.modelo;
+package com.erp.comercializacion.modelo;
 
 import java.util.Date;
 
@@ -104,4 +104,5 @@ public class Tabla15 {
 
 
 }
+
 

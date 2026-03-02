@@ -1,12 +1,13 @@
-package com.erp.contabilidad.repositorio;
+package com.erp.comercializacion.repositorio;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-import com.erp.contabilidad.modelo.Tabla15;
+import com.erp.comercializacion.modelo.Tabla15;
 
 public interface Tabla15R extends JpaRepository<Tabla15, Long> {
     @Query(value ="select nomtabla15 from tabla15 where codtabla15 = ?1", nativeQuery = true)
     String getNombre(String cod);
 }
+
 
