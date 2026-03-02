@@ -1,5 +1,7 @@
 package com.erp.rrhh.servicio;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,5 +25,15 @@ public class ThAuditServicio {
         a.setDetalle(detalle);
         a.setUsuario(usuario);
         dao.save(a);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ThAuditLog> byEntidad(String entidad) {
+        return dao.findByEntidadOrderByFechaDesc(entidad);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ThAuditLog> byEntidadAndRegistro(String entidad, Long idregistro) {
+        return dao.findByEntidadAndIdregistroOrderByFechaDesc(entidad, idregistro);
     }
 }
