@@ -50,3 +50,13 @@ Fecha de actualización: 2026-03-01 22:22
 - Comercialización: http://localhost:8080/comercializacion/swagger-ui.html
 - RRHH: http://localhost:8080/rrhh/swagger-ui.html
 - Contabilidad: http://localhost:8080/contabilidad/swagger-ui.html
+
+
+## 8) Resultado smoke test (2026-03-01 22:26)
+- [x] RRHH por gateway: /api/personal y /personal (200)
+- [x] Contabilidad por gateway: /api/cuentas/bancos y /cuentas/bancos (200)
+- [x] Comercialización por gateway: /clientes (200)
+- [x] Auth endpoint responde (401 esperado sin credenciales válidas)
+- [ ] Swagger por gateway (404 actual) -> pendiente reinicio config-server + gateway
+- [x] Swagger directo por microservicio (9091/9093/9101/9102 = 200)
+
