@@ -10,8 +10,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.erp.rrhh.modelo.ThLeaveBalance;
 import com.erp.rrhh.modelo.ThLeaveRequest;
 import com.erp.rrhh.repositorio.PersonalR;
+import com.erp.rrhh.repositorio.ThLeaveBalanceR;
 import com.erp.rrhh.repositorio.ThLeaveRequestR;
 
 import lombok.RequiredArgsConstructor;
@@ -22,14 +24,21 @@ public class ThLeaveRequestServicio {
 
     private final ThLeaveRequestR dao;
     private final PersonalR personalR;
+    private final ThLeaveBalanceR balanceR;
     private static final Set<String> TIPOS = Set.of("VACACION", "PERMISO", "LICENCIA");
 
     @Transactional
     public ThLeaveRequest save(ThLeaveRequest r) {
         validar(r);
-        r.setIdpersonal_personal(personalR.findById(r.getIdpersonal_personal().getIdpersonal())
+        Long idpersonal = r.getIdpersonal_personal().getIdpersonal();
+        r.setIdpersonal_personal(personalR.findById(idpersonal)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Personal no existe: " + r.getIdpersonal_personal().getIdpersonal())));
+                        "Personal no existe: " + idpersonal)));
+
+        if (dao.existsSolape(idpersonal, r.getFechainicio(), r.getFechafin())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe una solicitud que se cruza en fechas");
+        }
+
         if (r.getEstado() == null || r.getEstado().isBlank()) r.setEstado("SOLICITADA");
         if (r.getFeccrea() == null) r.setFeccrea(LocalDate.now());
         if (r.getActivo() == null) r.setActivo(true);
@@ -47,6 +56,28 @@ public class ThLeaveRequestServicio {
         if (!"SOLICITADA".equalsIgnoreCase(r.getEstado())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Solo se puede aprobar una solicitud en estado SOLICITADA");
         }
+
+        if ("VACACION".equalsIgnoreCase(r.getTipolicencia())) {
+            int anio = r.getFechainicio().getYear();
+            Long idpersonal = r.getIdpersonal_personal().getIdpersonal();
+            ThLeaveBalance b = balanceR.findByIdpersonal_personal_IdpersonalAndAnio(idpersonal, anio)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT,
+                            "No existe saldo de vacaciones para el año " + anio));
+
+            BigDecimal solicitado = r.getDias_solicitados() == null ? BigDecimal.ZERO : r.getDias_solicitados();
+            BigDecimal disponible = b.getDias_disponibles() == null ? BigDecimal.ZERO : b.getDias_disponibles();
+            if (disponible.compareTo(solicitado) < 0) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "Saldo insuficiente. Disponible=" + disponible + ", solicitado=" + solicitado);
+            }
+
+            b.setDias_usados((b.getDias_usados() == null ? BigDecimal.ZERO : b.getDias_usados()).add(solicitado));
+            b.setDias_disponibles(disponible.subtract(solicitado));
+            b.setFecmodi(LocalDate.now());
+            b.setUsumodi(aprobadorId);
+            balanceR.save(b);
+        }
+
         r.setEstado("APROBADA");
         r.setAprobador_id(aprobadorId);
         r.setFecha_aprobacion(LocalDate.now());
