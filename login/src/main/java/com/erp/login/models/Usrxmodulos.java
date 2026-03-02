@@ -21,4 +21,6 @@ public class Usrxmodulos {
     @JoinColumn(name = "iderpmodulo_erpmodulos")
     private Erpmodulos iderpmodulo_erpmodulos;
     private Boolean enabled;
+    private String platform;
 }
+

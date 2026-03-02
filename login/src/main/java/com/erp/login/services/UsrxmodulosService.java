@@ -27,7 +27,8 @@ public class UsrxmodulosService {
     }
 
     public List<String> getEnabledModules(Long userId, String platform) {
-        return dao.findEnabledModuleNamesByUserAndPlatform(userId, platform);
+        String pf = (platform == null || platform.isBlank()) ? "MOBILE" : platform.trim().toUpperCase();
+        return dao.findEnabledModuleNamesByUserAndPlatform(userId, pf);
     }
 
     @Transactional
@@ -54,3 +55,4 @@ public class UsrxmodulosService {
         return dao.save(um);
     }
 }
+

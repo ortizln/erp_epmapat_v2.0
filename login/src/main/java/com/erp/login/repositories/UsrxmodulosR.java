@@ -24,9 +24,10 @@ public interface UsrxmodulosR extends JpaRepository<Usrxmodulos, Long> {
             JOIN erpmodulos m ON m.iderpmodulo = um.iderpmodulo_erpmodulos
             WHERE um.idusuario_usuarios = :userId
               AND um.enabled = true
-              AND (um.platform = :platform OR um.platform = 'BOTH')
+              AND (UPPER(COALESCE(um.platform,'BOTH')) IN (UPPER(:platform), 'BOTH'))
             ORDER BY um.iderpmodulo_erpmodulos
             """, nativeQuery = true)
     List<String> findEnabledModuleNamesByUserAndPlatform(@Param("userId") Long userId,
                                                           @Param("platform") String platform);
 }
+
