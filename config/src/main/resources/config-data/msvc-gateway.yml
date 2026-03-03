@@ -23,13 +23,20 @@ spring:
           #uri: http://msvc-login:9091
           uri: http://localhost:9091
           predicates:
-          - Path=/acceso/**, /colores/**, /definir/**, /documentos/**, /erpmodulos/**, /tabla4/**, /usrxmodulos/**, /usrxrutas/**, /usuarios/** , /ventanas/**
+          - Path=/acceso/**, /colores/**, /definir/**, /documentos/**, /erpmodulos/**, /tabla4/**, /usrxmodulos/**, /usuarios/** , /ventanas/**
 
           filters:
           - RewritePath=/(?<segment>.*), /api/${segment}
 
+        - id: msvc-login-api
+          uri: http://localhost:9091
+          predicates:
+          - Path=/api/usuarios/**, /api/erpmodulos/**, /api/usrxmodulos/**, /api/ventanas/**, /api/documentos/**
 
-        - id: msvc-login-swagger
+        - id: msvc-comercializacion-api-compat
+          uri: http://localhost:9093
+          predicates:
+          - Path=/api/clientes/**, /api/abonados/**, /api/recargosxcuenta/**, /api/usrxrutas/**        - id: msvc-login-swagger
           uri: http://localhost:9091
           predicates:
           - Path=/login/v3/api-docs/**, /login/swagger-ui/**, /login/swagger-ui.html
@@ -109,9 +116,7 @@ spring:
           - Path=/abonados/**, /aboxsuspension/**, /aguatramite/**, /anulpagos/**, /airxrete/**, /cajas/**, /catalogoitems/**, /categorias/**, /ccertificaciones/**, /clasificador/**, /clientes/**, /condmultasintereses/**, /convenios/**, /ctramites/**, /cuotas/**, /emisiones/**, /emisionindividual/**, /estadom/**, /facturas/**, /facelectro/**, /facturacion/**, /facturamodificaciones/**, /facxconvenio/**, /facxnc/**, /facxrecauda/**, /facdetallesimpuestos/**, /facturadetalles/**, /facturapagos/**, /fec_factura/**, /fec_retenciones/**, /fec_reteimpu/**,  /formacobro/**, /impuestos/**, /intereses/**, /itemxfact/**, /jasperReports/**,  /lecturas/**, /liquidafac/**, /liquidatramite/**, /modulos/**, /novedades/**, /ntacredito/**, /nacionalidades/**, /personeriajuridica/**, /pliego24/**, /pliego/**, /ptoemision/**, /recaudacion/**, /recaudaxcaja/**, /recargosxcuenta/**, /reclamos/**, /retenciones/**, /rubroadicional/**, /rubros/**, /rutas/**, /rutasxemision/**, /rubroxfac/**, /servicios1/**, /suspensiones/**, /tipopago/**, /tipotramite/**, /tmpinteresxfac/**, /tpcertifica/**, /tpidentifica/**, /tpreclamo/**, /tramites1/**, /tramitenuevo/**, /ubicacionm/**, /usoitems/**, /valoresnc/**
 
           filters:
-          - RewritePath=/(?<segment>.*), /api/${segment}
-
-        - id: msvc-comercializacion-auth
+          - RewritePath=/(?<segment>.*), /api/${segment}        - id: msvc-comercializacion-auth
           uri: http://localhost:9093
           predicates:
           - Path=/auth/**
@@ -122,9 +127,7 @@ spring:
           predicates:
           - Path=/personal/**, /cargos/**, /detcargo/**, /tpcontratos/**, /contemergencia/**, /th-actions/**, /th-leave/**, /th-audit/**, /th-files/**
           filters:
-          - RewritePath=/(?<segment>.*), /api/${segment}
-
-        - id: msvc-contabilidad-api
+          - RewritePath=/(?<segment>.*), /api/${segment}        - id: msvc-contabilidad-api
           uri: http://localhost:9102
           predicates:
           - Path=/api/airxrete/**, /api/asientos/**, /api/beneficiarios/**, /api/benextran/**, /api/certipresu/**, /api/conciliaban/**, /api/cuentas/**, /api/ejecucio/**, /api/ejecucion/**, /api/estrfunc/**, /api/fec_reteimpu/**, /api/fec_retenciones/**, /api/gruposbene/**, /api/niifcuentas/**, /api/niifhomologa/**, /api/niveles/**, /api/pagoscobros/**, /api/partixcerti/**, /api/pregastos/**, /api/preingresos/**, /api/presupue/**, /api/reformas/**, /api/retenciones/**, /api/tabla01/**, /api/tabla10/**, /api/tabla15/**, /api/tabla17/**, /api/tabla5/**, /api/tabla5_concep/**, /api/tramipresu/**, /api/transaci/**, /api/unicostos/**, /ifinan/**, /api/ifinan/**
@@ -134,9 +137,7 @@ spring:
           predicates:
           - Path=/airxrete/**, /asientos/**, /beneficiarios/**, /benextran/**, /certipresu/**, /conciliaban/**, /cuentas/**, /ejecucio/**, /ejecucion/**, /estrfunc/**, /fec_reteimpu/**, /fec_retenciones/**, /gruposbene/**, /niifcuentas/**, /niifhomologa/**, /niveles/**, /pagoscobros/**, /partixcerti/**, /pregastos/**, /preingresos/**, /presupue/**, /reformas/**, /retenciones/**, /tabla01/**, /tabla10/**, /tabla15/**, /tabla17/**, /tabla5/**, /tabla5_concep/**, /tramipresu/**, /transaci/**, /unicostos/**, /ifinan/**
           filters:
-          - RewritePath=/(?<segment>.*), /api/${segment}
-
-        - id: msvc-rrhh-swagger
+          - RewritePath=/(?<segment>.*), /api/${segment}        - id: msvc-rrhh-swagger
           uri: http://localhost:9101
           predicates:
           - Path=/rrhh/v3/api-docs/**, /rrhh/swagger-ui/**, /rrhh/swagger-ui.html
@@ -183,6 +184,8 @@ spring:
           uri: http://localhost:9099
           predicates:
             - Path=/api/v1/emails/**
+
+
 
 
 
