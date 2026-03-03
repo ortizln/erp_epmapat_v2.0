@@ -94,7 +94,7 @@ spring:
         - id: msvc-rrhh-api
           uri: http://localhost:9101
           predicates:
-          - Path=/api/personal/**, /api/cargos/**, /api/detcargo/**, /api/tpcontratos/**, /api/contemergencia/**, /api/th-actions/**, /th-leave/**, /th-audit/**, /th-files/**, /api/th-leave/**
+          - Path=/api/personal/**, /api/cargos/**, /api/detcargo/**, /api/tpcontratos/**, /api/contemergencia/**, /api/th-actions/**, /api/th-leave/**, /api/th-audit/**, /api/th-files/**
 
         - id: msvc-recaudacion
           #uri: http://msvc-recaudacion:9092
@@ -183,6 +183,7 @@ spring:
           uri: http://localhost:9099
           predicates:
             - Path=/api/v1/emails/**
+
 
 
 
