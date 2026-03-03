@@ -55,11 +55,30 @@ Incluye:
 ## 4) Estado técnico actual
 
 - Compilación Java (`mvn -pl gestiondocumental -DskipTests compile`): ✅
-- Arquitectura por capas aplicada en progreso:
+- Arquitectura por capas aplicada:
   - `controller/` ✅
   - `service/` ✅
-  - `model/repository/dto` ✅ para catálogo
-- Pendiente de cierre recomendado:
-  1. smoke E2E de endpoints de escritura (issue/receive/derive/files/alerts)
-  2. ajustar `lookups/usuarios` si vuelve a presentar 500 por tipos/domain en BD
-  3. conectar por gateway con rutas finales y validar con frontend
+  - `model/repository/dto` ✅ (catálogo)
+
+## 5) Smoke E2E sobre GesDoc (local :9095)
+
+Condiciones de prueba:
+- app levantada con `SPRING_CLOUD_CONFIG_ENABLED=false`, `EUREKA_CLIENT_ENABLED=false`
+- datasource directo a `jdbc:postgresql://localhost:5432/GesDoc`
+
+Resultados:
+- `POST /api/documentos/{docId}/asignar` ✅
+- `POST /api/documentos/{docId}/derivar` ✅
+- `POST /api/documentos/alerts/generate` ✅
+- `POST /api/documentos/alerts/dispatch` ✅
+- `GET /api/lookups/usuarios` ✅ (corregido; antes 500)
+- `POST /api/documentos/{docId}/emitir` ✅ (tras crear `series_numeracion` para tipo/dependencia/año)
+- `POST /api/documentos/{docId}/recibir` ✅ (usando `receiver_id=persona_id`)
+
+Observación funcional importante:
+- `recibir` espera `receiver_id` de **persona** (tabla `personas.id`), no `usuarios.id`.
+
+## 6) Pendientes
+
+1. cubrir con el mismo patrón por capas (model/repository/dto) los bloques de documentos/workflow/configuración en profundidad total.
+2. conectar por gateway con rutas finales y validar con frontend Angular legado.
