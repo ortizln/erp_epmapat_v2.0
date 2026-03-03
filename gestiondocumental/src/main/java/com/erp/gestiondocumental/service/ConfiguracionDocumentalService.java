@@ -1,4 +1,4 @@
-package com.erp.gestiondocumental.core.service;
+package com.erp.gestiondocumental.service;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -150,3 +150,4 @@ public class ConfiguracionDocumentalService {
                 """, closedBy, caseFileId);
     }
 }
+

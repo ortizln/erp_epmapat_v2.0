@@ -1,6 +1,6 @@
-package com.erp.gestiondocumental.core.api;
+package com.erp.gestiondocumental.controller;
 
-import com.erp.gestiondocumental.core.service.ConfiguracionDocumentalService;
+import com.erp.gestiondocumental.service.ConfiguracionDocumentalService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -8,11 +8,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-public class ConfiguracionDocumentalApi {
+public class ConfiguracionDocumentalController {
 
     private final ConfiguracionDocumentalService service;
 
-    public ConfiguracionDocumentalApi(ConfiguracionDocumentalService service) {
+    public ConfiguracionDocumentalController(ConfiguracionDocumentalService service) {
         this.service = service;
     }
 
@@ -103,3 +103,4 @@ public class ConfiguracionDocumentalApi {
         return n > 0 ? ResponseEntity.ok(Map.of("ok", true)) : ResponseEntity.badRequest().body(Map.of("ok", false, "detail", "Case file already closed or not found"));
     }
 }
+
