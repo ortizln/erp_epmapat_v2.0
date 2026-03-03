@@ -56,6 +56,33 @@ public class WorkflowDocumentosApi {
         return ResponseEntity.ok(Map.of("response_id", service.respond(docId, body)));
     }
 
+    @PostMapping("/{docId}/responses/nested")
+    public ResponseEntity<?> respondNested(@PathVariable String docId, @RequestBody Map<String, Object> body) {
+        return ResponseEntity.ok(service.createNestedResponse(docId, body));
+    }
+
+    @GetMapping("/{docId}/relations")
+    public ResponseEntity<?> relations(@PathVariable String docId,
+                                       @RequestParam(required = false) String relation_type) {
+        return ResponseEntity.ok(service.listRelations(docId, relation_type));
+    }
+
+    @PostMapping("/{docId}/files")
+    public ResponseEntity<?> uploadFileMetadata(@PathVariable String docId, @RequestBody Map<String, Object> body) {
+        return ResponseEntity.ok(Map.of("file_id", service.addFileRecord(docId, body)));
+    }
+
+    @GetMapping("/{docId}/files")
+    public ResponseEntity<?> listFiles(@PathVariable String docId) {
+        return ResponseEntity.ok(service.listFiles(docId));
+    }
+
+    @GetMapping("/{docId}/files/{fileId}")
+    public ResponseEntity<?> getFile(@PathVariable String docId, @PathVariable String fileId) {
+        Map<String, Object> row = service.getFile(docId, fileId);
+        return row == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(row);
+    }
+
     @GetMapping("/{docId}/timeline")
     public ResponseEntity<?> timeline(@PathVariable String docId) {
         return ResponseEntity.ok(service.timeline(docId));
@@ -71,6 +98,23 @@ public class WorkflowDocumentosApi {
                                      @RequestParam(defaultValue = "48") int hours) {
         return ResponseEntity.ok(service.dueSoon(entityCode, hours));
     }
+
+    @PostMapping("/alerts/generate")
+    public ResponseEntity<?> generateAlerts(@RequestParam("entity_code") String entityCode) {
+        return ResponseEntity.ok(service.generateAlerts(entityCode));
+    }
+
+    @GetMapping("/alerts")
+    public ResponseEntity<?> listAlerts(@RequestParam("entity_code") String entityCode,
+                                        @RequestParam(required = false, defaultValue = "PENDIENTE") String state,
+                                        @RequestParam(defaultValue = "1") int page,
+                                        @RequestParam(name = "page_size", defaultValue = "20") int pageSize) {
+        return ResponseEntity.ok(service.listAlerts(entityCode, state, page, pageSize));
+    }
+
+    @PostMapping("/alerts/dispatch")
+    public ResponseEntity<?> dispatchAlerts(@RequestParam("entity_code") String entityCode,
+                                            @RequestParam(defaultValue = "50") int limit) {
+        return ResponseEntity.ok(service.dispatchAlerts(entityCode, limit));
+    }
 }
-
-

@@ -3,8 +3,10 @@ package com.erp.gestiondocumental.core.service;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 public class WorkflowDocumentosService {
@@ -52,11 +54,11 @@ public class WorkflowDocumentosService {
     public Map<String, Object> deriveBulk(String docId, Map<String, Object> body) {
         @SuppressWarnings("unchecked")
         List<Map<String, Object>> targets = (List<Map<String, Object>>) body.get("targets");
-        int created = 0;
+        List<String> ids = new ArrayList<>();
         if (targets != null) {
             for (Map<String, Object> t : targets) {
                 if (t.get("to_user_id") == null && t.get("to_dependency_id") == null) continue;
-                derive(docId, Map.of(
+                String id = derive(docId, Map.of(
                         "from_user_id", body.get("from_user_id"),
                         "from_dependency_id", body.get("from_dependency_id"),
                         "to_user_id", t.get("to_user_id"),
@@ -65,10 +67,10 @@ public class WorkflowDocumentosService {
                         "requires_response", body.get("requires_response"),
                         "due_at", body.get("due_at")
                 ));
-                created++;
+                ids.add(id);
             }
         }
-        return Map.of("created", created);
+        return Map.of("created", ids.size(), "derivation_ids", ids);
     }
 
     public List<Map<String, Object>> listDerivations(String docId) {
@@ -87,12 +89,12 @@ public class WorkflowDocumentosService {
         int offset = (page - 1) * pageSize;
 
         StringBuilder where = new StringBuilder(" d.estado IN ('PENDIENTE','LEIDO','EN_GESTION') ");
-        java.util.List<Object> params = new java.util.ArrayList<>();
+        ArrayList<Object> params = new ArrayList<>();
         if (toUserId != null && !toUserId.isBlank()) { where.append(" AND para_user_id::text = ? "); params.add(toUserId); }
         if (toDependencyId != null && !toDependencyId.isBlank()) { where.append(" AND para_dependencia_id::text = ? "); params.add(toDependencyId); }
 
         Integer total = jdbc.queryForObject("SELECT COUNT(*) FROM documento_derivaciones d WHERE " + where, Integer.class, params.toArray());
-        java.util.List<Object> lp = new java.util.ArrayList<>(params);
+        ArrayList<Object> lp = new ArrayList<>(params);
         lp.add(pageSize); lp.add(offset);
         List<Map<String, Object>> items = jdbc.queryForList("""
                 SELECT d.id, d.documento_id, d.para_user_id, d.para_dependencia_id,
@@ -123,6 +125,178 @@ public class WorkflowDocumentosService {
                 RETURNING id::text
                 """, String.class,
                 docId, body.get("derivation_id"), body.get("responded_by_user_id"), body.get("subject"), body.get("body"));
+    }
+
+    public Map<String, Object> createNestedResponse(String docId, Map<String, Object> body) {
+        String childId = jdbc.queryForObject("""
+                INSERT INTO documentos(
+                  entidad_id, flujo, origen, estado, prioridad, confidencialidad,
+                  requiere_respuesta, estado_respuesta,
+                  tipo_doc_id, dependencia_emisora_id,
+                  fecha_elaboracion, asunto, cuerpo,
+                  creado_por, actualizado_por
+                )
+                SELECT
+                  d.entidad_id, 'SALIDA', 'INTERNO', 'BORRADOR', 'MEDIA', 'INTERNA',
+                  false, 'NO_REQUIERE', d.tipo_doc_id, d.dependencia_emisora_id,
+                  CURRENT_DATE, ?, ?, ?::uuid, ?::uuid
+                FROM documentos d WHERE d.id::text = ?
+                RETURNING id::text
+                """, String.class,
+                body.getOrDefault("nested_subject", body.get("subject")),
+                body.getOrDefault("nested_body", body.get("body")),
+                body.get("responded_by_user_id"), body.get("responded_by_user_id"), docId);
+
+        String relationId = jdbc.queryForObject("""
+                INSERT INTO documento_relaciones(documento_padre_id, documento_hijo_id, tipo_relacion, creado_por_user_id, detalle)
+                VALUES (?::uuid, ?::uuid, 'RESPUESTA_A', ?::uuid, jsonb_build_object('derivation_id', ?))
+                RETURNING id::text
+                """, String.class,
+                docId, childId, body.get("responded_by_user_id"), body.get("derivation_id"));
+
+        return Map.of("relation_id", relationId, "child_document_id", childId);
+    }
+
+    public List<Map<String, Object>> listRelations(String docId, String relationType) {
+        return jdbc.queryForList("""
+                SELECT r.id, r.tipo_relacion, r.creado_en, r.creado_por_user_id,
+                       r.documento_padre_id, r.documento_hijo_id,
+                       h.numero_oficial AS hijo_numero_oficial,
+                       h.asunto AS hijo_asunto,
+                       h.estado AS hijo_estado,
+                       h.fecha_emision AS hijo_fecha_emision
+                FROM documento_relaciones r
+                JOIN documentos h ON h.id = r.documento_hijo_id
+                WHERE r.documento_padre_id = ?::uuid
+                  AND (? IS NULL OR r.tipo_relacion = ?)
+                ORDER BY r.creado_en DESC
+                """, docId, relationType, relationType);
+    }
+
+    public String addFileRecord(String docId, Map<String, Object> body) {
+        int version = jdbc.queryForObject("SELECT COALESCE(MAX(version),0)+1 FROM documento_archivos WHERE documento_id = ?::uuid", Integer.class, docId);
+        return jdbc.queryForObject("""
+                INSERT INTO documento_archivos(
+                    documento_id, version, tipo,
+                    nombre_original, nombre_storage, extension,
+                    mime_type, size_bytes, sha256,
+                    storage_path, subido_por_user_id
+                ) VALUES (?::uuid, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?::uuid)
+                RETURNING id::text
+                """, String.class,
+                docId, version,
+                body.getOrDefault("file_kind", "ANEXO"),
+                body.get("nombre_original"), body.get("nombre_storage"), body.get("extension"),
+                body.getOrDefault("mime_type", "application/octet-stream"), body.getOrDefault("size_bytes", 0), body.get("sha256"),
+                body.get("storage_path"), body.get("uploaded_by_user_id"));
+    }
+
+    public List<Map<String, Object>> listFiles(String docId) {
+        return jdbc.queryForList("""
+                SELECT id, documento_id, version, tipo, nombre_original, nombre_storage,
+                       extension, mime_type, size_bytes, sha256, storage_path, subido_por_user_id, subido_en
+                FROM documento_archivos
+                WHERE documento_id = ?::uuid AND activo = true
+                ORDER BY version DESC, subido_en DESC
+                """, docId);
+    }
+
+    public Map<String, Object> getFile(String docId, String fileId) {
+        List<Map<String, Object>> rows = jdbc.queryForList("""
+                SELECT id, documento_id, version, tipo, nombre_original, nombre_storage,
+                       extension, mime_type, size_bytes, sha256, storage_path, subido_por_user_id, subido_en
+                FROM documento_archivos
+                WHERE documento_id = ?::uuid AND id = ?::uuid AND activo = true
+                """, docId, fileId);
+        return rows.isEmpty() ? null : rows.get(0);
+    }
+
+    public Map<String, Object> generateAlerts(String entityCode) {
+        Integer t24 = jdbc.queryForObject("""
+                WITH ins AS (
+                INSERT INTO documento_alertas(documento_id, user_id, tipo, scheduled_at, estado, payload)
+                SELECT d.id, d.owner_user_id, 'T_24H', now(), 'PENDIENTE',
+                       jsonb_build_object('asunto', d.asunto, 'fecha_plazo', d.fecha_plazo)
+                FROM documentos d
+                JOIN entidades e ON e.id = d.entidad_id
+                WHERE e.codigo = ?
+                  AND d.requiere_respuesta = true
+                  AND d.fecha_plazo IS NOT NULL
+                  AND d.fecha_plazo BETWEEN now() AND now() + interval '24 hour'
+                  AND d.estado_respuesta <> 'RESPONDIDO'
+                RETURNING id)
+                SELECT COUNT(*) FROM ins
+                """, Integer.class, entityCode);
+
+        Integer venc = jdbc.queryForObject("""
+                WITH ins AS (
+                INSERT INTO documento_alertas(documento_id, user_id, tipo, scheduled_at, estado, payload)
+                SELECT d.id, d.owner_user_id, 'VENCIDO', now(), 'PENDIENTE',
+                       jsonb_build_object('asunto', d.asunto, 'fecha_plazo', d.fecha_plazo)
+                FROM documentos d
+                JOIN entidades e ON e.id = d.entidad_id
+                WHERE e.codigo = ?
+                  AND d.requiere_respuesta = true
+                  AND d.fecha_plazo IS NOT NULL
+                  AND d.fecha_plazo < now()
+                  AND d.estado_respuesta <> 'RESPONDIDO'
+                RETURNING id)
+                SELECT COUNT(*) FROM ins
+                """, Integer.class, entityCode);
+
+        return Map.of("t24_created", t24 == null ? 0 : t24, "overdue_created", venc == null ? 0 : venc);
+    }
+
+    public Map<String, Object> listAlerts(String entityCode, String state, int page, int pageSize) {
+        page = Math.max(1, page);
+        pageSize = Math.max(1, Math.min(200, pageSize));
+        int offset = (page - 1) * pageSize;
+
+        Integer total = jdbc.queryForObject("""
+                SELECT COUNT(*)
+                FROM documento_alertas a
+                JOIN documentos d ON d.id = a.documento_id
+                JOIN entidades e ON e.id = d.entidad_id
+                WHERE e.codigo = ?
+                  AND (? IS NULL OR a.estado = ?)
+                """, Integer.class, entityCode, state, state);
+
+        List<Map<String, Object>> items = jdbc.queryForList("""
+                SELECT a.id, a.documento_id, a.user_id, a.tipo, a.scheduled_at, a.sent_at, a.estado, a.payload,
+                       d.asunto, d.fecha_plazo
+                FROM documento_alertas a
+                JOIN documentos d ON d.id = a.documento_id
+                JOIN entidades e ON e.id = d.entidad_id
+                WHERE e.codigo = ?
+                  AND (? IS NULL OR a.estado = ?)
+                ORDER BY a.scheduled_at DESC
+                LIMIT ? OFFSET ?
+                """, entityCode, state, state, pageSize, offset);
+
+        int pages = (int) Math.ceil((total == null ? 0 : total) / (double) pageSize);
+        return Map.of("items", items, "page", page, "page_size", pageSize, "total", total == null ? 0 : total, "pages", pages);
+    }
+
+    public Map<String, Object> dispatchAlerts(String entityCode, int limit) {
+        Integer updated = jdbc.queryForObject("""
+                WITH cte AS (
+                  SELECT a.id
+                  FROM documento_alertas a
+                  JOIN documentos d ON d.id = a.documento_id
+                  JOIN entidades e ON e.id = d.entidad_id
+                  WHERE e.codigo = ? AND a.estado = 'PENDIENTE'
+                  ORDER BY a.scheduled_at ASC
+                  LIMIT ?
+                ), upd AS (
+                  UPDATE documento_alertas a
+                  SET estado = 'ENVIADA', sent_at = now()
+                  FROM cte
+                  WHERE a.id = cte.id
+                  RETURNING a.id
+                )
+                SELECT COUNT(*) FROM upd
+                """, Integer.class, entityCode, limit);
+        return Map.of("channel", "INTERNAL", "sent", updated == null ? 0 : updated);
     }
 
     public List<Map<String, Object>> timeline(String docId) {
@@ -163,5 +337,3 @@ public class WorkflowDocumentosService {
                 """, entityCode, hours);
     }
 }
-
-
