@@ -1,9 +1,15 @@
 package com.erp.gestiondocumental.controller;
 
 import com.erp.gestiondocumental.service.WorkflowDocumentosService;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 @RestController
@@ -67,9 +73,14 @@ public class WorkflowDocumentosController {
         return ResponseEntity.ok(service.listRelations(docId, relation_type));
     }
 
-    @PostMapping("/{docId}/files")
-    public ResponseEntity<?> uploadFileMetadata(@PathVariable String docId, @RequestBody Map<String, Object> body) {
-        return ResponseEntity.ok(Map.of("file_id", service.addFileRecord(docId, body)));
+    @PostMapping(value = "/{docId}/files", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> uploadFile(
+            @PathVariable String docId,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "uploaded_by_user_id", required = false) String uploadedByUserId,
+            @RequestParam(value = "file_kind", required = false, defaultValue = "ANEXO") String fileKind
+    ) {
+        return ResponseEntity.ok(service.saveFile(docId, file, uploadedByUserId, fileKind));
     }
 
     @GetMapping("/{docId}/files")
@@ -81,6 +92,19 @@ public class WorkflowDocumentosController {
     public ResponseEntity<?> getFile(@PathVariable String docId, @PathVariable String fileId) {
         Map<String, Object> row = service.getFile(docId, fileId);
         return row == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(row);
+    }
+
+    @GetMapping("/{docId}/files/{fileId}/download")
+    public ResponseEntity<Resource> downloadFile(@PathVariable String docId, @PathVariable String fileId) {
+        WorkflowDocumentosService.FileDownload file = service.downloadFile(docId, fileId);
+        String filename = file.originalFilename() == null ? "archivo" : file.originalFilename();
+        String encoded = URLEncoder.encode(filename, StandardCharsets.UTF_8).replace("+", "%20");
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(file.contentType()))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encoded)
+                .contentLength(file.size())
+                .body(file.resource());
     }
 
     @PostMapping({"/{docId}/issue", "/{docId}/emitir"})
@@ -140,4 +164,3 @@ public class WorkflowDocumentosController {
         return ResponseEntity.ok(service.dispatchAlerts(entityCode, limit));
     }
 }
-

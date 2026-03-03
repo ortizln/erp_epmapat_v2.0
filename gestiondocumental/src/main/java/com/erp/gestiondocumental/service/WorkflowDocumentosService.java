@@ -1,9 +1,19 @@
 package com.erp.gestiondocumental.service;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -11,10 +21,19 @@ import java.util.UUID;
 @Service
 public class WorkflowDocumentosService {
 
+    public record FileDownload(Resource resource, String contentType, long size, String originalFilename) {}
+
     private final JdbcTemplate jdbc;
+    private final Path storageRoot;
 
     public WorkflowDocumentosService(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
+        this.storageRoot = Paths.get(System.getProperty("user.home"), "erp-gd-files");
+        try {
+            Files.createDirectories(this.storageRoot);
+        } catch (IOException e) {
+            throw new RuntimeException("No se pudo inicializar almacenamiento de archivos GD", e);
+        }
     }
 
     public String assign(String docId, Map<String, Object> body) {
@@ -209,6 +228,82 @@ public class WorkflowDocumentosService {
                 WHERE documento_id = ?::uuid AND id = ?::uuid AND activo = true
                 """, docId, fileId);
         return rows.isEmpty() ? null : rows.get(0);
+    }
+
+    public Map<String, Object> saveFile(String docId, MultipartFile file, String uploadedByUserId, String fileKind) {
+        if (file == null || file.isEmpty()) throw new RuntimeException("Archivo requerido");
+
+        String originalName = file.getOriginalFilename() == null ? "archivo" : file.getOriginalFilename();
+        String extension = "";
+        int dot = originalName.lastIndexOf('.');
+        if (dot >= 0 && dot < originalName.length() - 1) extension = originalName.substring(dot + 1).toLowerCase();
+
+        String safeName = originalName.replaceAll("[^a-zA-Z0-9._-]", "_");
+        String storageName = UUID.randomUUID() + (extension.isEmpty() ? "" : "." + extension);
+        Path docFolder = storageRoot.resolve(docId);
+
+        try {
+            Files.createDirectories(docFolder);
+            Path target = docFolder.resolve(storageName).normalize();
+            file.transferTo(target);
+
+            String sha256;
+            try (InputStream in = Files.newInputStream(target)) {
+                MessageDigest md = MessageDigest.getInstance("SHA-256");
+                byte[] buf = new byte[8192];
+                int n;
+                while ((n = in.read(buf)) > 0) md.update(buf, 0, n);
+                sha256 = HexFormat.of().formatHex(md.digest());
+            }
+
+            java.util.HashMap<String, Object> payload = new java.util.HashMap<>();
+            payload.put("file_kind", fileKind == null ? "ANEXO" : fileKind);
+            payload.put("nombre_original", safeName);
+            payload.put("nombre_storage", storageName);
+            payload.put("extension", extension);
+            payload.put("mime_type", file.getContentType() == null ? "application/octet-stream" : file.getContentType());
+            payload.put("size_bytes", file.getSize());
+            payload.put("sha256", sha256);
+            payload.put("storage_path", target.toString());
+            payload.put("uploaded_by_user_id", uploadedByUserId);
+
+            String fileId = addFileRecord(docId, payload);
+
+            return Map.of(
+                    "id", fileId,
+                    "file_id", fileId,
+                    "document_id", docId,
+                    "original_filename", safeName,
+                    "stored_filename", storageName,
+                    "mime_type", file.getContentType() == null ? "application/octet-stream" : file.getContentType(),
+                    "size", file.getSize(),
+                    "sha256", sha256
+            );
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo guardar el archivo", e);
+        }
+    }
+
+    public FileDownload downloadFile(String docId, String fileId) {
+        Map<String, Object> row = getFile(docId, fileId);
+        if (row == null) throw new RuntimeException("Archivo no encontrado");
+
+        String storagePath = String.valueOf(row.get("storage_path"));
+        if (storagePath == null || storagePath.isBlank()) throw new RuntimeException("Archivo sin ruta física");
+
+        try {
+            Path path = Paths.get(storagePath).normalize();
+            if (!Files.exists(path) || !Files.isRegularFile(path)) throw new RuntimeException("Archivo físico no encontrado");
+
+            Resource resource = new UrlResource(path.toUri());
+            String contentType = row.get("mime_type") == null ? Files.probeContentType(path) : String.valueOf(row.get("mime_type"));
+            if (contentType == null || contentType.isBlank()) contentType = "application/octet-stream";
+            long size = ((Number) row.getOrDefault("size_bytes", Files.size(path))).longValue();
+            String original = row.get("nombre_original") == null ? path.getFileName().toString() : String.valueOf(row.get("nombre_original"));
+            return new FileDownload(resource, contentType, size, original);
+        } catch (IOException e) {
+            throw new RuntimeException("No se pudo leer el archivo", e);
+        }
     }
 
     public Map<String, Object> generateAlerts(String entityCode) {
