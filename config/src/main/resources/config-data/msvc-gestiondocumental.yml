@@ -11,7 +11,7 @@ eureka:
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DB_GD_URL:${DB_URL:jdbc:postgresql://localhost:5432/ErpEpmapaT}}
+    url: ${DB_GD_URL:${DB_URL:jdbc:postgresql://localhost:5432/GesDoc}}
     username: ${DB_GD_USER:${DB_USER:postgres}}
     password: ${DB_GD_PASS:${DB_PASS:12345}}
   jpa:
@@ -24,3 +24,10 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+app:
+  entity-code: ${ENTITY_CODE:EPMAPA-T}
+  default-year: ${YEAR:2025}
+
+
+
