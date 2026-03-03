@@ -16,12 +16,12 @@ public class EntidadesDependenciasTiposApi {
         this.service = service;
     }
 
-    @GetMapping("/entities")
+    @GetMapping({"/entities", "/entidades"})
     public ResponseEntity<?> listEntities(@RequestParam(required = false) String q) {
         return ResponseEntity.ok(service.listEntities(q));
     }
 
-    @PostMapping("/entities")
+    @PostMapping({"/entities", "/entidades"})
     public ResponseEntity<?> createEntity(@RequestBody Map<String, Object> body) {
         String id = service.createEntity(
                 String.valueOf(body.get("codigo")),
@@ -31,25 +31,25 @@ public class EntidadesDependenciasTiposApi {
         return ResponseEntity.ok(Map.of("id", id));
     }
 
-    @PutMapping("/entities/{id}")
+    @PutMapping({"/entities/{id}", "/entidades/{id}"})
     public ResponseEntity<?> updateEntity(@PathVariable String id, @RequestBody Map<String, Object> body) {
         int n = service.updateEntity(id, String.valueOf(body.get("codigo")), String.valueOf(body.get("nombre")));
         return n > 0 ? ResponseEntity.ok(Map.of("id", id)) : ResponseEntity.notFound().build();
     }
 
-    @PutMapping("/entities/{id}/status")
+    @PutMapping({"/entities/{id}/status", "/entidades/{id}/estado"})
     public ResponseEntity<?> setEntityStatus(@PathVariable String id, @RequestBody Map<String, Object> body) {
         boolean active = body.get("active") == null || Boolean.parseBoolean(String.valueOf(body.get("active")));
         int n = service.setEntityStatus(id, active);
         return n > 0 ? ResponseEntity.ok(Map.of("id", id, "active", active)) : ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/dependencies")
+    @GetMapping({"/dependencies", "/dependencias"})
     public ResponseEntity<?> listDependencies(@RequestParam("entity_code") String entityCode) {
         return ResponseEntity.ok(service.listDependencies(entityCode));
     }
 
-    @PostMapping("/dependencies")
+    @PostMapping({"/dependencies", "/dependencias"})
     public ResponseEntity<?> createDependency(@RequestBody Map<String, Object> body) {
         String id = service.createDependency(
                 String.valueOf(body.get("entity_code")),
@@ -60,7 +60,7 @@ public class EntidadesDependenciasTiposApi {
         return ResponseEntity.ok(Map.of("id", id));
     }
 
-    @PutMapping("/dependencies/{id}")
+    @PutMapping({"/dependencies/{id}", "/dependencias/{id}"})
     public ResponseEntity<?> updateDependency(@PathVariable String id, @RequestBody Map<String, Object> body) {
         int n = service.updateDependency(
                 id,
@@ -71,19 +71,19 @@ public class EntidadesDependenciasTiposApi {
         return n > 0 ? ResponseEntity.ok(Map.of("id", id)) : ResponseEntity.notFound().build();
     }
 
-    @PutMapping("/dependencies/{id}/status")
+    @PutMapping({"/dependencies/{id}/status", "/dependencias/{id}/estado"})
     public ResponseEntity<?> setDependencyStatus(@PathVariable String id, @RequestBody Map<String, Object> body) {
         boolean active = body.get("active") == null || Boolean.parseBoolean(String.valueOf(body.get("active")));
         int n = service.setDependencyStatus(id, active);
         return n > 0 ? ResponseEntity.ok(Map.of("id", id, "active", active)) : ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/document-types")
+    @GetMapping({"/document-types", "/tipos-documento"})
     public ResponseEntity<?> listDocumentTypes(@RequestParam("entity_code") String entityCode) {
         return ResponseEntity.ok(service.listDocumentTypes(entityCode));
     }
 
-    @PostMapping("/document-types")
+    @PostMapping({"/document-types", "/tipos-documento"})
     public ResponseEntity<?> createDocumentType(@RequestBody Map<String, Object> body) {
         String id = service.createDocumentType(
                 String.valueOf(body.get("entity_code")),
@@ -95,7 +95,7 @@ public class EntidadesDependenciasTiposApi {
         return ResponseEntity.ok(Map.of("id", id));
     }
 
-    @PutMapping("/document-types/{id}")
+    @PutMapping({"/document-types/{id}", "/tipos-documento/{id}"})
     public ResponseEntity<?> updateDocumentType(@PathVariable String id, @RequestBody Map<String, Object> body) {
         int n = service.updateDocumentType(id,
                 String.valueOf(body.get("codigo")),
@@ -104,14 +104,14 @@ public class EntidadesDependenciasTiposApi {
         return n > 0 ? ResponseEntity.ok(Map.of("id", id)) : ResponseEntity.notFound().build();
     }
 
-    @PutMapping("/document-types/{id}/status")
+    @PutMapping({"/document-types/{id}/status", "/tipos-documento/{id}/estado"})
     public ResponseEntity<?> setDocumentTypeStatus(@PathVariable String id, @RequestBody Map<String, Object> body) {
         boolean active = body.get("active") == null || Boolean.parseBoolean(String.valueOf(body.get("active")));
         int n = service.setDocumentTypeStatus(id, active);
         return n > 0 ? ResponseEntity.ok(Map.of("id", id, "active", active)) : ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/lookups/users")
+    @GetMapping({"/lookups/users", "/lookups/usuarios"})
     public ResponseEntity<?> lookupUsers(@RequestParam("entity_code") String entityCode,
                                          @RequestParam(required = false) String q,
                                          @RequestParam(defaultValue = "1") int page,
@@ -119,7 +119,7 @@ public class EntidadesDependenciasTiposApi {
         return ResponseEntity.ok(service.lookupUsers(entityCode, q, page, pageSize));
     }
 
-    @GetMapping("/lookups/persons")
+    @GetMapping({"/lookups/persons", "/lookups/personas"})
     public ResponseEntity<?> lookupPersons(@RequestParam("entity_code") String entityCode,
                                            @RequestParam(required = false) String q,
                                            @RequestParam(defaultValue = "1") int page,
@@ -127,5 +127,3 @@ public class EntidadesDependenciasTiposApi {
         return ResponseEntity.ok(service.lookupPersons(entityCode, q, page, pageSize));
     }
 }
-
-

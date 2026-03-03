@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/documents")
+@RequestMapping({"/api/documents", "/api/documentos"})
 public class WorkflowDocumentosApi {
 
     private final WorkflowDocumentosService service;
