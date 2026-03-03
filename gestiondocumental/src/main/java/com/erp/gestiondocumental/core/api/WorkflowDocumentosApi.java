@@ -16,12 +16,12 @@ public class WorkflowDocumentosApi {
         this.service = service;
     }
 
-    @PostMapping("/{docId}/assign")
+    @PostMapping({"/{docId}/assign", "/{docId}/asignar"})
     public ResponseEntity<?> assign(@PathVariable String docId, @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(Map.of("assignment_id", service.assign(docId, body)));
     }
 
-    @PostMapping("/{docId}/derive")
+    @PostMapping({"/{docId}/derive", "/{docId}/derivar"})
     public ResponseEntity<?> derive(@PathVariable String docId, @RequestBody Map<String, Object> body) {
         return ResponseEntity.ok(Map.of("derivation_id", service.derive(docId, body)));
     }
@@ -81,6 +81,28 @@ public class WorkflowDocumentosApi {
     public ResponseEntity<?> getFile(@PathVariable String docId, @PathVariable String fileId) {
         Map<String, Object> row = service.getFile(docId, fileId);
         return row == null ? ResponseEntity.notFound().build() : ResponseEntity.ok(row);
+    }
+
+    @PostMapping({"/{docId}/issue", "/{docId}/emitir"})
+    public ResponseEntity<?> issue(@PathVariable String docId, @RequestBody(required = false) Map<String, Object> body) {
+        String userId = body == null ? null : (String) body.get("user_id");
+        return ResponseEntity.ok(service.issue(docId, userId));
+    }
+
+    @PostMapping({"/{docId}/receive", "/{docId}/recibir"})
+    public ResponseEntity<?> receive(@PathVariable String docId, @RequestBody(required = false) Map<String, Object> body) {
+        body = body == null ? Map.of() : body;
+        return ResponseEntity.ok(service.receive(docId,
+                (String) body.get("receiver_id"),
+                (String) body.get("dependency_id"),
+                (String) body.get("user_id"),
+                (String) body.get("comment")));
+    }
+
+    @GetMapping({"/receptions/pending", "/recepciones/pendientes"})
+    public ResponseEntity<?> pendingReceptions(@RequestParam("entity_code") String entityCode,
+                                               @RequestParam(required = false) String receiver_id) {
+        return ResponseEntity.ok(service.pendingReceptions(entityCode, receiver_id));
     }
 
     @GetMapping("/{docId}/timeline")

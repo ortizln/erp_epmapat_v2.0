@@ -299,6 +299,120 @@ public class WorkflowDocumentosService {
         return Map.of("channel", "INTERNAL", "sent", updated == null ? 0 : updated);
     }
 
+    public Map<String, Object> issue(String docId, String userId) {
+        Map<String, Object> doc = jdbc.queryForMap("""
+                SELECT d.id, d.entidad_id, d.tipo_doc_id, d.dependencia_emisora_id, d.estado, d.numero_oficial,
+                       COALESCE(d.fecha_elaboracion, CURRENT_DATE) AS fecha_elaboracion,
+                       dep.codigo AS dep_codigo, td.codigo AS tipo_codigo
+                FROM documentos d
+                JOIN tipos_documento td ON td.id = d.tipo_doc_id
+                LEFT JOIN dependencias dep ON dep.id = d.dependencia_emisora_id
+                WHERE d.id::text = ?
+                """, docId);
+
+        if (doc.get("numero_oficial") != null) {
+            throw new RuntimeException("El documento ya está emitido");
+        }
+        String estado = String.valueOf(doc.get("estado"));
+        if (!("BORRADOR".equals(estado) || "EN_REVISION".equals(estado))) {
+            throw new RuntimeException("No se puede emitir en estado: " + estado);
+        }
+
+        int anio = Integer.parseInt(String.valueOf(doc.get("fecha_elaboracion")).substring(0, 4));
+        String area = (doc.get("dep_codigo") == null ? "GEN" : String.valueOf(doc.get("dep_codigo"))).trim().toUpperCase();
+        String tipo = (doc.get("tipo_codigo") == null ? "DOC" : String.valueOf(doc.get("tipo_codigo"))).trim().toUpperCase();
+
+        List<Map<String, Object>> series = jdbc.queryForList("""
+                SELECT id, prefijo, longitud_seq, siguiente_seq
+                FROM series_numeracion
+                WHERE entidad_id = ?::uuid
+                  AND tipo_doc_id = ?::uuid
+                  AND anio = ?
+                  AND activo = TRUE
+                  AND (dependencia_id = ?::uuid OR dependencia_id IS NULL)
+                ORDER BY (dependencia_id IS NULL) ASC
+                """, doc.get("entidad_id"), doc.get("tipo_doc_id"), anio, doc.get("dependencia_emisora_id"));
+        if (series.isEmpty()) throw new RuntimeException("No hay serie configurada para emisión");
+
+        Map<String, Object> serie = series.get(0);
+        String prefijo = (serie.get("prefijo") == null ? tipo : String.valueOf(serie.get("prefijo"))).trim().toUpperCase();
+        int seq = ((Number) serie.get("siguiente_seq")).intValue();
+        int length = ((Number) serie.get("longitud_seq")).intValue();
+        String numero = prefijo + "-" + area + "-" + anio + "-" + String.format("%0" + length + "d", seq);
+
+        jdbc.update("UPDATE series_numeracion SET siguiente_seq = siguiente_seq + 1 WHERE id = ?::uuid", serie.get("id"));
+        int upd = jdbc.update("""
+                UPDATE documentos
+                SET numero_oficial = ?, serie_id = ?::uuid, estado = 'EMITIDO', fecha_emision = now(),
+                    actualizado_por = ?::uuid, actualizado_en = now()
+                WHERE id::text = ? AND numero_oficial IS NULL
+                """, numero, serie.get("id"), userId, docId);
+        if (upd == 0) throw new RuntimeException("No se pudo emitir (concurrencia)");
+
+        List<Map<String, Object>> dests = jdbc.queryForList("SELECT persona_id, dependencia_id, externo_nombre FROM documento_destinatarios WHERE documento_id = ?::uuid", docId);
+        int creadas = 0;
+        for (Map<String, Object> d : dests) {
+            if (d.get("externo_nombre") != null) continue;
+            if (d.get("persona_id") != null) {
+                creadas += jdbc.update("INSERT INTO documento_recepciones (documento_id, receptor_id, estado) VALUES (?::uuid, ?::uuid, 'PENDIENTE') ON CONFLICT DO NOTHING", docId, d.get("persona_id"));
+            } else if (d.get("dependencia_id") != null) {
+                creadas += jdbc.update("INSERT INTO documento_recepciones (documento_id, receptor_id, dependencia_id, estado) VALUES (?::uuid, NULL, ?::uuid, 'PENDIENTE') ON CONFLICT DO NOTHING", docId, d.get("dependencia_id"));
+            }
+        }
+        return Map.of("id", docId, "numero_oficial", numero, "anio", anio, "prefijo", prefijo, "area", area, "pendientes", creadas);
+    }
+
+    public Map<String, Object> receive(String docId, String receptorId, String dependenciaId, String userId, String comentario) {
+        if ((receptorId == null && dependenciaId == null) || (receptorId != null && dependenciaId != null)) {
+            throw new RuntimeException("Debe enviar receptor_id o dependencia_id, pero no ambos");
+        }
+
+        List<Map<String, Object>> docs = jdbc.queryForList("SELECT id, estado, numero_oficial FROM documentos WHERE id::text = ?", docId);
+        if (docs.isEmpty()) throw new RuntimeException("Documento no encontrado");
+        String estado = String.valueOf(docs.get(0).get("estado"));
+        if (!("EMITIDO".equals(estado) || "DERIVADO".equals(estado) || "RECIBIDO".equals(estado))) {
+            throw new RuntimeException("No se puede recibir en estado: " + estado);
+        }
+
+        String recId;
+        if (receptorId != null) {
+            recId = jdbc.queryForObject("""
+                    INSERT INTO documento_recepciones(documento_id, receptor_id, dependencia_id, recibido_en, confirmado_por, estado, comentario)
+                    VALUES (?::uuid, ?::uuid, NULL, now(), ?::uuid, 'RECIBIDO', ?)
+                    ON CONFLICT (documento_id, receptor_id)
+                    DO UPDATE SET recibido_en = COALESCE(documento_recepciones.recibido_en, now()), confirmado_por = EXCLUDED.confirmado_por,
+                                  estado = 'RECIBIDO', comentario = COALESCE(EXCLUDED.comentario, documento_recepciones.comentario)
+                    RETURNING id::text
+                    """, String.class, docId, receptorId, userId, comentario);
+        } else {
+            List<Map<String, Object>> ex = jdbc.queryForList("SELECT id FROM documento_recepciones WHERE documento_id = ?::uuid AND receptor_id IS NULL AND dependencia_id::text = ?", docId, dependenciaId);
+            if (ex.isEmpty()) {
+                recId = jdbc.queryForObject("INSERT INTO documento_recepciones(documento_id, receptor_id, dependencia_id, recibido_en, confirmado_por, estado, comentario) VALUES (?::uuid, NULL, ?::uuid, now(), ?::uuid, 'RECIBIDO', ?) RETURNING id::text", String.class, docId, dependenciaId, userId, comentario);
+            } else {
+                recId = String.valueOf(ex.get(0).get("id"));
+                jdbc.update("UPDATE documento_recepciones SET recibido_en = COALESCE(recibido_en, now()), confirmado_por = ?::uuid, estado='RECIBIDO', comentario=COALESCE(?,comentario) WHERE id::text = ?", userId, comentario, recId);
+            }
+        }
+
+        jdbc.update("UPDATE documentos SET estado='RECIBIDO', fecha_recepcion=COALESCE(fecha_recepcion, now()), actualizado_por=?::uuid, actualizado_en=now() WHERE id::text = ?", userId, docId);
+        return Map.of("documento_id", docId, "recepcion_id", recId, "estado_documento", "RECIBIDO");
+    }
+
+    public List<Map<String, Object>> pendingReceptions(String entityCode, String receptorId) {
+        StringBuilder where = new StringBuilder(" d.entidad_id = (SELECT id FROM entidades WHERE codigo = ?) ");
+        List<Object> params = new ArrayList<>();
+        params.add(entityCode);
+        if (receptorId != null && !receptorId.isBlank()) { where.append(" AND r.receptor_id::text = ? "); params.add(receptorId); }
+        return jdbc.queryForList("""
+                SELECT r.id AS recepcion_id, r.estado AS estado_recepcion, r.receptor_id, r.recibido_en,
+                       d.id AS documento_id, d.numero_oficial, d.estado AS estado_documento, d.asunto, d.fecha_elaboracion, d.fecha_emision
+                FROM documento_recepciones r
+                JOIN documentos d ON d.id = r.documento_id
+                WHERE %s AND r.estado = 'PENDIENTE'
+                ORDER BY d.fecha_emision DESC NULLS LAST, d.creado_en DESC
+                """.formatted(where), params.toArray());
+    }
+
     public List<Map<String, Object>> timeline(String docId) {
         return jdbc.queryForList("""
                 SELECT id, actor_user_id, actor_rol, evento, detalle, created_at
