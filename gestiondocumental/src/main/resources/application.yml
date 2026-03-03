@@ -2,18 +2,7 @@ spring:
   application:
     name: msvc-gestiondocumental
   config:
-    import: optional:configserver:http://config-server:8888
-    
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASS}
-
-  jpa:
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-    hibernate:
-      ddl-auto: none
+    import: optional:configserver:http://localhost:8888
 
 
 springdoc:
@@ -21,4 +10,5 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
 

@@ -1,8 +1,26 @@
 server:
   port: 9095
+
 eureka:
   instance:
-    hostname: msvc-gestiondocumental  # El nombre del contenedor o el servicio en Docker Compose
+    hostname: msvc-gestiondocumental
   client:
     service-url:
-      defaultZone: ${EUREKA_SERVICEURL}:8761/eureka/  # Usar el nombre del servicio Docker
+      defaultZone: ${EUREKA_SERVICEURL:http://localhost}:8761/eureka/
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_GD_URL:${DB_URL:jdbc:postgresql://localhost:5432/ErpEpmapaT}}
+    username: ${DB_GD_USER:${DB_USER:postgres}}
+    password: ${DB_GD_PASS:${DB_PASS:12345}}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
