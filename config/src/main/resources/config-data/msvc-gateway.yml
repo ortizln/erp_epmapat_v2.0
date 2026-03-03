@@ -157,10 +157,9 @@ spring:
             - Path=/api/pagonline/facturas/**
 
         - id: msvc-gestiondocumental
-          #uri: http://msvc-gestiondocumental:9095
           uri: http://localhost:9095
           predicates:
-            - Path=/api/conservacion_documental/**, /api/gdcajas/**, /api/ingreso_documento/**, /api/inventario/**, /api/seccion/**, /api/series/**,  /api/subsecciones/**, /api/subseries/**
+            - Path=/api/entities/**, /api/entidades/**, /api/dependencies/**, /api/dependencias/**, /api/document-types/**, /api/tipos-documento/**, /api/lookups/**, /api/settings/system/**, /api/configuracion/sistema/**, /api/ccd/**, /api/cuadro-clasificacion/**, /api/trd/**, /api/retencion-documental/**, /api/case-files/**, /api/expedientes/**, /api/documents/**, /api/documentos/**
 
         - id: msvc-sri
           #uri: http://msvc-sri:9096
@@ -184,6 +183,7 @@ spring:
           uri: http://localhost:9099
           predicates:
             - Path=/api/v1/emails/**
+
 
 
 
