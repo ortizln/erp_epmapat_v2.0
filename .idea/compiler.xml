@@ -11,9 +11,11 @@
         <module name="epmapaApi" />
         <module name="gestiondocumental" />
         <module name="eureka" />
+        <module name="contabilidad" />
         <module name="pagosonline" />
         <module name="login" />
         <module name="reportes-jr" />
+        <module name="rrhh" />
         <module name="recaudacion" />
         <module name="config" />
         <module name="gateway" />
@@ -39,6 +41,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="comercializacion" options="-parameters" />
       <module name="config" options="-parameters" />
+      <module name="contabilidad" options="-parameters" />
       <module name="emails" options="-parameters" />
       <module name="epmapaApi" options="-parameters" />
       <module name="epmapaapi" options="-parameters" />
@@ -50,6 +53,7 @@
       <module name="recaudacion" options="-parameters" />
       <module name="recaudacion (1)" options="-parameters" />
       <module name="reportes-jr" options="-parameters" />
+      <module name="rrhh" options="-parameters" />
       <module name="sri" options="-parameters" />
       <module name="sri-files" options="-parameters" />
     </option>
