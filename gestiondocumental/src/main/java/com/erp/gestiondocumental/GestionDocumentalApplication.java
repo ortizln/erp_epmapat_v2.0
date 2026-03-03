@@ -4,7 +4,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
-@SpringBootApplication(scanBasePackages = {"com.erp.gestiondocumental", "com.erp.pagosonline"})
+@SpringBootApplication(scanBasePackages = {"com.erp.gestiondocumental", "com.erp.gestiondocumental"})
 @EnableDiscoveryClient
 public class GestionDocumentalApplication {
 
@@ -12,3 +12,5 @@ public class GestionDocumentalApplication {
         SpringApplication.run(GestionDocumentalApplication.class, args);
     }
 }
+
+
