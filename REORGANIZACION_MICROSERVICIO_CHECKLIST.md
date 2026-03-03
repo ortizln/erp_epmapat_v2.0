@@ -17,7 +17,7 @@ Fecha: 2026-03-02
 - [x] Build final OK (`mvn -pl comercializacion -DskipTests compile`)
 
 ## Pendientes recomendados
-- [~] Ejecutar smoke tests por dominio vía gateway (parcial: RRHH OK parcial; faltan /api/th-audit y /api/th-files en gateway)
+- [x] Ejecutar smoke tests por dominio vía gateway (RRHH validado incluyendo /api/th-audit y /api/th-files)
 - [ ] Revisar referencias legacy y plan de retiro controlado
 - [ ] Documentar contratos API críticos (OpenAPI/Postman)
 
@@ -27,4 +27,5 @@ Fecha: 2026-03-02
 - [x] Esquema BD RRHH completo en `ErpEpmapaT` (5 tablas TH verificadas).
 - [x] Validación de reglas TH Leave (solicitud + aprobación + descuento de saldo).
 - [x] Auditoría TH y expediente digital validados en microservicio.
-- [ ] Cierre de paridad de rutas RRHH por gateway (`:8080`) pendiente de recarga efectiva de configuración.
+- [x] Cierre de paridad de rutas RRHH por gateway (`:8080`) completado.
+

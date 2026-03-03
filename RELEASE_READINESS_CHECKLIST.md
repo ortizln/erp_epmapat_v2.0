@@ -72,9 +72,10 @@ Commit base: f7b11f0
 ### Smoke RRHH vía gateway (`:8080`)
 - [x] `GET /api/th-actions/persona/{id}`
 - [x] `GET /api/th-leave/requests/persona/{id}`
-- [ ] `GET /api/th-audit?...` (pendiente recarga efectiva de config gateway)
-- [ ] `GET /api/th-files/persona/{id}` (pendiente recarga efectiva de config gateway)
+- [x] `GET /api/th-audit?...`
+- [x] `GET /api/th-files/persona/{id}`
 
 ### Notas
 - Se aplicó fix de rutas en `config-data/msvc-gateway.yml` para incluir `/api/th-audit/**` y `/api/th-files/**`.
-- Verificación posterior al cambio aún muestra 404 en gateway; falta reinicio/refresh efectivo del gateway con la config actualizada.
+- Validado después de reinicio de config+gateway: rutas operativas por :8080 (200 en th-audit y th-files).
+
