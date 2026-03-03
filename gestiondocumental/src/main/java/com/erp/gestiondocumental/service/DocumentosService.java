@@ -1,4 +1,4 @@
-package com.erp.gestiondocumental.core.service;
+package com.erp.gestiondocumental.service;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class DocumentosServiceCore {
+public class DocumentosService {
 
     private final JdbcTemplate jdbc;
 
-    public DocumentosServiceCore(JdbcTemplate jdbc) {
+    public DocumentosService(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
 
@@ -177,5 +177,6 @@ public class DocumentosServiceCore {
         return jdbc.update("DELETE FROM documentos WHERE id::text = ?", docId);
     }
 }
+
 
 

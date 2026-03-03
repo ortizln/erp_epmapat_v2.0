@@ -1,6 +1,6 @@
-package com.erp.gestiondocumental.core.api;
+package com.erp.gestiondocumental.controller;
 
-import com.erp.gestiondocumental.core.service.WorkflowDocumentosService;
+import com.erp.gestiondocumental.service.WorkflowDocumentosService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -8,11 +8,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping({"/api/documents", "/api/documentos"})
-public class WorkflowDocumentosApi {
+public class WorkflowDocumentosController {
 
     private final WorkflowDocumentosService service;
 
-    public WorkflowDocumentosApi(WorkflowDocumentosService service) {
+    public WorkflowDocumentosController(WorkflowDocumentosService service) {
         this.service = service;
     }
 
@@ -140,3 +140,4 @@ public class WorkflowDocumentosApi {
         return ResponseEntity.ok(service.dispatchAlerts(entityCode, limit));
     }
 }
+
