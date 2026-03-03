@@ -1,8 +1,8 @@
 # RELEASE_READINESS_CHECKLIST.md
 
-Fecha: 2026-03-01
+Fecha: 2026-03-02
 Repo: erp_epmapat_v2.0
-Commit base: 0f4a465
+Commit base: f7b11f0
 
 ## 1) Build
 - [x] `mvn -pl comercializacion -DskipTests compile` -> BUILD SUCCESS
@@ -51,3 +51,30 @@ Commit base: 0f4a465
 - [ ] Validación funcional con usuario clave
 - [ ] Go/No-Go firmado
 
+
+
+## 6) RRHH (estado actual 2026-03-02)
+### Base de datos (ErpEpmapaT)
+- [x] `th_actions`
+- [x] `th_leave_requests`
+- [x] `th_leave_balances`
+- [x] `th_audit_log`
+- [x] `th_employee_files`
+
+### Smoke RRHH directo a microservicio (`msvc-rrhh:9101`)
+- [x] `POST /api/th-actions` (creación acción)
+- [x] `POST /api/th-leave/requests` (creación solicitud)
+- [x] `POST /api/th-leave/requests/{id}/aprobar` (aprobación)
+- [x] Validación de negocio: descuento de saldo VACACION aplicado
+- [x] `GET /api/th-audit?entidad=TH_LEAVE_REQUEST&idregistro={id}`
+- [x] `POST /api/th-files` + `GET /api/th-files/persona/{id}`
+
+### Smoke RRHH vía gateway (`:8080`)
+- [x] `GET /api/th-actions/persona/{id}`
+- [x] `GET /api/th-leave/requests/persona/{id}`
+- [ ] `GET /api/th-audit?...` (pendiente recarga efectiva de config gateway)
+- [ ] `GET /api/th-files/persona/{id}` (pendiente recarga efectiva de config gateway)
+
+### Notas
+- Se aplicó fix de rutas en `config-data/msvc-gateway.yml` para incluir `/api/th-audit/**` y `/api/th-files/**`.
+- Verificación posterior al cambio aún muestra 404 en gateway; falta reinicio/refresh efectivo del gateway con la config actualizada.
