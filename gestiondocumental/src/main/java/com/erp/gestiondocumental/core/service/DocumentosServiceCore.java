@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class DocumentCoreService {
+public class DocumentosServiceCore {
 
     private final JdbcTemplate jdbc;
 
-    public DocumentCoreService(JdbcTemplate jdbc) {
+    public DocumentosServiceCore(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
 
@@ -177,3 +177,5 @@ public class DocumentCoreService {
         return jdbc.update("DELETE FROM documentos WHERE id::text = ?", docId);
     }
 }
+
+

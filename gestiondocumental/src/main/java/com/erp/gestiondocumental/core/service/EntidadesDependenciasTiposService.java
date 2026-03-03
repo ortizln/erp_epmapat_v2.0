@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class CatalogCoreService {
+public class EntidadesDependenciasTiposService {
 
     private final JdbcTemplate jdbc;
 
-    public CatalogCoreService(JdbcTemplate jdbc) {
+    public EntidadesDependenciasTiposService(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
 
@@ -187,3 +187,5 @@ public class CatalogCoreService {
         return Map.of("items", items, "total", total == null ? 0 : total, "page", page, "page_size", pageSize);
     }
 }
+
+

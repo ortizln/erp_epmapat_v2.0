@@ -1,6 +1,6 @@
 package com.erp.gestiondocumental.core.api;
 
-import com.erp.gestiondocumental.core.service.CatalogCoreService;
+import com.erp.gestiondocumental.core.service.EntidadesDependenciasTiposService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -8,11 +8,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
-public class CoreCatalogApi {
+public class EntidadesDependenciasTiposApi {
 
-    private final CatalogCoreService service;
+    private final EntidadesDependenciasTiposService service;
 
-    public CoreCatalogApi(CatalogCoreService service) {
+    public EntidadesDependenciasTiposApi(EntidadesDependenciasTiposService service) {
         this.service = service;
     }
 
@@ -127,3 +127,5 @@ public class CoreCatalogApi {
         return ResponseEntity.ok(service.lookupPersons(entityCode, q, page, pageSize));
     }
 }
+
+

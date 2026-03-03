@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class WorkflowCoreService {
+public class WorkflowDocumentosService {
 
     private final JdbcTemplate jdbc;
 
-    public WorkflowCoreService(JdbcTemplate jdbc) {
+    public WorkflowDocumentosService(JdbcTemplate jdbc) {
         this.jdbc = jdbc;
     }
 
@@ -163,3 +163,5 @@ public class WorkflowCoreService {
                 """, entityCode, hours);
     }
 }
+
+

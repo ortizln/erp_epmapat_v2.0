@@ -1,6 +1,6 @@
 package com.erp.gestiondocumental.core.api;
 
-import com.erp.gestiondocumental.core.service.DocumentCoreService;
+import com.erp.gestiondocumental.core.service.DocumentosServiceCore;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -8,11 +8,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/documents")
-public class CoreDocumentsApi {
+public class DocumentosApiCore {
 
-    private final DocumentCoreService service;
+    private final DocumentosServiceCore service;
 
-    public CoreDocumentsApi(DocumentCoreService service) {
+    public DocumentosApiCore(DocumentosServiceCore service) {
         this.service = service;
     }
 
@@ -63,3 +63,5 @@ public class CoreDocumentsApi {
         return n > 0 ? ResponseEntity.ok(Map.of("ok", true)) : ResponseEntity.notFound().build();
     }
 }
+
+

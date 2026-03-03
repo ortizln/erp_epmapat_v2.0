@@ -1,6 +1,6 @@
 package com.erp.gestiondocumental.core.api;
 
-import com.erp.gestiondocumental.core.service.WorkflowCoreService;
+import com.erp.gestiondocumental.core.service.WorkflowDocumentosService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -8,11 +8,11 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/documents")
-public class CoreWorkflowApi {
+public class WorkflowDocumentosApi {
 
-    private final WorkflowCoreService service;
+    private final WorkflowDocumentosService service;
 
-    public CoreWorkflowApi(WorkflowCoreService service) {
+    public WorkflowDocumentosApi(WorkflowDocumentosService service) {
         this.service = service;
     }
 
@@ -72,3 +72,5 @@ public class CoreWorkflowApi {
         return ResponseEntity.ok(service.dueSoon(entityCode, hours));
     }
 }
+
+
