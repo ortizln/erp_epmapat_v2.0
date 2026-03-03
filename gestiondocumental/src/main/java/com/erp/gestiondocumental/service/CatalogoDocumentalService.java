@@ -138,7 +138,7 @@ public class CatalogoDocumentalService {
                 JOIN entidades e ON e.id = u.entidad_id
                 LEFT JOIN personas p ON p.id = u.persona_id
                 WHERE e.codigo = ?
-                  AND (? IS NULL OR u.username::text ILIKE ('%' || ? || '%') OR p.nombres ILIKE ('%' || ? || '%') OR p.apellidos ILIKE ('%' || ? || '%'))
+                  AND (COALESCE(?, '') = '' OR u.username::text ILIKE ('%' || ? || '%') OR p.nombres ILIKE ('%' || ? || '%') OR p.apellidos ILIKE ('%' || ? || '%'))
                 """, Integer.class, entityCode, qq, qq, qq, qq);
 
         List<Map<String, Object>> items = jdbc.queryForList("""
@@ -154,7 +154,7 @@ public class CatalogoDocumentalService {
                 LEFT JOIN personas p ON p.id = u.persona_id
                 LEFT JOIN dependencias d ON d.id = p.dependencia_id
                 WHERE e.codigo = ?
-                  AND (? IS NULL OR u.username::text ILIKE ('%' || ? || '%') OR p.nombres ILIKE ('%' || ? || '%') OR p.apellidos ILIKE ('%' || ? || '%'))
+                  AND (COALESCE(?, '') = '' OR u.username::text ILIKE ('%' || ? || '%') OR p.nombres ILIKE ('%' || ? || '%') OR p.apellidos ILIKE ('%' || ? || '%'))
                 ORDER BY u.activo DESC, nombre ASC
                 OFFSET ? LIMIT ?
                 """, entityCode, qq, qq, qq, qq, offset, pageSize);
@@ -171,7 +171,7 @@ public class CatalogoDocumentalService {
                 FROM personas p
                 JOIN entidades e ON e.id = p.entidad_id
                 WHERE e.codigo = ?
-                  AND (? IS NULL OR p.nombres ILIKE ('%' || ? || '%') OR p.apellidos ILIKE ('%' || ? || '%') OR p.identificacion ILIKE ('%' || ? || '%'))
+                  AND (COALESCE(?, '') = '' OR p.nombres ILIKE ('%' || ? || '%') OR p.apellidos ILIKE ('%' || ? || '%') OR p.identificacion ILIKE ('%' || ? || '%'))
                 """, Integer.class, entityCode, qq, qq, qq, qq);
 
         List<Map<String, Object>> items = jdbc.queryForList("""
@@ -181,7 +181,7 @@ public class CatalogoDocumentalService {
                 JOIN entidades e ON e.id = p.entidad_id
                 LEFT JOIN dependencias d ON d.id = p.dependencia_id
                 WHERE e.codigo = ?
-                  AND (? IS NULL OR p.nombres ILIKE ('%' || ? || '%') OR p.apellidos ILIKE ('%' || ? || '%') OR p.identificacion ILIKE ('%' || ? || '%'))
+                  AND (COALESCE(?, '') = '' OR p.nombres ILIKE ('%' || ? || '%') OR p.apellidos ILIKE ('%' || ? || '%') OR p.identificacion ILIKE ('%' || ? || '%'))
                 ORDER BY p.activo DESC, p.apellidos ASC, p.nombres ASC
                 OFFSET ? LIMIT ?
                 """, entityCode, qq, qq, qq, qq, offset, pageSize);
