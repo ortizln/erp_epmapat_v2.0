@@ -15,6 +15,24 @@ public class DocumentosService {
         this.jdbc = jdbc;
     }
 
+    private String s(Map<String, Object> data, String... keys) {
+        for (String k : keys) {
+            Object v = data.get(k);
+            if (v != null && !String.valueOf(v).isBlank()) return String.valueOf(v);
+        }
+        return null;
+    }
+
+    private String actorUserId(Map<String, Object> data) {
+        String id = s(data, "usuario_id", "user_id", "owner_user_id", "creado_por", "actualizado_por");
+        if (id != null) return id;
+        try {
+            return jdbc.queryForObject("SELECT id::text FROM gd_usuarios WHERE activo = true ORDER BY creado_en ASC LIMIT 1", String.class);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public Map<String, Object> list(String entityCode, String estado, String flujo, String q,
                                     String dependencyId, String typeId, String userId,
                                     String seriesId, String subseriesId,
@@ -103,6 +121,7 @@ public class DocumentosService {
     }
 
     public String create(Map<String, Object> data) {
+        String actor = actorUserId(data);
         return jdbc.queryForObject("""
                 INSERT INTO documentos (
                     entidad_id, flujo, origen, estado, prioridad, confidencialidad,
@@ -115,8 +134,8 @@ public class DocumentosService {
                     creado_por, actualizado_por
                 ) VALUES (
                     (SELECT id FROM entidades WHERE codigo = ?),
-                    ?, ?, COALESCE(?, 'BORRADOR'), COALESCE(?, 'MEDIA'), COALESCE(?, 'INTERNA'),
-                    COALESCE(?, false), ?::timestamp, COALESCE(?, 'NO_REQUIERE'),
+                    ?::doc_flujo, ?::doc_origen, COALESCE(?::doc_estado, 'BORRADOR'), COALESCE(?::doc_prioridad, 'MEDIA'), COALESCE(?::confidencialidad, 'INTERNA'),
+                    COALESCE(?, false), ?::timestamp, COALESCE(?::estado_respuesta, 'NO_REQUIERE'),
                     ?::uuid, ?::uuid,
                     ?::uuid, ?::uuid, ?::uuid,
                     COALESCE(?::date, CURRENT_DATE),
@@ -126,28 +145,29 @@ public class DocumentosService {
                 ) RETURNING id::text
                 """,
                 String.class,
-                data.get("entity_code"),
-                data.get("flujo"), data.get("origen"), data.get("estado"), data.get("prioridad"), data.get("confidencialidad"),
-                data.get("requiere_respuesta"), data.get("fecha_plazo"), data.get("estado_respuesta"),
-                data.get("tipo_doc_id"), data.get("dependencia_emisora_id"),
-                data.get("series_id"), data.get("subseries_id"), data.get("retention_schedule_id"),
-                data.get("fecha_elaboracion"), data.get("remitente_persona_id"), data.get("remitente_externo"),
-                data.get("asunto"), data.get("cuerpo"), data.get("referencia"), data.get("observaciones"),
-                data.get("usuario_id"), data.get("usuario_id")
+                s(data, "entity_code", "entidad_codigo"),
+                s(data, "flujo", "flow"), s(data, "origen", "origin"), s(data, "estado"), s(data, "prioridad", "priority"), s(data, "confidencialidad"),
+                data.getOrDefault("requiere_respuesta", data.get("requires_response")), s(data, "fecha_plazo", "due_date"), s(data, "estado_respuesta"),
+                s(data, "tipo_doc_id", "type_id"), s(data, "dependencia_emisora_id", "dependency_id"),
+                s(data, "series_id"), s(data, "subseries_id"), s(data, "retention_schedule_id"),
+                s(data, "fecha_elaboracion", "draft_date"), s(data, "remitente_persona_id"), s(data, "remitente_externo"),
+                s(data, "asunto", "subject"), s(data, "cuerpo", "body"), s(data, "referencia", "reference"), s(data, "observaciones"),
+                actor, actor
         );
     }
 
     public int update(String docId, Map<String, Object> data) {
+        String actor = actorUserId(data);
         return jdbc.update("""
                 UPDATE documentos SET
-                    flujo = ?,
-                    origen = ?,
-                    estado = COALESCE(?, 'BORRADOR'),
-                    prioridad = COALESCE(?, 'MEDIA'),
-                    confidencialidad = COALESCE(?, 'INTERNA'),
+                    flujo = ?::doc_flujo,
+                    origen = ?::doc_origen,
+                    estado = COALESCE(?::doc_estado, 'BORRADOR'),
+                    prioridad = COALESCE(?::doc_prioridad, 'MEDIA'),
+                    confidencialidad = COALESCE(?::confidencialidad, 'INTERNA'),
                     requiere_respuesta = COALESCE(?, false),
                     fecha_plazo = ?::timestamp,
-                    estado_respuesta = COALESCE(?, 'NO_REQUIERE'),
+                    estado_respuesta = COALESCE(?::estado_respuesta, 'NO_REQUIERE'),
                     tipo_doc_id = ?::uuid,
                     dependencia_emisora_id = ?::uuid,
                     series_id = ?::uuid,
@@ -160,16 +180,16 @@ public class DocumentosService {
                     cuerpo = ?,
                     referencia = ?,
                     observaciones = ?,
-                    actualizado_por = ?::uuid,
+                    actualizado_por = COALESCE(?::uuid, actualizado_por),
                     actualizado_en = now()
                 WHERE id::text = ?
                 """,
-                data.get("flujo"), data.get("origen"), data.get("estado"), data.get("prioridad"), data.get("confidencialidad"),
-                data.get("requiere_respuesta"), data.get("fecha_plazo"), data.get("estado_respuesta"),
-                data.get("tipo_doc_id"), data.get("dependencia_emisora_id"), data.get("series_id"), data.get("subseries_id"), data.get("retention_schedule_id"),
-                data.get("fecha_elaboracion"), data.get("remitente_persona_id"), data.get("remitente_externo"),
-                data.get("asunto"), data.get("cuerpo"), data.get("referencia"), data.get("observaciones"),
-                data.get("usuario_id"), docId
+                s(data, "flujo", "flow"), s(data, "origen", "origin"), s(data, "estado"), s(data, "prioridad", "priority"), s(data, "confidencialidad"),
+                data.getOrDefault("requiere_respuesta", data.get("requires_response")), s(data, "fecha_plazo", "due_date"), s(data, "estado_respuesta"),
+                s(data, "tipo_doc_id", "type_id"), s(data, "dependencia_emisora_id", "dependency_id"), s(data, "series_id"), s(data, "subseries_id"), s(data, "retention_schedule_id"),
+                s(data, "fecha_elaboracion", "draft_date"), s(data, "remitente_persona_id"), s(data, "remitente_externo"),
+                s(data, "asunto", "subject"), s(data, "cuerpo", "body"), s(data, "referencia", "reference"), s(data, "observaciones"),
+                actor, docId
         );
     }
 

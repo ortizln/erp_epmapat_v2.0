@@ -439,7 +439,7 @@ public class WorkflowDocumentosService {
         int upd = jdbc.update("""
                 UPDATE documentos
                 SET numero_oficial = ?, serie_id = ?::uuid, estado = 'EMITIDO', fecha_emision = now(),
-                    actualizado_por = ?::uuid, actualizado_en = now()
+                    actualizado_por = COALESCE(?::uuid, actualizado_por), actualizado_en = now()
                 WHERE id::text = ? AND numero_oficial IS NULL
                 """, numero, serie.get("id"), userId, docId);
         if (upd == 0) throw new RuntimeException("No se pudo emitir (concurrencia)");
@@ -489,7 +489,7 @@ public class WorkflowDocumentosService {
             }
         }
 
-        jdbc.update("UPDATE documentos SET estado='RECIBIDO', fecha_recepcion=COALESCE(fecha_recepcion, now()), actualizado_por=?::uuid, actualizado_en=now() WHERE id::text = ?", userId, docId);
+        jdbc.update("UPDATE documentos SET estado='RECIBIDO', fecha_recepcion=COALESCE(fecha_recepcion, now()), actualizado_por=COALESCE(?::uuid, actualizado_por), actualizado_en=now() WHERE id::text = ?", userId, docId);
         return Map.of("documento_id", docId, "recepcion_id", recId, "estado_documento", "RECIBIDO");
     }
 
