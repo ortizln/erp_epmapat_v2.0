@@ -11,9 +11,9 @@ eureka:
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${DB_GD_URL:${DB_URL:jdbc:postgresql://localhost:5432/GesDoc}}
-    username: ${DB_GD_USER:${DB_USER:postgres}}
-    password: ${DB_GD_PASS:${DB_PASS:12345}}
+    url: ${DB_GD_URL:jdbc:postgresql://localhost:5432/GesDoc?currentSchema=public}
+    username: ${DB_GD_USER:postgres}
+    password: ${DB_GD_PASS:12345}
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
