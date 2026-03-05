@@ -47,14 +47,22 @@ public class DocumentosController {
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Map<String, Object> body) {
-        String id = service.create(body);
-        return ResponseEntity.ok(Map.of("id", id));
+        try {
+            String id = service.create(body);
+            return ResponseEntity.ok(Map.of("id", id));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("detail", e.getMessage()));
+        }
     }
 
     @PutMapping("/{docId}")
     public ResponseEntity<?> update(@PathVariable String docId, @RequestBody Map<String, Object> body) {
-        int n = service.update(docId, body);
-        return n > 0 ? ResponseEntity.ok(Map.of("ok", true)) : ResponseEntity.notFound().build();
+        try {
+            int n = service.update(docId, body);
+            return n > 0 ? ResponseEntity.ok(Map.of("ok", true)) : ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("detail", e.getMessage()));
+        }
     }
 
     @DeleteMapping("/{docId}")

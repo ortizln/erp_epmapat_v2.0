@@ -33,6 +33,20 @@ public class DocumentosService {
         }
     }
 
+    private void validateCreateUpdate(Map<String, Object> data, boolean creating) {
+        if (s(data, "entity_code", "entidad_codigo") == null) throw new IllegalArgumentException("entity_code es obligatorio");
+        if (s(data, "tipo_doc_id", "type_id") == null) throw new IllegalArgumentException("type_id es obligatorio");
+        if (s(data, "dependencia_emisora_id", "dependency_id") == null) throw new IllegalArgumentException("dependency_id es obligatorio");
+        if (s(data, "asunto", "subject") == null) throw new IllegalArgumentException("subject es obligatorio");
+        if (s(data, "flujo", "flow") == null) throw new IllegalArgumentException("flow es obligatorio");
+        if (s(data, "origen", "origin") == null) throw new IllegalArgumentException("origin es obligatorio");
+        Object req = data.getOrDefault("requiere_respuesta", data.get("requires_response"));
+        boolean requires = req instanceof Boolean ? (Boolean) req : "true".equalsIgnoreCase(String.valueOf(req));
+        if (requires && s(data, "fecha_plazo", "due_date") == null) {
+            throw new IllegalArgumentException("due_date es obligatorio cuando requires_response=true");
+        }
+    }
+
     public Map<String, Object> list(String entityCode, String estado, String flujo, String q,
                                     String dependencyId, String typeId, String userId,
                                     String seriesId, String subseriesId,
@@ -121,6 +135,7 @@ public class DocumentosService {
     }
 
     public String create(Map<String, Object> data) {
+        validateCreateUpdate(data, true);
         String actor = actorUserId(data);
         return jdbc.queryForObject("""
                 INSERT INTO documentos (
@@ -157,6 +172,7 @@ public class DocumentosService {
     }
 
     public int update(String docId, Map<String, Object> data) {
+        validateCreateUpdate(data, false);
         String actor = actorUserId(data);
         return jdbc.update("""
                 UPDATE documentos SET
