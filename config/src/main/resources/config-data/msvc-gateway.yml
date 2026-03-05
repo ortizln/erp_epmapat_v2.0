@@ -36,7 +36,7 @@ spring:
         - id: msvc-comercializacion-api-compat
           uri: http://localhost:9093
           predicates:
-          - Path=/api/clientes/**, /api/abonados/**, /api/recargosxcuenta/**, /api/usrxrutas/**
+          - Path=/api/clientes/**, /api/abonados/**, /api/recargosxcuenta/**, /api/usrxrutas/**, /api/categorias/**
 
         - id: msvc-login-swagger
           uri: http://localhost:9091
