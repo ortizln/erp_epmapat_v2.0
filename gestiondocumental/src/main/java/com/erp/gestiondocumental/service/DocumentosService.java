@@ -56,7 +56,7 @@ public class DocumentosService {
         pageSize = Math.max(1, Math.min(200, pageSize));
         int offset = (page - 1) * pageSize;
 
-        StringBuilder where = new StringBuilder(" d.entidad_id = (SELECT id FROM entidades WHERE codigo = ?) ");
+        StringBuilder where = new StringBuilder(" d.entidad_id = (SELECT id FROM public.entidades WHERE codigo = ?) ");
         List<Object> params = new java.util.ArrayList<>();
         params.add(entityCode);
 
@@ -88,8 +88,8 @@ public class DocumentosService {
                 FROM documentos d
                 JOIN tipos_documento td ON td.id = d.tipo_doc_id
                 LEFT JOIN dependencias dep ON dep.id = d.dependencia_emisora_id
-                LEFT JOIN document_series s ON s.id = d.series_id
-                LEFT JOIN document_subseries ss ON ss.id = d.subseries_id
+                LEFT JOIN public.document_series s ON s.id = d.series_id
+                LEFT JOIN public.document_subseries ss ON ss.id = d.subseries_id
                 WHERE %s
                 ORDER BY d.creado_en DESC
                 LIMIT ? OFFSET ?
@@ -105,7 +105,7 @@ public class DocumentosService {
     }
 
     public Map<String, Object> dashboard(String entityCode, String dateFrom, String dateTo) {
-        StringBuilder where = new StringBuilder(" d.entidad_id = (SELECT id FROM entidades WHERE codigo = ?) ");
+        StringBuilder where = new StringBuilder(" d.entidad_id = (SELECT id FROM public.entidades WHERE codigo = ?) ");
         List<Object> params = new java.util.ArrayList<>();
         params.add(entityCode);
         if (dateFrom != null && !dateFrom.isBlank()) { where.append(" AND d.fecha_elaboracion >= ?::date "); params.add(dateFrom); }
@@ -148,7 +148,7 @@ public class DocumentosService {
                     asunto, cuerpo, referencia, observaciones,
                     creado_por, actualizado_por
                 ) VALUES (
-                    (SELECT id FROM entidades WHERE codigo = ?),
+                    (SELECT id FROM public.entidades WHERE codigo = ?),
                     ?::doc_flujo, ?::doc_origen, COALESCE(?::doc_estado, 'BORRADOR'), COALESCE(?::doc_prioridad, 'MEDIA'), COALESCE(?::confidencialidad, 'INTERNA'),
                     COALESCE(?, false), ?::timestamp, COALESCE(?::estado_respuesta, 'NO_REQUIERE'),
                     ?::uuid, ?::uuid,
@@ -213,6 +213,7 @@ public class DocumentosService {
         return jdbc.update("DELETE FROM documentos WHERE id::text = ?", docId);
     }
 }
+
 
 
 

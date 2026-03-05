@@ -134,9 +134,9 @@ public class CatalogoDocumentalService {
 
         Integer total = jdbc.queryForObject("""
                 SELECT COUNT(*)
-                FROM usuarios u
-                JOIN entidades e ON e.id = u.entidad_id
-                LEFT JOIN personas p ON p.id = u.persona_id
+                FROM public.usuarios u
+                JOIN public.entidades e ON e.id = u.entidad_id
+                LEFT JOIN public.personas p ON p.id = u.persona_id
                 WHERE e.codigo = ?
                   AND (COALESCE(?, '') = '' OR u.username::text ILIKE ('%' || ? || '%') OR p.nombres ILIKE ('%' || ? || '%') OR p.apellidos ILIKE ('%' || ? || '%'))
                 """, Integer.class, entityCode, qq, qq, qq, qq);
@@ -149,9 +149,9 @@ public class CatalogoDocumentalService {
                        d.id AS dependencia_id,
                        d.codigo AS dependencia_codigo,
                        d.nombre AS dependencia_nombre
-                FROM usuarios u
-                JOIN entidades e ON e.id = u.entidad_id
-                LEFT JOIN personas p ON p.id = u.persona_id
+                FROM public.usuarios u
+                JOIN public.entidades e ON e.id = u.entidad_id
+                LEFT JOIN public.personas p ON p.id = u.persona_id
                 LEFT JOIN dependencias d ON d.id = p.dependencia_id
                 WHERE e.codigo = ?
                   AND (COALESCE(?, '') = '' OR u.username::text ILIKE ('%' || ? || '%') OR p.nombres ILIKE ('%' || ? || '%') OR p.apellidos ILIKE ('%' || ? || '%'))
@@ -168,8 +168,8 @@ public class CatalogoDocumentalService {
 
         Integer total = jdbc.queryForObject("""
                 SELECT COUNT(*)
-                FROM personas p
-                JOIN entidades e ON e.id = p.entidad_id
+                FROM public.personas p
+                JOIN public.entidades e ON e.id = p.entidad_id
                 WHERE e.codigo = ?
                   AND (COALESCE(?, '') = '' OR p.nombres ILIKE ('%' || ? || '%') OR p.apellidos ILIKE ('%' || ? || '%') OR p.identificacion ILIKE ('%' || ? || '%'))
                 """, Integer.class, entityCode, qq, qq, qq, qq);
@@ -177,8 +177,8 @@ public class CatalogoDocumentalService {
         List<Map<String, Object>> items = jdbc.queryForList("""
                 SELECT p.id, p.identificacion, p.nombres, p.apellidos, p.cargo, p.email::text AS email, p.activo,
                        d.id AS dependencia_id, d.codigo AS dependencia_codigo, d.nombre AS dependencia_nombre
-                FROM personas p
-                JOIN entidades e ON e.id = p.entidad_id
+                FROM public.personas p
+                JOIN public.entidades e ON e.id = p.entidad_id
                 LEFT JOIN dependencias d ON d.id = p.dependencia_id
                 WHERE e.codigo = ?
                   AND (COALESCE(?, '') = '' OR p.nombres ILIKE ('%' || ? || '%') OR p.apellidos ILIKE ('%' || ? || '%') OR p.identificacion ILIKE ('%' || ? || '%'))
@@ -189,3 +189,4 @@ public class CatalogoDocumentalService {
         return Map.of("items", items, "total", total == null ? 0 : total, "page", page, "page_size", pageSize);
     }
 }
+

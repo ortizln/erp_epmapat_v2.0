@@ -37,12 +37,12 @@ public class ConfiguracionDocumentalService {
     }
 
     public List<Map<String, Object>> listSeries(String entityCode) {
-        return jdbc.queryForList("SELECT id, code, name, active FROM document_series WHERE entity_code = ? ORDER BY code", entityCode);
+        return jdbc.queryForList("SELECT id, code, name, active FROM public.document_series WHERE entity_code = ? ORDER BY code", entityCode);
     }
 
     public Map<String, Object> upsertSeries(String entityCode, String code, String name) {
         return jdbc.queryForMap("""
-                INSERT INTO document_series(entity_code, code, name)
+                INSERT INTO public.document_series(entity_code, code, name)
                 VALUES (?,?,?)
                 ON CONFLICT(entity_code, code) DO UPDATE SET name = EXCLUDED.name
                 RETURNING id, code, name, active
@@ -50,12 +50,12 @@ public class ConfiguracionDocumentalService {
     }
 
     public List<Map<String, Object>> listSubseries(String seriesId) {
-        return jdbc.queryForList("SELECT id, series_id, code, name, active FROM document_subseries WHERE series_id = ?::uuid ORDER BY code", seriesId);
+        return jdbc.queryForList("SELECT id, series_id, code, name, active FROM public.document_subseries WHERE series_id = ?::uuid ORDER BY code", seriesId);
     }
 
     public Map<String, Object> upsertSubseries(String seriesId, String code, String name) {
         return jdbc.queryForMap("""
-                INSERT INTO document_subseries(series_id, code, name)
+                INSERT INTO public.document_subseries(series_id, code, name)
                 VALUES (?::uuid, ?, ?)
                 ON CONFLICT(series_id, code) DO UPDATE SET name = EXCLUDED.name
                 RETURNING id, series_id, code, name, active
@@ -68,8 +68,8 @@ public class ConfiguracionDocumentalService {
                        t.subseries_id, ss.code AS subseries_code, ss.name AS subseries_name,
                        t.active_years, t.semi_active_years, t.final_disposition, t.legal_basis, t.active
                 FROM retention_schedule t
-                JOIN document_series s ON s.id = t.series_id
-                LEFT JOIN document_subseries ss ON ss.id = t.subseries_id
+                JOIN public.document_series s ON s.id = t.series_id
+                LEFT JOIN public.document_subseries ss ON ss.id = t.subseries_id
                 WHERE t.entity_code = ?
                 ORDER BY s.code, ss.code NULLS FIRST
                 """, entityCode);
@@ -150,4 +150,5 @@ public class ConfiguracionDocumentalService {
                 """, closedBy, caseFileId);
     }
 }
+
 

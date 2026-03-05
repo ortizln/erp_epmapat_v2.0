@@ -313,7 +313,7 @@ public class WorkflowDocumentosService {
                 SELECT d.id, d.owner_user_id, 'T_24H', now(), 'PENDIENTE',
                        jsonb_build_object('asunto', d.asunto, 'fecha_plazo', d.fecha_plazo)
                 FROM documentos d
-                JOIN entidades e ON e.id = d.entidad_id
+                JOIN public.entidades e ON e.id = d.entidad_id
                 WHERE e.codigo = ?
                   AND d.requiere_respuesta = true
                   AND d.fecha_plazo IS NOT NULL
@@ -329,7 +329,7 @@ public class WorkflowDocumentosService {
                 SELECT d.id, d.owner_user_id, 'VENCIDO', now(), 'PENDIENTE',
                        jsonb_build_object('asunto', d.asunto, 'fecha_plazo', d.fecha_plazo)
                 FROM documentos d
-                JOIN entidades e ON e.id = d.entidad_id
+                JOIN public.entidades e ON e.id = d.entidad_id
                 WHERE e.codigo = ?
                   AND d.requiere_respuesta = true
                   AND d.fecha_plazo IS NOT NULL
@@ -351,7 +351,7 @@ public class WorkflowDocumentosService {
                 SELECT COUNT(*)
                 FROM documento_alertas a
                 JOIN documentos d ON d.id = a.documento_id
-                JOIN entidades e ON e.id = d.entidad_id
+                JOIN public.entidades e ON e.id = d.entidad_id
                 WHERE e.codigo = ?
                   AND (? IS NULL OR a.estado = ?)
                 """, Integer.class, entityCode, state, state);
@@ -361,7 +361,7 @@ public class WorkflowDocumentosService {
                        d.asunto, d.fecha_plazo
                 FROM documento_alertas a
                 JOIN documentos d ON d.id = a.documento_id
-                JOIN entidades e ON e.id = d.entidad_id
+                JOIN public.entidades e ON e.id = d.entidad_id
                 WHERE e.codigo = ?
                   AND (? IS NULL OR a.estado = ?)
                 ORDER BY a.scheduled_at DESC
@@ -378,7 +378,7 @@ public class WorkflowDocumentosService {
                   SELECT a.id
                   FROM documento_alertas a
                   JOIN documentos d ON d.id = a.documento_id
-                  JOIN entidades e ON e.id = d.entidad_id
+                  JOIN public.entidades e ON e.id = d.entidad_id
                   WHERE e.codigo = ? AND a.estado = 'PENDIENTE'
                   ORDER BY a.scheduled_at ASC
                   LIMIT ?
@@ -494,7 +494,7 @@ public class WorkflowDocumentosService {
     }
 
     public List<Map<String, Object>> pendingReceptions(String entityCode, String receptorId) {
-        StringBuilder where = new StringBuilder(" d.entidad_id = (SELECT id FROM entidades WHERE codigo = ?) ");
+        StringBuilder where = new StringBuilder(" d.entidad_id = (SELECT id FROM public.entidades WHERE codigo = ?) ");
         List<Object> params = new ArrayList<>();
         params.add(entityCode);
         if (receptorId != null && !receptorId.isBlank()) { where.append(" AND r.receptor_id::text = ? "); params.add(receptorId); }
@@ -521,7 +521,7 @@ public class WorkflowDocumentosService {
         return jdbc.queryForList("""
                 SELECT d.id, d.asunto, d.fecha_plazo, d.estado_respuesta
                 FROM documentos d
-                JOIN entidades e ON e.id = d.entidad_id
+                JOIN public.entidades e ON e.id = d.entidad_id
                 WHERE e.codigo = ?
                   AND d.requiere_respuesta = true
                   AND d.fecha_plazo IS NOT NULL
@@ -535,7 +535,7 @@ public class WorkflowDocumentosService {
         return jdbc.queryForList("""
                 SELECT d.id, d.asunto, d.fecha_plazo, d.estado_respuesta
                 FROM documentos d
-                JOIN entidades e ON e.id = d.entidad_id
+                JOIN public.entidades e ON e.id = d.entidad_id
                 WHERE e.codigo = ?
                   AND d.requiere_respuesta = true
                   AND d.fecha_plazo IS NOT NULL
@@ -546,4 +546,5 @@ public class WorkflowDocumentosService {
                 """, entityCode, hours);
     }
 }
+
 
