@@ -100,6 +100,33 @@ public class WorkflowDocumentosService {
         }
     }
 
+    private void logAuditEvent(String docId, String actorUserId, String actorRole, String action, String fromState, String toState, String detail) {
+        try {
+            jdbc.update("""
+                    INSERT INTO documento_eventos (id, documento_id, actor_user_id, actor_rol, evento, detalle, created_at)
+                    VALUES (
+                        gen_random_uuid(),
+                        ?::uuid,
+                        ?::uuid,
+                        ?,
+                        ?,
+                        jsonb_build_object('action', ?, 'from', ?, 'to', ?, 'detail', ?),
+                        now()
+                    )
+                    """,
+                    docId,
+                    actorUserId,
+                    actorRole == null ? "SISTEMA" : actorRole,
+                    action,
+                    action,
+                    fromState,
+                    toState,
+                    detail
+            );
+        } catch (Exception ignored) {
+        }
+    }
+
     public String assign(String docId, Map<String, Object> body) {
         return jdbc.queryForObject("""
                 INSERT INTO documento_asignaciones(
@@ -119,6 +146,7 @@ public class WorkflowDocumentosService {
     }
 
     public String derive(String docId, Map<String, Object> body) {
+        String fromState = currentDocState(docId);
         ensureDocStateForAction(docId, "derivar", Set.of("RECIBIDO", "EN_REVISION", "DERIVADO"));
 
         String derivationId = jdbc.queryForObject("""
@@ -140,6 +168,17 @@ public class WorkflowDocumentosService {
                 SET estado = 'DERIVADO', actualizado_en = now()
                 WHERE id::text = ? AND estado IN ('RECIBIDO','EN_REVISION')
                 """, docId);
+
+        String toState = currentDocState(docId);
+        logAuditEvent(
+                docId,
+                body.get("from_user_id") == null ? null : String.valueOf(body.get("from_user_id")),
+                body.get("user_role") == null ? null : String.valueOf(body.get("user_role")),
+                "DERIVAR",
+                fromState,
+                toState,
+                body.get("note") == null ? "Derivación registrada" : String.valueOf(body.get("note"))
+        );
 
         return derivationId;
     }
@@ -219,6 +258,7 @@ public class WorkflowDocumentosService {
         List<Map<String, Object>> rows = jdbc.queryForList("SELECT documento_id::text AS documento_id FROM documento_derivaciones WHERE id::text = ?", derivationId);
         if (rows.isEmpty()) return 0;
         String docId = String.valueOf(rows.get(0).get("documento_id"));
+        String fromState = currentDocState(docId);
         ensureDocStateForAction(docId, "atender", Set.of("DERIVADO", "EN_REVISION", "RECIBIDO"));
 
         int n = jdbc.update("""
@@ -234,17 +274,23 @@ public class WorkflowDocumentosService {
                     SET estado = 'EN_REVISION', actualizado_en = now()
                     WHERE id::text = ? AND estado IN ('DERIVADO','RECIBIDO')
                     """, docId);
-            try {
-                jdbc.update("""
-                        INSERT INTO documento_eventos (id, documento_id, event_type, description, occurred_at)
-                        VALUES (gen_random_uuid(), ?::uuid, 'DERIVACION_ATENDIDA', ?, now())
-                        """, docId, (note == null || note.isBlank()) ? "Derivación atendida" : note);
-            } catch (Exception ignored) {}
+
+            String toState = currentDocState(docId);
+            logAuditEvent(
+                    docId,
+                    userId,
+                    null,
+                    "ATENDER_DERIVACION",
+                    fromState,
+                    toState,
+                    (note == null || note.isBlank()) ? "Derivación atendida" : note
+            );
         }
         return n;
     }
 
     public String respond(String docId, Map<String, Object> body) {
+        String fromState = currentDocState(docId);
         ensureDocStateForAction(docId, "responder", Set.of("DERIVADO", "EN_REVISION", "RECIBIDO"));
 
         String responseId = jdbc.queryForObject("""
@@ -273,12 +319,16 @@ public class WorkflowDocumentosService {
                 WHERE id::text = ?
                 """, body.get("responded_by_user_id"), docId);
 
-        try {
-            jdbc.update("""
-                    INSERT INTO documento_eventos (id, documento_id, event_type, description, occurred_at)
-                    VALUES (gen_random_uuid(), ?::uuid, 'RESPUESTA_REGISTRADA', ?, now())
-                    """, docId, body.get("subject") == null ? "Respuesta registrada" : String.valueOf(body.get("subject")));
-        } catch (Exception ignored) {}
+        String toState = currentDocState(docId);
+        logAuditEvent(
+                docId,
+                body.get("responded_by_user_id") == null ? null : String.valueOf(body.get("responded_by_user_id")),
+                body.get("user_role") == null ? null : String.valueOf(body.get("user_role")),
+                "RESPONDER_DERIVACION",
+                fromState,
+                toState,
+                body.get("subject") == null ? "Respuesta registrada" : String.valueOf(body.get("subject"))
+        );
 
         return responseId;
     }
@@ -536,6 +586,8 @@ public class WorkflowDocumentosService {
     }
 
     public Map<String, Object> issue(String docId, String userId) {
+        String fromState = currentDocState(docId);
+
         Map<String, Object> doc = jdbc.queryForMap("""
                 SELECT d.id, d.entidad_id, d.tipo_doc_id, d.dependencia_emisora_id, d.estado, d.numero_oficial,
                        COALESCE(d.fecha_elaboracion, CURRENT_DATE) AS fecha_elaboracion,
@@ -595,6 +647,10 @@ public class WorkflowDocumentosService {
                 creadas += jdbc.update("INSERT INTO documento_recepciones (documento_id, receptor_id, dependencia_id, estado) VALUES (?::uuid, NULL, ?::uuid, 'PENDIENTE') ON CONFLICT DO NOTHING", docId, d.get("dependencia_id"));
             }
         }
+
+        String toState = currentDocState(docId);
+        logAuditEvent(docId, userId, null, "EMITIR", fromState, toState, "Documento emitido con número " + numero);
+
         return Map.of("id", docId, "numero_oficial", numero, "anio", anio, "prefijo", prefijo, "area", area, "pendientes", creadas);
     }
 
@@ -603,6 +659,7 @@ public class WorkflowDocumentosService {
             throw new RuntimeException("Debe enviar receptor_id o dependencia_id, pero no ambos");
         }
 
+        String fromState = currentDocState(docId);
         ensureDocStateForAction(docId, "recibir", Set.of("EMITIDO", "DERIVADO", "RECIBIDO"));
 
         String recId;
@@ -626,6 +683,18 @@ public class WorkflowDocumentosService {
         }
 
         jdbc.update("UPDATE documentos SET estado='RECIBIDO', fecha_recepcion=COALESCE(fecha_recepcion, now()), actualizado_por=COALESCE(?::uuid, actualizado_por), actualizado_en=now() WHERE id::text = ?", userId, docId);
+
+        String toState = currentDocState(docId);
+        logAuditEvent(
+                docId,
+                userId,
+                null,
+                "RECIBIR",
+                fromState,
+                toState,
+                comentario == null ? "Recepción registrada" : comentario
+        );
+
         return Map.of("documento_id", docId, "recepcion_id", recId, "estado_documento", "RECIBIDO");
     }
 
