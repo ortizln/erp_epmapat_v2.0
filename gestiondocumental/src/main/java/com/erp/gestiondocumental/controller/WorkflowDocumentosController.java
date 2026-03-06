@@ -162,8 +162,9 @@ public class WorkflowDocumentosController {
 
     @GetMapping({"/receptions/pending", "/recepciones/pendientes"})
     public ResponseEntity<?> pendingReceptions(@RequestParam("entity_code") String entityCode,
-                                               @RequestParam(required = false) String receiver_id) {
-        return ResponseEntity.ok(service.pendingReceptions(entityCode, receiver_id));
+                                               @RequestParam(required = false) String receiver_id,
+                                               @RequestParam(required = false) String dependency_id) {
+        return ResponseEntity.ok(service.pendingReceptions(entityCode, receiver_id, dependency_id));
     }
 
     @GetMapping("/{docId}/timeline")

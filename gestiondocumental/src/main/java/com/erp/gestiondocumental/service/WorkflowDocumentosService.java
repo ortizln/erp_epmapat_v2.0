@@ -698,13 +698,14 @@ public class WorkflowDocumentosService {
         return Map.of("documento_id", docId, "recepcion_id", recId, "estado_documento", "RECIBIDO");
     }
 
-    public List<Map<String, Object>> pendingReceptions(String entityCode, String receptorId) {
+    public List<Map<String, Object>> pendingReceptions(String entityCode, String receptorId, String dependenciaId) {
         StringBuilder where = new StringBuilder(" d.entidad_id = (SELECT id FROM public.entidades WHERE codigo = ?) ");
         List<Object> params = new ArrayList<>();
         params.add(entityCode);
         if (receptorId != null && !receptorId.isBlank()) { where.append(" AND r.receptor_id::text = ? "); params.add(receptorId); }
+        if (dependenciaId != null && !dependenciaId.isBlank()) { where.append(" AND r.dependencia_id::text = ? "); params.add(dependenciaId); }
         return jdbc.queryForList("""
-                SELECT r.id AS recepcion_id, r.estado AS estado_recepcion, r.receptor_id, r.recibido_en,
+                SELECT r.id AS recepcion_id, r.estado AS estado_recepcion, r.receptor_id, r.dependencia_id, r.recibido_en,
                        d.id AS documento_id, d.numero_oficial, d.estado AS estado_documento, d.asunto, d.fecha_elaboracion, d.fecha_emision
                 FROM documento_recepciones r
                 JOIN documentos d ON d.id = r.documento_id
