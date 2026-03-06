@@ -1,7 +1,9 @@
 package com.erp.gestiondocumental.service;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
@@ -47,6 +49,63 @@ public class DocumentosService {
         }
     }
 
+    private void applyAccessByUser(StringBuilder where, List<Object> params, String userId) {
+        if (userId == null || userId.isBlank()) return;
+        where.append("""
+                 AND (
+                    d.owner_user_id::text = ?
+                    OR d.creado_por::text = ?
+                    OR EXISTS (
+                        SELECT 1 FROM documento_destinatarios dd
+                        WHERE dd.documento_id = d.id AND dd.to_user_id::text = ?
+                    )
+                    OR EXISTS (
+                        SELECT 1 FROM documento_derivaciones dv
+                        WHERE dv.documento_id = d.id AND dv.to_user_id::text = ?
+                    )
+                 )
+                """);
+        params.add(userId);
+        params.add(userId);
+        params.add(userId);
+        params.add(userId);
+    }
+
+    private void insertInitialTargets(String docId, Map<String, Object> data) {
+        Object usersObj = data.get("to_user_ids");
+        if (usersObj instanceof List<?> users) {
+            for (Object u : users) {
+                if (u == null || String.valueOf(u).isBlank()) continue;
+                try {
+                    jdbc.update("""
+                            INSERT INTO documento_destinatarios (id, documento_id, to_user_id, estado, creado_en)
+                            VALUES (gen_random_uuid(), ?::uuid, ?::uuid, 'PENDIENTE', now())
+                            """, docId, String.valueOf(u));
+                } catch (Exception ignored) {}
+            }
+        }
+
+        Object depsObj = data.get("to_dependency_ids");
+        if (depsObj instanceof List<?> deps) {
+            for (Object d : deps) {
+                if (d == null || String.valueOf(d).isBlank()) continue;
+                try {
+                    jdbc.update("""
+                            INSERT INTO documento_destinatarios (id, documento_id, to_dependency_id, estado, creado_en)
+                            VALUES (gen_random_uuid(), ?::uuid, ?::uuid, 'PENDIENTE', now())
+                            """, docId, String.valueOf(d));
+                } catch (Exception ignored) {}
+            }
+        }
+
+        try {
+            jdbc.update("""
+                    INSERT INTO documento_eventos (id, documento_id, event_type, description, occurred_at)
+                    VALUES (gen_random_uuid(), ?::uuid, 'ETIQUETADO_INICIAL', 'Destinatarios iniciales asignados', now())
+                    """, docId);
+        } catch (Exception ignored) {}
+    }
+
     public Map<String, Object> list(String entityCode, String estado, String flujo, String q,
                                     String dependencyId, String typeId, String userId,
                                     String seriesId, String subseriesId,
@@ -65,7 +124,7 @@ public class DocumentosService {
         if (q != null && !q.isBlank()) { where.append(" AND (d.asunto ILIKE ? OR COALESCE(d.remitente_externo,'') ILIKE ?) "); params.add("%"+q+"%"); params.add("%"+q+"%"); }
         if (dependencyId != null && !dependencyId.isBlank()) { where.append(" AND d.dependencia_emisora_id::text = ? "); params.add(dependencyId); }
         if (typeId != null && !typeId.isBlank()) { where.append(" AND d.tipo_doc_id::text = ? "); params.add(typeId); }
-        if (userId != null && !userId.isBlank()) { where.append(" AND d.owner_user_id::text = ? "); params.add(userId); }
+        applyAccessByUser(where, params, userId);
         if (seriesId != null && !seriesId.isBlank()) { where.append(" AND d.series_id::text = ? "); params.add(seriesId); }
         if (subseriesId != null && !subseriesId.isBlank()) { where.append(" AND d.subseries_id::text = ? "); params.add(subseriesId); }
         if (dateFrom != null && !dateFrom.isBlank()) { where.append(" AND d.fecha_elaboracion >= ?::date "); params.add(dateFrom); }
@@ -122,8 +181,8 @@ public class DocumentosService {
         );
     }
 
-    public Map<String, Object> get(String docId) {
-        return jdbc.queryForMap("""
+    public Map<String, Object> get(String docId, String userId) {
+        Map<String, Object> doc = jdbc.queryForMap("""
                 SELECT d.*,
                        td.codigo AS tipo_codigo, td.nombre AS tipo_nombre,
                        dep.codigo AS dep_codigo, dep.nombre AS dep_nombre
@@ -132,12 +191,31 @@ public class DocumentosService {
                 LEFT JOIN dependencias dep ON dep.id = d.dependencia_emisora_id
                 WHERE d.id::text = ?
                 """, docId);
+
+        if (userId != null && !userId.isBlank()) {
+            Integer allowed = jdbc.queryForObject("""
+                    SELECT COUNT(*)
+                    FROM documentos d
+                    WHERE d.id::text = ?
+                      AND (
+                          d.owner_user_id::text = ?
+                          OR d.creado_por::text = ?
+                          OR EXISTS (SELECT 1 FROM documento_destinatarios dd WHERE dd.documento_id = d.id AND dd.to_user_id::text = ?)
+                          OR EXISTS (SELECT 1 FROM documento_derivaciones dv WHERE dv.documento_id = d.id AND dv.to_user_id::text = ?)
+                      )
+                    """, Integer.class, docId, userId, userId, userId, userId);
+            if (allowed == null || allowed == 0) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes permisos para ver este documento");
+            }
+        }
+
+        return doc;
     }
 
     public String create(Map<String, Object> data) {
         validateCreateUpdate(data, true);
         String actor = actorUserId(data);
-        return jdbc.queryForObject("""
+        String id = jdbc.queryForObject("""
                 INSERT INTO documentos (
                     entidad_id, flujo, origen, estado, prioridad, confidencialidad,
                     requiere_respuesta, fecha_plazo, estado_respuesta,
@@ -169,6 +247,8 @@ public class DocumentosService {
                 s(data, "asunto", "subject"), s(data, "cuerpo", "body"), s(data, "referencia", "reference"), s(data, "observaciones"),
                 actor, actor
         );
+        if (id != null) insertInitialTargets(id, data);
+        return id;
     }
 
     public int update(String docId, Map<String, Object> data) {
@@ -213,6 +293,7 @@ public class DocumentosService {
         return jdbc.update("DELETE FROM documentos WHERE id::text = ?", docId);
     }
 }
+
 
 
 

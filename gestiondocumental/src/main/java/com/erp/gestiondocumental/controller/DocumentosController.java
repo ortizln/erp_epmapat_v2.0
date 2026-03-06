@@ -41,8 +41,9 @@ public class DocumentosController {
     }
 
     @GetMapping("/{docId}")
-    public ResponseEntity<?> get(@PathVariable String docId) {
-        return ResponseEntity.ok(service.get(docId));
+    public ResponseEntity<?> get(@PathVariable String docId,
+                                 @RequestParam(required = false) String user_id) {
+        return ResponseEntity.ok(service.get(docId, user_id));
     }
 
     @PostMapping
