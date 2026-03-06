@@ -37,8 +37,27 @@ public class WorkflowDocumentosService {
         }
     }
 
+    private String resolveRoleFromExternal(String userId, String fallbackRole) {
+        String fallback = (fallbackRole == null || fallbackRole.isBlank()) ? "RECEPCION" : fallbackRole.trim().toUpperCase();
+        if (userId == null || userId.isBlank()) return fallback;
+
+        String[] queries = new String[] {
+                "SELECT UPPER(COALESCE(rol,'RECEPCION')) FROM public.usuario_roles WHERE user_id::text = ? AND COALESCE(activo,true)=true LIMIT 1",
+                "SELECT UPPER(COALESCE(rol,'RECEPCION')) FROM public.usuario_roles WHERE idusuario::text = ? AND COALESCE(activo,true)=true LIMIT 1",
+                "SELECT UPPER(COALESCE(nombre_rol,'RECEPCION')) FROM public.usuario_roles WHERE user_id::text = ? AND COALESCE(activo,true)=true LIMIT 1"
+        };
+
+        for (String q : queries) {
+            try {
+                String role = jdbc.queryForObject(q, String.class, userId);
+                if (role != null && !role.isBlank()) return role.trim().toUpperCase();
+            } catch (Exception ignored) {}
+        }
+        return fallback;
+    }
+
     public void ensureActionAllowed(String docId, String userId, String role, String action) {
-        String userRole = role == null ? "RECEPCION" : role.trim().toUpperCase();
+        String userRole = resolveRoleFromExternal(userId, role);
         Set<String> allowed;
         switch (action) {
             case "EMITIR" -> allowed = Set.of("SUPERVISOR", "ADMIN");
