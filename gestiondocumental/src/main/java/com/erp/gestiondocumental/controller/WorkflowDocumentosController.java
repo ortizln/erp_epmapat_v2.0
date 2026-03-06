@@ -29,7 +29,12 @@ public class WorkflowDocumentosController {
 
     @PostMapping({"/{docId}/derive", "/{docId}/derivar"})
     public ResponseEntity<?> derive(@PathVariable String docId, @RequestBody Map<String, Object> body) {
-        return ResponseEntity.ok(Map.of("derivation_id", service.derive(docId, body)));
+        try {
+            service.ensureActionAllowed(docId, (String) body.get("user_id"), (String) body.get("user_role"), "DERIVAR");
+            return ResponseEntity.ok(Map.of("derivation_id", service.derive(docId, body)));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(Map.of("detail", e.getMessage()));
+        }
     }
 
     @PostMapping("/{docId}/derive/bulk")
@@ -63,12 +68,22 @@ public class WorkflowDocumentosController {
 
     @PostMapping("/{docId}/responses")
     public ResponseEntity<?> respond(@PathVariable String docId, @RequestBody Map<String, Object> body) {
-        return ResponseEntity.ok(Map.of("response_id", service.respond(docId, body)));
+        try {
+            service.ensureActionAllowed(docId, (String) body.get("user_id"), (String) body.get("user_role"), "RESPONDER");
+            return ResponseEntity.ok(Map.of("response_id", service.respond(docId, body)));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(Map.of("detail", e.getMessage()));
+        }
     }
 
     @PostMapping("/{docId}/responses/nested")
     public ResponseEntity<?> respondNested(@PathVariable String docId, @RequestBody Map<String, Object> body) {
-        return ResponseEntity.ok(service.createNestedResponse(docId, body));
+        try {
+            service.ensureActionAllowed(docId, (String) body.get("user_id"), (String) body.get("user_role"), "RESPONDER");
+            return ResponseEntity.ok(service.createNestedResponse(docId, body));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(Map.of("detail", e.getMessage()));
+        }
     }
 
     @GetMapping("/{docId}/relations")
@@ -114,17 +129,28 @@ public class WorkflowDocumentosController {
     @PostMapping({"/{docId}/issue", "/{docId}/emitir"})
     public ResponseEntity<?> issue(@PathVariable String docId, @RequestBody(required = false) Map<String, Object> body) {
         String userId = body == null ? null : (String) body.get("user_id");
-        return ResponseEntity.ok(service.issue(docId, userId));
+        String role = body == null ? null : (String) body.get("user_role");
+        try {
+            service.ensureActionAllowed(docId, userId, role, "EMITIR");
+            return ResponseEntity.ok(service.issue(docId, userId));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(Map.of("detail", e.getMessage()));
+        }
     }
 
     @PostMapping({"/{docId}/receive", "/{docId}/recibir"})
     public ResponseEntity<?> receive(@PathVariable String docId, @RequestBody(required = false) Map<String, Object> body) {
         body = body == null ? Map.of() : body;
-        return ResponseEntity.ok(service.receive(docId,
-                (String) body.get("receiver_id"),
-                (String) body.get("dependency_id"),
-                (String) body.get("user_id"),
-                (String) body.get("comment")));
+        try {
+            service.ensureActionAllowed(docId, (String) body.get("user_id"), (String) body.get("user_role"), "RECIBIR");
+            return ResponseEntity.ok(service.receive(docId,
+                    (String) body.get("receiver_id"),
+                    (String) body.get("dependency_id"),
+                    (String) body.get("user_id"),
+                    (String) body.get("comment")));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(403).body(Map.of("detail", e.getMessage()));
+        }
     }
 
     @GetMapping({"/receptions/pending", "/recepciones/pendientes"})

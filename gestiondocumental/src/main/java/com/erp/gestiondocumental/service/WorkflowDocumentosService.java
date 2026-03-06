@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -33,6 +34,37 @@ public class WorkflowDocumentosService {
             Files.createDirectories(this.storageRoot);
         } catch (IOException e) {
             throw new RuntimeException("No se pudo inicializar almacenamiento de archivos GD", e);
+        }
+    }
+
+    public void ensureActionAllowed(String docId, String userId, String role, String action) {
+        String userRole = role == null ? "RECEPCION" : role.trim().toUpperCase();
+        Set<String> allowed;
+        switch (action) {
+            case "EMITIR" -> allowed = Set.of("SUPERVISOR", "ADMIN");
+            case "RECIBIR" -> allowed = Set.of("RECEPCION", "SUPERVISOR", "ADMIN");
+            case "DERIVAR", "RESPONDER" -> allowed = Set.of("RESPONSABLE", "SUPERVISOR", "ADMIN");
+            default -> allowed = Set.of("RECEPCION", "RESPONSABLE", "SUPERVISOR", "ADMIN");
+        }
+        if (!allowed.contains(userRole)) {
+            throw new SecurityException("No autorizado para acción " + action + " con rol " + userRole);
+        }
+
+        if (userId != null && !userId.isBlank()) {
+            Integer access = jdbc.queryForObject("""
+                    SELECT COUNT(*)
+                    FROM documentos d
+                    WHERE d.id::text = ?
+                      AND (
+                        d.owner_user_id::text = ?
+                        OR d.creado_por::text = ?
+                        OR EXISTS (SELECT 1 FROM documento_destinatarios dd WHERE dd.documento_id = d.id AND dd.to_user_id::text = ?)
+                        OR EXISTS (SELECT 1 FROM documento_derivaciones dv WHERE dv.documento_id = d.id AND dv.para_user_id::text = ?)
+                      )
+                    """, Integer.class, docId, userId, userId, userId, userId);
+            if (access == null || access == 0) {
+                throw new SecurityException("No autorizado para este documento");
+            }
         }
     }
 
