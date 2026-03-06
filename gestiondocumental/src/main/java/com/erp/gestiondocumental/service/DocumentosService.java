@@ -61,7 +61,7 @@ public class DocumentosService {
                     )
                     OR EXISTS (
                         SELECT 1 FROM documento_derivaciones dv
-                        WHERE dv.documento_id = d.id AND dv.to_user_id::text = ?
+                        WHERE dv.documento_id = d.id AND dv.para_user_id::text = ?
                     )
                  )
                 """);
@@ -201,7 +201,7 @@ public class DocumentosService {
                           d.owner_user_id::text = ?
                           OR d.creado_por::text = ?
                           OR EXISTS (SELECT 1 FROM documento_destinatarios dd WHERE dd.documento_id = d.id AND dd.to_user_id::text = ?)
-                          OR EXISTS (SELECT 1 FROM documento_derivaciones dv WHERE dv.documento_id = d.id AND dv.to_user_id::text = ?)
+                          OR EXISTS (SELECT 1 FROM documento_derivaciones dv WHERE dv.documento_id = d.id AND dv.para_user_id::text = ?)
                       )
                     """, Integer.class, docId, userId, userId, userId, userId);
             if (allowed == null || allowed == 0) {
