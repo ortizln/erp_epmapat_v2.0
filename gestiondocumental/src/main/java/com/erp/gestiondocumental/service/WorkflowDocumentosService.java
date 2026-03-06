@@ -103,6 +103,10 @@ public class WorkflowDocumentosService {
     }
 
     public Map<String, Object> pendingDerivations(String toUserId, String toDependencyId, int page, int pageSize) {
+        if ((toUserId == null || toUserId.isBlank()) && (toDependencyId == null || toDependencyId.isBlank())) {
+            throw new IllegalArgumentException("Debes enviar to_user_id o to_dependency_id para consultar pendientes");
+        }
+
         page = Math.max(1, page);
         pageSize = Math.max(1, Math.min(200, pageSize));
         int offset = (page - 1) * pageSize;

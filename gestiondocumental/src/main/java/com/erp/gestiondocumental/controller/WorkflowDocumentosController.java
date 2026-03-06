@@ -47,7 +47,11 @@ public class WorkflowDocumentosController {
                                      @RequestParam(required = false) String to_dependency_id,
                                      @RequestParam(defaultValue = "1") int page,
                                      @RequestParam(name = "page_size", defaultValue = "20") int pageSize) {
-        return ResponseEntity.ok(service.pendingDerivations(to_user_id, to_dependency_id, page, pageSize));
+        try {
+            return ResponseEntity.ok(service.pendingDerivations(to_user_id, to_dependency_id, page, pageSize));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("detail", e.getMessage()));
+        }
     }
 
     @PatchMapping("/derivations/{derivationId}/read")
