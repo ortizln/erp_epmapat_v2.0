@@ -106,6 +106,56 @@ public class DocumentosService {
         } catch (Exception ignored) {}
     }
 
+    private void insertInitialReceptionsForIngreso(String docId, Map<String, Object> data, String actor) {
+        Object usersObj = data.get("to_user_ids");
+        if (usersObj instanceof List<?> users) {
+            for (Object u : users) {
+                if (u == null || String.valueOf(u).isBlank()) continue;
+                try {
+                    jdbc.update("""
+                            INSERT INTO documento_recepciones (documento_id, receptor_id, dependencia_id, estado, comentario, confirmado_por)
+                            VALUES (?::uuid, ?::uuid, NULL, 'PENDIENTE', 'Asignado en mesa de entrada', ?::uuid)
+                            ON CONFLICT (documento_id, receptor_id) DO NOTHING
+                            """, docId, String.valueOf(u), actor);
+                } catch (Exception ignored) {}
+            }
+        }
+
+        Object depsObj = data.get("to_dependency_ids");
+        if (depsObj instanceof List<?> deps) {
+            for (Object d : deps) {
+                if (d == null || String.valueOf(d).isBlank()) continue;
+                try {
+                    jdbc.update("""
+                            INSERT INTO documento_recepciones (documento_id, receptor_id, dependencia_id, estado, comentario, confirmado_por)
+                            VALUES (?::uuid, NULL, ?::uuid, 'PENDIENTE', 'Asignado en mesa de entrada', ?::uuid)
+                            ON CONFLICT DO NOTHING
+                            """, docId, String.valueOf(d), actor);
+                } catch (Exception ignored) {}
+            }
+        }
+
+        if (!(depsObj instanceof List<?>) && !(usersObj instanceof List<?>)) {
+            String dep = s(data, "dependencia_emisora_id", "dependency_id");
+            if (dep != null && !dep.isBlank()) {
+                try {
+                    jdbc.update("""
+                            INSERT INTO documento_recepciones (documento_id, receptor_id, dependencia_id, estado, comentario, confirmado_por)
+                            VALUES (?::uuid, NULL, ?::uuid, 'PENDIENTE', 'Recepción inicial por dependencia', ?::uuid)
+                            ON CONFLICT DO NOTHING
+                            """, docId, dep, actor);
+                } catch (Exception ignored) {}
+            }
+        }
+
+        try {
+            jdbc.update("""
+                    INSERT INTO documento_eventos (id, documento_id, event_type, description, occurred_at)
+                    VALUES (gen_random_uuid(), ?::uuid, 'REGISTRO_INGRESO', 'Documento registrado en mesa de entrada', now())
+                    """, docId);
+        } catch (Exception ignored) {}
+    }
+
     public Map<String, Object> list(String entityCode, String estado, String flujo, String q,
                                     String dependencyId, String typeId, String userId,
                                     String seriesId, String subseriesId,
@@ -247,7 +297,14 @@ public class DocumentosService {
                 s(data, "asunto", "subject"), s(data, "cuerpo", "body"), s(data, "referencia", "reference"), s(data, "observaciones"),
                 actor, actor
         );
-        if (id != null) insertInitialTargets(id, data);
+        if (id != null) {
+            insertInitialTargets(id, data);
+            String flow = s(data, "flujo", "flow");
+            String origin = s(data, "origen", "origin");
+            if ("INGRESO".equalsIgnoreCase(flow) && "EXTERNO".equalsIgnoreCase(origin)) {
+                insertInitialReceptionsForIngreso(id, data, actor);
+            }
+        }
         return id;
     }
 
