@@ -192,16 +192,69 @@ public class WorkflowDocumentosService {
                 """, derivationId);
     }
 
+    public int attendDerivation(String derivationId, String userId, String note) {
+        int n = jdbc.update("""
+                UPDATE documento_derivaciones
+                SET estado = CASE WHEN estado IN ('PENDIENTE','LEIDO') THEN 'EN_GESTION' ELSE estado END,
+                    leido_en = COALESCE(leido_en, now())
+                WHERE id::text = ?
+                """, derivationId);
+
+        if (n > 0) {
+            try {
+                jdbc.update("""
+                        INSERT INTO documento_eventos (id, documento_id, event_type, description, occurred_at)
+                        SELECT gen_random_uuid(), d.documento_id, 'DERIVACION_ATENDIDA', ?, now()
+                        FROM documento_derivaciones d
+                        WHERE d.id::text = ?
+                        """, (note == null || note.isBlank()) ? "Derivación atendida" : note, derivationId);
+            } catch (Exception ignored) {}
+        }
+        return n;
+    }
+
     public String respond(String docId, Map<String, Object> body) {
-        return jdbc.queryForObject("""
+        String responseId = jdbc.queryForObject("""
                 INSERT INTO documento_respuestas(documento_id, derivacion_id, respondido_por_user_id, asunto, cuerpo)
                 VALUES (?::uuid, ?::uuid, ?::uuid, ?, ?)
                 RETURNING id::text
                 """, String.class,
                 docId, body.get("derivation_id"), body.get("responded_by_user_id"), body.get("subject"), body.get("body"));
+
+        Object derivationId = body.get("derivation_id");
+        if (derivationId != null) {
+            jdbc.update("""
+                    UPDATE documento_derivaciones
+                    SET estado = 'RESPONDIDO',
+                        respondido_en = now(),
+                        cerrado_en = now()
+                    WHERE id::text = ? AND documento_id::text = ?
+                    """, String.valueOf(derivationId), docId);
+        }
+
+        jdbc.update("""
+                UPDATE documentos
+                SET estado_respuesta = 'RESPONDIDO',
+                    actualizado_por = COALESCE(?::uuid, actualizado_por),
+                    actualizado_en = now()
+                WHERE id::text = ?
+                """, body.get("responded_by_user_id"), docId);
+
+        try {
+            jdbc.update("""
+                    INSERT INTO documento_eventos (id, documento_id, event_type, description, occurred_at)
+                    VALUES (gen_random_uuid(), ?::uuid, 'RESPUESTA_REGISTRADA', ?, now())
+                    """, docId, body.get("subject") == null ? "Respuesta registrada" : String.valueOf(body.get("subject")));
+        } catch (Exception ignored) {}
+
+        return responseId;
     }
 
     public Map<String, Object> createNestedResponse(String docId, Map<String, Object> body) {
+        Object responder = body.get("responded_by_user_id");
+
+        String responseId = respond(docId, body);
+
         String childId = jdbc.queryForObject("""
                 INSERT INTO documentos(
                   entidad_id, flujo, origen, estado, prioridad, confidencialidad,
@@ -219,16 +272,16 @@ public class WorkflowDocumentosService {
                 """, String.class,
                 body.getOrDefault("nested_subject", body.get("subject")),
                 body.getOrDefault("nested_body", body.get("body")),
-                body.get("responded_by_user_id"), body.get("responded_by_user_id"), docId);
+                responder, responder, docId);
 
         String relationId = jdbc.queryForObject("""
                 INSERT INTO documento_relaciones(documento_padre_id, documento_hijo_id, tipo_relacion, creado_por_user_id, detalle)
-                VALUES (?::uuid, ?::uuid, 'RESPUESTA_A', ?::uuid, jsonb_build_object('derivation_id', ?))
+                VALUES (?::uuid, ?::uuid, 'RESPUESTA_A', ?::uuid, jsonb_build_object('derivation_id', ?, 'response_id', ?))
                 RETURNING id::text
                 """, String.class,
-                docId, childId, body.get("responded_by_user_id"), body.get("derivation_id"));
+                docId, childId, responder, body.get("derivation_id"), responseId);
 
-        return Map.of("relation_id", relationId, "child_document_id", childId);
+        return Map.of("relation_id", relationId, "child_document_id", childId, "response_id", responseId);
     }
 
     public List<Map<String, Object>> listRelations(String docId, String relationType) {

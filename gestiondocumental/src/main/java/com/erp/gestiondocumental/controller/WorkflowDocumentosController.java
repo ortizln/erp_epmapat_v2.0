@@ -66,6 +66,13 @@ public class WorkflowDocumentosController {
         return n > 0 ? ResponseEntity.ok(Map.of("ok", true)) : ResponseEntity.notFound().build();
     }
 
+    @PatchMapping("/derivations/{derivationId}/attend")
+    public ResponseEntity<?> attend(@PathVariable String derivationId, @RequestBody(required = false) Map<String, Object> body) {
+        body = body == null ? Map.of() : body;
+        int n = service.attendDerivation(derivationId, (String) body.get("user_id"), (String) body.get("note"));
+        return n > 0 ? ResponseEntity.ok(Map.of("ok", true)) : ResponseEntity.notFound().build();
+    }
+
     @PostMapping("/{docId}/responses")
     public ResponseEntity<?> respond(@PathVariable String docId, @RequestBody Map<String, Object> body) {
         try {
