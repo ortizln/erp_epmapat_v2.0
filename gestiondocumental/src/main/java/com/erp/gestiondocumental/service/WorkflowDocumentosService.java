@@ -87,6 +87,19 @@ public class WorkflowDocumentosService {
         }
     }
 
+    private String currentDocState(String docId) {
+        List<Map<String, Object>> rows = jdbc.queryForList("SELECT estado FROM documentos WHERE id::text = ?", docId);
+        if (rows.isEmpty()) throw new RuntimeException("Documento no encontrado");
+        return String.valueOf(rows.get(0).get("estado"));
+    }
+
+    private void ensureDocStateForAction(String docId, String action, Set<String> allowedStates) {
+        String state = currentDocState(docId);
+        if (!allowedStates.contains(state)) {
+            throw new RuntimeException("No se puede " + action + " en estado: " + state + " (permitidos: " + String.join(", ", allowedStates) + ")");
+        }
+    }
+
     public String assign(String docId, Map<String, Object> body) {
         return jdbc.queryForObject("""
                 INSERT INTO documento_asignaciones(
@@ -106,7 +119,9 @@ public class WorkflowDocumentosService {
     }
 
     public String derive(String docId, Map<String, Object> body) {
-        return jdbc.queryForObject("""
+        ensureDocStateForAction(docId, "derivar", Set.of("RECIBIDO", "EN_REVISION", "DERIVADO"));
+
+        String derivationId = jdbc.queryForObject("""
                 INSERT INTO documento_derivaciones(
                     documento_id, de_user_id, de_dependencia_id,
                     para_user_id, para_dependencia_id,
@@ -119,6 +134,14 @@ public class WorkflowDocumentosService {
                 body.get("to_user_id"), body.get("to_dependency_id"),
                 body.get("note"), body.get("requires_response"), body.get("due_at")
         );
+
+        jdbc.update("""
+                UPDATE documentos
+                SET estado = 'DERIVADO', actualizado_en = now()
+                WHERE id::text = ? AND estado IN ('RECIBIDO','EN_REVISION')
+                """, docId);
+
+        return derivationId;
     }
 
     public Map<String, Object> deriveBulk(String docId, Map<String, Object> body) {
@@ -193,6 +216,11 @@ public class WorkflowDocumentosService {
     }
 
     public int attendDerivation(String derivationId, String userId, String note) {
+        List<Map<String, Object>> rows = jdbc.queryForList("SELECT documento_id::text AS documento_id FROM documento_derivaciones WHERE id::text = ?", derivationId);
+        if (rows.isEmpty()) return 0;
+        String docId = String.valueOf(rows.get(0).get("documento_id"));
+        ensureDocStateForAction(docId, "atender", Set.of("DERIVADO", "EN_REVISION", "RECIBIDO"));
+
         int n = jdbc.update("""
                 UPDATE documento_derivaciones
                 SET estado = CASE WHEN estado IN ('PENDIENTE','LEIDO') THEN 'EN_GESTION' ELSE estado END,
@@ -201,19 +229,24 @@ public class WorkflowDocumentosService {
                 """, derivationId);
 
         if (n > 0) {
+            jdbc.update("""
+                    UPDATE documentos
+                    SET estado = 'EN_REVISION', actualizado_en = now()
+                    WHERE id::text = ? AND estado IN ('DERIVADO','RECIBIDO')
+                    """, docId);
             try {
                 jdbc.update("""
                         INSERT INTO documento_eventos (id, documento_id, event_type, description, occurred_at)
-                        SELECT gen_random_uuid(), d.documento_id, 'DERIVACION_ATENDIDA', ?, now()
-                        FROM documento_derivaciones d
-                        WHERE d.id::text = ?
-                        """, (note == null || note.isBlank()) ? "Derivación atendida" : note, derivationId);
+                        VALUES (gen_random_uuid(), ?::uuid, 'DERIVACION_ATENDIDA', ?, now())
+                        """, docId, (note == null || note.isBlank()) ? "Derivación atendida" : note);
             } catch (Exception ignored) {}
         }
         return n;
     }
 
     public String respond(String docId, Map<String, Object> body) {
+        ensureDocStateForAction(docId, "responder", Set.of("DERIVADO", "EN_REVISION", "RECIBIDO"));
+
         String responseId = jdbc.queryForObject("""
                 INSERT INTO documento_respuestas(documento_id, derivacion_id, respondido_por_user_id, asunto, cuerpo)
                 VALUES (?::uuid, ?::uuid, ?::uuid, ?, ?)
@@ -570,12 +603,7 @@ public class WorkflowDocumentosService {
             throw new RuntimeException("Debe enviar receptor_id o dependencia_id, pero no ambos");
         }
 
-        List<Map<String, Object>> docs = jdbc.queryForList("SELECT id, estado, numero_oficial FROM documentos WHERE id::text = ?", docId);
-        if (docs.isEmpty()) throw new RuntimeException("Documento no encontrado");
-        String estado = String.valueOf(docs.get(0).get("estado"));
-        if (!("EMITIDO".equals(estado) || "DERIVADO".equals(estado) || "RECIBIDO".equals(estado))) {
-            throw new RuntimeException("No se puede recibir en estado: " + estado);
-        }
+        ensureDocStateForAction(docId, "recibir", Set.of("EMITIDO", "DERIVADO", "RECIBIDO"));
 
         String recId;
         if (receptorId != null) {
