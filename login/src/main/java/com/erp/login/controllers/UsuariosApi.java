@@ -4,6 +4,7 @@ import com.erp.login.DTO.LoginRequest;
 import com.erp.login.DTO.LoginResponse;
 import com.erp.login.interfaces.UsuarioI;
 import com.erp.login.interfaces.UsuarioLoginI;
+import com.erp.login.interfaces.UsuarioPersonalI;
 import com.erp.login.models.Usuarios;
 import com.erp.login.services.UsuariosService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,9 @@ public class UsuariosApi {
 
     @GetMapping
     public List<Usuarios> getAll() { return usuServicio.findAll(); }
+
+    @GetMapping("/with-personal")
+    public List<UsuarioPersonalI> getAllWithPersonal() { return usuServicio.findAllWithPersonal(); }
 
     @GetMapping("/usuario")
     public Usuarios getUsuario(@RequestParam(value = "a") String a, @RequestParam(value = "b") String b) {

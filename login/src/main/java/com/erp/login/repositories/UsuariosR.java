@@ -2,6 +2,7 @@ package com.erp.login.repositories;
 
 import com.erp.login.interfaces.UsuarioI;
 import com.erp.login.interfaces.UsuarioLoginI;
+import com.erp.login.interfaces.UsuarioPersonalI;
 import com.erp.login.models.Usuarios;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +13,20 @@ import java.util.List;
 public interface UsuariosR extends JpaRepository<Usuarios, Long> {
     @Query(value = "SELECT * FROM usuarios order by identificausu", nativeQuery = true)
     List<Usuarios> findAll();
+
+    @Query(value = """
+            SELECT u.idusuario as idusuario,
+                   u.identificausu as identificausu,
+                   u.alias as alias,
+                   u.nomusu as nomusu,
+                   u.estado as estado,
+                   u.personal_idpersonal as personalIdpersonal,
+                   CASE WHEN p.idpersonal IS NULL THEN NULL ELSE (COALESCE(p.apellidos,'') || ' ' || COALESCE(p.nombres,'')) END as personalNombre
+            FROM usuarios u
+            LEFT JOIN personal p ON p.idpersonal = u.personal_idpersonal
+            ORDER BY u.identificausu
+            """, nativeQuery = true)
+    List<UsuarioPersonalI> findAllWithPersonal();
 
     @Query(value = "SELECT * FROM usuarios where identificausu=?1", nativeQuery = true)
     Usuarios findByIdentificausu(String identificausu);

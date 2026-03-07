@@ -2,6 +2,7 @@ package com.erp.login.services;
 
 import com.erp.login.interfaces.UsuarioI;
 import com.erp.login.interfaces.UsuarioLoginI;
+import com.erp.login.interfaces.UsuarioPersonalI;
 import com.erp.login.models.Usuarios;
 import com.erp.login.repositories.UsuariosR;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ public class UsuariosService {
     UsrxmodulosService usrxmodulosService;
 
     public List<Usuarios> findAll() { return dao.findAll(); }
+    public List<UsuarioPersonalI> findAllWithPersonal() { return dao.findAllWithPersonal(); }
     public Usuarios findUsuario(String a, String b) { return dao.findUsuario(a, b); }
     public Usuarios findByIdentificausu(String identificausu) { return dao.findByIdentificausu(identificausu); }
     public Optional<Usuarios> findById(Long id) { return dao.findById(id); }
