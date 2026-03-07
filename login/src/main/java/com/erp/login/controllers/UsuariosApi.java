@@ -66,9 +66,34 @@ public class UsuariosApi {
         y.setToolbarframe(x.getToolbarframe());
         y.setToolbarsheet(x.getToolbarsheet());
         y.setPlataform_access(x.getPlataform_access());
+        y.setPersonalIdpersonal(x.getPersonalIdpersonal());
 
         Usuarios actualizar = usuServicio.save(y);
         return ResponseEntity.ok(actualizar);
+    }
+
+    @PatchMapping("/{idusuario}/personal")
+    public ResponseEntity<Usuarios> linkPersonal(@PathVariable Long idusuario, @RequestBody Map<String, Object> body) {
+        Usuarios y = usuServicio.findById(idusuario)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe Usuario con Id: " + idusuario));
+
+        Long idpersonal = body.get("idpersonal") == null ? null : Long.valueOf(String.valueOf(body.get("idpersonal")));
+        y.setPersonalIdpersonal(idpersonal);
+        y.setUsumodi(body.get("usumodi") == null ? y.getUsumodi() : Long.valueOf(String.valueOf(body.get("usumodi"))));
+        y.setFecmodi(java.time.ZonedDateTime.now());
+
+        return ResponseEntity.ok(usuServicio.save(y));
+    }
+
+    @DeleteMapping("/{idusuario}/personal")
+    public ResponseEntity<Usuarios> unlinkPersonal(@PathVariable Long idusuario, @RequestParam(required = false) Long usumodi) {
+        Usuarios y = usuServicio.findById(idusuario)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No existe Usuario con Id: " + idusuario));
+
+        y.setPersonalIdpersonal(null);
+        if (usumodi != null) y.setUsumodi(usumodi);
+        y.setFecmodi(java.time.ZonedDateTime.now());
+        return ResponseEntity.ok(usuServicio.save(y));
     }
 
     @PostMapping

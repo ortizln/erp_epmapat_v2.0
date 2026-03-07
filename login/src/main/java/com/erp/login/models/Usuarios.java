@@ -36,4 +36,7 @@ public class Usuarios {
     private Long toolbarframe;
     private Long toolbarsheet;
     private String plataform_access;
+
+    @Column(name = "personal_idpersonal")
+    private Long personalIdpersonal;
 }
