@@ -31,7 +31,7 @@ spring:
         - id: msvc-login-api
           uri: http://localhost:9091
           predicates:
-          - Path=/api/usuarios/**, /api/erpmodulos/**, /api/usrxmodulos/**, /api/ventanas/**, /api/documentos/**
+          - Path=/api/usuarios/**, /api/erpmodulos/**, /api/usrxmodulos/**, /api/ventanas/**, /api/documentos/**, /api/access/**
 
         - id: msvc-comercializacion-api-compat
           uri: http://localhost:9093
