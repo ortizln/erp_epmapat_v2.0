@@ -4,10 +4,7 @@ import com.erp.login.models.Erpmodulos;
 import com.erp.login.services.ErpmodulosService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -25,5 +22,14 @@ public class ErpmodulosApi {
     @GetMapping("/platform/{platform}")
     public ResponseEntity<List<Erpmodulos>> findByPlatform(@PathVariable String platform) {
         return ResponseEntity.ok(emServicio.findByPlatform(platform));
+    }
+
+    @PostMapping
+    public ResponseEntity<Erpmodulos> save(@RequestBody Erpmodulos modulo) {
+        if (modulo.getPlatform() == null || modulo.getPlatform().isBlank()) {
+            modulo.setPlatform("WEB");
+        }
+        modulo.setPlatform(modulo.getPlatform().trim().toUpperCase());
+        return ResponseEntity.ok(emServicio.save(modulo));
     }
 }

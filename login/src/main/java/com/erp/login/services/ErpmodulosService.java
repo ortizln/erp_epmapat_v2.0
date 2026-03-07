@@ -14,4 +14,5 @@ public class ErpmodulosService {
 
     public List<Erpmodulos> findAll() { return dao.findAll(); }
     public List<Erpmodulos> findByPlatform(String platform) { return dao.findByPlatform(platform); }
+    public Erpmodulos save(Erpmodulos item) { return dao.save(item); }
 }
