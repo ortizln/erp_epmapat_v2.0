@@ -192,6 +192,35 @@ spring:
           predicates:
             - Path=/api/v1/emails/**
 
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: Login
+        url: /login/v3/api-docs
+      - name: Comercialización
+        url: /comercializacion/v3/api-docs
+      - name: RRHH
+        url: /rrhh/v3/api-docs
+      - name: Contabilidad
+        url: /contabilidad/v3/api-docs
+      - name: Recaudación
+        url: /recaudacion/v3/api-docs
+      - name: Gestión Documental
+        url: /gestiondocumental/v3/api-docs
+      - name: SRI
+        url: /sri/v3/api-docs
+      - name: Reportes JR
+        url: /reportes/v3/api-docs
+      - name: Pagos Online
+        url: /pagosonline/v3/api-docs
+      - name: EPMAPA API
+        url: /epmapaapi/v3/api-docs
+      - name: Emails
+        url: /emails/v3/api-docs
+
 
 
 
