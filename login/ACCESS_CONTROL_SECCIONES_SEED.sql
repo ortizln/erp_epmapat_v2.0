@@ -52,6 +52,7 @@ CROSS JOIN (
     ('AC_UTIL_DOCS', 'Utilería - Documentos de respaldo', '/documentos', 10),
     ('AC_UTIL_USUARIOS', 'Utilería - Usuarios', '/usuarios', 20),
     ('AC_UTIL_REPORTES', 'Utilería - Cargar Reportes', '/reportesjr', 30),
+    ('AC_UTIL_ACCESS', 'Utilería - Accesos y permisos', '/admin/access-control', 35),
     ('AC_SRI_COMPROB', 'SRI - Comprobantes SRI', '/tabla4', 40),
     ('AC_SRI_FIRMA', 'SRI - Firma Electrónica', '/definir', 50)
 ) AS s(codigo, descripcion, ruta, orden)

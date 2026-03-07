@@ -77,6 +77,14 @@ public class AccessControlService {
 
     public List<Map<String, Object>> sectionCatalog(Long iderpmodulo, String platform) {
         String pf = (platform == null || platform.isBlank()) ? "WEB" : platform.trim().toUpperCase();
+        if ("ALL".equals(pf)) {
+            return jdbc.queryForList("""
+                    SELECT iderpseccion, iderpmodulo_erpmodulos AS iderpmodulo, codigo, descripcion, ruta, orden, platform, activo
+                    FROM erpsecciones
+                    WHERE iderpmodulo_erpmodulos = ?
+                    ORDER BY orden, iderpseccion
+                    """, iderpmodulo);
+        }
         return jdbc.queryForList("""
                 SELECT iderpseccion, iderpmodulo_erpmodulos AS iderpmodulo, codigo, descripcion, ruta, orden, platform, activo
                 FROM erpsecciones
