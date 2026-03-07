@@ -3,6 +3,7 @@ package com.erp.comercializacion.modelo;
 import java.io.Serializable;
 import java.util.Date;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -14,6 +15,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "facturacion")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Facturacion implements Serializable {
 
    @Id
@@ -22,8 +24,9 @@ public class Facturacion implements Serializable {
    Integer estado;
    String descripcion;
    Integer formapago;
-   @ManyToOne(fetch = FetchType.LAZY)
+   @ManyToOne(fetch = FetchType.EAGER)
    @JoinColumn(name = "idcliente_clientes")
+   @JsonIgnoreProperties({"idtpidentifica_tpidentifica", "idnacionalidad_nacionalidad", "idpjuridica_personeriajuridica", "hibernateLazyInitializer", "handler"})
    private Clientes idcliente_clientes;
    Float total;
    Short cuotas;

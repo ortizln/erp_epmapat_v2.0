@@ -39,8 +39,10 @@ public class FacturacionApi {
    }
 
    @GetMapping("/ultimo")
-   public Facturacion ultimo() {
-      return factuServicio.ultimo();
+   public ResponseEntity<Facturacion> ultimo() {
+      Facturacion x = factuServicio.ultimo();
+      if (x == null) return ResponseEntity.noContent().build();
+      return ResponseEntity.ok(x);
    }
 
    @GetMapping("/{idfacturacion}")
