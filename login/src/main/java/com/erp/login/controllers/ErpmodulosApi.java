@@ -32,4 +32,13 @@ public class ErpmodulosApi {
         modulo.setPlatform(modulo.getPlatform().trim().toUpperCase());
         return ResponseEntity.ok(emServicio.save(modulo));
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Erpmodulos> update(@PathVariable Long id, @RequestBody Erpmodulos x) {
+        Erpmodulos y = emServicio.findAll().stream().filter(m -> m.getIderpmodulo().equals(id)).findFirst().orElse(null);
+        if (y == null) return ResponseEntity.notFound().build();
+        y.setDescripcion(x.getDescripcion());
+        y.setPlatform((x.getPlatform() == null || x.getPlatform().isBlank()) ? "WEB" : x.getPlatform().trim().toUpperCase());
+        return ResponseEntity.ok(emServicio.save(y));
+    }
 }

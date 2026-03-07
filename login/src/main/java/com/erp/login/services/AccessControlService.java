@@ -74,4 +74,35 @@ public class AccessControlService {
                 DO UPDATE SET enabled = EXCLUDED.enabled
                 """, idusuario, idseccion, enabled);
     }
+
+    public List<Map<String, Object>> sectionCatalog(Long iderpmodulo, String platform) {
+        String pf = (platform == null || platform.isBlank()) ? "WEB" : platform.trim().toUpperCase();
+        return jdbc.queryForList("""
+                SELECT iderpseccion, iderpmodulo_erpmodulos AS iderpmodulo, codigo, descripcion, ruta, orden, platform, activo
+                FROM erpsecciones
+                WHERE iderpmodulo_erpmodulos = ?
+                  AND UPPER(COALESCE(platform,'BOTH')) IN (UPPER(?), 'BOTH')
+                ORDER BY orden, iderpseccion
+                """, iderpmodulo, pf);
+    }
+
+    public int saveSectionCatalog(Long iderpmodulo, String codigo, String descripcion, String ruta, Integer orden, String platform, Boolean activo) {
+        return jdbc.update("""
+                INSERT INTO erpsecciones(iderpmodulo_erpmodulos, codigo, descripcion, ruta, orden, platform, activo)
+                VALUES (?::bigint, ?, ?, ?, COALESCE(?,0), COALESCE(?, 'WEB'), COALESCE(?, true))
+                """, iderpmodulo, codigo, descripcion, ruta, orden, (platform == null ? "WEB" : platform.toUpperCase()), activo);
+    }
+
+    public int updateSectionCatalog(Long iderpseccion, String codigo, String descripcion, String ruta, Integer orden, String platform, Boolean activo) {
+        return jdbc.update("""
+                UPDATE erpsecciones
+                SET codigo = ?,
+                    descripcion = ?,
+                    ruta = ?,
+                    orden = COALESCE(?, orden),
+                    platform = COALESCE(?, platform),
+                    activo = COALESCE(?, activo)
+                WHERE iderpseccion = ?::bigint
+                """, codigo, descripcion, ruta, orden, (platform == null ? null : platform.toUpperCase()), activo, iderpseccion);
+    }
 }
