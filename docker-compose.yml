@@ -42,7 +42,7 @@ services:
     image: msvc-gateway:latest
     container_name: msvc-gateway
     ports:
-      - "8080:8080"
+      - "9090:9090"
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
