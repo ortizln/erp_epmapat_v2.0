@@ -110,7 +110,7 @@ public class FacturasApi {
         html.append("<h4>Respuesta</h4>");
         html.append("<p>Lista de objetos <code>FacturasCobradas</code> con campos como <code>nrubros</code>, <code>valortotal</code>, <code>planilla</code>, <code>usuario</code>, <code>nombre</code>, etc.</p>");
         html.append("<h4>cURL</h4>");
-        html.append("<pre>curl -X POST http://localhost:8080/facturas/reporte \\\n -H \"Content-Type: application/json\" \\\n -d '{\n   \"idusuario\":10041,\n   \"df\":\"2025-10-01\",\n   \"hf\":\"2025-10-25\",\n   \"dh\":\"08:00:00\",\n   \"hh\":\"17:00:00\"\n }'</pre>");
+        html.append("<pre>curl -X POST http://localhost:165/facturas/reporte \\\n -H \"Content-Type: application/json\" \\\n -d '{\n   \"idusuario\":10041,\n   \"df\":\"2025-10-01\",\n   \"hf\":\"2025-10-25\",\n   \"dh\":\"08:00:00\",\n   \"hh\":\"17:00:00\"\n }'</pre>");
         html.append("</section>");
 
         html.append("</div>"); // grid
