@@ -210,7 +210,7 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=${DB_PASS_2024}
+      - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - DB_PASS=79DB6F2BFA7FFED2E17F16CABA197D2063EB
@@ -238,7 +238,7 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=${DB_PASS_2024}
+      - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - DB_PASS=79DB6F2BFA7FFED2E17F16CABA197D2063EB
@@ -266,7 +266,7 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=${DB_PASS_2024}
+      - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - DB_PASS=79DB6F2BFA7FFED2E17F16CABA197D2063EB
@@ -322,7 +322,7 @@ services:
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=${DB_PASS}
+      - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - DB_PASS=79DB6F2BFA7FFED2E17F16CABA197D2063EB
