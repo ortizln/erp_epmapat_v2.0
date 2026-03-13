@@ -17,6 +17,7 @@ declare -A module_services=(
   ["gateway"]="msvc-gateway"
   ["reportes-jr"]="msvc-reportesjr"
   ["epmapaapi"]="msvc-epmapaapi"
+  ["rrhh"]="msvc-rrhh"
 )
 
 # Colores para output
@@ -74,7 +75,7 @@ compile_module() {
             return 1
         fi
 
-        if mvn clean package -DskipTests; then
+        if ./mvnw clean package -DskipTests; then
             log_success "✅ $module compilado correctamente"
             cd ..
             return 0

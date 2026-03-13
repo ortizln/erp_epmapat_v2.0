@@ -22,8 +22,8 @@ spring:
         - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_FIRST
       routes:
         - id: msvc-login
-          #uri: http://msvc-login:9091
-          uri: http://localhost:9091
+          uri: http://msvc-login:9091
+          #uri: http://localhost:9091
           predicates:
           - Path=/acceso/**, /colores/**, /definir/**, /documentos/**, /erpmodulos/**, /tabla4/**, /usrxmodulos/**, /usuarios/** , /ventanas/**
 
@@ -31,91 +31,91 @@ spring:
           - RewritePath=/(?<segment>.*), /api/${segment}
 
         - id: msvc-login-api
-          uri: http://localhost:9091
+          #uri: http://localhost:9091
           predicates:
           - Path=/api/usuarios/**, /api/auth/**, /api/erpmodulos/**, /api/usrxmodulos/**, /api/ventanas/**, /api/documentos/**, /api/access/**
 
         - id: msvc-comercializacion-api-compat
-          uri: http://localhost:9093
+          #uri: http://localhost:9093
           predicates:
           - Path=/api/clientes/**, /api/abonados/**, /api/recargosxcuenta/**, /api/usrxrutas/**, /api/categorias/**, /api/nacionalidad/**, /api/nacionalidades/**
 
         - id: msvc-login-swagger
-          uri: http://localhost:9091
+          #uri: http://localhost:9091
           predicates:
           - Path=/login/v3/api-docs/**, /login/swagger-ui/**, /login/swagger-ui.html, /login/swagger-ui/index.html
           filters:
           - RewritePath=/login/(?<segment>.*), /${segment}
 
         - id: msvc-comercializacion-swagger
-          uri: http://localhost:9093
+          #uri: http://localhost:9093
           predicates:
           - Path=/comercializacion/v3/api-docs/**, /comercializacion/swagger-ui/**, /comercializacion/swagger-ui.html, /comercializacion/swagger-ui/index.html
           filters:
           - RewritePath=/comercializacion/(?<segment>.*), /${segment}
 
         - id: msvc-recaudacion-swagger
-          uri: http://localhost:9092
+          #uri: http://localhost:9092
           predicates:
           - Path=/recaudacion/v3/api-docs/**, /recaudacion/swagger-ui/**, /recaudacion/swagger-ui.html, /recaudacion/swagger-ui/index.html
           filters:
           - RewritePath=/recaudacion/(?<segment>.*), /${segment}
 
         - id: msvc-gestiondocumental-swagger
-          uri: http://localhost:9095
+          #uri: http://localhost:9095
           predicates:
           - Path=/gestiondocumental/v3/api-docs/**, /gestiondocumental/swagger-ui/**, /gestiondocumental/swagger-ui.html, /gestiondocumental/swagger-ui/index.html
           filters:
           - RewritePath=/gestiondocumental/(?<segment>.*), /${segment}
 
         - id: msvc-sri-swagger
-          uri: http://localhost:9096
+          #uri: http://localhost:9096
           predicates:
           - Path=/sri/v3/api-docs/**, /sri/swagger-ui/**, /sri/swagger-ui.html, /sri/swagger-ui/index.html
           filters:
           - RewritePath=/sri/(?<segment>.*), /${segment}
 
         - id: msvc-reportesjr-swagger
-          uri: http://localhost:9097
+          #uri: http://localhost:9097
           predicates:
           - Path=/reportes/v3/api-docs/**, /reportes/swagger-ui/**, /reportes/swagger-ui.html, /reportes/swagger-ui/index.html
           filters:
           - RewritePath=/reportes/(?<segment>.*), /${segment}
 
         - id: msvc-pagosonline-swagger
-          uri: http://localhost:9094
+          #uri: http://localhost:9094
           predicates:
           - Path=/pagosonline/v3/api-docs/**, /pagosonline/swagger-ui/**, /pagosonline/swagger-ui.html, /pagosonline/swagger-ui/index.html
           filters:
           - RewritePath=/pagosonline/(?<segment>.*), /${segment}
 
         - id: msvc-epmapaapi-swagger
-          uri: http://localhost:9098
+          #uri: http://localhost:9098
           predicates:
           - Path=/epmapaapi/v3/api-docs/**, /epmapaapi/swagger-ui/**, /epmapaapi/swagger-ui.html, /epmapaapi/swagger-ui/index.html
           filters:
           - RewritePath=/epmapaapi/(?<segment>.*), /${segment}
 
         - id: msvc-emails-swagger
-          uri: http://localhost:9099
+          #uri: http://localhost:9099
           predicates:
           - Path=/emails/v3/api-docs/**, /emails/swagger-ui/**, /emails/swagger-ui.html, /emails/swagger-ui/index.html
           filters:
           - RewritePath=/emails/(?<segment>.*), /${segment}
         - id: msvc-rrhh-api
-          uri: http://localhost:9101
+          #uri: http://localhost:9101
           predicates:
           - Path=/api/personal/**, /api/cargos/**, /api/detcargo/**, /api/tpcontratos/**, /api/contemergencia/**, /api/th-actions/**, /api/th-leave/**, /api/th-audit/**, /api/th-files/**
 
         - id: msvc-recaudacion
-          #uri: http://msvc-recaudacion:9092
-          uri: http://localhost:9092
+          uri: http://msvc-recaudacion:9092
+          #uri: http://localhost:9092
           predicates:
           - Path=/api/rec/cajas/**, /api/rec/facturas/**, /api/rec/interes/**, /api/rec/impuestos/**
 
         - id: msvc-comercializacion
-          #uri: http://msvc-comercializacion:9093
-          uri: http://localhost:9093
+          uri: http://msvc-comercializacion:9093
+          #uri: http://localhost:9093
           predicates:
           - Path=/abonados/**, /aboxsuspension/**, /aguatramite/**, /anulpagos/**, /airxrete/**, /cajas/**, /catalogoitems/**, /categorias/**, /ccertificaciones/**, /clasificador/**, /clientes/**, /condmultasintereses/**, /convenios/**, /ctramites/**, /cuotas/**, /emisiones/**, /emisionindividual/**, /estadom/**, /facturas/**, /facelectro/**, /facturacion/**, /facturamodificaciones/**, /facxconvenio/**, /facxnc/**, /facxrecauda/**, /facdetallesimpuestos/**, /facturadetalles/**, /facturapagos/**, /fec_factura/**, /fec_retenciones/**, /fec_reteimpu/**,  /formacobro/**, /impuestos/**, /intereses/**, /itemxfact/**, /jasperReports/**,  /lecturas/**, /liquidafac/**, /liquidatramite/**, /modulos/**, /novedades/**, /ntacredito/**, /nacionalidades/**, /personeriajuridica/**, /pliego24/**, /pliego/**, /ptoemision/**, /recaudacion/**, /recaudaxcaja/**, /recargosxcuenta/**, /reclamos/**, /retenciones/**, /rubroadicional/**, /rubros/**, /rutas/**, /rutasxemision/**, /rubroxfac/**, /servicios1/**, /suspensiones/**, /tipopago/**, /tipotramite/**, /tmpinteresxfac/**, /tpcertifica/**, /tpidentifica/**, /tpreclamo/**, /tramites1/**, /tramitenuevo/**, /ubicacionm/**, /usoitems/**, /valoresnc/**
 
@@ -123,74 +123,74 @@ spring:
           - RewritePath=/(?<segment>.*), /api/${segment}
 
         - id: msvc-comercializacion-auth
-          uri: http://localhost:9093
+          #uri: http://localhost:9093
           predicates:
           - Path=/auth/**
 
 
         - id: msvc-rrhh
-          uri: http://localhost:9101
+          #uri: http://localhost:9101
           predicates:
           - Path=/personal/**, /cargos/**, /detcargo/**, /tpcontratos/**, /contemergencia/**, /th-actions/**, /th-leave/**, /th-audit/**, /th-files/**
           filters:
           - RewritePath=/(?<segment>.*), /api/${segment}
 
         - id: msvc-contabilidad-api
-          uri: http://localhost:9102
+          #uri: http://localhost:9102
           predicates:
           - Path=/api/airxrete/**, /api/asientos/**, /api/beneficiarios/**, /api/benextran/**, /api/certipresu/**, /api/conciliaban/**, /api/cuentas/**, /api/ejecucio/**, /api/ejecucion/**, /api/estrfunc/**, /api/fec_reteimpu/**, /api/fec_retenciones/**, /api/gruposbene/**, /api/niifcuentas/**, /api/niifhomologa/**, /api/niveles/**, /api/pagoscobros/**, /api/partixcerti/**, /api/pregastos/**, /api/preingresos/**, /api/presupue/**, /api/reformas/**, /api/retenciones/**, /api/tabla01/**, /api/tabla10/**, /api/tabla15/**, /api/tabla17/**, /api/tabla5/**, /api/tabla5_concep/**, /api/tramipresu/**, /api/transaci/**, /api/unicostos/**, /ifinan/**, /api/ifinan/**
 
         - id: msvc-contabilidad
-          uri: http://localhost:9102
+          #uri: http://localhost:9102
           predicates:
           - Path=/airxrete/**, /asientos/**, /beneficiarios/**, /benextran/**, /certipresu/**, /conciliaban/**, /cuentas/**, /ejecucio/**, /ejecucion/**, /estrfunc/**, /fec_reteimpu/**, /fec_retenciones/**, /gruposbene/**, /niifcuentas/**, /niifhomologa/**, /niveles/**, /pagoscobros/**, /partixcerti/**, /pregastos/**, /preingresos/**, /presupue/**, /reformas/**, /retenciones/**, /tabla01/**, /tabla10/**, /tabla15/**, /tabla17/**, /tabla5/**, /tabla5_concep/**, /tramipresu/**, /transaci/**, /unicostos/**, /ifinan/**
           filters:
           - RewritePath=/(?<segment>.*), /api/${segment}
 
         - id: msvc-rrhh-swagger
-          uri: http://localhost:9101
+          #uri: http://localhost:9101
           predicates:
           - Path=/rrhh/v3/api-docs/**, /rrhh/swagger-ui/**, /rrhh/swagger-ui.html, /rrhh/swagger-ui/index.html
           filters:
           - RewritePath=/rrhh/(?<segment>.*), /${segment}
 
         - id: msvc-contabilidad-swagger
-          uri: http://localhost:9102
+          #uri: http://localhost:9102
           predicates:
           - Path=/contabilidad/v3/api-docs/**, /contabilidad/swagger-ui/**, /contabilidad/swagger-ui.html, /contabilidad/swagger-ui/index.html
           filters:
           - RewritePath=/contabilidad/(?<segment>.*), /${segment}
         - id: msvc-pagosonline
-          #uri: http://msvc-pagosonline:32
-          uri: http://localhost:9094
+          uri: http://msvc-pagosonline:32
+          #uri: http://localhost:9094
           predicates:
             - Path=/api/pagonline/facturas/**
 
         - id: msvc-gestiondocumental
-          uri: http://localhost:9095
+          #uri: http://localhost:9095
           predicates:
             - Path=/api/entities/**, /api/entidades/**, /api/dependencies/**, /api/dependencias/**, /api/document-types/**, /api/tipos-documento/**, /api/lookups/**, /api/settings/system/**, /api/configuracion/sistema/**, /api/ccd/**, /api/cuadro-clasificacion/**, /api/trd/**, /api/retencion-documental/**, /api/case-files/**, /api/expedientes/**, /api/documents/**, /api/documentos/**
 
         - id: msvc-sri
-          #uri: http://msvc-sri:9096
-          uri: http://localhost:9096
+          uri: http://msvc-sri:9096
+          #uri: http://localhost:9096
           predicates:
             - Path=/api/sri/**, /api/singsend/**
 
         - id: msvc-reportesjr
-          #uri: http://msvc-reportesjr:9097
-          uri: http://localhost:9097
+          uri: http://msvc-reportesjr:9097
+          #uri: http://localhost:9097
           predicates:
             - Path=/api/jasperReports/**, /api/jasper/**
 
         - id: msvc-epmapaapi
-          #uri: http://msvc-epmapaapi:9098
-          uri: http://localhost:9098
+          uri: http://msvc-epmapaapi:9098
+          #uri: http://localhost:9098
           predicates:
             - Path=/api/epmapaweb/**
 
         - id: msvc-emails
-          uri: http://localhost:9099
+          #uri: http://localhost:9099
           predicates:
             - Path=/api/v1/emails/**
 

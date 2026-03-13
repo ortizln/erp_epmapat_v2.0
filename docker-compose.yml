@@ -46,10 +46,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.88/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.46/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=${DB_PASS_2024}
-      - HOST=http://192.168.0.88
+      - HOST=http://192.168.0.46
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
@@ -74,10 +74,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=${DB_PASS_2025}
-      - HOST=http://172.30.10.4
+      - HOST=http://192.168.0.46
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
@@ -102,10 +102,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=${DB_PASS_2025}
-      - HOST=http://172.30.10.4
+      - HOST=http://192.168.0.46
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
@@ -130,10 +130,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=${DB_PASS_2025}
-      - HOST=http://172.30.10.4
+      - HOST=http://192.168.0.46
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
@@ -158,10 +158,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=${DB_PASS_2025}
-      - HOST=http://172.30.10.4
+      - HOST=http://192.168.0.46
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-rrhh:9101/actuator/health" ]
       interval: 30s
@@ -183,10 +183,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=${DB_PASS_2025}
-      - HOST=http://172.30.10.4
+      - HOST=http://192.168.0.46
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-contabilidad:9102/actuator/health" ]
       interval: 30s
@@ -208,10 +208,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.88:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=${DB_PASS_2024}
-      - HOST=http://192.168.0.88
+      - HOST=http://192.168.0.46
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
@@ -236,10 +236,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.88:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=${DB_PASS_2024}
-      - HOST=http://192.168.0.88
+      - HOST=http://192.168.0.46
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
@@ -264,10 +264,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://192.168.0.88:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=${DB_PASS_2024}
-      - HOST=http://192.168.0.88
+      - HOST=http://192.168.0.46
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
@@ -292,10 +292,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=${DB_PASS_2025}
-      - HOST=http://172.30.10.4
+      - HOST=http://192.168.0.46
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
@@ -320,10 +320,10 @@ services:
     environment:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
-      - DB_URL=jdbc:postgresql://172.30.10.4:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=${DB_PASS}
-      - HOST=http://172.30.10.4
+      - HOST=http://192.168.0.46
       - MAIL_USERNAME=${MAIL_USERNAME}
       - MAIL_PASSWORD=${MAIL_PASSWORD}
       - MAIL_HOST=smtp.elasticemail.com
