@@ -16,4 +16,4 @@ net:
       awt:
         ignore:
           missing:
-            font=true:
+            font: true
