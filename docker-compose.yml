@@ -229,6 +229,7 @@ services:
     build:
       context: sri-files
       dockerfile: Dockerfile
+      network: host
     image: msvc-sri:latest
     container_name: msvc-sri
     ports:
