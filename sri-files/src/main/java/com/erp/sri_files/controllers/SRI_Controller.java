@@ -533,7 +533,7 @@ public class SRI_Controller {
                         inlineImages
                 );
                 // --- Enviar ---
-                boolean mail = mailService.sendMail(mailReq);
+                boolean mail = mailService.sendMail(mailReq, factura.getClaveacceso());
                 if(mail){
                     factura.setEstado("A");
                 }

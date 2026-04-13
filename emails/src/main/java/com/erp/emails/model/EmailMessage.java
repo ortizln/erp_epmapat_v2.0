@@ -50,6 +50,13 @@ public class EmailMessage {
     @Column(length = 200)
     private String correlationId;
 
+    @ManyToOne
+    @JoinColumn(name = "email_account_id")
+    private EmailAccount account;
+
+    @Column(length = 320)
+    private String fromAddress;
+
     @Column(nullable = false)
     private int attempts;
 

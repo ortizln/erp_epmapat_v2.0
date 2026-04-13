@@ -3,6 +3,9 @@ server:
 spring:
   application:
     name: msvc-sri
+app:
+  email-ms:
+    base-url: http://msvc-emails:9099
 eureka:
   instance:
     hostname: msvc-sri  # El nombre del contenedor o el servicio en Docker Compose

@@ -1,26 +1,21 @@
 package com.erp.sri_files.retenciones.service;
 
-import jakarta.mail.internet.MimeMessage;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import com.erp.sri_files.dto.AttachmentDTO;
+import com.erp.sri_files.dto.SendMailRequest;
+import com.erp.sri_files.services.MailService;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.List;
 
 @Service
 public class RetencionEmailService {
 
-    private final JavaMailSender mailSender;
-    private final RetencionPdfService pdfService;
+    private final MailService mailService;
 
-    @Value("${app.mail.from}")
-    private String from;
-
-    public RetencionEmailService(JavaMailSender mailSender, RetencionPdfService pdfService) {
-        this.mailSender = mailSender;
-        this.pdfService = pdfService;
+    public RetencionEmailService(MailService mailService) {
+        this.mailService = mailService;
     }
 
     public void enviarRetencion(
@@ -33,18 +28,30 @@ public class RetencionEmailService {
     ) throws Exception {
         byte[] xmlBytes = xmlAutorizacionCompleta.getBytes(StandardCharsets.UTF_8);
 
-        MimeMessage message = mailSender.createMimeMessage();
-        MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+        List<AttachmentDTO> attachments = List.of(
+                new AttachmentDTO(
+                        baseName + ".pdf",
+                        "application/pdf",
+                        java.util.Base64.getEncoder().encodeToString(pdfBytes)
+                ),
+                new AttachmentDTO(
+                        baseName + ".xml",
+                        "application/xml",
+                        java.util.Base64.getEncoder().encodeToString(xmlBytes)
+                )
+        );
 
-        helper.setFrom(from); // ver punto 2
-        helper.setTo(correoDestino);
-        helper.setSubject(subject);
-        helper.setText(body, false);
+        SendMailRequest request = new SendMailRequest(
+                null,
+                List.of(correoDestino),
+                Collections.emptyList(),
+                Collections.emptyList(),
+                subject,
+                body.replace("\n", "<br>"),
+                attachments,
+                Collections.emptyMap()
+        );
 
-        helper.addAttachment(baseName + ".pdf", new ByteArrayResource(pdfBytes));
-        helper.addAttachment(baseName + ".xml", new ByteArrayResource(xmlBytes));
-
-        mailSender.send(message);
+        mailService.send(request, baseName);
     }
-
 }

@@ -4,6 +4,7 @@ import com.erp.emails.dtos.AttachmentInput;
 import com.erp.emails.dtos.SendEmailRequest;
 import com.erp.emails.interfaces.AttachmentStorage;
 import com.erp.emails.model.EmailAttachment;
+import com.erp.emails.model.EmailAccount;
 import com.erp.emails.model.EmailMessage;
 import com.erp.emails.model.EmailStatus;
 import com.erp.emails.model.EmailType;
@@ -24,19 +25,28 @@ public class EmailComposerService {
     private final EmailAttachmentR attachRepo;
     private final TemplateService templateService;
     private final AttachmentStorage storage;
+    private final EmailAccountService accountService;
+    private final EmailBlacklistService blacklistService;
 
     public EmailComposerService(EmailMessageR emailRepo,
                                 EmailAttachmentR attachRepo,
                                 TemplateService templateService,
-                                AttachmentStorage storage) {
+                                AttachmentStorage storage,
+                                EmailAccountService accountService,
+                                EmailBlacklistService blacklistService) {
         this.emailRepo = emailRepo;
         this.attachRepo = attachRepo;
         this.templateService = templateService;
         this.storage = storage;
+        this.accountService = accountService;
+        this.blacklistService = blacklistService;
     }
 
     @Transactional
     public UUID enqueue(EmailType type, SendEmailRequest req) {
+        blacklistService.validateRecipients(mergeRecipients(req.to, req.cc, req.bcc));
+        EmailAccount account = accountService.resolveAccount(req.accountId, type);
+
         EmailMessage msg = new EmailMessage();
         msg.setType(type);
         msg.setStatus(EmailStatus.PENDING);
@@ -45,6 +55,8 @@ public class EmailComposerService {
         msg.setBccRecipients(join(req.bcc));
         msg.setSubject(req.subject);
         msg.setCorrelationId(req.correlationId);
+        msg.setAccount(account);
+        msg.setFromAddress(account.getFromAddress());
         msg.setAttempts(0);
 
         // cuerpo
@@ -83,5 +95,13 @@ public class EmailComposerService {
     private String join(List<String> xs) {
         if (xs == null || xs.isEmpty()) return null;
         return xs.stream().map(String::trim).filter(s -> !s.isBlank()).collect(Collectors.joining(","));
+    }
+
+    @SafeVarargs
+    private final List<String> mergeRecipients(List<String>... groups) {
+        return java.util.Arrays.stream(groups)
+                .filter(list -> list != null && !list.isEmpty())
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 }

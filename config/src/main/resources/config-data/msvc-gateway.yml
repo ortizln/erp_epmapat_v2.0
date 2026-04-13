@@ -212,7 +212,7 @@ spring:
           uri: http://msvc-emails:9099
           #uri: http://127.0.0.1:9099
           predicates:
-            - Path=/api/v1/emails/**
+            - Path=/api/v1/emails/**, /api/v1/email-accounts/**, /api/v1/email-blacklist/**
 
 springdoc:
   api-docs:

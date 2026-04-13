@@ -20,5 +20,6 @@ public class SendEmailRequest {
     public String text;
 
     public String correlationId;
+    public Long accountId;
     public List<AttachmentInput> attachments;
 }

@@ -2,6 +2,7 @@ package com.erp.emails.component;
 
 import com.erp.emails.model.EmailStatus;
 import com.erp.emails.repository.EmailMessageR;
+import com.erp.emails.service.EmailBlacklistViolationException;
 import com.erp.emails.service.MailSenderService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,6 +40,9 @@ public class OutboxWorker {
                 msg.setStatus(EmailStatus.SENT);
                 msg.setSentAt(OffsetDateTime.now());
                 msg.setLastError(null);
+            } catch (EmailBlacklistViolationException e) {
+                msg.setLastError(e.getMessage());
+                msg.setStatus(EmailStatus.FAILED);
             } catch (Exception e) {
                 msg.setLastError(e.getMessage());
                 if (msg.getAttempts() >= maxAttempts) {

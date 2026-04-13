@@ -11,6 +11,10 @@ public class EmailResponse {
     public EmailStatus status;
     public String subject;
     public String correlationId;
+    public Long accountId;
+    public String accountCode;
+    public String accountName;
+    public String fromAddress;
     public int attempts;
     public String lastError;
     public OffsetDateTime createdAt;

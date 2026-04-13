@@ -13,6 +13,7 @@ import org.springframework.data.domain.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.OffsetDateTime;
 import java.util.UUID;
 
 @RestController
@@ -30,22 +31,31 @@ public class EmailController {
     // 1) Documentos (XML/PDF)
     @PostMapping("/documents")
     public ResponseEntity<?> sendDocuments(@Valid @RequestBody SendEmailRequest req) {
-        UUID id = composer.enqueue(EmailType.DOC_ELECTRONICO, req);
-        return ResponseEntity.accepted().body(new IdResponse(id));
+        return enqueue(EmailType.DOC_ELECTRONICO, req);
     }
 
     // 2) Notificaciones
     @PostMapping("/notifications")
     public ResponseEntity<?> sendNotifications(@Valid @RequestBody SendEmailRequest req) {
-        UUID id = composer.enqueue(EmailType.NOTIFICACION, req);
-        return ResponseEntity.accepted().body(new IdResponse(id));
+        return enqueue(EmailType.NOTIFICACION, req);
+    }
+
+    // 2.1) Notificaciones de deuda
+    @PostMapping("/debt-notifications")
+    public ResponseEntity<?> sendDebtNotifications(@Valid @RequestBody SendEmailRequest req) {
+        return enqueue(EmailType.NOTIFICACION, req);
+    }
+
+    // 2.2) Alias semantico para documentos electronicos
+    @PostMapping("/electronic-documents")
+    public ResponseEntity<?> sendElectronicDocuments(@Valid @RequestBody SendEmailRequest req) {
+        return enqueue(EmailType.DOC_ELECTRONICO, req);
     }
 
     // 3) Custom
     @PostMapping("/custom")
     public ResponseEntity<?> sendCustom(@Valid @RequestBody SendEmailRequest req) {
-        UUID id = composer.enqueue(EmailType.CUSTOM, req);
-        return ResponseEntity.accepted().body(new IdResponse(id));
+        return enqueue(EmailType.CUSTOM, req);
     }
 
     // Admin: detalle
@@ -62,11 +72,25 @@ public class EmailController {
             @RequestParam(required = false) EmailStatus status,
             @RequestParam(required = false) EmailType type,
             @RequestParam(required = false) String correlationId,
+            @RequestParam(required = false) Long accountId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
         var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-        var spec = EmailSpecs.filter(status, type, correlationId);
+        var spec = EmailSpecs.filter(status, type, correlationId, accountId);
+        return emailRepo.findAll(spec, pageable).map(this::toResponse);
+    }
+
+    @GetMapping("/pending/stale")
+    public Page<EmailResponse> listStalePending(
+            @RequestParam(defaultValue = "30") int olderThanMinutes,
+            @RequestParam(required = false) Integer minAttempts,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        OffsetDateTime createdBefore = OffsetDateTime.now().minusMinutes(Math.max(olderThanMinutes, 0));
+        var pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "createdAt"));
+        var spec = EmailSpecs.pendingStale(createdBefore, minAttempts);
         return emailRepo.findAll(spec, pageable).map(this::toResponse);
     }
 
@@ -101,6 +125,12 @@ public class EmailController {
         r.status = e.getStatus();
         r.subject = e.getSubject();
         r.correlationId = e.getCorrelationId();
+        if (e.getAccount() != null) {
+            r.accountId = e.getAccount().getId();
+            r.accountCode = e.getAccount().getCode();
+            r.accountName = e.getAccount().getName();
+        }
+        r.fromAddress = e.getFromAddress();
         r.attempts = e.getAttempts();
         r.lastError = e.getLastError();
         r.createdAt = e.getCreatedAt();
@@ -109,4 +139,15 @@ public class EmailController {
     }
 
     public record IdResponse(UUID id) {}
+
+    private ResponseEntity<?> enqueue(EmailType type, SendEmailRequest req) {
+        try {
+            UUID id = composer.enqueue(type, req);
+            return ResponseEntity.accepted().body(new IdResponse(id));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(ex.getMessage());
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(409).body(ex.getMessage());
+        }
+    }
 }
