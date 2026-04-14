@@ -3,9 +3,27 @@ server:
 spring:
   application:
     name: msvc-emails
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
 eureka:
   instance:
     hostname: msvc-emails  # El nombre del contenedor o el servicio en Docker Compose
   client:
     service-url:
       defaultZone: ${EUREKA_SERVICEURL}:8761/eureka/  # Usar el nombre del servicio Docker
+mailms:
+  attachment-storage:
+    base-path: "./data/attachments"
+  outbox:
+    batch-size: 20
+    max-attempts: 5
+    initial-backoff-seconds: 30
+    backoff-multiplier: 2
+    scheduler-fixed-delay-ms: 15000

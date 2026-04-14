@@ -1,10 +1,14 @@
 package com.erp.emails.component;
+
 import com.erp.emails.interfaces.AttachmentStorage;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.UUID;
@@ -14,7 +18,9 @@ public class FileSystemAttachmentStorage implements AttachmentStorage {
 
     private final Path basePath;
 
-    public FileSystemAttachmentStorage(@Value("${mailms.attachment-storage.base-path}") String basePath) {
+    public FileSystemAttachmentStorage(
+            @Value("${mailms.attachment-storage.base-path:${xml.storage.path:.//Files//mail-attachments//}}")
+            String basePath) {
         this.basePath = Paths.get(basePath).toAbsolutePath().normalize();
     }
 
@@ -31,6 +37,17 @@ public class FileSystemAttachmentStorage implements AttachmentStorage {
             return new StoredObject(out.toString(), bytes.length, sha);
         } catch (IOException e) {
             throw new RuntimeException("No se pudo guardar adjunto en disco", e);
+        }
+    }
+
+    @Override
+    public void delete(String storageRef) {
+        if (storageRef == null || storageRef.isBlank()) {
+            return;
+        }
+        try {
+            Files.deleteIfExists(Paths.get(storageRef));
+        } catch (IOException ignored) {
         }
     }
 

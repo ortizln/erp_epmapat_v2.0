@@ -3,17 +3,29 @@ package com.erp.emails.controller;
 import com.erp.emails.component.EmailSpecs;
 import com.erp.emails.dtos.EmailResponse;
 import com.erp.emails.dtos.SendEmailRequest;
+import com.erp.emails.model.EmailAttachment;
 import com.erp.emails.model.EmailMessage;
 import com.erp.emails.model.EmailStatus;
 import com.erp.emails.model.EmailType;
+import com.erp.emails.repository.EmailAttachmentR;
 import com.erp.emails.repository.EmailMessageR;
 import com.erp.emails.service.EmailComposerService;
 import jakarta.validation.Valid;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -22,43 +34,29 @@ public class EmailController {
 
     private final EmailComposerService composer;
     private final EmailMessageR emailRepo;
+    private final EmailAttachmentR attachmentRepo;
 
-    public EmailController(EmailComposerService composer, EmailMessageR emailRepo) {
+    public EmailController(EmailComposerService composer, EmailMessageR emailRepo, EmailAttachmentR attachmentRepo) {
         this.composer = composer;
         this.emailRepo = emailRepo;
+        this.attachmentRepo = attachmentRepo;
     }
 
-    // 1) Documentos (XML/PDF)
     @PostMapping("/documents")
     public ResponseEntity<?> sendDocuments(@Valid @RequestBody SendEmailRequest req) {
         return enqueue(EmailType.DOC_ELECTRONICO, req);
     }
 
-    // 2) Notificaciones
     @PostMapping("/notifications")
     public ResponseEntity<?> sendNotifications(@Valid @RequestBody SendEmailRequest req) {
         return enqueue(EmailType.NOTIFICACION, req);
     }
 
-    // 2.1) Notificaciones de deuda
-    @PostMapping("/debt-notifications")
-    public ResponseEntity<?> sendDebtNotifications(@Valid @RequestBody SendEmailRequest req) {
-        return enqueue(EmailType.NOTIFICACION, req);
-    }
-
-    // 2.2) Alias semantico para documentos electronicos
-    @PostMapping("/electronic-documents")
-    public ResponseEntity<?> sendElectronicDocuments(@Valid @RequestBody SendEmailRequest req) {
-        return enqueue(EmailType.DOC_ELECTRONICO, req);
-    }
-
-    // 3) Custom
     @PostMapping("/custom")
     public ResponseEntity<?> sendCustom(@Valid @RequestBody SendEmailRequest req) {
         return enqueue(EmailType.CUSTOM, req);
     }
 
-    // Admin: detalle
     @GetMapping("/{id}")
     public ResponseEntity<EmailResponse> getOne(@PathVariable UUID id) {
         return emailRepo.findById(id)
@@ -66,7 +64,6 @@ public class EmailController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Admin: listar simple (puedes mejorar con Specifications)
     @GetMapping
     public Page<EmailResponse> list(
             @RequestParam(required = false) EmailStatus status,
@@ -94,18 +91,18 @@ public class EmailController {
         return emailRepo.findAll(spec, pageable).map(this::toResponse);
     }
 
-    // Admin: retry (si está FAILED o PENDING con intentos < max)
     @PostMapping("/{id}/retry")
     public ResponseEntity<?> retry(@PathVariable UUID id) {
         return emailRepo.findById(id).map(e -> {
+            e.setAttempts(0);
             e.setStatus(EmailStatus.PENDING);
             e.setLastError(null);
+            e.setSentAt(null);
             emailRepo.save(e);
             return ResponseEntity.accepted().body(new IdResponse(id));
         }).orElse(ResponseEntity.notFound().build());
     }
 
-    // Admin: cancel (solo si PENDING)
     @PostMapping("/{id}/cancel")
     public ResponseEntity<?> cancel(@PathVariable UUID id) {
         return emailRepo.findById(id).map(e -> {
@@ -114,7 +111,7 @@ public class EmailController {
                 emailRepo.save(e);
                 return ResponseEntity.ok().build();
             }
-            return ResponseEntity.status(409).body("Solo se puede cancelar si está PENDING");
+            return ResponseEntity.status(409).body("Solo se puede cancelar si esta PENDING");
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -135,7 +132,31 @@ public class EmailController {
         r.lastError = e.getLastError();
         r.createdAt = e.getCreatedAt();
         r.sentAt = e.getSentAt();
+        r.to = splitCsv(e.getToRecipients());
+        r.cc = splitCsv(e.getCcRecipients());
+        r.bcc = splitCsv(e.getBccRecipients());
+        r.bodyHtml = e.getBodyHtml();
+        r.bodyText = e.getBodyText();
+        r.attachments = attachmentRepo.findByEmailId(e.getId()).stream().map(this::toAttachmentResponse).toList();
         return r;
+    }
+
+    private EmailResponse.EmailAttachmentResponse toAttachmentResponse(EmailAttachment attachment) {
+        EmailResponse.EmailAttachmentResponse response = new EmailResponse.EmailAttachmentResponse();
+        response.name = attachment.getFilename();
+        response.contentType = attachment.getContentType();
+        response.size = attachment.getSize();
+        return response;
+    }
+
+    private List<String> splitCsv(String value) {
+        if (value == null || value.isBlank()) {
+            return List.of();
+        }
+        return Arrays.stream(value.split("\\s*,\\s*"))
+                .map(String::trim)
+                .filter(item -> !item.isBlank())
+                .toList();
     }
 
     public record IdResponse(UUID id) {}

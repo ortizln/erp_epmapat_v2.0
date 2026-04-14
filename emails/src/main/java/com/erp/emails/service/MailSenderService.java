@@ -1,5 +1,6 @@
 package com.erp.emails.service;
 
+import com.erp.emails.interfaces.AttachmentStorage;
 import com.erp.emails.model.EmailAccount;
 import com.erp.emails.model.EmailAccountSecurityType;
 import com.erp.emails.model.EmailAccountTransportType;
@@ -42,13 +43,15 @@ public class MailSenderService {
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper;
     private final EmailBlacklistService blacklistService;
+    private final AttachmentStorage attachmentStorage;
 
     public MailSenderService(EmailAttachmentR attachRepo, RestTemplate restTemplate, ObjectMapper objectMapper,
-                             EmailBlacklistService blacklistService) {
+                             EmailBlacklistService blacklistService, AttachmentStorage attachmentStorage) {
         this.attachRepo = attachRepo;
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.blacklistService = blacklistService;
+        this.attachmentStorage = attachmentStorage;
     }
 
     public void sendNow(EmailMessage msg) {
@@ -166,17 +169,29 @@ public class MailSenderService {
         sender.setPort(account.getPort());
         sender.setProtocol(account.getProtocol());
         EmailAccountSecurityType effectiveSecurityType = resolveSecurityType(account);
+        boolean sslCompatibilityMode = effectiveSecurityType == EmailAccountSecurityType.SSL_TLS
+                && Integer.valueOf(465).equals(account.getPort());
 
-        if (account.getUsername() != null && !account.getUsername().isBlank()) sender.setUsername(account.getUsername());
-        if (account.getPassword() != null && !account.getPassword().isBlank()) sender.setPassword(account.getPassword());
+        if (account.getUsername() != null && !account.getUsername().isBlank()) {
+            sender.setUsername(account.getUsername());
+        }
+        if (account.getPassword() != null && !account.getPassword().isBlank()) {
+            sender.setPassword(account.getPassword());
+        }
 
         Properties props = sender.getJavaMailProperties();
         props.put("mail.transport.protocol", account.getProtocol());
         props.put("mail.smtp.auth", Boolean.toString(account.isAuthRequired()));
-        props.put("mail.smtp.starttls.enable", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.STARTTLS));
+        props.put("mail.smtp.starttls.enable", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.STARTTLS || sslCompatibilityMode));
         props.put("mail.smtp.starttls.required", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.STARTTLS));
         props.put("mail.smtp.ssl.enable", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.SSL_TLS));
         props.put("mail.smtp.ssl.trust", account.getHost());
+        if (account.getUsername() != null && !account.getUsername().isBlank()) {
+            props.put("mail.smtp.user", account.getUsername());
+        }
+        if (account.getPassword() != null && !account.getPassword().isBlank()) {
+            props.put("mail.smtp.password", account.getPassword());
+        }
         if (effectiveSecurityType == EmailAccountSecurityType.SSL_TLS) {
             props.put("mail.smtp.socketFactory.port", Integer.toString(account.getPort()));
             props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
@@ -198,21 +213,29 @@ public class MailSenderService {
     }
 
     private String maskUsername(String username) {
-        if (username == null || username.isBlank()) return "<empty>";
+        if (username == null || username.isBlank()) {
+            return "<empty>";
+        }
         int atIndex = username.indexOf('@');
-        if (atIndex > 1) return username.charAt(0) + "***" + username.substring(atIndex);
+        if (atIndex > 1) {
+            return username.charAt(0) + "***" + username.substring(atIndex);
+        }
         return "***";
     }
 
     private Map<String, Object> buildFrom(EmailAccount account) {
         Map<String, Object> from = new LinkedHashMap<>();
         from.put("email", account.getFromAddress());
-        if (account.getFromName() != null && !account.getFromName().isBlank()) from.put("name", account.getFromName());
+        if (account.getFromName() != null && !account.getFromName().isBlank()) {
+            from.put("name", account.getFromName());
+        }
         return from;
     }
 
     private List<Map<String, String>> csvToObjects(String csv) {
-        if (csv == null || csv.isBlank()) return List.of();
+        if (csv == null || csv.isBlank()) {
+            return List.of();
+        }
         return Arrays.stream(splitCsv(csv))
                 .map(String::trim)
                 .filter(value -> !value.isBlank())
@@ -248,5 +271,12 @@ public class MailSenderService {
                 .map(String::trim)
                 .filter(value -> !value.isBlank())
                 .collect(Collectors.toList());
+    }
+
+    public void cleanupAttachments(EmailMessage msg) {
+        List<EmailAttachment> attachments = attachRepo.findByEmailId(msg.getId());
+        for (EmailAttachment attachment : attachments) {
+            attachmentStorage.delete(attachment.getStorageRef());
+        }
     }
 }

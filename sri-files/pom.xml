@@ -207,10 +207,6 @@
         </dependency>
 
         <!-- Starter de correo -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
-        </dependency>
         <!-- Validación DTOs -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

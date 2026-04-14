@@ -2,26 +2,32 @@ package com.erp.pagosonline.services;
 
 import ch.qos.logback.classic.Logger;
 import com.erp.pagosonline.DTO.FacturaDTO;
-import com.erp.pagosonline.DTO.FacturaRequestDTO;
 import com.erp.pagosonline.interfaces.FacturasCobradas;
 import com.erp.pagosonline.interfaces.FacturasSinCobroInter;
 import com.erp.pagosonline.interfaces.NroFactura_int;
 import com.erp.pagosonline.models.Facturas;
 import com.erp.pagosonline.repositories.CajasR;
 import com.erp.pagosonline.repositories.FacturasR;
-import com.erp.pagosonline.repositories.RecaudaxcajaR;
 import com.erp.pagosonline.repositories.TmpinteresxfacR;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.*;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,20 +35,30 @@ public class FacturasService {
     private static final Logger log = (Logger) LoggerFactory.getLogger(FacturasService.class);
 
     private final FacturasR dao;
+
     @Autowired
     private TmpinteresxfacR tmpinteresxfacR;
+
     @Autowired
     private CajasR cajasR;
+
     @Autowired
     private RecaudaxcajaService rxc_service;
+
     @Autowired
     private CajasService cajasService;
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    @Value("${app.fec-factura.base-url}")
+    private String fecFacturaBaseUrl;
+
     @Autowired
     public FacturasService(FacturasR dao) {
         this.dao = dao;
     }
-    @Value("${host}")
-    private String eurekaServiceUrl;
+
     public Object findFacturasSinCobro(Long user, Long cuenta) {
         validateInput(user, cuenta);
         Map<String, Object> respuesta = new HashMap<>();
@@ -50,15 +66,15 @@ public class FacturasService {
         Boolean test = validateCajaStatus(connection);
         if (test) {
             boolean cuentaExist = dao.cuentaExist(cuenta);
-            if(!cuentaExist){
+            if (!cuentaExist) {
                 respuesta.put("status", 200);
-                respuesta.put("message","La cuenta: " +cuenta+" no existe.");
+                respuesta.put("message", "La cuenta: " + cuenta + " no existe.");
                 return respuesta;
             }
             List<FacturasSinCobroInter> facturas = dao.findFacturasSinCobro(cuenta);
-            if(facturas.isEmpty()){
+            if (facturas.isEmpty()) {
                 respuesta.put("status", 200);
-                respuesta.put("message","No tiene deudas pendientes");
+                respuesta.put("message", "No tiene deudas pendientes");
                 return respuesta;
             }
             return buildResponse(cuenta, facturas);
@@ -68,27 +84,27 @@ public class FacturasService {
         }
 
     }
-    public List<Long> getListaPlanillas(Long cuenta){
+
+    public List<Long> getListaPlanillas(Long cuenta) {
         return dao.findPlanillas(cuenta);
     }
 
     private void validateInput(Long user, Long cuenta) {
         if (user == null || cuenta == null) {
-            throw new IllegalArgumentException("Los parámetros 'user' y 'cuenta' no pueden ser nulos");
+            throw new IllegalArgumentException("Los parametros 'user' y 'cuenta' no pueden ser nulos");
         }
     }
 
-    public Optional<Facturas> findFacturaById(Long idfactura){
+    public Optional<Facturas> findFacturaById(Long idfactura) {
         return dao.findById(idfactura);
     }
+
     public Boolean validateCajaStatus(Map<String, Object> connection) {
-        // Validación de entrada
         Boolean respuesta = false;
         if (connection == null || !connection.containsKey("estado")) {
             return false;
         }
         Object estado = connection.get("estado");
-        // Manejo de tipos de estado
         if (estado instanceof Boolean) {
             respuesta = (Boolean) estado;
         } else if (estado instanceof Integer) {
@@ -110,7 +126,7 @@ public class FacturasService {
         if (facturas == null || facturas.isEmpty()) {
             return createEmptyResponse(cuenta);
         }
-        for(FacturasSinCobroInter f: facturas){
+        for (FacturasSinCobroInter f : facturas) {
             interes = interes.add(f.getInteres() != null ? f.getInteres() : BigDecimal.ZERO);
         }
 
@@ -152,111 +168,64 @@ public class FacturasService {
             super(message);
         }
     }
-    @Autowired
-    private RestTemplate restTemplate;
 
-    public <S extends Facturas> Facturas __cobrarFactura(S factura){
-        if(factura.getNrofactura() == null){
-            NroFactura_int _nroFactura = cajasR.buildNroFactura(factura.getUsuariocobro());
-            String secuencial = fSecuencial(_nroFactura.getSecuencial());
-            String puntoEmision = fPemiCaja(_nroFactura.getEstablecimiento());
-            String codigo = fPemiCaja(_nroFactura.getCodigo());
-            String nrofactura = puntoEmision + '-' + codigo +'-'+ secuencial;
-            rxc_service.updateLastfactFinFac(factura.getUsuariocobro(), Long.valueOf(secuencial));
-            factura.setNrofactura(nrofactura);
-        }
-
-        // Guardamos la factura primero
-        Facturas savedFactura = dao.save(factura);
-
-        try {
-            // Construimos la URL del microservicio
-          //  String url = eurekaServiceUrl + ":8080/fec_factura/createFacElectro?idfactura=" + savedFactura.getIdfactura();
-            String url ="192.168.0.165:8080/fec_factura/createFacElectro?idfactura=" + savedFactura.getIdfactura();
-
-            // Consumimos el microservicio (POST sin body, pero puedes ajustar si requiere JSON)
-            ResponseEntity<String> response = restTemplate.getForEntity(url, null, String.class);
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("Factura electrónica creada correctamente en el microservicio: " + response.getBody());
-            } else {
-                System.err.println("Error al crear factura electrónica. Status: " + response.getStatusCode());
-            }
-
-        } catch (Exception e) {
-            System.err.println("Error al llamar al microservicio de factura electrónica: " + e.getMessage());
-        }
-
-        return savedFactura;
+    public <S extends Facturas> Facturas __cobrarFactura(S factura) {
+        return cobrarFactura(factura);
     }
+
     public <S extends Facturas> Facturas cobrarFactura(S factura) {
         if (factura.getNrofactura() == null) {
-            NroFactura_int _nroFactura = cajasR.buildNroFactura(factura.getUsuariocobro());
-            String secuencial = fSecuencial(_nroFactura.getSecuencial());
-            String puntoEmision = fPemiCaja(_nroFactura.getEstablecimiento());
-            String codigo = fPemiCaja(_nroFactura.getCodigo());
+            NroFactura_int nroFactura = cajasR.buildNroFactura(factura.getUsuariocobro());
+            String secuencial = fSecuencial(nroFactura.getSecuencial());
+            String puntoEmision = fPemiCaja(nroFactura.getEstablecimiento());
+            String codigo = fPemiCaja(nroFactura.getCodigo());
             String nrofactura = puntoEmision + '-' + codigo + '-' + secuencial;
             rxc_service.updateLastfactFinFac(factura.getUsuariocobro(), Long.valueOf(secuencial));
             factura.setNrofactura(nrofactura);
         }
 
-        // Guardamos la factura primero
         Facturas savedFactura = dao.save(factura);
-
-        // Llamada opcional al microservicio (sin detener flujo)
-        try {
-            String url = eurekaServiceUrl + ":8080/fec_factura/createFacElectro?idfactura=" + savedFactura.getIdfactura();
-            // Intentar consumir el microservicio
-            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                System.out.println("✅ Factura electrónica creada correctamente en el microservicio: " + response.getBody());
-            } else {
-                System.out.println("⚠️ Microservicio respondió con estado: " + response.getStatusCode());
-            }
-
-        } catch (ResourceAccessException e) {
-            // Error de conexión (microservicio no disponible)
-            System.out.println("⚠️ No se pudo conectar con el microservicio fec_factura. Continuando proceso localmente...");
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            // Errores HTTP (404, 500, etc.)
-            System.out.println("⚠️ El microservicio devolvió error HTTP: " + e.getStatusCode());
-        } catch (Exception e) {
-            // Cualquier otro error inesperado
-            System.out.println("⚠️ Ocurrió un problema al intentar emitir factura electrónica: " + e.getMessage());
-        }
-
+        emitirFacturaElectronica(savedFactura.getIdfactura());
         return savedFactura;
     }
 
+    private void emitirFacturaElectronica(Long idfactura) {
+        String url = UriComponentsBuilder.fromHttpUrl(fecFacturaBaseUrl)
+                .path("/createFacElectro")
+                .queryParam("idfactura", idfactura)
+                .toUriString();
 
-    public <S extends Facturas> Facturas _cobrarFactura(S factura){
-        if(factura.getNrofactura() == null){
-            NroFactura_int _nroFactura = cajasR.buildNroFactura(factura.getUsuariocobro());
-            String secuencial = fSecuencial(_nroFactura.getSecuencial());
-            String puntoEmision = fPemiCaja(_nroFactura.getEstablecimiento());
-            String codigo = fPemiCaja(_nroFactura.getCodigo());
-            String nrofactura = puntoEmision + '-' + codigo +'-'+ secuencial;
-            rxc_service.updateLastfactFinFac(factura.getUsuariocobro(), Long.valueOf(secuencial));
-            factura.setNrofactura(nrofactura);
+        try {
+            ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+            if (response.getStatusCode().is2xxSuccessful()) {
+                log.info("Factura electronica emitida correctamente para idfactura={}", idfactura);
+            } else {
+                log.warn("fec_facturaapi respondio con estado {} para idfactura={}", response.getStatusCode(), idfactura);
+            }
+        } catch (ResourceAccessException e) {
+            log.warn("No se pudo conectar con fec_facturaapi en {} para idfactura={}", fecFacturaBaseUrl, idfactura);
+        } catch (HttpClientErrorException | HttpServerErrorException e) {
+            log.warn("fec_facturaapi devolvio error HTTP {} para idfactura={}", e.getStatusCode(), idfactura);
+        } catch (Exception e) {
+            log.error("Error inesperado al emitir factura electronica para idfactura={}", idfactura, e);
         }
-        //implementar un resttemplate para consumir un microservicio
-        return dao.save(factura);
+    }
+
+    public <S extends Facturas> Facturas _cobrarFactura(S factura) {
+        return cobrarFactura(factura);
     }
 
     public static String fSecuencial(Long numero) {
         String formato = "%09d";
         return String.format(formato, numero);
     }
+
     public static String fPemiCaja(Long numero) {
         String formato = "%03d";
         return String.format(formato, numero);
     }
 
-    public List<FacturasCobradas> getReporteFacturasCobradas(Long idusuario, LocalDate df, LocalDate hf, LocalTime dh, LocalTime hh){
-        return dao.getReporteFacturasCobradas(idusuario,df,hf,dh, hh);
+    public List<FacturasCobradas> getReporteFacturasCobradas(Long idusuario, LocalDate df, LocalDate hf, LocalTime dh, LocalTime hh) {
+        return dao.getReporteFacturasCobradas(idusuario, df, hf, dh, hh);
     }
-
-
-
 }

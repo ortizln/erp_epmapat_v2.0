@@ -10,26 +10,11 @@ spring:
     url: ${DB_URL}
     username: ${DB_USER}
     password: ${DB_PASS}
-
-  mail:
-    host: ${MAIL_HOST:smtp.elasticemail.com}
-    port: ${MAIL_PORT:465}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
-    properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
-      mail.smtp.ssl.enable: true
-      mail.smtp.ssl.checkserveridentity: true
-      mail.smtp.ssl.trust: ${MAIL_HOST:smtp.elasticemail.com}
-      mail.smtp.connectiontimeout: 8000
-      mail.smtp.timeout: 8000
-      mail.smtp.writetimeout: 8000
-      mail.debug: true
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
+
 debug: false
 xml:
   storage:
@@ -41,22 +26,19 @@ app:
     base-url: http://msvc-emails:9099
   mail:
     from: facturacion@epmapatulcan.gob.ec
-    #from: locote.fumadote81@gmail.com
-    # opcional:
     username: facturacion
     display-name: EPMAPA-T
     reply-to: facturacion@epmapatulcan.gob.ec
-    #reply-to: locote.fumadote81@gmail.com
 interes:
   tarea:
     cron: 0 */1 * * * *
 sri:
-  ambiente: 2 # 1=PRUEBAS, 2=PRODUCCIÓN
+  ambiente: 2
   polling:
-    attempts: 40          # intentos máx
-    initialSleepMs: 2000  # primera espera
-    maxSleepMs: 8000      # techo de espera
-    backoffFactor: 1.5    # factor de crecimiento
+    attempts: 40
+    initialSleepMs: 2000
+    maxSleepMs: 8000
+    backoffFactor: 1.5
     stopOnNoAutorizado: true
   wsdl:
     local:
@@ -83,4 +65,3 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
-

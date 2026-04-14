@@ -20,11 +20,14 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @RestController
 @RequestMapping("/api/pagonline/facturas")
 public class FacturasApi {
+    private static final ZoneId ECUADOR_ZONE = ZoneId.of("America/Guayaquil");
+
     @Autowired
     private FacturasService facturasService;
     @Autowired
@@ -134,15 +137,15 @@ public class FacturasApi {
 
     @PutMapping("/cobrar")
     public ResponseEntity<Map<String, Object>> cobrar_Factura(@RequestBody FacturaRequestDTO facturaRequest) throws Exception {
-        LocalTime hora = LocalTime.now(ZoneId.of("America/Guayaquil")).withNano(0);
+        ZonedDateTime nowInEcuador = ZonedDateTime.now(ECUADOR_ZONE).withNano(0);
+        LocalDateTime date = nowInEcuador.toLocalDateTime();
+        LocalTime hora = nowInEcuador.toLocalTime();
         Map<String, Object> respuesta = new HashMap<>();
         Long _user = Long.valueOf(AESUtil.descifrar(facturaRequest.getAutentification()));
 
         LastConection_int lastConection = cajasService.getLastConectionByUduario(_user);
         //DECLARAR NUEVA RECAUDACION
         Recaudacion recaudacion = new Recaudacion();
-        LocalDateTime date = LocalDateTime.now();
-       // LocalTime hora = LocalTime.now(ZoneId.of("America/Guayaquil"));
         if(lastConection == null){
             respuesta.put("mensaje", "Caja cerrada no se puede cobrar");
             return ResponseEntity.ok(respuesta);
