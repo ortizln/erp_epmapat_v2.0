@@ -138,8 +138,9 @@ public class FacturasApi {
     @PutMapping("/cobrar")
     public ResponseEntity<Map<String, Object>> cobrar_Factura(@RequestBody FacturaRequestDTO facturaRequest) throws Exception {
         ZonedDateTime nowInEcuador = ZonedDateTime.now(ECUADOR_ZONE).withNano(0);
-        LocalDateTime date = nowInEcuador.toLocalDateTime();
-        LocalTime hora = nowInEcuador.toLocalTime();
+        LocalDate fechaCobro = nowInEcuador.toLocalDate();
+        LocalDateTime fechaHoraCobro = nowInEcuador.toLocalDateTime();
+        LocalTime horaCobro = nowInEcuador.toLocalTime();
         Map<String, Object> respuesta = new HashMap<>();
         Long _user = Long.valueOf(AESUtil.descifrar(facturaRequest.getAutentification()));
 
@@ -159,14 +160,14 @@ public class FacturasApi {
                 Usuarios recuadador = new Usuarios();
                 recuadador.setIdusuario(_user);
                 recaudacion.setEstado(1L);
-                recaudacion.setFechacobro(date);
+                recaudacion.setFechacobro(fechaHoraCobro);
                 recaudacion.setRecaudador(_user);
                 recaudacion.setTotalpagar(facturaRequest.getRecaudacion().getTotalpagar());
                 recaudacion.setValor(facturaRequest.getRecaudacion().getTotalpagar());
                 recaudacion.setFormapago(6L);
                 recaudacion.setRecibo(BigDecimal.valueOf(0));
                 recaudacion.setCambio(BigDecimal.valueOf(0));
-                recaudacion.setFeccrea(date);
+                recaudacion.setFeccrea(fechaHoraCobro);
                 recaudacion.setUsucrea(_user);
                 Recaudacion recaudacion_saved = recaudacionService.save(recaudacion);
                 if (recaudacion_saved != null) {
@@ -181,8 +182,8 @@ public class FacturasApi {
                             }
                             BigDecimal interesapagar = (tmpinteresxfacR.interesapagar(facturaId));
                             _factura.setPagado(1);
-                            _factura.setFechacobro(date);
-                            _factura.setHoracobro(hora);
+                            _factura.setFechacobro(fechaCobro);
+                            _factura.setHoracobro(horaCobro);
                             _factura.setUsuariocobro(_user);
                             _factura.setInterescobrado(interesapagar);
                             _factura.setFormapago(6L);

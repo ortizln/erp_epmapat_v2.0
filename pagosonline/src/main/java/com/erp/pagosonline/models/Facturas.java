@@ -30,7 +30,7 @@ public class Facturas {
     private BigDecimal totaltarifa;
     private Integer pagado;
     private Long usuariocobro;
-    private LocalDateTime fechacobro;
+    private LocalDate fechacobro;
     private Long estado;
     private Long usuarioanulacion;
     private LocalDate fechaanulacion;
