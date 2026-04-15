@@ -130,7 +130,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<mainClass>com.erp.emails.component.MailMsApplication</mainClass>
+					<mainClass>com.erp.emails.EmailsApplication</mainClass>
 				</configuration>
 			</plugin>
 
