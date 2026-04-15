@@ -107,7 +107,7 @@ services:
       - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD==79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-recaudacion:9092/actuator/health" ]
@@ -135,7 +135,7 @@ services:
       - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD==79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-comercializacion:9093/actuator/health" ]
@@ -213,7 +213,7 @@ services:
       - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD==79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-pagosonline:32/actuator/health" ]
@@ -242,7 +242,7 @@ services:
       - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD==79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-sri:9096/actuator/health" ]
@@ -270,7 +270,7 @@ services:
       - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD==79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-reportesjr:9097/actuator/health" ]
@@ -298,7 +298,7 @@ services:
       - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD==79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-epmapaapi:9098/actuator/health" ]
@@ -326,7 +326,7 @@ services:
       - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD==79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-emails:9099/actuator/health" ]
