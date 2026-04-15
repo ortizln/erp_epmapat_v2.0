@@ -1,7 +1,15 @@
+FROM maven:3.9.9-eclipse-temurin-17 AS build
+WORKDIR /workspace
+
+COPY pom.xml pom.xml
+COPY emails/pom.xml emails/pom.xml
+COPY emails/src emails/src
+
+RUN mvn -f emails/pom.xml -pl emails -am package -DskipTests
+
 FROM eclipse-temurin:17-jdk-jammy
 LABEL authors="Alexis Ortiz"
 
-# Instalar librerías necesarias para JasperReports
 RUN apt-get update && apt-get install -y \
     libfreetype6 \
     libfontconfig1 \
@@ -9,9 +17,7 @@ RUN apt-get update && apt-get install -y \
     libxext6 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copiar el JAR compilado
-ARG JAR_FILE=target/emails-0.0.1.jar
-COPY ${JAR_FILE} app_emails.jar
+COPY --from=build /workspace/emails/target/emails-0.0.1.jar app_emails.jar
 
 EXPOSE 9096
 

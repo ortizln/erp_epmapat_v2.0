@@ -312,8 +312,8 @@ services:
           - msvc-epmapaapi
   msvc-emails:
     build:
-      context: emails
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: emails/Dockerfile
     image: msvc-emails:latest
     container_name: msvc-emails
     ports:
