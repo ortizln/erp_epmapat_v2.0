@@ -3,9 +3,12 @@ package com.erp.emails.service;
 import com.erp.emails.model.EmailMessage;
 import com.erp.emails.model.EmailStatus;
 import com.erp.emails.repository.EmailMessageR;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;
@@ -13,50 +16,101 @@ import java.util.UUID;
 @Service
 public class EmailProcessorService {
 
+    private static final Logger log = LoggerFactory.getLogger(EmailProcessorService.class);
+
     private final MailSenderService sender;
     private final EmailMessageR emailRepo;
+    private final TransactionTemplate requiresNewTx;
 
-    public EmailProcessorService(MailSenderService sender, EmailMessageR emailRepo) {
+    public EmailProcessorService(MailSenderService sender, EmailMessageR emailRepo, PlatformTransactionManager txManager) {
         this.sender = sender;
         this.emailRepo = emailRepo;
+        this.requiresNewTx = new TransactionTemplate(txManager);
+        this.requiresNewTx.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void procesarEmail(UUID emailId, int maxAttempts) {
-        EmailMessage msg = emailRepo.lockById(emailId).orElse(null);
+        EmailMessage msg = claimForProcessing(emailId, maxAttempts);
 
         if (msg == null) {
             return;
         }
 
-        if (msg.getStatus() != EmailStatus.PENDING || msg.getAttempts() >= maxAttempts) {
-            return;
-        }
-
-        msg.setAttempts(msg.getAttempts() + 1);
-
         try {
             sender.sendNow(msg);
+            markSent(msg.getId());
+            cleanupIfTerminal(msg);
+        } catch (EmailBlacklistViolationException e) {
+            markFailure(msg.getId(), e.getMessage(), true);
+            cleanupIfTerminal(msg);
+        } catch (Exception e) {
+            boolean terminalFailure = msg.getAttempts() >= maxAttempts;
+            markFailure(msg.getId(), e.getMessage(), terminalFailure);
+            if (terminalFailure) {
+                cleanupIfTerminal(msg);
+            }
+            log.error("Fallo procesando email {}: {}", msg.getId(), e.getMessage(), e);
+        }
+    }
+
+    private EmailMessage claimForProcessing(UUID emailId, int maxAttempts) {
+        return requiresNewTx.execute(status -> {
+            EmailMessage msg = emailRepo.lockById(emailId).orElse(null);
+
+            if (msg == null) {
+                return null;
+            }
+
+            if (msg.getStatus() != EmailStatus.PENDING || msg.getAttempts() >= maxAttempts) {
+                return null;
+            }
+
+            msg.setAttempts(msg.getAttempts() + 1);
+            return emailRepo.saveAndFlush(msg);
+        });
+    }
+
+    private void markSent(UUID emailId) {
+        requiresNewTx.executeWithoutResult(status -> {
+            EmailMessage msg = emailRepo.lockById(emailId).orElse(null);
+            if (msg == null) {
+                return;
+            }
+
             msg.setStatus(EmailStatus.SENT);
             msg.setSentAt(OffsetDateTime.now());
             msg.setLastError(null);
-        } catch (EmailBlacklistViolationException e) {
-            msg.setLastError(e.getMessage());
-            msg.setStatus(EmailStatus.FAILED);
-        } catch (Exception e) {
-            msg.setLastError(e.getMessage());
-            if (msg.getAttempts() >= maxAttempts) {
+            emailRepo.saveAndFlush(msg);
+        });
+    }
+
+    private void markFailure(UUID emailId, String errorMessage, boolean terminalFailure) {
+        requiresNewTx.executeWithoutResult(status -> {
+            EmailMessage msg = emailRepo.lockById(emailId).orElse(null);
+            if (msg == null) {
+                return;
+            }
+
+            msg.setLastError(truncate(errorMessage, 1900));
+            if (terminalFailure) {
                 msg.setStatus(EmailStatus.FAILED);
             }
-        }
+            emailRepo.saveAndFlush(msg);
+        });
+    }
 
-        emailRepo.saveAndFlush(msg);
-
-        if (msg.getStatus() == EmailStatus.SENT || msg.getStatus() == EmailStatus.FAILED || msg.getStatus() == EmailStatus.CANCELLED) {
-            try {
-                sender.cleanupAttachments(msg);
-            } catch (Exception ignored) {
-            }
+    private void cleanupIfTerminal(EmailMessage msg) {
+        try {
+            sender.cleanupAttachments(msg);
+        } catch (Exception e) {
+            log.warn("No se pudieron limpiar adjuntos del email {}: {}", msg.getId(), e.getMessage());
         }
+    }
+
+    private String truncate(String value, int maxLength) {
+        if (value == null || value.length() <= maxLength) {
+            return value;
+        }
+        return value.substring(0, maxLength);
     }
 }
