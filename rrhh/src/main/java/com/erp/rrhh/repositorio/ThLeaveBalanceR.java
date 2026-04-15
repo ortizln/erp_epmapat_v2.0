@@ -28,3 +28,4 @@ public interface ThLeaveBalanceR extends JpaRepository<ThLeaveBalance, Long> {
     Optional<ThLeaveBalance> findByPersonalAndAnio(@Param("idpersonal") Long idpersonal,
                                                    @Param("anio") Integer anio);
 }
+

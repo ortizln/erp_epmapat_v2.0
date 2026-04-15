@@ -37,3 +37,4 @@ public class ThAuditServicio {
         return dao.findByEntidadAndIdregistroOrderByFechaDesc(entidad, idregistro);
     }
 }
+

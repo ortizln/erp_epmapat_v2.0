@@ -28,3 +28,4 @@ public interface PersonalR extends JpaRepository<Personal, Long> {
             """)
     Page<Personal> search(@Param("q") String q, @Param("estado") Boolean estado, Pageable pageable);
 }
+

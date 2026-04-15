@@ -61,3 +61,4 @@ public class PersonalApi {
         return ResponseEntity.noContent().build();
     }
 }
+

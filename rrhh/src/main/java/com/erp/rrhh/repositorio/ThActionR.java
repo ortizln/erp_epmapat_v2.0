@@ -18,3 +18,4 @@ public interface ThActionR extends JpaRepository<ThAction, Long> {
             """)
     List<ThAction> findByPersonal(@Param("idpersonal") Long idpersonal);
 }
+

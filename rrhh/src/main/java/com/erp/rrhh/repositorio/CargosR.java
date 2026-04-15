@@ -8,3 +8,4 @@ public interface CargosR extends JpaRepository<Cargos, Long> {
     
 }
 
+

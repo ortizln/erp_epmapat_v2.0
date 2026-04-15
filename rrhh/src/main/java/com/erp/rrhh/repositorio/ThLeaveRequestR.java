@@ -39,3 +39,4 @@ public interface ThLeaveRequestR extends JpaRepository<ThLeaveRequest, Long> {
                          @Param("inicio") LocalDate inicio,
                          @Param("fin") LocalDate fin);
 }
+

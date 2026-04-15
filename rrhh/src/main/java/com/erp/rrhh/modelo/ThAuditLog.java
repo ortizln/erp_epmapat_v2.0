@@ -36,3 +36,4 @@ public class ThAuditLog {
         if (fecha == null) fecha = LocalDateTime.now();
     }
 }
+

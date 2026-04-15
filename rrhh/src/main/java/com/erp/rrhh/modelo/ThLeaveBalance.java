@@ -42,3 +42,4 @@ public class ThLeaveBalance {
     private Long usumodi;
     private Boolean estado;
 }
+

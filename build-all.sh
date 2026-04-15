@@ -1,23 +1,24 @@
 #!/bin/bash
 
 # Lista de módulos (carpetas)
-modules=("config" "sri-files" "comercializacion" "eureka" "gestiondocumental" "login" "pagosonline" "recaudacion" "gateway" "reportes-jr" "epmapaapi" "rrhh")
+modules=("config" "eureka" "gateway" "login" "recaudacion" "comercializacion" "rrhh" "contabilidad" "pagosonline" "sri-files" "reportes-jr" "epmapaapi" "emails")
 #26-novmiebre-2025
 # Mapa módulo → nombre de servicio en docker-compose
 # Ajusta estos nombres si en tu docker-compose.yml usan otros
 declare -A module_services=(
   ["config"]="config-server"
-  ["sri-files"]="msvc-sri"
-  ["comercializacion"]="msvc-comercializacion"
   ["eureka"]="msvc-eureka"
-  ["gestiondocumental"]="msvc-gestiondocumental"
-  ["login"]="msvc-login"
-  ["pagosonline"]="msvc-pagosonline"
-  ["recaudacion"]="msvc-recaudacion"
   ["gateway"]="msvc-gateway"
+  ["login"]="msvc-login"
+  ["recaudacion"]="msvc-recaudacion"
+  ["comercializacion"]="msvc-comercializacion"
+  ["rrhh"]="msvc-rrhh"
+  ["contabilidad"]="msvc-contabilidad"
+  ["pagosonline"]="msvc-pagosonline"
+  ["sri-files"]="msvc-sri"
   ["reportes-jr"]="msvc-reportesjr"
   ["epmapaapi"]="msvc-epmapaapi"
-  ["rrhh"]="msvc-rrhh"
+  ["emails"]="msvc-emails"
 )
 
 # Colores para output
@@ -75,7 +76,7 @@ compile_module() {
             return 1
         fi
 
-        if ./mvnw clean package -DskipTests; then
+        if mvn clean package -DskipTests; then
             log_success "✅ $module compilado correctamente"
             cd ..
             return 0

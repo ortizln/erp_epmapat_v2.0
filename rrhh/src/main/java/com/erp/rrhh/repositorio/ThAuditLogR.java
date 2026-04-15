@@ -10,3 +10,4 @@ public interface ThAuditLogR extends JpaRepository<ThAuditLog, Long> {
     List<ThAuditLog> findByEntidadOrderByFechaDesc(String entidad);
     List<ThAuditLog> findByEntidadAndIdregistroOrderByFechaDesc(String entidad, Long idregistro);
 }
+

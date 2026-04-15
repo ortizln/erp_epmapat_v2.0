@@ -37,3 +37,4 @@ public class ThActionApi {
         return ResponseEntity.ok(thActionServicio.findByPersonal(idpersonal));
     }
 }
+

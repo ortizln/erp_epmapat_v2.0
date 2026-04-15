@@ -32,3 +32,4 @@ public class ThEmployeeFileApi {
         return ResponseEntity.ok(service.byPersonal(idpersonal));
     }
 }
+

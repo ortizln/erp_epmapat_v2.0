@@ -22,3 +22,4 @@ public class Cargos {
     private Detcargo iddetcargo_detcargo; 
 }
 
+

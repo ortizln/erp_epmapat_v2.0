@@ -8,3 +8,4 @@ public interface DetcargoR extends JpaRepository<Detcargo, Long> {
 
 }
 
+

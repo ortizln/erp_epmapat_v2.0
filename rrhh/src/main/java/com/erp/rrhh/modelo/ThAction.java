@@ -41,3 +41,4 @@ public class ThAction {
     private Long usumodi;
     private Boolean estado;
 }
+

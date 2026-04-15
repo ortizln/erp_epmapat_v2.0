@@ -41,3 +41,4 @@ public class ThEmployeeFile {
     private LocalDate fecmodi;
     private Long usumodi;
 }
+

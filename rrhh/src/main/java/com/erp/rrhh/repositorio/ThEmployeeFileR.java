@@ -18,3 +18,4 @@ public interface ThEmployeeFileR extends JpaRepository<ThEmployeeFile, Long> {
             """)
     List<ThEmployeeFile> findByPersonal(@Param("idpersonal") Long idpersonal);
 }
+

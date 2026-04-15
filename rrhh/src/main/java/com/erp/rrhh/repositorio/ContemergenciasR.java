@@ -13,3 +13,4 @@ public interface ContemergenciasR extends JpaRepository<Contemergencia, Long> {
 
 }
 
+

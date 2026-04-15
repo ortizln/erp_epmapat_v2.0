@@ -30,3 +30,4 @@ public class ThAuditApi {
         return ResponseEntity.ok(service.byEntidadAndRegistro(entidad, idregistro));
     }
 }
+

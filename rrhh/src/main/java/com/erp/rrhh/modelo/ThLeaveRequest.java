@@ -47,3 +47,4 @@ public class ThLeaveRequest {
     private Long usumodi;
     private Boolean activo;
 }
+

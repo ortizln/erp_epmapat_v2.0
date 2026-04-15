@@ -118,7 +118,7 @@ spring:
           uri: http://msvc-rrhh:9101
           #uri: http://127.0.0.1:9101
           predicates:
-            - Path=/api/personal/**, /api/cargos/**, /api/detcargo/**, /api/tpcontratos/**, /api/contemergencia/**, /api/th-actions/**, /api/th-leave/**, /api/th-audit/**, /api/th-files/**
+            - Path=/api/personal/**, /api/cargos/**, /api/detcargo/**, /api/tpcontratos/**, /api/contemergencia/**, /api/th-actions/**, /api/th-leave/**, /api/th-audit/**, /api/th-files/**, /api/v1/rrhh/**
 
         - id: msvc-recaudacion
           uri: http://msvc-recaudacion:9092
@@ -144,7 +144,7 @@ spring:
           uri: http://msvc-rrhh:9101
           #uri: http://127.0.0.1:9101
           predicates:
-            - Path=/personal/**, /cargos/**, /detcargo/**, /tpcontratos/**, /contemergencia/**, /th-actions/**, /th-leave/**, /th-audit/**, /th-files/**
+            - Path=/personal/**, /cargos/**, /detcargo/**, /tpcontratos/**, /contemergencia/**, /th-actions/**, /th-leave/**, /th-audit/**, /th-files/**, /v1/rrhh/**
           filters:
             - RewritePath=/(?<segment>.*), /api/${segment}
 
