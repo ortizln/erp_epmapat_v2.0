@@ -5,7 +5,7 @@ COPY pom.xml pom.xml
 COPY emails/pom.xml emails/pom.xml
 COPY emails/src emails/src
 
-RUN mvn -f emails/pom.xml -pl emails -am package -DskipTests
+RUN mvn -f emails/pom.xml package -DskipTests
 
 FROM eclipse-temurin:17-jdk-jammy
 LABEL authors="Alexis Ortiz"
