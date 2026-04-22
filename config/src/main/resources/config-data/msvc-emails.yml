@@ -17,7 +17,7 @@ eureka:
     hostname: msvc-emails  # El nombre del contenedor o el servicio en Docker Compose
   client:
     service-url:
-      defaultZone: ${EUREKA_SERVICEURL}:8761/eureka/  # Usar el nombre del servicio Docker
+      defaultZone: ${EUREKA_SERVICEURL:http://msvc-eureka}:8761/eureka/  # Usar el nombre del servicio Docker
 mailms:
   attachment-storage:
     base-path: "./data/attachments"
