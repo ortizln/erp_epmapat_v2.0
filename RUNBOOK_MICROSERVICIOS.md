@@ -9,6 +9,9 @@ Ruta del proyecto:
 
 ---
 
+
+
+
 ## 2) Arquitectura (resumen)
 Servicios principales:
 - `config-server` (8888)
