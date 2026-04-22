@@ -7,6 +7,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Map;
 
 @Service
@@ -14,6 +15,8 @@ public class RetencionPdfService {
 
     public byte[] generarPdfDesdeXmlAutorizado(String xmlAutorizacion) throws Exception {
         var data = SriRetencionParser.parseAutorizacion(xmlAutorizacion);
+        URL logoUrl = new ClassPathResource("reports/LOGO-H.png").getURL();
+        data.params.put("logoUrl", logoUrl);
 
         JRBeanCollectionDataSource impuestosDs = new JRBeanCollectionDataSource(data.impuestos);
 

@@ -22,6 +22,7 @@
 	<parameter name="direccionSujetoRetenido" class="java.lang.String"/>
 	<parameter name="telefonoSujetoRetenido" class="java.lang.String"/>
 	<parameter name="emailSujetoRetenido" class="java.lang.String"/>
+	<parameter name="logoUrl" class="java.net.URL"/>
 	<field name="codigo" class="java.lang.String"/>
 	<field name="codigoRetencion" class="java.lang.String"/>
 	<field name="baseImponible" class="java.math.BigDecimal"/>
@@ -66,7 +67,7 @@
 			</textField>
 			<image>
 				<reportElement x="10" y="10" width="300" height="120" uuid="6700265d-f727-4443-a025-db96c081e74a"/>
-				<imageExpression><![CDATA["https://epmapatulcan.gob.ec/wp/wp-content/uploads/2021/05/LOGO-HORIZONTAL.png"]]></imageExpression>
+				<imageExpression><![CDATA[$P{logoUrl}]]></imageExpression>
 			</image>
 			<textField>
 				<reportElement x="334" y="91" width="209" height="30" uuid="9c777873-5fad-4916-9e3f-4c1d017fbce0"/>
