@@ -719,14 +719,12 @@ public class SRI_Controller {
                 ));
             }
 
-            ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
-
             if (xmlAutorizado != null) {
                 // --- Preparar adjuntos (Base64) ---
                 String nombrePdf  = "retencion_" + rc.getAutorizaciones() + ".pdf";
                 String nombreXml  = "retencion_" + rc.getAutorizaciones() + ".xml";
 
-                byte[] pdfBytes = pdfStream.toByteArray();
+                byte[] pdfBytes = retencionPdfService.generarPdfDesdeXmlAutorizado(xmlAutorizado);
                 byte[] xmlBytes = xmlAutorizado.getBytes(java.nio.charset.StandardCharsets.UTF_8);
 
                 String pdfBase64 = java.util.Base64.getEncoder().encodeToString(pdfBytes);
