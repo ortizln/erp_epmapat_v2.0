@@ -73,6 +73,9 @@ public class XmlToPdfService {
 
     public ByteArrayOutputStream generarFacturaPDF(String xmlAutorizado) {
         try {
+            if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
+                throw new IllegalArgumentException("XML autorizado vacío o nulo para generar el PDF");
+            }
             /*String basePath = System.getProperty("os.name").toLowerCase().contains("win")
                     ? "C:/reportsEpmapat/"
                     : "/home/epmapaadmin/reportsEpmapat/";*/
@@ -268,6 +271,9 @@ public class XmlToPdfService {
 
     public ByteArrayOutputStream generarFacturaPDF_v2(String xmlAutorizado) {
         try {
+            if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
+                throw new IllegalArgumentException("XML autorizado vacío o nulo para generar el PDF");
+            }
             String basePath = "/reports/";
             // Utilidad para manejo seguro de BigDecimal
             Function<String, BigDecimal> safeBigDecimal = value -> {
@@ -436,6 +442,9 @@ public class XmlToPdfService {
 
     public ByteArrayOutputStream generarFacturaPDF_v3(String xmlAutorizado) {
         try {
+            if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
+                throw new IllegalArgumentException("XML autorizado vacío o nulo para generar el PDF");
+            }
             String basePath = "/reports/";
 
             // Utilidad para manejo seguro de BigDecimal

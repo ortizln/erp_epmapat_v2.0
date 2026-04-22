@@ -711,6 +711,14 @@ public class SRI_Controller {
 
             // 8) Extraer XML autorizado
             String xmlAutorizado = extraerXmlAutorizado(rc);
+            if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of(
+                        "error", "No se pudo generar el PDF porque la autorización no devolvió XML autorizado",
+                        "detalle", "La respuesta del SRI llegó sin <comprobante> autorizado",
+                        "estado", rc != null && rc.getAutorizaciones() != null ? "AUTORIZADO_SIN_XML" : "SIN_RESPUESTA"
+                ));
+            }
+
             ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF(xmlAutorizado);
 
             if (xmlAutorizado != null) {
@@ -1435,7 +1443,10 @@ public class SRI_Controller {
         for (var aut : rc.getAutorizaciones().getAutorizacion()) {
             if (aut != null && "AUTORIZADO".equalsIgnoreCase(aut.getEstado())) {
                 // OJO: en algunos casos el SRI devuelve el XML dentro de CDATA; aquí lo retornamos tal cual
-                return aut.getComprobante();
+                String comprobante = aut.getComprobante();
+                if (comprobante != null && !comprobante.isBlank()) {
+                    return comprobante;
+                }
             }
         }
         return null;
