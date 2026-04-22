@@ -24,6 +24,18 @@ Servicios principales:
 - `msvc-epmapaapi` (9098)
 - `msvc-emails` (9099)
 
+### SRI: retenciones y facturas
+- El servicio `msvc-sri` concentra el flujo de comprobantes electrónicos.
+- Retenciones:
+  - envío y autorización: `POST /api/singsend/retencion`
+  - envío desde XML plano: `POST /api/singsend/retencion/string`
+  - descarga autorizada: `GET /api/singsend/retenciones/download`
+  - PDF: `GET /api/singsend/retenciones/pdf`
+  - XML: `GET /api/singsend/retenciones/xml`
+  - correo: `POST /api/singsend/retenciones/mail`
+- Ver guía completa:
+  - `SRI_RETENCIONES_FLUJO.md`
+
 ---
 
 ## 3) Pre-requisitos

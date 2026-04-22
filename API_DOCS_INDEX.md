@@ -34,6 +34,7 @@ Base Gateway:
 - **SRI**
   - UI: `http://localhost:8080/sri/swagger-ui.html`
   - JSON: `http://localhost:8080/sri/v3/api-docs`
+  - Guía retenciones: [`SRI_RETENCIONES_FLUJO.md`](./SRI_RETENCIONES_FLUJO.md)
 
 - **Reportes JR**
   - UI: `http://localhost:8080/reportes/swagger-ui.html`

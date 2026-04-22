@@ -1215,6 +1215,48 @@ public class SRI_Controller {
         }
     }
 
+    @GetMapping("/retenciones/download")
+    public ResponseEntity<?> descargarRetencionAutorizadaAlias(
+            @RequestParam String claveAcceso,
+            @RequestParam(defaultValue = "zip") String downloadType,
+            @RequestParam(defaultValue = "false") boolean wait,
+            @RequestParam(defaultValue = "60") int attempts,
+            @RequestParam(defaultValue = "8000") long sleepMillis
+    ) {
+        return descargarRetencionAutorizada(claveAcceso, downloadType, wait, attempts, sleepMillis);
+    }
+
+    @GetMapping("/retenciones/pdf")
+    public ResponseEntity<?> descargarRetencionPdfAlias(
+            @RequestParam String claveAcceso,
+            @RequestParam(defaultValue = "false") boolean wait,
+            @RequestParam(defaultValue = "60") int attempts,
+            @RequestParam(defaultValue = "8000") long sleepMillis
+    ) {
+        return descargarRetencionAutorizada(claveAcceso, "pdf", wait, attempts, sleepMillis);
+    }
+
+    @GetMapping("/retenciones/xml")
+    public ResponseEntity<?> descargarRetencionXmlAlias(
+            @RequestParam String claveAcceso,
+            @RequestParam(defaultValue = "false") boolean wait,
+            @RequestParam(defaultValue = "60") int attempts,
+            @RequestParam(defaultValue = "8000") long sleepMillis
+    ) {
+        return descargarRetencionAutorizada(claveAcceso, "xml", wait, attempts, sleepMillis);
+    }
+
+    @PostMapping("/retenciones/mail")
+    public ResponseEntity<?> enviarRetencionPorCorreoAlias(
+            @RequestParam String claveAcceso,
+            @RequestParam String emailDestino,
+            @RequestParam(defaultValue = "false") boolean wait,
+            @RequestParam(defaultValue = "60") int attempts,
+            @RequestParam(defaultValue = "8000") long sleepMillis
+    ) {
+        return enviarRetencionPorCorreo(claveAcceso, emailDestino, wait, attempts, sleepMillis);
+    }
+
 
     private static byte[] buildZip(String baseName, String xmlAutorizacionCompleta, byte[] pdfBytes) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
