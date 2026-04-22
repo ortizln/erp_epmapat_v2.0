@@ -57,8 +57,8 @@ public class SRI_Controller {
     private final RetencionEmailService retencionEmailService;
 
 
-    @Value("${eureka.service-url}")
-    private String eurekaServiceUrl;
+    @Value("${app.backend.base-url:http://192.168.0.165:9080}")
+    private String backendBaseUrl;
 
 
     // ===== Helpers / DTOs =====
@@ -390,7 +390,7 @@ public class SRI_Controller {
             if (factura == null) {
                 Boolean request = facturasService.findByIdfactura(idfactura);
                 if (Boolean.TRUE.equals(request)) {
-                    String url = eurekaServiceUrl + ":8080/fec_factura/createFacElectro?idfactura=" + idfactura;
+                    String url = backendBaseUrl + "/fec_factura/createFacElectro?idfactura=" + idfactura;
                     restTemplate.getForObject(url, Void.class);
 
                     // 🔹 Reintentos: esperar hasta que ya exista en BD
