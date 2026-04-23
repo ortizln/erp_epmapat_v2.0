@@ -22,7 +22,7 @@ logging.pattern.dateformat: yyyy-MM-dd HH:mm:ss
 spring.jackson.time-zone: America/Guayaquil
 mailms:
   attachment-storage:
-    base-path: "./data/attachments"
+    base-path: "/data/attachments"
   outbox:
     batch-size: 20
     max-attempts: 5

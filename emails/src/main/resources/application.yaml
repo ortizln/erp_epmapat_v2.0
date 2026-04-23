@@ -32,7 +32,7 @@ spring:
 mailms:
   from: "EPMAPA-T <no-reply@epmapatulcan.gob.ec>"
   attachment-storage:
-    base-path: "./data/attachments"
+    base-path: "/data/attachments"
   outbox:
     batch-size: 20
     max-attempts: 5

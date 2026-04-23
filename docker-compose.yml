@@ -356,6 +356,8 @@ services:
     container_name: msvc-emails
     ports:
       - "9099:9099"
+    volumes:
+      - ./data/attachments:/data/attachments
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
