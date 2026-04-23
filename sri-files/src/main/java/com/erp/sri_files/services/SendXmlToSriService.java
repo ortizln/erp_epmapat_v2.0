@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import javax.xml.namespace.QName;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.Normalizer;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -237,12 +239,15 @@ public class SendXmlToSriService {
             return result;
         }
 
-        Autorizacion aut = resp.getAutorizaciones().getAutorizacion().get(0);
+        Autorizacion aut = findAutorizacionAutorizada(resp);
+        if (aut == null) {
+            aut = resp.getAutorizaciones().getAutorizacion().get(0);
+        }
 
-        String estado = (aut.getEstado() == null ? "" : aut.getEstado().trim());
+        String estado = normEstado(aut.getEstado());
         result.setMensaje(estado);
 
-        if ("AUTORIZADO".equalsIgnoreCase(estado)) {
+        if ("AUTORIZADO".equals(estado)) {
             result.setAutorizado(true);
 
             // Número de autorización
@@ -261,13 +266,7 @@ public class SendXmlToSriService {
             }
 
             // XML autorizado (contenido de <comprobante>)
-            String xml = aut.getComprobante();
-            if (xml != null) {
-                xml = xml.trim();
-                if (xml.startsWith("<![CDATA[")) xml = xml.substring(9);
-                if (xml.endsWith("]]>")) xml = xml.substring(0, xml.length()-3);
-            }
-            result.setXmlAutorizado(xml);
+            result.setXmlAutorizado(normalizeComprobanteXml(aut.getComprobante()));
 
         } else {
             result.setAutorizado(false);
@@ -308,6 +307,10 @@ public class SendXmlToSriService {
         for (int intento = 1; intento <= maxIntentos; intento++) {
             try {
                 ultimo = consultarAutorizacion(claveAcceso);
+
+                if (findAutorizacionAutorizada(ultimo) != null) {
+                    return ultimo;
+                }
 
                 int num = parseNum(ultimo);
                 if (num > 0) {
@@ -364,17 +367,49 @@ public class SendXmlToSriService {
     }
 
     private boolean isDefinitivo(String estado){
-        return "AUTORIZADO".equalsIgnoreCase(estado) || "NO AUTORIZADO".equalsIgnoreCase(estado);
+        String n = normEstado(estado);
+        return "AUTORIZADO".equals(n) || "NO AUTORIZADO".equals(n);
     }
 
     /** Devuelve el XML autorizado (comprobante dentro de CDATA) o null. */
     public String extraerXmlAutorizado(RespuestaComprobante rc){
-        var a = first(rc);
-        if (a == null || !"AUTORIZADO".equalsIgnoreCase(s(a.getEstado()))) return null;
-        String comp = s(a.getComprobante());
-        if (comp.startsWith("<![CDATA[")) comp = comp.substring(9);
-        if (comp.endsWith("]]>")) comp = comp.substring(0, comp.length()-3);
+        Autorizacion autorizada = findAutorizacionAutorizada(rc);
+        return autorizada == null ? null : normalizeComprobanteXml(autorizada.getComprobante());
+    }
+
+    private static Autorizacion findAutorizacionAutorizada(RespuestaComprobante rc) {
+        if (rc == null || rc.getAutorizaciones() == null || rc.getAutorizaciones().getAutorizacion() == null) {
+            return null;
+        }
+        for (Autorizacion aut : rc.getAutorizaciones().getAutorizacion()) {
+            if (aut != null && "AUTORIZADO".equals(normEstado(aut.getEstado()))) {
+                String xml = normalizeComprobanteXml(aut.getComprobante());
+                if (xml != null && !xml.isBlank()) {
+                    return aut;
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String normalizeComprobanteXml(String xml) {
+        String comp = s(xml);
+        if (comp.startsWith("<![CDATA[")) {
+            comp = comp.substring(9);
+        }
+        if (comp.endsWith("]]>")) {
+            comp = comp.substring(0, comp.length() - 3);
+        }
+        if (!comp.isEmpty() && comp.charAt(0) == '\uFEFF') {
+            comp = comp.substring(1);
+        }
         return comp.trim();
+    }
+
+    private static String normEstado(String estado) {
+        String normalized = s(estado);
+        normalized = Normalizer.normalize(normalized, Normalizer.Form.NFD).replaceAll("\\p{M}+", "");
+        return normalized.trim().replaceAll("\\s+", " ").toUpperCase(Locale.ROOT);
     }
 
 }
