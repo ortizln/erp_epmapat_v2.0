@@ -11,6 +11,8 @@ import com.erp.emails.model.EmailType;
 import com.erp.emails.repository.EmailAttachmentR;
 import com.erp.emails.repository.EmailMessageR;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
@@ -20,6 +22,8 @@ import java.util.stream.Collectors;
 
 @Service
 public class EmailComposerService {
+
+    private static final Logger log = LoggerFactory.getLogger(EmailComposerService.class);
 
     private final EmailMessageR emailRepo;
     private final EmailAttachmentR attachRepo;
@@ -77,16 +81,28 @@ public class EmailComposerService {
         if (req.attachments != null) {
             for (AttachmentInput a : req.attachments) {
                 byte[] bytes = Base64.getDecoder().decode(a.base64);
-                var stored = storage.save(a.name, a.contentType, bytes);
+                String storageRef = buildStorageRef(a.name);
+                long size = bytes.length;
+                String sha256 = null;
+
+                try {
+                    var stored = storage.save(a.name, a.contentType, bytes);
+                    storageRef = stored.storageRef();
+                    size = stored.size();
+                    sha256 = stored.sha256();
+                } catch (RuntimeException ex) {
+                    log.warn("No se pudo guardar adjunto en disco para {}, se usara solo respaldo en BD: {}",
+                            a.name, ex.getMessage());
+                }
 
                 EmailAttachment att = new EmailAttachment();
                 att.setEmail(saved);
                 att.setFilename(a.name);
                 att.setContentType(a.contentType);
-                att.setSize(stored.size());
-                att.setStorageRef(stored.storageRef());
+                att.setSize(size);
+                att.setStorageRef(storageRef);
                 att.setContent(bytes);
-                att.setSha256(stored.sha256());
+                att.setSha256(sha256);
                 attachRepo.save(att);
             }
         }
@@ -96,6 +112,11 @@ public class EmailComposerService {
     private String join(List<String> xs) {
         if (xs == null || xs.isEmpty()) return null;
         return xs.stream().map(String::trim).filter(s -> !s.isBlank()).collect(Collectors.joining(","));
+    }
+
+    private String buildStorageRef(String filename) {
+        String safeName = filename == null ? "attachment" : filename.replaceAll("[^a-zA-Z0-9._-]", "_");
+        return "db://" + UUID.randomUUID() + "_" + safeName;
     }
 
     @SafeVarargs

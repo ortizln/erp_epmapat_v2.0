@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
@@ -45,9 +46,12 @@ public class FileSystemAttachmentStorage implements AttachmentStorage {
         if (storageRef == null || storageRef.isBlank()) {
             return;
         }
+        if (storageRef.startsWith("db://")) {
+            return;
+        }
         try {
             Files.deleteIfExists(Paths.get(storageRef));
-        } catch (IOException ignored) {
+        } catch (IOException | InvalidPathException ignored) {
         }
     }
 
