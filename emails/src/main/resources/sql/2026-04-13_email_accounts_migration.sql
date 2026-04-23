@@ -51,6 +51,9 @@ ALTER TABLE public.email_message
 ALTER TABLE public.email_message
     ADD COLUMN IF NOT EXISTS from_address varchar(320) NULL;
 
+ALTER TABLE public.email_attachment
+    ADD COLUMN IF NOT EXISTS content bytea NULL;
+
 DO $$
 BEGIN
     IF NOT EXISTS (

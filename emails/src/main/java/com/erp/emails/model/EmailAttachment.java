@@ -36,6 +36,10 @@ public class EmailAttachment {
     @Column(nullable = false, length = 800)
     private String storageRef; // ruta en disco
 
+    @Lob
+    @Column(name = "content", columnDefinition = "bytea")
+    private byte[] content;
+
     @Column(length = 64)
     private String sha256;
 

@@ -85,6 +85,7 @@ public class EmailComposerService {
                 att.setContentType(a.contentType);
                 att.setSize(stored.size());
                 att.setStorageRef(stored.storageRef());
+                att.setContent(bytes);
                 att.setSha256(stored.sha256());
                 attachRepo.save(att);
             }

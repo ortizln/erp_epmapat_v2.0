@@ -12,6 +12,7 @@ import jakarta.mail.internet.MimeMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -100,8 +101,7 @@ public class MailSenderService {
             }
 
             for (EmailAttachment att : attachments) {
-                File f = new File(att.getStorageRef());
-                helper.addAttachment(att.getFilename(), new FileSystemResource(f), att.getContentType());
+                helper.addAttachment(att.getFilename(), buildAttachmentResource(att), att.getContentType());
             }
 
             mailSender.send(mime);
@@ -248,16 +248,12 @@ public class MailSenderService {
     }
 
     private Map<String, Object> toApiAttachment(EmailAttachment attachment) {
-        try {
-            byte[] bytes = Files.readAllBytes(new File(attachment.getStorageRef()).toPath());
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("filename", attachment.getFilename());
-            item.put("contentType", attachment.getContentType());
-            item.put("base64", Base64.getEncoder().encodeToString(bytes));
-            return item;
-        } catch (IOException e) {
-            throw new RuntimeException("No se pudo leer adjunto " + attachment.getFilename(), e);
-        }
+        byte[] bytes = readAttachmentBytes(attachment);
+        Map<String, Object> item = new LinkedHashMap<>();
+        item.put("filename", attachment.getFilename());
+        item.put("contentType", attachment.getContentType());
+        item.put("base64", Base64.getEncoder().encodeToString(bytes));
+        return item;
     }
 
     private String[] splitCsv(String csv) {
@@ -271,6 +267,29 @@ public class MailSenderService {
                 .map(String::trim)
                 .filter(value -> !value.isBlank())
                 .collect(Collectors.toList());
+    }
+
+    private org.springframework.core.io.InputStreamSource buildAttachmentResource(EmailAttachment attachment) {
+        byte[] bytes = readAttachmentBytes(attachment);
+        return new ByteArrayResource(bytes);
+    }
+
+    private byte[] readAttachmentBytes(EmailAttachment attachment) {
+        if (attachment.getContent() != null && attachment.getContent().length > 0) {
+            return attachment.getContent();
+        }
+
+        File file = new File(attachment.getStorageRef());
+        if (!file.exists()) {
+            throw new RuntimeException("No se encontro el adjunto " + attachment.getFilename()
+                    + " ni en base de datos ni en disco");
+        }
+
+        try {
+            return Files.readAllBytes(file.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException("No se pudo leer adjunto " + attachment.getFilename(), e);
+        }
     }
 
     public void cleanupAttachments(EmailMessage msg) {
