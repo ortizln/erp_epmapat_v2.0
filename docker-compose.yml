@@ -236,7 +236,7 @@ services:
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - PAGOSONLINE_API_BASE_URL=http://msvc-pagosonline:32
-      - ERP_BACKEND_BASE_URL=http://192.168.0.165:8080/fec_facturaapi
+      - ERP_BACKEND_BASE_URL=http://192.168.0.165:8080/fec_factura
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=3pmapaT24
