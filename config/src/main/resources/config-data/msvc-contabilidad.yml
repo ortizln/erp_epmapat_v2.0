@@ -9,3 +9,5 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_SERVICEURL:http://msvc-eureka}:8761/eureka/
+logging.pattern.dateformat: yyyy-MM-dd HH:mm:ss
+spring.jackson.time-zone: America/Guayaquil

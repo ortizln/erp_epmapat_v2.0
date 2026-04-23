@@ -8,6 +8,9 @@ services:
     container_name: config-server
     ports:
       - "8888:8888"
+    environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
     restart: always
     networks:
       epmapat-nw:
@@ -23,6 +26,8 @@ services:
     ports:
       - "8761:8761"
     environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -45,6 +50,8 @@ services:
     ports:
       - "9090:9090"
     environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -74,6 +81,8 @@ services:
     ports:
       - "9091:9091"
     environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -103,6 +112,8 @@ services:
     ports:
       - "9092:9092"
     environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -132,6 +143,8 @@ services:
     ports:
       - "9093:9093"
     environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -161,6 +174,8 @@ services:
     ports:
       - "9101:9101"
     environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -187,6 +202,8 @@ services:
     ports:
       - "9102:9102"
     environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -213,6 +230,8 @@ services:
     ports:
       - "32:32"
     environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -245,6 +264,8 @@ services:
     ports:
       - "9096:9096"
     environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -274,6 +295,8 @@ services:
     ports:
       - "9097:9097"
     environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -303,6 +326,8 @@ services:
     ports:
       - "9098:9098"
     environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -332,6 +357,8 @@ services:
     ports:
       - "9099:9099"
     environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka

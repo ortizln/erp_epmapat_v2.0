@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Lista de módulos (carpetas)
-modules=("config" "eureka" "gateway" "login" "recaudacion" "comercializacion" "rrhh" "contabilidad" "pagosonline" "sri-files" "reportes-jr" "epmapaapi" "emails")
+modules=("config" "eureka" "login" "comercializacion" "recaudacion" "rrhh" "contabilidad" "pagosonline" "sri-files" "reportes-jr" "epmapaapi" "emails" "gateway")
 #26-novmiebre-2025
 # Mapa módulo → nombre de servicio en docker-compose
 # Ajusta estos nombres si en tu docker-compose.yml usan otros
