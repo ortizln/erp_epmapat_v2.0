@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class RetencionEmailService {
@@ -18,7 +19,7 @@ public class RetencionEmailService {
         this.mailService = mailService;
     }
 
-    public void enviarRetencion(
+    public UUID enviarRetencion(
             String correoDestino,
             String subject,
             String body,
@@ -52,6 +53,6 @@ public class RetencionEmailService {
                 Collections.emptyMap()
         );
 
-        mailService.send(request, baseName);
+        return mailService.send(request, baseName);
     }
 }

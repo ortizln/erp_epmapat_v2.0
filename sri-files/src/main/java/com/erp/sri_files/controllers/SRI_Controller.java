@@ -276,7 +276,7 @@ public class SRI_Controller {
 
             // Si no hay autorizacion aÃºn, devuelve 202 con mensaje breve
             return ResponseEntity.status(202).body(Map.of(
-                    "estado", "PENDIENTE",
+                    "estado", "SIN_AUTORIZACION_EN_SRI",
                     "detalle", "La autorizacion aÃºn no estÃ¡ disponible."
             ));
 
@@ -550,7 +550,7 @@ public class SRI_Controller {
             fecFacturaR.save(factura);
             // 9) Si no hay autorizacion aÃºn
             return ResponseEntity.status(202).body(Map.of(
-                    "estado", "PENDIENTE",
+                    "estado", "SIN_AUTORIZACION_EN_SRI",
                     "detalle", "La autorizacion aÃºn no estÃ¡ disponible."
             ));
 
@@ -639,7 +639,7 @@ public class SRI_Controller {
             }
             // 9) AÃºn no autorizado
             return ResponseEntity.status(202).body(Map.of(
-                    "estado", "PENDIENTE",
+                    "estado", "SIN_AUTORIZACION_EN_SRI",
                     "detalle", "La autorizacion aÃºn no estÃ¡ disponible."
             ));
         } catch (Exception e) {
@@ -790,7 +790,7 @@ public class SRI_Controller {
 
             // 9) AÃºn no autorizado
             return ResponseEntity.status(202).body(Map.of(
-                    "estado", "PENDIENTE",
+                    "estado", "SIN_AUTORIZACION_EN_SRI",
                     "detalle", "La autorizacion aÃºn no estÃ¡ disponible."
             ));
 
@@ -869,7 +869,7 @@ public class SRI_Controller {
                     || rc.getAutorizaciones().getAutorizacion().isEmpty()) {
 
                 return ResponseEntity.status(202).body(Map.of(
-                        "estado", "PENDIENTE",
+                        "estado", "SIN_AUTORIZACION_EN_SRI",
                         "detalle", "AÃºn no hay autorizaciones disponibles para la clave.",
                         "claveAcceso", claveAcceso
                 ));
@@ -1016,7 +1016,7 @@ public class SRI_Controller {
                     || rc.getAutorizaciones().getAutorizacion() == null
                     || rc.getAutorizaciones().getAutorizacion().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of(
-                        "estado", "PENDIENTE",
+                        "estado", "SIN_AUTORIZACION_EN_SRI",
                         "detalle", "AÃºn no hay autorizaciones disponibles para la clave.",
                         "claveAcceso", claveAcceso
                 ));
@@ -1135,7 +1135,7 @@ public class SRI_Controller {
                     || rc.getAutorizaciones().getAutorizacion() == null
                     || rc.getAutorizaciones().getAutorizacion().isEmpty()) {
                 return ResponseEntity.status(202).body(java.util.Map.of(
-                        "estado", "PENDIENTE",
+                        "estado", "SIN_AUTORIZACION_EN_SRI",
                         "detalle", "AÃºn no hay autorizaciones disponibles para la clave.",
                         "claveAcceso", claveAcceso
                 ));
@@ -1186,7 +1186,7 @@ public class SRI_Controller {
             String subject = "RetenciÃ³n electrÃ³nica - " + claveAcceso.trim();
             String body = "Se adjunta la retenciÃ³n electrÃ³nica en formato XML y PDF.\n\nClave de acceso: " + claveAcceso.trim();
 
-            retencionEmailService.enviarRetencion(
+            java.util.UUID emailQueueId = retencionEmailService.enviarRetencion(
                     emailDestino.trim(),
                     subject,
                     body,
@@ -1199,7 +1199,8 @@ public class SRI_Controller {
                     "ok", true,
                     "mensaje", "Correo enviado correctamente",
                     "email", emailDestino,
-                    "claveAcceso", claveAcceso
+                    "claveAcceso", claveAcceso,
+                    "emailQueueId", emailQueueId
             ));
 
         } catch (Exception e) {

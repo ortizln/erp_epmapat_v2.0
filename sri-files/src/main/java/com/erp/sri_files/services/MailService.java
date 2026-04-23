@@ -23,14 +23,14 @@ public class MailService {
     }
 
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1500))
-    public void send(SendMailRequest req) throws Exception {
-        send(req, null);
+    public java.util.UUID send(SendMailRequest req) throws Exception {
+        return send(req, null);
     }
 
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1500))
-    public void send(SendMailRequest req, String correlationId) throws Exception {
+    public java.util.UUID send(SendMailRequest req, String correlationId) throws Exception {
         validateAttachments(req.attachments());
-        emailMsClientService.enqueueDocumentEmail(req, correlationId);
+        return emailMsClientService.enqueueDocumentEmail(req, correlationId);
     }
 
     @Retryable(maxAttempts = 3, backoff = @Backoff(delay = 1500))
