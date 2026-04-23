@@ -31,7 +31,6 @@ public class EmailProcessorService {
 
     public void procesarEmail(UUID emailId, int maxAttempts) {
         EmailMessage msg = claimForProcessing(emailId, maxAttempts);
-
         if (msg == null) {
             return;
         }
@@ -44,7 +43,7 @@ public class EmailProcessorService {
             markFailure(msg.getId(), e.getMessage(), true);
             cleanupIfTerminal(msg);
         } catch (Exception e) {
-            boolean terminalFailure = msg.getAttempts() >= maxAttempts;
+            boolean terminalFailure = msg.getAttempts() >= maxAttempts || isMissingAttachmentFailure(e);
             markFailure(msg.getId(), e.getMessage(), terminalFailure);
             if (terminalFailure) {
                 cleanupIfTerminal(msg);
@@ -53,18 +52,36 @@ public class EmailProcessorService {
         }
     }
 
+    private boolean isMissingAttachmentFailure(Throwable error) {
+        Throwable current = error;
+        while (current != null) {
+            String message = current.getMessage();
+            if (current instanceof java.io.FileNotFoundException) {
+                return true;
+            }
+            if (message != null) {
+                String normalized = message.toLowerCase();
+                if (normalized.contains("no se encontro el adjunto")
+                        || normalized.contains("no se encontró el adjunto")
+                        || normalized.contains("email_attachment")
+                        || normalized.contains("file not found")) {
+                    return true;
+                }
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
     private EmailMessage claimForProcessing(UUID emailId, int maxAttempts) {
         return requiresNewTx.execute(status -> {
             EmailMessage msg = emailRepo.lockById(emailId).orElse(null);
-
             if (msg == null) {
                 return null;
             }
-
             if (msg.getStatus() != EmailStatus.PENDING || msg.getAttempts() >= maxAttempts) {
                 return null;
             }
-
             msg.setAttempts(msg.getAttempts() + 1);
             return emailRepo.saveAndFlush(msg);
         });
