@@ -533,17 +533,31 @@ public class SRI_Controller {
                         inlineImages
                 );
                 // --- Enviar ---
-                boolean mail = mailService.sendMail(mailReq, factura.getClaveacceso());
-                if(mail){
+                try {
+                    java.util.UUID emailQueueId = mailService.send(mailReq, factura.getClaveacceso());
                     factura.setEstado("A");
-                }
-                else{
+                    factura.setErrores(null);
+                    fecFacturaR.save(factura);
+                    return ResponseEntity.ok(java.util.Map.of(
+                            "ok", true,
+                            "mensaje", "Factura encolada correctamente para envio por correo",
+                            "idfactura", factura.getIdfactura(),
+                            "claveAcceso", factura.getClaveacceso(),
+                            "emailQueueId", emailQueueId
+                    ));
+                } catch (Exception mailEx) {
                     factura.setEstado("O");
+                    factura.setErrores(mailEx.getMessage());
+                    fecFacturaR.save(factura);
+                    return ResponseEntity.status(503).body(java.util.Map.of(
+                            "ok", false,
+                            "estado", "CORREO_NO_DISPONIBLE",
+                            "mensaje", "La factura ya esta autorizada, pero el servicio de correo no respondio correctamente.",
+                            "detalle", mailEx.getMessage(),
+                            "idfactura", factura.getIdfactura(),
+                            "claveAcceso", factura.getClaveacceso()
+                    ));
                 }
-                fecFacturaR.save(factura);
-                return ResponseEntity.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body("Enviado con exito");
             }
             factura.setEstado("P");
             factura.setErrores("Pendiente la autorizacion: " + xmlFirmado);
