@@ -185,6 +185,7 @@ public class MailSenderService {
         props.put("mail.smtp.starttls.enable", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.STARTTLS || sslCompatibilityMode));
         props.put("mail.smtp.starttls.required", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.STARTTLS));
         props.put("mail.smtp.ssl.enable", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.SSL_TLS));
+        props.put("mail.smtp.ssl.checkserveridentity", "false");
         props.put("mail.smtp.ssl.trust", account.getHost());
         if (account.getUsername() != null && !account.getUsername().isBlank()) {
             props.put("mail.smtp.user", account.getUsername());
