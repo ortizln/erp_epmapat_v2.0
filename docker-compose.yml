@@ -23,6 +23,7 @@ services:
     ports:
       - "8761:8761"
     environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
     healthcheck:
@@ -44,6 +45,7 @@ services:
     ports:
       - "9090:9090"
     environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46/ErpEpmapaT
@@ -72,6 +74,7 @@ services:
     ports:
       - "9091:9091"
     environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
@@ -100,6 +103,7 @@ services:
     ports:
       - "9092:9092"
     environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
@@ -128,6 +132,7 @@ services:
     ports:
       - "9093:9093"
     environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
@@ -156,6 +161,7 @@ services:
     ports:
       - "9101:9101"
     environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
@@ -181,6 +187,7 @@ services:
     ports:
       - "9102:9102"
     environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
@@ -206,8 +213,11 @@ services:
     ports:
       - "32:32"
     environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
+      - PAGOSONLINE_API_BASE_URL=http://msvc-pagosonline:32
+      - ERP_BACKEND_BASE_URL=http://192.168.0.165:8080/fec_facturaapi
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
       - DB_PASS=3pmapaT24
@@ -235,6 +245,7 @@ services:
     ports:
       - "9096:9096"
     environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
@@ -263,6 +274,7 @@ services:
     ports:
       - "9097:9097"
     environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
@@ -291,6 +303,7 @@ services:
     ports:
       - "9098:9098"
     environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
@@ -319,6 +332,7 @@ services:
     ports:
       - "9099:9099"
     environment:
+      - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
       - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT

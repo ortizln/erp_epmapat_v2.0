@@ -2,7 +2,7 @@ spring:
   application:
     name: msvc-pagosonline
   config:
-    import: optional:configserver:http://config-server:8888
+    import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
 
   datasource:
     driver-class-name: org.postgresql.Driver
@@ -23,9 +23,9 @@ spring:
     time-zone: America/Guayaquil
 app:
   api:
-    base-url: "http://192.168.0.165:9092"
+    base-url: ${PAGOSONLINE_API_BASE_URL:http://192.168.0.165:9092}
   fec-factura:
-    base-url: "http://192.168.0.165:8080/fec_facturaapi"
+    base-url: ${ERP_BACKEND_BASE_URL:http://192.168.0.165:8080/fec_facturaapi}
 
 
 springdoc:

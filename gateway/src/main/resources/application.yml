@@ -2,12 +2,12 @@ spring:
   application:
     name: msvc-gateway
   config:
-    import: optional:configserver:http://192.168.0.165:8888
+    import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
 
 eureka:
   client:
     service-url:
-      defaultZone: ${EUREKA_SERVICE_URL:http://192.168.0.165:8080}/eureka/
+      defaultZone: ${EUREKA_SERVICEURL:http://msvc-eureka}:8761/eureka/
     register-with-eureka: ${EUREKA_REGISTER_WITH_EUREKA:true}
     fetch-registry: ${EUREKA_FETCH_REGISTRY:true}
   instance:
