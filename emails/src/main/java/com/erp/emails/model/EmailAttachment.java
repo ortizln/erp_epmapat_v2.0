@@ -1,6 +1,8 @@
 package com.erp.emails.model;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,7 +38,7 @@ public class EmailAttachment {
     @Column(nullable = false, length = 800)
     private String storageRef; // ruta en disco
 
-    @Lob
+    @JdbcTypeCode(SqlTypes.VARBINARY)
     @Column(name = "content", columnDefinition = "bytea")
     private byte[] content;
 
