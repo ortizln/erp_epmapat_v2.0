@@ -947,6 +947,7 @@ public class SRI_Controller {
                 rc = sendXmlToSriService.consultarAutorizacion(claveAcceso.trim());
             }
 
+
             if (rc == null) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
                         "error", "Respuesta nula del servicio de autorizacion del SRI",
