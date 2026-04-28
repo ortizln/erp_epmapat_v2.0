@@ -117,7 +117,7 @@ public class SRI_Controller {
                 sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
             }
 
-            // 5) Enviar a recepciÃƒÂ³n
+            // 5) Enviar a recepciÃƒÆ’Ã‚Â³n
             RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
 
             // 6) Si RECIBIDA, aplicar polling hasta autorizacion
@@ -181,7 +181,7 @@ public class SRI_Controller {
                 sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
             }
 
-            // 4) Enviar a recepciÃƒÂ³n
+            // 4) Enviar a recepciÃƒÆ’Ã‚Â³n
             RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
 
 
@@ -243,7 +243,7 @@ public class SRI_Controller {
                 sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
             }
 
-            // 4) Enviar a recepciÃƒÂ³n
+            // 4) Enviar a recepciÃƒÆ’Ã‚Â³n
             RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
 
             // Si NO fue recibida, devolvemos error resumido (JSON)
@@ -268,16 +268,16 @@ public class SRI_Controller {
             // 6) Extraer el XML autorizado (si existe)
             String xmlAutorizado = extraerXmlAutorizado(rc);
             if (xmlAutorizado != null) {
-                // Ã¢Å“â€¦ SOLO devolvemos el XML autorizado
+                // ÃƒÂ¢Ã…â€œÃ¢â‚¬Â¦ SOLO devolvemos el XML autorizado
                 return ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_XML)
                         .body(xmlAutorizado);
             }
 
-            // Si no hay autorizacion aÃƒÂºn, devuelve 202 con mensaje breve
+            // Si no hay autorizacion aÃƒÆ’Ã‚Âºn, devuelve 202 con mensaje breve
             return ResponseEntity.status(202).body(Map.of(
                     "estado", "SIN_AUTORIZACION_EN_SRI",
-                    "detalle", "La autorizacion aÃƒÂºn no estÃƒÂ¡ disponible."
+                    "detalle", "La autorizacion aÃƒÆ’Ã‚Âºn no estÃƒÆ’Ã‚Â¡ disponible."
             ));
 
         } catch (Exception e) {
@@ -303,23 +303,23 @@ public class SRI_Controller {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body(Map.of(
                                 "codigo", "FACTURA_NO_ENCONTRADA",
-                                "error", "No se encontrÃƒÂ³ la factura",
+                                "error", "No se encontrÃƒÆ’Ã‚Â³ la factura",
                                 "idfactura", idfactura
                         ));
             }
 
             String xmlAutorizado = factura.getXmlautorizado();
             if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
-                // Factura sÃƒÂ­ existe, pero aÃƒÂºn no tiene XML autorizado
+                // Factura sÃƒÆ’Ã‚Â­ existe, pero aÃƒÆ’Ã‚Âºn no tiene XML autorizado
                 return ResponseEntity.status(HttpStatus.CONFLICT)
                         .body(Map.of(
                                 "codigo", "XML_AUTORIZADO_NO_ENCONTRADO",
-                                "error", "La factura aÃƒÂºn no cuenta con XML autorizado",
+                                "error", "La factura aÃƒÆ’Ã‚Âºn no cuenta con XML autorizado",
                                 "idfactura", idfactura
                         ));
             }
 
-            // 2) Determinar plantilla segÃƒÂºn fecha
+            // 2) Determinar plantilla segÃƒÆ’Ã‚Âºn fecha
             LocalDate fechaEmision = LocalDate.from(factura.getFechaemision());
             LocalDate fechaLimite  = LocalDate.of(2025, 5, 6);
 
@@ -393,10 +393,10 @@ public class SRI_Controller {
                     String url = backendBaseUrl + "/fec_factura/createFacElectro?idfactura=" + idfactura;
                     restTemplate.getForObject(url, Void.class);
 
-                    // Ã°Å¸â€Â¹ Reintentos: esperar hasta que ya exista en BD
+                    // ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¹ Reintentos: esperar hasta que ya exista en BD
                     for (int i = 0; i < 5; i++) {
                         Thread.sleep(2000); // espera 2s
-                        factura = fecFacturaR.findByIdfactura(idfactura); // Ã°Å¸â€Â¹ RECONSULTA aquÃƒÂ­
+                        factura = fecFacturaR.findByIdfactura(idfactura); // ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¹ RECONSULTA aquÃƒÆ’Ã‚Â­
                         if (factura != null) break;
                     }
 
@@ -446,7 +446,7 @@ public class SRI_Controller {
                 sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
             }
 
-            // 6) Enviar a recepciÃƒÂ³n
+            // 6) Enviar a recepciÃƒÆ’Ã‚Â³n
             RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
 
             if (!"RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
@@ -505,25 +505,25 @@ public class SRI_Controller {
                 List<String> cc = java.util.Collections.emptyList();
                 List<String> bcc = java.util.Collections.emptyList();
 
-// From: pÃƒÂ¡salo como null para que el servicio use app.mail.from
+// From: pÃƒÆ’Ã‚Â¡salo como null para que el servicio use app.mail.from
                 String from = null;
 
 // Asunto y cuerpo
-                String subject = "Factura electrÃƒÂ³nica #" + factura.getEstablecimiento() + "-"
+                String subject = "Factura electrÃƒÆ’Ã‚Â³nica #" + factura.getEstablecimiento() + "-"
                         + factura.getPuntoemision() + "-" + factura.getSecuencial();
 
                 String htmlBody =
-                        "<h1>Factura electrÃƒÂ³nica autorizada</h1>" +
+                        "<h1>Factura electrÃƒÆ’Ã‚Â³nica autorizada</h1>" +
                                 "<p>Estimado/a " + (factura.getRazonsocialcomprador() != null ? factura.getRazonsocialcomprador() : "cliente") + ",</p>" +
-                                "<p>Adjuntamos su comprobante electrÃƒÂ³nico en formato PDF y XML.</p>" +
+                                "<p>Adjuntamos su comprobante electrÃƒÆ’Ã‚Â³nico en formato PDF y XML.</p>" +
                                 "<p>Saludos,<br>EPMAPA-T</p>";
 
-// Inline images (si no usas, envÃƒÂ­a map vacio)
+// Inline images (si no usas, envÃƒÆ’Ã‚Â­a map vacio)
                 java.util.Map<String, String> inlineImages = java.util.Collections.emptyMap();
 
                 // --- Construir request ---
                 SendMailRequest mailReq = new SendMailRequest(
-                        from,      // deja que MailService tome el 'from' por defecto de configuraciÃƒÂ³n
+                        from,      // deja que MailService tome el 'from' por defecto de configuraciÃƒÆ’Ã‚Â³n
                         to,
                         cc,
                         bcc,
@@ -562,10 +562,10 @@ public class SRI_Controller {
             factura.setEstado("P");
             factura.setErrores("Pendiente la autorizacion: " + xmlFirmado);
             fecFacturaR.save(factura);
-            // 9) Si no hay autorizacion aÃƒÂºn
+            // 9) Si no hay autorizacion aÃƒÆ’Ã‚Âºn
             return ResponseEntity.status(202).body(Map.of(
                     "estado", "SIN_AUTORIZACION_EN_SRI",
-                    "detalle", "La autorizacion aÃƒÂºn no estÃƒÂ¡ disponible."
+                    "detalle", "La autorizacion aÃƒÆ’Ã‚Âºn no estÃƒÆ’Ã‚Â¡ disponible."
             ));
 
         } catch (Exception e) {
@@ -588,7 +588,7 @@ public class SRI_Controller {
     * ========================================================================================================
     */
 
-    // ===================== 1) FIRMAR Y ENVIAR RETENCIÃƒâ€œN (solo retorna XML autorizado) =====================
+    // ===================== 1) FIRMAR Y ENVIAR RETENCIÃƒÆ’Ã¢â‚¬Å“N (solo retorna XML autorizado) =====================
     @PostMapping(
             path = "/retencion",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
@@ -616,10 +616,10 @@ public class SRI_Controller {
             } else {
                 sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
             }
-            // 5) Enviar a recepciÃƒÂ³n
+            // 5) Enviar a recepciÃƒÆ’Ã‚Â³n
             RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
 
-            // 6) Si recepciÃƒÂ³n NO fue RECIBIDA -> 400 con errores
+            // 6) Si recepciÃƒÆ’Ã‚Â³n NO fue RECIBIDA -> 400 con errores
             if (!"RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "estado", recepcion.getEstado(),
@@ -651,15 +651,15 @@ public class SRI_Controller {
                         .contentType(MediaType.APPLICATION_XML)
                         .body(xmlAutorizado);
             }
-            // 9) AÃƒÂºn no autorizado
+            // 9) AÃƒÆ’Ã‚Âºn no autorizado
             return ResponseEntity.status(202).body(Map.of(
                     "estado", "SIN_AUTORIZACION_EN_SRI",
-                    "detalle", "La autorizacion aÃƒÂºn no estÃƒÂ¡ disponible."
+                    "detalle", "La autorizacion aÃƒÆ’Ã‚Âºn no estÃƒÆ’Ã‚Â¡ disponible."
             ));
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of(
-                    "error", "Error al firmar/enviar comprobante de retenciÃƒÂ³n",
+                    "error", "Error al firmar/enviar comprobante de retenciÃƒÆ’Ã‚Â³n",
                     "detalle", e.getMessage()
             ));
         }
@@ -667,7 +667,7 @@ public class SRI_Controller {
 
 
 
-    // ===================== 5) FIRMAR Y ENVIAR RETENCIÃƒâ€œN (recibe XML como String) =====================
+    // ===================== 5) FIRMAR Y ENVIAR RETENCIÃƒÆ’Ã¢â‚¬Å“N (recibe XML como String) =====================
     @PostMapping(
             path = "/retencion/string",
             consumes = { MediaType.APPLICATION_XML_VALUE, MediaType.TEXT_XML_VALUE },
@@ -694,17 +694,17 @@ public class SRI_Controller {
             // 3) Firmar (re-usa tu servicio actual)
             String xmlFirmado = firmaService.firmarFactura(xmlPlano, mf);
 
-            // 4) Ambiente (forzado o leÃƒÂ­do del XML firmado)
+            // 4) Ambiente (forzado o leÃƒÆ’Ã‚Â­do del XML firmado)
             if (ambienteForzado != null) {
                 sendXmlToSriService.setAmbiente(ambienteForzado == 2 ? 2 : 1);
             } else {
                 sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
             }
 
-            // 5) Enviar a recepciÃƒÂ³n
+            // 5) Enviar a recepciÃƒÆ’Ã‚Â³n
             RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
 
-            // 6) Si recepciÃƒÂ³n NO fue RECIBIDA -> 400 con errores
+            // 6) Si recepciÃƒÆ’Ã‚Â³n NO fue RECIBIDA -> 400 con errores
             if (!"RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
                 return ResponseEntity.badRequest().body(Map.of(
                         "estado", recepcion.getEstado(),
@@ -725,69 +725,7 @@ public class SRI_Controller {
 
             // 8) Extraer XML autorizado
             String xmlAutorizado = extraerXmlAutorizado(rc);
-            if (xmlAutorizado == null || xmlAutorizado.isBlank()) {
-                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(Map.of(
-                        "error", "No se pudo generar el PDF porque la autorizacion no devolviÃƒÂ³ XML autorizado",
-                        "detalle", "La respuesta del SRI llegÃƒÂ³ sin <comprobante> autorizado",
-                        "estado", rc != null && rc.getAutorizaciones() != null ? "AUTORIZADO_SIN_XML" : "SIN_RESPUESTA"
-                ));
-            }
-
-            if (xmlAutorizado != null) {
-                // --- Preparar adjuntos (Base64) ---
-                String nombrePdf  = "retencion_" + rc.getAutorizaciones() + ".pdf";
-                String nombreXml  = "retencion_" + rc.getAutorizaciones() + ".xml";
-
-                byte[] pdfBytes = retencionPdfService.generarPdfDesdeXmlAutorizado(xmlAutorizado);
-                byte[] xmlBytes = xmlAutorizado.getBytes(java.nio.charset.StandardCharsets.UTF_8);
-
-                String pdfBase64 = java.util.Base64.getEncoder().encodeToString(pdfBytes);
-                String xmlBase64 = java.util.Base64.getEncoder().encodeToString(xmlBytes);
-
-                List<AttachmentDTO> attachments = java.util.List.of(
-                        new AttachmentDTO(nombrePdf, "application/pdf", pdfBase64),
-                        new AttachmentDTO(nombreXml, "application/xml", xmlBase64)
-                );
-// --- Destinatarios ---
-// Usa el correo del comprador si lo tienes en la entidad; de lo contrario, uno de prueba
-                /*List<String> to = (factura.getEmailcomprador() != null && !factura.getEmailcomprador().isBlank())
-                        ? java.util.List.of(factura.getEmailcomprador().trim())
-                        : java.util.List.of("destinatario@dominio.com");*/
-
-                List<String> to = (java.util.List.of("ortizln9@gmail.com", "alexis.ortiz81@outlook.com"));
-
-// CC/BCC opcionales
-                List<String> cc = java.util.Collections.emptyList();
-                List<String> bcc = java.util.Collections.emptyList();
-
-// From: pÃƒÂ¡salo como null para que el servicio use app.mail.from
-                String from = null;
-
-// Asunto y cuerpo
-                String subject = "Comprobante electrÃƒÂ³nico #" ;
-
-                String htmlBody =
-                        "<h1>Factura electrÃƒÂ³nica autorizada</h1>" +
-                                "<p>Estimado/a " + "cliente" + ",</p>" +
-                                "<p>Adjuntamos su comprobante electrÃƒÂ³nico en formato PDF y XML.</p>" +
-                                "<p>Saludos,<br>EPMAPA-T</p>";
-
-// Inline images (si no usas, envÃƒÂ­a map vacio)
-                java.util.Map<String, String> inlineImages = java.util.Collections.emptyMap();
-
-// --- Construir request ---
-                SendMailRequest mailReq = new SendMailRequest(
-                        from,      // deja que MailService tome el 'from' por defecto de configuraciÃƒÂ³n
-                        to,
-                        cc,
-                        bcc,
-                        subject,
-                        htmlBody,
-                        attachments,
-                        inlineImages
-                );
-// --- Enviar ---
-                boolean mail = mailService.sendMail(mailReq);
+            if (xmlAutorizado != null && !xmlAutorizado.isBlank()) {
                 if (download) {
                     String fileName = "retencion-" + System.currentTimeMillis() + ".xml";
                     return ResponseEntity.ok()
@@ -799,19 +737,15 @@ public class SRI_Controller {
                         .contentType(MediaType.APPLICATION_XML)
                         .body(xmlAutorizado);
             }
-
-
-
-            // 9) AÃƒÂºn no autorizado
             return ResponseEntity.status(202).body(Map.of(
                     "estado", "SIN_AUTORIZACION_EN_SRI",
-                    "detalle", "La autorizacion aÃƒÂºn no estÃƒÂ¡ disponible."
+                    "detalle", "La autorizacion aÃƒÆ’Ã‚Âºn no estÃƒÆ’Ã‚Â¡ disponible."
             ));
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(Map.of(
-                    "error", "Error al firmar/enviar comprobante de retenciÃƒÂ³n",
+                    "error", "Error al firmar/enviar comprobante de retenciÃƒÆ’Ã‚Â³n",
                     "detalle", e.getMessage()
             ));
         }
@@ -868,7 +802,7 @@ public class SRI_Controller {
             }
 
             // =========================
-            // 2) Normalizar nÃƒÂºmero de comprobantes
+            // 2) Normalizar nÃƒÆ’Ã‚Âºmero de comprobantes
             // =========================
             int num = 0;
             try {
@@ -884,7 +818,7 @@ public class SRI_Controller {
 
                 return ResponseEntity.status(202).body(Map.of(
                         "estado", "SIN_AUTORIZACION_EN_SRI",
-                        "detalle", "AÃƒÂºn no hay autorizaciones disponibles para la clave.",
+                        "detalle", "AÃƒÆ’Ã‚Âºn no hay autorizaciones disponibles para la clave.",
                         "claveAcceso", claveAcceso
                 ));
             }
@@ -897,7 +831,7 @@ public class SRI_Controller {
             var autorizada = primeraAutorizacionAutorizada(lista);
 
             if (autorizada == null) {
-                // No hubo Ã¢â‚¬Å“AUTORIZADOÃ¢â‚¬Â, devolvemos diagnÃƒÂ³stico de la primera autorizacion
+                // No hubo ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œAUTORIZADOÃƒÂ¢Ã¢â€šÂ¬Ã‚Â, devolvemos diagnÃƒÆ’Ã‚Â³stico de la primera autorizacion
                 var a0 = lista.get(0);
                 var mensajes = (a0.getMensajes() != null && a0.getMensajes().getMensaje() != null)
                         ? a0.getMensajes().getMensaje().stream().map(m -> Map.of(
@@ -963,14 +897,14 @@ public class SRI_Controller {
                         .body(xmlAutorizacionCompleta);
             }
 
-            // 2) Retornar directamente el XML como application/xml (wrapper + fecha + nÃƒÂºmero + factura)
+            // 2) Retornar directamente el XML como application/xml (wrapper + fecha + nÃƒÆ’Ã‚Âºmero + factura)
             if (returnXml) {
                 return ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_XML)
                         .body(xmlAutorizacionCompleta);
             }
 
-            // 3) Resumen JSON (sin XML), incluyendo nÃƒÂºmero y fecha de autorizacion
+            // 3) Resumen JSON (sin XML), incluyendo nÃƒÆ’Ã‚Âºmero y fecha de autorizacion
             return ResponseEntity.ok(Map.of(
                     "estado", "AUTORIZADO",
                     "numeroAutorizacion", numeroAutorizacion,
@@ -1031,7 +965,7 @@ public class SRI_Controller {
                     || rc.getAutorizaciones().getAutorizacion().isEmpty()) {
                 return ResponseEntity.status(HttpStatus.ACCEPTED).body(Map.of(
                         "estado", "SIN_AUTORIZACION_EN_SRI",
-                        "detalle", "AÃƒÂºn no hay autorizaciones disponibles para la clave.",
+                        "detalle", "AÃƒÆ’Ã‚Âºn no hay autorizaciones disponibles para la clave.",
                         "claveAcceso", claveAcceso
                 ));
             }
@@ -1111,7 +1045,7 @@ public class SRI_Controller {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
-                    "error", "Error generando descarga de retenciÃƒÂ³n",
+                    "error", "Error generando descarga de retenciÃƒÆ’Ã‚Â³n",
                     "detalle", e.getMessage(),
                     "claveAcceso", claveAcceso
             ));
@@ -1150,7 +1084,7 @@ public class SRI_Controller {
                     || rc.getAutorizaciones().getAutorizacion().isEmpty()) {
                 return ResponseEntity.status(202).body(java.util.Map.of(
                         "estado", "SIN_AUTORIZACION_EN_SRI",
-                        "detalle", "AÃƒÂºn no hay autorizaciones disponibles para la clave.",
+                        "detalle", "AÃƒÆ’Ã‚Âºn no hay autorizaciones disponibles para la clave.",
                         "claveAcceso", claveAcceso
                 ));
             }
@@ -1197,8 +1131,8 @@ public class SRI_Controller {
             byte[] pdfBytes = retencionPdfService.generarPdfDesdeXmlAutorizado(xmlAutorizacionCompleta);
 
             String baseName = "retencion_" + claveAcceso.trim();
-            String subject = "Retención electrónica - " + claveAcceso.trim();
-            String body = "Se adjunta la retención electrónica en formato XML y PDF.\n\nClave de acceso: " + claveAcceso.trim();
+            String subject = "RetenciÃ³n electrÃ³nica - " + claveAcceso.trim();
+            String body = "Se adjunta la retenciÃ³n electrÃ³nica en formato XML y PDF.\n\nClave de acceso: " + claveAcceso.trim();
 
             try {
                 java.util.UUID emailQueueId = retencionEmailService.enviarRetencion(
@@ -1221,7 +1155,7 @@ public class SRI_Controller {
                 return ResponseEntity.status(503).body(java.util.Map.of(
                         "ok", false,
                         "estado", "CORREO_NO_DISPONIBLE",
-                        "mensaje", "La retención ya está autorizada, pero el servicio de correo no respondió correctamente.",
+                        "mensaje", "La retenciÃ³n ya estÃ¡ autorizada, pero el servicio de correo no respondiÃ³ correctamente.",
                         "detalle", mailEx.getMessage(),
                         "email", emailDestino,
                         "claveAcceso", claveAcceso
@@ -1230,7 +1164,7 @@ public class SRI_Controller {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(java.util.Map.of(
-                    "error", "Error enviando retención por correo",
+                    "error", "Error enviando retenciÃ³n por correo",
                     "detalle", e.getMessage(),
                     "claveAcceso", claveAcceso
             ));
@@ -1322,7 +1256,7 @@ public class SRI_Controller {
             String clave = extraerClaveAcceso(xml);
             if (clave == null || clave.isBlank()) {
                 return ResponseEntity.badRequest().body(Map.of(
-                        "error", "No se encontrÃƒÂ³ <claveAcceso> en el XML"
+                        "error", "No se encontrÃƒÆ’Ã‚Â³ <claveAcceso> en el XML"
                 ));
             }
 
@@ -1421,7 +1355,7 @@ public class SRI_Controller {
         }
     }
 
-    /** Saca el <comprobante> XML dentro de una Autorizacion (si estÃƒÂ¡ presente) */
+    /** Saca el <comprobante> XML dentro de una Autorizacion (si estÃƒÆ’Ã‚Â¡ presente) */
     private String extraerComprobanteXmlAutorizado(ec.gob.sri.ws.autorizacion.Autorizacion a) {
         try {
             if (a == null || a.getComprobante() == null) return null;
@@ -1505,7 +1439,7 @@ public class SRI_Controller {
         return null;
     }
 
-    /** Convierte los detalles de errores de recepciÃƒÂ³n en una lista simple de mensajes. */
+    /** Convierte los detalles de errores de recepciÃƒÆ’Ã‚Â³n en una lista simple de mensajes. */
     private static List<String> resumenErroresRecepcion(ec.gob.sri.ws.recepcion.RespuestaSolicitud r) {
         List<String> out = new ArrayList<>();
         if (r != null && r.getComprobantes() != null && r.getComprobantes().getComprobante() != null) {
@@ -1533,7 +1467,7 @@ public class SRI_Controller {
     }
 
 
-    //======================================OPCIONES DE ENVIO DE CORREO ELECTRÃƒâ€œNICO========================================================================
+    //======================================OPCIONES DE ENVIO DE CORREO ELECTRÃƒÆ’Ã¢â‚¬Å“NICO========================================================================
 
     @PostMapping("/send")
     public ResponseEntity<SendMailResponse> send(@Valid @RequestBody SendMailRequest req) {
@@ -1562,6 +1496,7 @@ public class SRI_Controller {
     }
 
 }
+
 
 
 
