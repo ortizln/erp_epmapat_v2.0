@@ -16,6 +16,7 @@
         <module name="login" />
         <module name="reportes-jr" />
         <module name="rrhh" />
+        <module name="bandred" />
         <module name="recaudacion" />
         <module name="config" />
         <module name="gateway" />
@@ -40,6 +41,7 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="bandred" options="-parameters" />
       <module name="comercializacion" options="-parameters" />
       <module name="config" options="-parameters" />
       <module name="contabilidad" options="-parameters" />

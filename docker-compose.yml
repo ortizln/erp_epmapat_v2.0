@@ -381,6 +381,39 @@ services:
       epmapat-nw:
         aliases:
           - msvc-emails
+  msvc-banred:
+    build:
+      context: banred
+      dockerfile: Dockerfile
+    image: msvc-banred:latest
+    container_name: msvc-banred
+    ports:
+      - "33:33"
+    environment:
+      - TZ=America/Guayaquil
+      - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - EUREKA_SERVICEURL=http://msvc-eureka
+      - EUREKA_INSTANCE=msvc-eureka
+      - PAGOSONLINE_API_BASE_URL=http://msvc-banred:33
+      - ERP_BACKEND_BASE_URL=http://192.168.0.165:8080/fec_factura
+      - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
+      - DB_USER=postgres
+      - DB_PASS=3pmapaT24
+      - HOST=http://192.168.0.165
+      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
+      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_HOST=smtp.elasticemail.com
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://msvc-pagosonline:32/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    restart: always
+    networks:
+      epmapat-nw:
+        aliases:
+          - msvc-pagosonline
 networks:
   epmapat-nw:
     driver: bridge

@@ -28,6 +28,7 @@
   <module>sri-files</module>
   <module>epmapaapi</module>
   <module>emails</module>
+  <module>bandred</module>
 </modules>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
