@@ -444,12 +444,12 @@ services:
       epmapat-nw:
         aliases:
           - msvc-emails
-  msvc-banred:
+  msvc-bandred:
     build:
-      context: banred
+      context: bandred
       dockerfile: Dockerfile
-    image: msvc-banred:latest
-    container_name: msvc-banred
+    image: msvc-bandred:latest
+    container_name: msvc-bandred 
     ports:
       - "33:33"
     environment:
