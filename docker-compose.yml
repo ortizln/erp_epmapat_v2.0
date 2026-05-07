@@ -1,11 +1,9 @@
-version: "3.9"
 services:
   config-server:
     build:
       context: config
       dockerfile: Dockerfile
     image: config-server:latest
-    container_name: config-server
     ports:
       - "8888:8888"
     environment:
@@ -27,7 +25,6 @@ services:
       context: eureka
       dockerfile: Dockerfile
     image: msvc-eureka:latest
-    container_name: msvc-eureka
     ports:
       - "8761:8761"
     environment:
@@ -54,7 +51,6 @@ services:
       context: gateway
       dockerfile: Dockerfile
     image: msvc-gateway:latest
-    container_name: msvc-gateway
     ports:
       - "9090:9090"
     environment:
@@ -90,7 +86,6 @@ services:
       context: login
       dockerfile: Dockerfile
     image: msvc-login:latest
-    container_name: msvc-login
     ports:
       - "9091:9091"
     environment:
@@ -126,7 +121,6 @@ services:
       context: recaudacion
       dockerfile: Dockerfile
     image: msvc-recaudacion:latest
-    container_name: msvc-recaudacion
     ports:
       - "9092:9092"
     environment:
@@ -162,7 +156,6 @@ services:
       context: comercializacion
       dockerfile: Dockerfile
     image: msvc-comercializacion:latest
-    container_name: msvc-comercializacion
     ports:
       - "9093:9093"
     environment:
@@ -198,7 +191,6 @@ services:
       context: rrhh
       dockerfile: Dockerfile
     image: msvc-rrhh:latest
-    container_name: msvc-rrhh
     ports:
       - "9101:9101"
     environment:
@@ -231,7 +223,6 @@ services:
       context: contabilidad
       dockerfile: Dockerfile
     image: msvc-contabilidad:latest
-    container_name: msvc-contabilidad
     ports:
       - "9102:9102"
     environment:
@@ -264,7 +255,6 @@ services:
       context: pagosonline
       dockerfile: Dockerfile
     image: msvc-pagosonline:latest
-    container_name: msvc-pagosonline
     ports:
       - "32:32"
     environment:
@@ -303,7 +293,6 @@ services:
       dockerfile: Dockerfile
       network: host
     image: msvc-sri:latest
-    container_name: msvc-sri
     ports:
       - "9096:9096"
     environment:
@@ -339,7 +328,6 @@ services:
       context: reportes-jr
       dockerfile: Dockerfile
     image: msvc-reportesjr:latest
-    container_name: msvc-reportesjr
     ports:
       - "9097:9097"
     environment:
@@ -375,7 +363,6 @@ services:
       context: epmapaapi
       dockerfile: Dockerfile
     image: msvc-epmapaapi:latest
-    container_name: msvc-epmapaapi
     ports:
       - "9098:9098"
     environment:
@@ -411,7 +398,6 @@ services:
       context: .
       dockerfile: emails/Dockerfile
     image: msvc-emails:latest
-    container_name: msvc-emails
     ports:
       - "9099:9099"
     volumes:
@@ -449,7 +435,6 @@ services:
       context: bandred
       dockerfile: Dockerfile
     image: msvc-bandred:latest
-    container_name: msvc-bandred 
     ports:
       - "33:33"
     environment:
