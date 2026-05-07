@@ -82,14 +82,19 @@ public class SendXmlToSriService {
 
     /** Aplica el endpoint real (celcer/cel), NO el WSDL local */
     private void overrideEndpoint(Object port, boolean autorizacion) {
-        String endpoint = (ambiente == 2)
+        overrideEndpoint(port, autorizacion, ambiente);
+    }
+
+    private void overrideEndpoint(Object port, boolean autorizacion, int ambienteSolicitud) {
+        int ambienteEfectivo = (ambienteSolicitud == 2) ? 2 : 1;
+        String endpoint = (ambienteEfectivo == 2)
                 ? (autorizacion ? epAutorizacionProd : epRecepcionProd)
                 : (autorizacion ? epAutorizacionPruebas : epRecepcionPruebas);
 
         ((BindingProvider) port).getRequestContext()
                 .put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY, endpoint);
 
-        System.out.println("[SRI] Ambiente=" + (ambiente == 2 ? "PRODUCCIÓN" : "PRUEBAS")
+        System.out.println("[SRI] Ambiente=" + (ambienteEfectivo == 2 ? "PRODUCCIÓN" : "PRUEBAS")
                 + " | Servicio=" + (autorizacion ? "AUTORIZACIÓN" : "RECEPCIÓN")
                 + " | Endpoint=" + endpoint);
     }
@@ -113,6 +118,10 @@ public class SendXmlToSriService {
 
     /** Setea ambiente leyendo <infoTributaria><ambiente> del XML firmado */
     public void setAmbienteFromXml(String xmlFirmado) {
+        setAmbiente(inferAmbienteFromXml(xmlFirmado));
+    }
+
+    public int inferAmbienteFromXml(String xmlFirmado) {
         try {
             String xml = stripBom(xmlFirmado);
             var dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
@@ -122,11 +131,12 @@ public class SendXmlToSriService {
             var list = doc.getElementsByTagName("ambiente");
             if (list.getLength() > 0) {
                 int amb = Integer.parseInt(list.item(0).getTextContent().trim());
-                setAmbiente(amb == 2 ? 2 : 1);
+                return amb == 2 ? 2 : 1;
             }
         } catch (Exception ignore) {
-            // conserva el ambiente actual
+            // conserva el ambiente configurado
         }
+        return getAmbiente();
     }
 
     // ======================================================
@@ -134,6 +144,10 @@ public class SendXmlToSriService {
     // ======================================================
     /** Enviar XML firmado como bytes a Recepción */
     public RespuestaSolicitud enviarFacturaFirmada(byte[] xmlBytes) throws Exception {
+        return enviarFacturaFirmada(xmlBytes, ambiente);
+    }
+
+    public RespuestaSolicitud enviarFacturaFirmada(byte[] xmlBytes, int ambienteSolicitud) throws Exception {
         // Construcción del Service con WSDL local
         URL wsdlURL = classpathUrl(wsdlLocalRecepcion);
         QName qname = new QName("http://ec.gob.sri.ws.recepcion", "RecepcionComprobantesOfflineService");
@@ -142,7 +156,7 @@ public class SendXmlToSriService {
         RecepcionComprobantesOffline port = service.getRecepcionComprobantesOfflinePort();
 
         applyTimeouts(port);
-        overrideEndpoint(port, /* autorizacion */ false);
+        overrideEndpoint(port, /* autorizacion */ false, ambienteSolicitud);
 
         return port.validarComprobante(xmlBytes);
     }
@@ -153,11 +167,20 @@ public class SendXmlToSriService {
         return enviarFacturaFirmada(xml.getBytes(StandardCharsets.UTF_8));
     }
 
+    public RespuestaSolicitud enviarFacturaFirmadaTxt(String xmlFirmado, int ambienteSolicitud) throws Exception {
+        String xml = stripBom(xmlFirmado);
+        return enviarFacturaFirmada(xml.getBytes(StandardCharsets.UTF_8), ambienteSolicitud);
+    }
+
     // ======================================================
     // Autorización
     // ======================================================
     /** Consultar autorización por clave de acceso */
     public RespuestaComprobante consultarAutorizacion(String claveAcceso) throws Exception {
+        return consultarAutorizacion(claveAcceso, ambiente);
+    }
+
+    public RespuestaComprobante consultarAutorizacion(String claveAcceso, int ambienteSolicitud) throws Exception {
         URL wsdlURL = classpathUrl(wsdlLocalAutorizacion);
 
         QName qname = new QName("http://ec.gob.sri.ws.autorizacion", "AutorizacionComprobantesOfflineService");
@@ -168,7 +191,7 @@ public class SendXmlToSriService {
                 service.getAutorizacionComprobantesOfflinePort();
 
         applyTimeouts(port);
-        overrideEndpoint(port, /* autorizacion */ true);
+        overrideEndpoint(port, /* autorizacion */ true, ambienteSolicitud);
 
         return port.autorizacionComprobante(claveAcceso.trim());
     }
@@ -199,6 +222,26 @@ public class SendXmlToSriService {
             Thread.sleep(sleepMillis);
         }
         return ultimo; // podría venir sin autorizaciones (pendiente)
+    }
+
+    public RespuestaComprobante consultarAutorizacionConEspera(
+            String xmlFirmado,
+            int ambienteSolicitud,
+            int maxIntentos,
+            long sleepMillis) throws Exception {
+
+        return consultarAutorizacionConEspera(
+                xmlFirmado,
+                clave -> {
+                    try {
+                        return consultarAutorizacion(clave, ambienteSolicitud);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                },
+                maxIntentos,
+                sleepMillis
+        );
     }
     public AutorizacionSriResult consultar_AutorizacionConEspera(
             String xmlFirmado,
