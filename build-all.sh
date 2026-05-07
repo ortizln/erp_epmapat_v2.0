@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Lista de módulos (carpetas)
-modules=("config" "eureka" "login" "comercializacion" "recaudacion" "rrhh" "contabilidad" "pagosonline" "sri-files" "reportes-jr" "epmapaapi" "emails" "gateway")
+modules=("config" "eureka" "login" "comercializacion" "recaudacion" "rrhh" "contabilidad" "pagosonline" "sri-files" "reportes-jr" "epmapaapi" "emails" "gateway" "bandred")
 #26-novmiebre-2025
 # Mapa módulo → nombre de servicio en docker-compose
 # Ajusta estos nombres si en tu docker-compose.yml usan otros
@@ -19,6 +19,7 @@ declare -A module_services=(
   ["reportes-jr"]="msvc-reportesjr"
   ["epmapaapi"]="msvc-epmapaapi"
   ["emails"]="msvc-emails"
+  ["bandred"]="msvc-bandred"
 )
 
 # Colores para output

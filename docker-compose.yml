@@ -11,6 +11,11 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://config-server:8888/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     restart: always
     networks:
       epmapat-nw:
@@ -31,6 +36,9 @@ services:
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
+    depends_on:
+      config-server:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-eureka:8761/actuator/health" ]
       interval: 30s
@@ -62,6 +70,11 @@ services:
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
+    depends_on:
+      config-server:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-gateway:9090/actuator/health" ]
       interval: 30s
@@ -93,6 +106,11 @@ services:
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
+    depends_on:
+      config-server:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-login:9091/actuator/health" ]
       interval: 30s
@@ -124,6 +142,11 @@ services:
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
+    depends_on:
+      config-server:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-recaudacion:9092/actuator/health" ]
       interval: 30s
@@ -155,6 +178,11 @@ services:
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
+    depends_on:
+      config-server:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-comercializacion:9093/actuator/health" ]
       interval: 30s
@@ -183,6 +211,11 @@ services:
       - DB_USER=postgres
       - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
+    depends_on:
+      config-server:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-rrhh:9101/actuator/health" ]
       interval: 30s
@@ -211,6 +244,11 @@ services:
       - DB_USER=postgres
       - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
+    depends_on:
+      config-server:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-contabilidad:9102/actuator/health" ]
       interval: 30s
@@ -244,6 +282,11 @@ services:
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
+    depends_on:
+      config-server:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-pagosonline:32/actuator/health" ]
       interval: 30s
@@ -276,6 +319,11 @@ services:
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
+    depends_on:
+      config-server:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-sri:9096/actuator/health" ]
       interval: 30s
@@ -307,6 +355,11 @@ services:
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
+    depends_on:
+      config-server:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-reportesjr:9097/actuator/health" ]
       interval: 30s
@@ -338,6 +391,11 @@ services:
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
+    depends_on:
+      config-server:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-epmapaapi:9098/actuator/health" ]
       interval: 30s
@@ -371,6 +429,11 @@ services:
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
+    depends_on:
+      config-server:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-emails:9099/actuator/health" ]
       interval: 30s
@@ -404,6 +467,11 @@ services:
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
       - MAIL_HOST=smtp.elasticemail.com
+    depends_on:
+      config-server:
+        condition: service_healthy
+      msvc-eureka:
+        condition: service_healthy
 
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://msvc-pagosonline:32/actuator/health" ]

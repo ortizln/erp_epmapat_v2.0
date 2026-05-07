@@ -1,0 +1,14 @@
+server:
+  port: 32
+spring:
+  application:
+    name: msvc-bandred
+host: ${HOST}
+eureka:
+  instance:
+    hostname: msvc-bandred  # El nombre del contenedor o el servicio en Docker Compose
+  client:
+    service-url:
+      defaultZone: ${EUREKA_SERVICEURL:http://msvc-eureka}:8761/eureka/  # Usar el nombre del servicio Docker
+logging.pattern.dateformat: yyyy-MM-dd HH:mm:ss
+spring.jackson.time-zone: America/Guayaquil

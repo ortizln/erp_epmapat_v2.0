@@ -213,6 +213,11 @@ spring:
           #uri: http://127.0.0.1:9099
           predicates:
             - Path=/api/v1/emails/**, /api/v1/email-accounts/**, /api/v1/email-blacklist/**
+        - id: msvc-bandred
+          uri: http://msvc-bandred:9100
+          #uri: http://127.0.0.1:9100
+          predicates:
+            - Path=/api/bandred/facturas/**
 
 springdoc:
   api-docs:
@@ -242,5 +247,7 @@ springdoc:
         url: /epmapaapi/v3/api-docs
       - name: Emails
         url: /emails/v3/api-docs
+      - name: Bandred
+        url: /bandred/v3/api-docs
 logging.pattern.dateformat: yyyy-MM-dd HH:mm:ss
 spring.jackson.time-zone: America/Guayaquil
