@@ -2,33 +2,25 @@ package com.erp.gateway.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.reactive.CorsWebFilter;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
-import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebFilter;
-import org.springframework.web.server.WebFilterChain;
 
 @Configuration
 public class CorsConfig {
+
     @Bean
     public CorsWebFilter corsWebFilter() {
-        CorsConfiguration corsConfig = new CorsConfiguration();
-        corsConfig.setAllowedOrigins(java.util.List.of(
-                "http://localhost:4200",
-                "http://127.0.0.1:4200",
-                "*"
-        ));
-        corsConfig.addAllowedHeader("*");
-        corsConfig.addAllowedMethod("*");
-        corsConfig.setAllowCredentials(false);
+        CorsConfiguration cfg = new CorsConfiguration();
+        cfg.addAllowedOriginPattern("*");
+        cfg.addAllowedMethod(CorsConfiguration.ALL);
+        cfg.addAllowedHeader(CorsConfiguration.ALL);
+        cfg.addExposedHeader("*");
+        cfg.setAllowCredentials(false);
+        cfg.setMaxAge(86400 * 365L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", corsConfig);
+        source.registerCorsConfiguration("/**", cfg);
 
         return new CorsWebFilter(source);
     }

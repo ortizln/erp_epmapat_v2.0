@@ -36,6 +36,14 @@ spring:
           predicates:
             - Path=/api/usuarios/**, /api/auth/**, /api/erpmodulos/**, /api/usrxmodulos/**, /api/ventanas/**, /api/documentos/**, /api/access/**
 
+        - id: msvc-login-auth-compat
+          uri: http://msvc-login:9091
+          #uri: http://127.0.0.1:9091
+          predicates:
+            - Path=/auth/**
+          filters:
+            - RewritePath=/auth/(?<segment>.*), /api/auth/${segment}
+
         - id: msvc-comercializacion-api-compat
           uri: http://msvc-comercializacion:9093
           #uri: http://127.0.0.1:9093
@@ -138,7 +146,9 @@ spring:
           uri: http://msvc-comercializacion:9093
           #uri: http://127.0.0.1:9093
           predicates:
-            - Path=/auth/**
+            - Path=/comercializacion/auth/**
+          filters:
+            - RewritePath=/comercializacion/auth/(?<segment>.*), /auth/${segment}
 
         - id: msvc-rrhh
           uri: http://msvc-rrhh:9101
