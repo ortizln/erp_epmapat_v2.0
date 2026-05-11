@@ -52,7 +52,7 @@ services:
       dockerfile: Dockerfile
     image: msvc-gateway:latest
     ports:
-      - "9090:9090"
+      - "8080:8080"
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
