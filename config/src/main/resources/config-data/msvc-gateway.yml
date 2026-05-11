@@ -40,7 +40,7 @@ spring:
           uri: http://msvc-comercializacion:9093
           #uri: http://127.0.0.1:9093
           predicates:
-            - Path=/api/clientes/**, /api/abonados/**, /api/recargosxcuenta/**, /api/usrxrutas/**, /api/categorias/**, /api/nacionalidad/**, /api/nacionalidades/**
+            - Path=/api/clientes/**, /api/abonados/**, /api/recargosxcuenta/**, /api/usrxrutas/**, /api/categorias/**, /api/nacionalidad/**, /api/nacionalidades/**, /api/facturas
 
         - id: msvc-login-swagger
           uri: http://msvc-login:9091
