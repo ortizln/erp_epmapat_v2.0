@@ -9,7 +9,6 @@ spring:
   cloud:
     config:
       enabled: false   # <- desactiva el cliente viejo que intenta localhost:8888
-
 eureka:
   instance:
     hostname: msvc-eureka
