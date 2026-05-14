@@ -1,6 +1,8 @@
 spring:
   application:
     name: msvc-sri
+  profiles:
+    active: dev
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
   datasource:
@@ -23,7 +25,7 @@ app:
   backend:
     base-url: ${ERP_BACKEND_BASE_URL:http://192.168.0.165:9080}
   email-ms:
-    base-url: ${EMAIL_MS_BASE_URL:http://msvc-emails:9099}
+    base-url: http://msvc-emails:9099
   mail:
     from: facturacion@epmapatulcan.gob.ec
     username: facturacion
