@@ -23,7 +23,26 @@ public interface Fec_facturaR extends JpaRepository<Fec_factura, Long> {
 
     @Query(value = "select xmlautorizado, fechaemision from fec_factura where idfactura = ?1", nativeQuery = true)
     public fecFacturaDatos getNroFactura(Long idfactura);
-    
+
+    @Query(value = """
+            SELECT *
+            FROM fec_factura
+            WHERE estado = 'P'
+              AND COALESCE(intentos_autorizacion, 0) < ?1
+            ORDER BY COALESCE(fecha_ultimo_intento, fechaemision) ASC, idfactura ASC
+            LIMIT ?2
+            """, nativeQuery = true)
+    List<Fec_factura> findPendientesAutorizacion(Integer maxIntentos, Integer limit);
+
+    @Query(value = """
+            SELECT *
+            FROM fec_factura
+            WHERE estado = 'X'
+              AND COALESCE(mail_enviado, FALSE) = FALSE
+            ORDER BY COALESCE(fecha_autorizacion, fechaemision) ASC, idfactura ASC
+            LIMIT ?1
+            """, nativeQuery = true)
+    List<Fec_factura> findListasParaCorreo(Integer limit);
 
 }
 

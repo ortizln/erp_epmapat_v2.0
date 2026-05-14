@@ -15,7 +15,6 @@ import com.erp.sri.interfaces.fecFacturaDatos;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 @RestController
@@ -102,24 +101,16 @@ public class Fec_facturaApi {
    }
     @PutMapping("/setxml")
     public ResponseEntity<Fec_factura> setXmlToFactura(@RequestParam Long idfactura, @RequestBody Fec_factura ff) {
-        Fec_factura factura = fecfacServicio.findById(idfactura)
-                .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
-
         try {
-            String url = eurekaServiceUrl + ":8080/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
-            String xml = restTemplate.getForObject(url, String.class);
-
-            factura.setXmlautorizado(xml);
-            factura.setEstado("A");
-            fecfacServicio.save(factura);
-
-            return ResponseEntity.ok(factura);
-        } catch (HttpServerErrorException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(factura);
+            return fecfacServicio.recuperarXmlAutorizado(idfactura)
+                    .map(ResponseEntity::ok)
+                    .orElseGet(() -> fecfacServicio.findById(idfactura)
+                            .map(facturaPendiente -> ResponseEntity.status(HttpStatus.ACCEPTED).body(facturaPendiente))
+                            .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura)));
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(factura);
+            Fec_factura factura = fecfacServicio.findById(idfactura)
+                    .orElseThrow(() -> new ResourceNotFoundExcepciones("Not found Id: " + idfactura));
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(factura);
         }
     }
 

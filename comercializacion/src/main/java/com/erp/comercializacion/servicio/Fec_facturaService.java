@@ -15,7 +15,9 @@ import com.erp.comercializacion.modelo.administracion.Definir;
 import com.erp.comercializacion.repositorio.*;
 import com.erp.comercializacion.repositorio.administracion.DefinirR;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.erp.sri.interfaces.fecFacturaDatos;
 
@@ -24,6 +26,7 @@ public class Fec_facturaService {
     // Tipo de comprobante: Factura = "01"
     private static final String TIPO_COMPROBANTE_FACTURA = "01";
     private static final DateTimeFormatter DDMMYYYY = DateTimeFormatter.ofPattern("ddMMyyyy");
+    private static final int MAX_INTENTOS_AUTORIZACION = 10;
 
    @Autowired
    private Fec_facturaR dao;
@@ -41,6 +44,13 @@ public class Fec_facturaService {
    private Fec_factura_detalles_impuestosR fecFacturaDetallesImpuestosR;
    @Autowired
    private Fec_factura_pagosR fecFacturaPagosR;
+   @Autowired
+   private RestTemplate restTemplate;
+   @Autowired
+   private FecFacturaLogService logService;
+
+   @Value("${eureka.service-url}")
+   private String eurekaServiceUrl;
 
    public List<Fec_factura> findAll() {
       return dao.findAll();
@@ -110,10 +120,88 @@ public class Fec_facturaService {
         fecFactura.setDireccioncomprador(factura.getDireccion());
         fecFactura.setClaveacceso(generarClaveAcceso(fecFactura, definir));
         fecFactura.setEstado("I");
+        fecFactura.setIntentosAutorizacion(0);
+        fecFactura.setFechaUltimoIntento(null);
+        fecFactura.setFechaAutorizacion(null);
+        fecFactura.setMailEnviado(Boolean.FALSE);
         dao.save(fecFactura);
         generarFecFacturaDetalles(idfactura);
         generarFecFacturaPagos(idfactura, (long) m3);
         return response;
+    }
+
+    public List<Fec_factura> findPendientesAutorizacion(int limit) {
+        return dao.findPendientesAutorizacion(MAX_INTENTOS_AUTORIZACION, limit);
+    }
+
+    public List<Fec_factura> findListasParaCorreo(int limit) {
+        return dao.findListasParaCorreo(limit);
+    }
+
+    public Fec_factura marcarPendienteAutorizacion(Fec_factura factura, String motivo) {
+        factura.setEstado("P");
+        factura.setErrores(motivo);
+        factura.setFechaUltimoIntento(LocalDateTime.now());
+        Fec_factura actualizada = dao.save(factura);
+        logService.registrar(factura.getIdfactura(), "P", motivo);
+        return actualizada;
+    }
+
+    public Fec_factura registrarAutorizacionRecuperada(Fec_factura factura, String xmlAutorizado) {
+        factura.setXmlautorizado(xmlAutorizado);
+        factura.setEstado("X");
+        factura.setErrores(null);
+        factura.setFechaAutorizacion(LocalDateTime.now());
+        factura.setFechaUltimoIntento(LocalDateTime.now());
+        Fec_factura actualizada = dao.save(factura);
+        logService.registrar(factura.getIdfactura(), "X", "XML autorizado recuperado correctamente");
+        return actualizada;
+    }
+
+    public Fec_factura incrementarIntentoAutorizacion(Fec_factura factura, String motivo) {
+        int intentos = factura.getIntentosAutorizacion() == null ? 0 : factura.getIntentosAutorizacion();
+        intentos++;
+        factura.setIntentosAutorizacion(intentos);
+        factura.setFechaUltimoIntento(LocalDateTime.now());
+        factura.setErrores(motivo);
+        factura.setEstado(intentos >= MAX_INTENTOS_AUTORIZACION ? "E" : "P");
+        Fec_factura actualizada = dao.save(factura);
+        logService.registrar(factura.getIdfactura(), factura.getEstado(), motivo + " (intento " + intentos + ")");
+        return actualizada;
+    }
+
+    public Fec_factura marcarCorreoEnviado(Fec_factura factura) {
+        factura.setMailEnviado(Boolean.TRUE);
+        factura.setEstado("C");
+        factura.setErrores(null);
+        return dao.save(factura);
+    }
+
+    public Fec_factura marcarErrorPostAutorizacion(Fec_factura factura, String motivo) {
+        factura.setErrores(motivo);
+        factura.setEstado("E");
+        return dao.save(factura);
+    }
+
+    public Optional<Fec_factura> recuperarXmlAutorizado(Long idfactura) {
+        Fec_factura factura = dao.findById(idfactura).orElseThrow(() ->
+                new IllegalArgumentException("No existe fec_factura para idfactura=" + idfactura));
+        return recuperarXmlAutorizado(factura);
+    }
+
+    public Optional<Fec_factura> recuperarXmlAutorizado(Fec_factura factura) {
+        try {
+            String url = eurekaServiceUrl + ":8080/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
+            String xml = restTemplate.getForObject(url, String.class);
+            if (xml == null || xml.isBlank()) {
+                marcarPendienteAutorizacion(factura, "SRI sin XML autorizado disponible todavia");
+                return Optional.empty();
+            }
+            return Optional.of(registrarAutorizacionRecuperada(factura, xml));
+        } catch (Exception e) {
+            incrementarIntentoAutorizacion(factura, "No fue posible recuperar XML autorizado: " + e.getMessage());
+            return Optional.empty();
+        }
     }
     //CREAR FACTURA DETALLE
     public void generarFecFacturaDetalles(Long idfactura) {

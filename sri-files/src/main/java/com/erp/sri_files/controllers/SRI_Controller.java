@@ -900,8 +900,6 @@ public class SRI_Controller {
     ) {
         try {
             RespuestaComprobante rc;
-            System.out.println("CONSULTANDO...");
-
             // =========================
             // 1) Consulta con o sin polling
             // =========================
@@ -955,7 +953,6 @@ public class SRI_Controller {
             var autorizada = primeraAutorizacionAutorizada(lista);
 
             if (autorizada == null) {
-                // No hubo ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œAUTORIZADOÃƒÂ¢Ã¢â€šÂ¬Ã‚Â, devolvemos diagnÃƒÆ’Ã‚Â³stico de la primera autorizacion
                 var a0 = lista.get(0);
                 var mensajes = (a0.getMensajes() != null && a0.getMensajes().getMensaje() != null)
                         ? a0.getMensajes().getMensaje().stream().map(m -> Map.of(

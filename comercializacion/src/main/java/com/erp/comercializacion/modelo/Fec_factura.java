@@ -1,7 +1,6 @@
 package com.erp.comercializacion.modelo;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
@@ -31,6 +30,10 @@ public class Fec_factura implements Serializable {
    private String concepto;
    private String referencia;
    private String recaudador;
+   private Integer intentosAutorizacion;
+   private LocalDateTime fechaUltimoIntento;
+   private LocalDateTime fechaAutorizacion;
+   private Boolean mailEnviado;
 
    public Long getIdfactura() {
       return idfactura;
@@ -190,6 +193,38 @@ public class Fec_factura implements Serializable {
 
    public void setRecaudador(String recaudador) {
       this.recaudador = recaudador;
+   }
+
+   public Integer getIntentosAutorizacion() {
+      return intentosAutorizacion;
+   }
+
+   public void setIntentosAutorizacion(Integer intentosAutorizacion) {
+      this.intentosAutorizacion = intentosAutorizacion;
+   }
+
+   public LocalDateTime getFechaUltimoIntento() {
+      return fechaUltimoIntento;
+   }
+
+   public void setFechaUltimoIntento(LocalDateTime fechaUltimoIntento) {
+      this.fechaUltimoIntento = fechaUltimoIntento;
+   }
+
+   public LocalDateTime getFechaAutorizacion() {
+      return fechaAutorizacion;
+   }
+
+   public void setFechaAutorizacion(LocalDateTime fechaAutorizacion) {
+      this.fechaAutorizacion = fechaAutorizacion;
+   }
+
+   public Boolean getMailEnviado() {
+      return mailEnviado;
+   }
+
+   public void setMailEnviado(Boolean mailEnviado) {
+      this.mailEnviado = mailEnviado;
    }
 
 public Fec_factura orElseThrow(Object object) {
