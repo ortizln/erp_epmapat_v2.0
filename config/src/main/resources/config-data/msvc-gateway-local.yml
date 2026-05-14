@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+services:
+  urls:
+    login: http://127.0.0.1:9091
+    comercializacion: http://127.0.0.1:9093
+    recaudacion: http://127.0.0.1:9092
+    gestiondocumental: http://127.0.0.1:9095
+    sri: http://127.0.0.1:9096
+    reportesjr: http://127.0.0.1:9097
+    pagosonline: http://127.0.0.1:9094
+    epmapaapi: http://127.0.0.1:9098
+    emails: http://127.0.0.1:9099
+    rrhh: http://127.0.0.1:9101
+    contabilidad: http://127.0.0.1:9102
+    bandred: http://127.0.0.1:33
+
+eureka:
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
