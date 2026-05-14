@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -u
+set -o pipefail
 
 modules=("config" "eureka" "login" "comercializacion" "recaudacion" "rrhh" "contabilidad" "pagosonline" "sri-files" "reportes-jr" "epmapaapi" "emails" "gateway" "bandred")
 
@@ -76,6 +77,18 @@ validate_java() {
 
   log_success "JAVA_HOME detectado: $JAVA_HOME"
 
+  if [ ! -x "${JAVA_HOME}/bin/javac" ]; then
+    log_error "JAVA_HOME apunta a un entorno sin compilador javac."
+    log_warning "Instale un JDK 17 y verifique que JAVA_HOME apunte al JDK, no a un JRE."
+    return 1
+  fi
+
+  if ! command -v javac >/dev/null 2>&1; then
+    log_error "javac no esta disponible en el PATH."
+    log_warning "Instale un JDK 17 y exporte PATH=\$JAVA_HOME/bin:\$PATH"
+    return 1
+  fi
+
   if ! command -v mvn >/dev/null 2>&1; then
     log_error "Maven no esta disponible en el PATH."
     return 1
@@ -83,6 +96,9 @@ validate_java() {
 
   log_info "Version de Java:"
   java -version 2>&1 | sed 's/^/  /'
+
+  log_info "Version de Javac:"
+  javac -version 2>&1 | sed 's/^/  /'
 
   log_info "Version de Maven:"
   mvn -version 2>&1 | sed 's/^/  /'
