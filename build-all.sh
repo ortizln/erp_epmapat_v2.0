@@ -32,6 +32,8 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_ROOT="$ROOT_DIR/logs/build"
 RUN_TS="$(date +%Y%m%d-%H%M%S)"
 RUN_LOG_DIR="$LOG_ROOT/$RUN_TS"
+REAL_USER="${SUDO_USER:-$(id -un)}"
+REAL_GROUP="$(id -gn "$REAL_USER" 2>/dev/null || id -gn)"
 
 log_info()    { echo -e "${BLUE}[INFO]${NC} $1"; }
 log_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
@@ -40,6 +42,23 @@ log_error()   { echo -e "${RED}[ERROR]${NC} $1"; }
 
 ensure_logs_dir() {
   mkdir -p "$RUN_LOG_DIR"
+
+  if [ ! -w "$RUN_LOG_DIR" ]; then
+    log_warning "Sin permisos de escritura en $RUN_LOG_DIR, ajustando ownership..."
+    sudo chown -R "$REAL_USER":"$REAL_GROUP" "$ROOT_DIR/logs" 2>/dev/null || true
+    mkdir -p "$RUN_LOG_DIR"
+  fi
+}
+
+ensure_writable_directory() {
+  local dir_path=$1
+
+  mkdir -p "$dir_path" 2>/dev/null || sudo mkdir -p "$dir_path"
+
+  if [ ! -w "$dir_path" ]; then
+    sudo chown -R "$REAL_USER":"$REAL_GROUP" "$dir_path"
+    chmod -R 775 "$dir_path"
+  fi
 }
 
 detect_java_home() {
@@ -111,8 +130,8 @@ clean_target_directory() {
   if [ -d "$module/target" ]; then
     if [ ! -w "$module/target" ]; then
       log_warning "Sin permisos de escritura en $module/target, ajustando..."
-      sudo chown -R "$(whoami)":"$(whoami)" "$module/target"
-      chmod -R 755 "$module/target"
+      sudo chown -R "$REAL_USER":"$REAL_GROUP" "$module/target"
+      chmod -R 775 "$module/target"
     fi
 
     if rm -rf "$module/target"; then
@@ -132,10 +151,13 @@ compile_module() {
   local max_attempts=2
   local module_log_dir="$RUN_LOG_DIR/$module"
 
-  mkdir -p "$module_log_dir"
+  ensure_logs_dir
+  ensure_writable_directory "$module_log_dir"
 
   while [ $attempt -le $max_attempts ]; do
     local log_file="$module_log_dir/attempt-${attempt}.log"
+    ensure_logs_dir
+    ensure_writable_directory "$module_log_dir"
     log_info "Compilando $module (Intento $attempt)..."
     log_info "Log: $log_file"
 
@@ -149,6 +171,8 @@ compile_module() {
       cd "$ROOT_DIR"
       return 1
     fi
+
+    ensure_writable_directory "$ROOT_DIR/$module"
 
     if mvn clean package -DskipTests 2>&1 | tee "$log_file"; then
       log_success "$module compilado correctamente"
@@ -200,6 +224,7 @@ main() {
   log_info "Iniciando proceso de compilacion de microservicios..."
   log_info "Microservicios a compilar: ${modules[*]}"
   log_info "Logs de esta ejecucion: $RUN_LOG_DIR"
+  log_info "Usuario real detectado para permisos: $REAL_USER:$REAL_GROUP"
 
   if ! validate_java; then
     exit 1
