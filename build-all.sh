@@ -62,6 +62,23 @@ ensure_writable_directory() {
 }
 
 detect_java_home() {
+  local preferred_jdks=(
+    "/usr/lib/jvm/java-17-openjdk-amd64"
+    "/usr/lib/jvm/java-17-openjdk"
+    "/usr/lib/jvm/jdk-17"
+    "/usr/lib/jvm/temurin-17-jdk"
+  )
+
+  local candidate
+  for candidate in "${preferred_jdks[@]}"; do
+    if [ -x "$candidate/bin/java" ] && [ -x "$candidate/bin/javac" ]; then
+      JAVA_HOME="$candidate"
+      export JAVA_HOME
+      export PATH="$JAVA_HOME/bin:$PATH"
+      return 0
+    fi
+  done
+
   if [ -n "${JAVA_HOME:-}" ] && [ -x "${JAVA_HOME}/bin/java" ]; then
     return 0
   fi
@@ -80,7 +97,7 @@ detect_java_home() {
   export JAVA_HOME
   export PATH="$JAVA_HOME/bin:$PATH"
 
-  [ -x "${JAVA_HOME}/bin/java" ]
+  [ -x "${JAVA_HOME}/bin/java" ] && [ -x "${JAVA_HOME}/bin/javac" ]
 }
 
 validate_java() {
