@@ -49,8 +49,8 @@ public class Fec_facturaService {
    @Autowired
    private FecFacturaLogService logService;
 
-   @Value("${eureka.service-url}")
-   private String eurekaServiceUrl;
+   @Value("${gateway.base-url:http://localhost:8080}")
+   private String gatewayBaseUrl;
 
    public List<Fec_factura> findAll() {
       return dao.findAll();
@@ -191,7 +191,7 @@ public class Fec_facturaService {
 
     public Optional<Fec_factura> recuperarXmlAutorizado(Fec_factura factura) {
         try {
-            String url = eurekaServiceUrl + ":8080/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
+            String url = gatewayBaseUrl + "/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
             String xml = restTemplate.getForObject(url, String.class);
             if (xml == null || xml.isBlank()) {
                 marcarPendienteAutorizacion(factura, "SRI sin XML autorizado disponible todavia");

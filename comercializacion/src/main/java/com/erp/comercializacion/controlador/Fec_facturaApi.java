@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import com.erp.excepciones.ResourceNotFoundExcepciones;
@@ -25,10 +24,6 @@ public class Fec_facturaApi {
    private Fec_facturaService fecfacServicio;
    @Autowired
    private RestTemplate restTemplate;
-
-    @Value("${eureka.service-url}")
-    private String eurekaServiceUrl;
-
 
     @GetMapping
    public List<Fec_factura> getAll() {

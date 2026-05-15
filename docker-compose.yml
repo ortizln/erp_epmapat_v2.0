@@ -30,6 +30,7 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-eureka
@@ -56,6 +57,7 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-gateway
@@ -91,6 +93,7 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-login
@@ -128,6 +131,7 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-recaudacion
@@ -165,6 +169,7 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-comercializacion
@@ -202,6 +207,7 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-rrhh
@@ -239,6 +245,7 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-contabilidad
@@ -276,6 +283,7 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-pagosonline
@@ -313,6 +321,7 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-sri
@@ -350,6 +359,7 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-reportesjr
@@ -387,6 +397,7 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-epmapaapi
@@ -424,6 +435,7 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-emails
@@ -461,6 +473,7 @@ services:
     environment:
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
       - EUREKA_INSTANCE=msvc-bandred

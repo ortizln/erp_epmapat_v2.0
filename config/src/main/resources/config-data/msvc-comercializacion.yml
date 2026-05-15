@@ -3,6 +3,8 @@ server:
 spring:
   application:
     name: msvc-comercializacion
+gateway:
+  base-url: http://msvc-gateway:8080
 eureka:
   instance:
     hostname: msvc-comercializacion  # El nombre del contenedor o el servicio en Docker Compose

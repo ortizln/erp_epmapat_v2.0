@@ -46,6 +46,23 @@ Servicios principales:
 - Puerto 32 habilitado para `msvc-pagosonline` (requisito confirmado).
 - Archivo `.env` creado a partir de `.env.example`.
 
+## 3.2 Perfiles de despliegue
+- `local`: para correr microservicios con Maven desde la maquina anfitriona.
+- `docker`: para correr microservicios dentro de `docker compose`.
+
+Archivos usados:
+- `.env` contiene la configuracion base compartida.
+- `.env.local` sobrescribe la base para `local`.
+- `.env.docker` sobrescribe la base para `docker`.
+
+Comandos utiles:
+```powershell
+./start-local.ps1
+./start-service-local.ps1 comercializacion
+./start-local-stack.ps1
+./start-docker.ps1
+```
+
 ### 3.1 Crear .env
 1. Copiar:
    - `.env.example` -> `.env`
