@@ -63,7 +63,7 @@ public class EnvioSriBatchService {
             log.info("Ejecutando envio de facturas at={}", LocalDateTime.now());
             try {
                 var limit = PageRequest.of(0, LOTE);
-                var page = facturaR.findByEstado("I", limit);
+                var page = facturaR.findByEstadoNormalizado("I", limit);
                 List<Factura> facturas = page.getContent();
                 int exitosas = 0;
                 int fallidas = 0;
@@ -118,8 +118,8 @@ public class EnvioSriBatchService {
         try {
             var limit = PageRequest.of(0, LOTE);
             List<Factura> facturas = new ArrayList<>();
-            facturas.addAll(facturaR.findByEstado("C", limit).getContent());
-            facturas.addAll(facturaR.findByEstado("M", limit).getContent());
+            facturas.addAll(facturaR.findByEstadoNormalizado("C", limit).getContent());
+            facturas.addAll(facturaR.findByEstadoNormalizado("O", limit).getContent());
             int exitosas = 0;
             int fallidas = 0;
             Map<Long, Factura> unicas = new LinkedHashMap<>();
@@ -248,152 +248,6 @@ public class EnvioSriBatchService {
 
 
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void procesar_FacturaEnNuevaTx(Long idFactura) {
-        // 1) Releer y bloquear lógicamente
-        Factura f = facturaR.findById(idFactura).orElseThrow();
-        if (!"I".equals(f.getEstado())) {
-            log.info("Factura ya no esta en estado I idfactura={} estadoActual={}", idFactura, f.getEstado());
-            return;
-        }
-        f.setEstado("P");
-        facturaR.saveAndFlush(f);
-
-        try {
-            // 2) Generar XML desde la entidad
-            String xmlPlano = xmlFacturaService.generarXmlFactura(f);
-            requireNotBlank(xmlPlano, "XML generado vacío");
-
-            // 3) Modo de firma
-            var mf = "XMLDSIG".equalsIgnoreCase(modoFirmaCfg)
-                    ? FirmaComprobantesService.ModoFirma.XMLDSIG
-                    : FirmaComprobantesService.ModoFirma.XADES_BES;
-
-            // 4) Firmar
-            String xmlFirmado = firmaService.firmarFactura(xmlPlano, mf);
-            requireNotBlank(xmlFirmado, "XML firmado vacío");
-
-            // 5) Ambiente
-            if (ambienteForzado == 1 || ambienteForzado == 2) {
-                sendXmlToSriService.setAmbiente(ambienteForzado);
-            } else {
-                sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
-            }
-
-            // 6) Enviar a recepción
-            RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
-            if (recepcion == null) throw new IllegalStateException("Respuesta de recepción nula");
-
-            if ("RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
-                // 7) Polling de autorización
-                var rc = sendXmlToSriService.consultarAutorizacionConEspera(
-                        xmlFirmado,
-                        clave -> {
-                            try {
-                                return sendXmlToSriService.consultarAutorizacion(clave);
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                        },
-                        pollIntentos,
-                        pollDelayMs
-                );
-
-                var info = SriAutorizacionAdapter.fromRespuesta(rc)
-                        .orElse(new AutorizacionInfo(false, null, null, null, "Sin autorizaciones"));
-
-                if (info.autorizado()) {
-                    // ============================
-                    // AUTORIZADA: armar XML completo + guardar fecha/hora
-                    // ============================
-
-                    // XML del comprobante (factura) que devuelve el adapter
-                    String xmlFactura = new String(info.xmlAutorizado(), StandardCharsets.UTF_8);
-
-                    // Datos de autorización
-                    String numeroAutorizacion = info.numeroAutorizacion() != null
-                            ? info.numeroAutorizacion().trim()
-                            : "";
-
-                    // Dependiendo de cómo manejes la fecha en AutorizacionInfo:
-                    // Suponiendo que es XMLGregorianCalendar:
-                    LocalDateTime fa = info.fechaAutorizacion();
-                    String fechaAutStr = (fa != null ? fa.toString() : "");
-
-                    // Ambiente real → tomado de tu clase
-                    String ambienteStr = (ambienteForzado == 2 ? "PRODUCCIÓN" : "PRUEBAS");
-
-                    // Armar XML COMPLETO de autorización
-                    String xmlAutorizacionCompleta =
-                            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-                                    "<autorizacion>\n" +
-                                    "  <estado>AUTORIZADO</estado>\n" +
-                                    "  <numeroAutorizacion>" + numeroAutorizacion + "</numeroAutorizacion>\n" +
-                                    "  <fechaAutorizacion>" + fechaAutStr + "</fechaAutorizacion>\n" +
-                                    "  <ambiente>" + ambienteStr + "</ambiente>\n" +
-                                    "  <comprobante><![CDATA[" + xmlFactura + "]]></comprobante>\n" +
-                                    "</autorizacion>";
-
-                    f.setEstado("A");
-                    // Guardas el XML COMPLETO
-                    f.setXmlautorizado(xmlAutorizacionCompleta);
-
-                    // Si tu entidad tiene estos campos, guárdalos también:
-                    // (cambia los nombres de métodos según tu entidad)
-                  /*  try {
-                        f.setNumeroautorizacion(numeroAutorizacion); // o setNumautorizacion(...)
-                    } catch (Exception ignore) {}
-
-                    try {
-                        if (fa != null) {
-                            // convertir a java.util.Date o LocalDateTime según tu campo
-                            java.util.Date fechaJava = fa.toGregorianCalendar().getTime();
-                            f.setFechaautorizacion(fechaJava); // ajusta el nombre
-                        }
-                    } catch (Exception ignore) {}*/
-
-                    facturaR.save(f);
-
-                } else {
-                    // ============================
-                    // NO AUTORIZADA
-                    // ============================
-                    f.setEstado("U");
-
-                    // Si quieres ver el XML que devolvió SRI:
-                    String xml = new String(info.xmlAutorizado(), StandardCharsets.UTF_8);
-
-                    // Mensajes del SRI
-                    String mensajes = info.mensajesConcatenados();
-
-                    // Guarda solo mensajes (lo más útil) y evita sobrescribir dos veces
-                    String errores = (mensajes != null && !mensajes.isBlank())
-                            ? mensajes
-                            : xml;
-
-                    f.setErrores(trunc(errores, 1500));
-                    facturaR.save(f);
-                }
-
-            } else {
-                // ============================
-                // DEVUELTA en recepción
-                // ============================
-                f.setEstado("C"); // tu estado para devuelta/observada
-                String errores = erroresRecepcion(recepcion);
-                f.setErrores(trunc(errores, 1500));
-                facturaR.save(f);
-                log.warn("Factura devuelta por recepcion SRI idfactura={} errores={}", f.getIdfactura(), errores);
-            }
-
-        } catch (Exception ex) {
-            // Error inesperado → devolver a I y aumentar reintentos
-            log.error("Error inesperado en factura idfactura={}", idFactura, ex);
-
-            f.setEstado("I");
-            facturaR.save(f);
-        }
-    }
 
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -434,19 +288,6 @@ public class EnvioSriBatchService {
 
             if ("RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
                 // 7) Polling de autorización
-              /*  var _rc = sendXmlToSriService.consultarAutorizacionConEspera(
-                        xmlFirmado,
-                        clave -> {
-                            try {
-                                return sendXmlToSriService.consultarAutorizacion(clave);
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                        },
-                        pollIntentos,
-                        pollDelayMs
-                );*/
-
                 var rc = sendXmlToSriService.consultar_AutorizacionConEspera(
                         xmlFirmado,
                         clave -> {
@@ -529,8 +370,6 @@ public class EnvioSriBatchService {
                     );
 
                     // ---------- 2) Destinatarios ----------
-                    //List<String> to;
-// ---------- 2) Destinatarios ----------
                     List<String> to = Collections.emptyList(); // por defecto: NO enviar a nadie
                     boolean enviarCorreo = false;
 
@@ -839,3 +678,4 @@ public class EnvioSriBatchService {
     private static String nonNull(String s) { return s == null ? "" : s.trim(); }
 
 }
+

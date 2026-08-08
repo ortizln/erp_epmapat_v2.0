@@ -55,7 +55,7 @@ public class FacturaXmlGeneratorService {
         System.out.println("⏰ Ejecutando envío de facturas : " + LocalDateTime.now());
         try {
             PageRequest limit = PageRequest.of(0, 5); // primera "página" de 5
-            Page<Factura> page = facturaR.findByEstado("I", limit);
+            Page<Factura> page = facturaR.findByEstadoNormalizado("I", limit);
             List<Factura> facturas = page.getContent();
 
             for (Factura f : facturas) {
