@@ -11,6 +11,7 @@ import com.erp.sri_files.utils.SriAutorizacionAdapter;
 import ec.gob.sri.ws.autorizacion.RespuestaComprobante;
 import ec.gob.sri.ws.recepcion.RespuestaSolicitud;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -25,6 +26,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 @RequiredArgsConstructor
 @Service
+@Slf4j
 public class EnvioSriBatchService {
 
     private static final int LOTE = 10;
@@ -53,32 +55,40 @@ public class EnvioSriBatchService {
     private long pollDelayMs;
 
         @Transactional
-        @Scheduled(cron = "${interes.tarea.cron}") // ej: 0 */5 * * * *
+        @Scheduled(cron = "${sri.scheduler.envio-facturas.cron}") // ej: 0 */2 * * * *
         public void automatizacionEnvioFacturasElectonicas() {
-            System.out.println("⏰ Ejecutando envío de facturas : " + LocalDateTime.now());
+            long started = System.currentTimeMillis();
+            String threadName = Thread.currentThread().getName();
+            logTaskStart("automatizacionEnvioFacturasElectonicas", threadName);
+            log.info("Ejecutando envio de facturas at={}", LocalDateTime.now());
             try {
                 var limit = PageRequest.of(0, LOTE);
                 var page = facturaR.findByEstado("I", limit);
                 List<Factura> facturas = page.getContent();
+                int exitosas = 0;
+                int fallidas = 0;
 
                 if (facturas.isEmpty()) {
-                    System.out.println("🟢 No hay facturas pendientes (I).");
+                    log.info("No hay facturas pendientes estado=I");
+                    logTaskEnd("automatizacionEnvioFacturasElectonicas", threadName, started, 0, 0, 0);
                     return;
                 }
 
                 for (Factura f : facturas) {
                     try {
                         procesarFacturaEnNuevaTx(f.getIdfactura());
+                        exitosas++;
                     } catch (Exception ex) {
-                        System.err.println("❌ Error procesando factura " + f.getIdfactura() + ": " + ex.getMessage());
-                        ex.printStackTrace();
+                        fallidas++;
+                        log.error("Error procesando factura idfactura={}", f.getIdfactura(), ex);
                     }
                 }
 
-                System.out.println("✅ Lote procesado: " + facturas.size());
+                log.info("Lote procesado total={}", facturas.size());
+                logTaskEnd("automatizacionEnvioFacturasElectonicas", threadName, started, facturas.size(), exitosas, fallidas);
             } catch (Exception e) {
-                System.err.println("❌ Error en la tarea programada: " + e.getMessage());
-                e.printStackTrace();
+                logTaskError("automatizacionEnvioFacturasElectonicas", threadName, e);
+                log.error("Error en la tarea programada automatizacionEnvioFacturasElectonicas", e);
             }
         }
     // Dominios que NO quieres que reciban correos
@@ -99,14 +109,19 @@ public class EnvioSriBatchService {
     );
 //Este servicio sirve para conultar las facturas en estado C y volver a buscar el xml auotizado en el sri
     @Transactional
-    @Scheduled(cron = "${interes.tarea.cron}")
+    @Scheduled(cron = "${sri.scheduler.recuperacion-xml.cron}")
     public void automatizacionConsultarXml() {
-        System.out.println("Voy a consultar cada xml que aun no esta");
+        long started = System.currentTimeMillis();
+        String threadName = Thread.currentThread().getName();
+        logTaskStart("automatizacionConsultarXml", threadName);
+        log.info("Iniciando consulta de XML pendientes");
         try {
             var limit = PageRequest.of(0, LOTE);
             List<Factura> facturas = new ArrayList<>();
             facturas.addAll(facturaR.findByEstado("C", limit).getContent());
-            facturas.addAll(facturaR.findByEstado("O", limit).getContent());
+            facturas.addAll(facturaR.findByEstado("M", limit).getContent());
+            int exitosas = 0;
+            int fallidas = 0;
             Map<Long, Factura> unicas = new LinkedHashMap<>();
             for (Factura factura : facturas) {
                 unicas.put(factura.getIdfactura(), factura);
@@ -114,7 +129,8 @@ public class EnvioSriBatchService {
             facturas = new ArrayList<>(unicas.values());
 
             if (facturas.isEmpty()) {
-                System.out.println("🟢 No hay facturas pendientes (I).");
+                log.info("No hay facturas pendientes para recuperacion de XML");
+                logTaskEnd("automatizacionConsultarXml", threadName, started, 0, 0, 0);
                 return;
             }
 
@@ -129,6 +145,7 @@ public class EnvioSriBatchService {
                             f.setErrores(null);
                             facturaR.save(f);
                         }
+                        exitosas++;
                         continue;
                     }
                     RespuestaComprobante rc = sendXmlToSriService.consultarAutorizacionHastaEncontrarXmlPorClave(
@@ -171,8 +188,7 @@ public class EnvioSriBatchService {
                         // Limpia errores si los hubiera
                         f.setErrores(null);
 
-                        System.out.println("✅ Factura " + f.getIdfactura()
-                                + " autorizada y XML guardado.");
+                        log.info("Factura autorizada y XML guardado idfactura={}", f.getIdfactura());
                     } else {
                         // No autorizado, en proceso o error
                         String msg = resultado.getMensaje() != null
@@ -182,20 +198,25 @@ public class EnvioSriBatchService {
                         f.setEstado("C"); // o "N"
                         f.setErrores(msg);
 
-                        System.out.println("⚠️ Factura " + f.getIdfactura()
-                                + " no autorizada: " + msg);
+                        log.warn("Factura no autorizada idfactura={} motivo={}", f.getIdfactura(), msg);
                     }
 
                     facturaR.save(f);
+                    if ("A".equalsIgnoreCase(safeStr(f.getEstado()))) {
+                        exitosas++;
+                    } else {
+                        fallidas++;
+                    }
 
                 } catch (Exception ex) {
-                    System.err.println("❌ Error procesando factura "
-                            + f.getIdfactura() + ": " + ex.getMessage());
-                    ex.printStackTrace();
+                    fallidas++;
+                    log.error("Error procesando factura idfactura={}", f.getIdfactura(), ex);
                 }
             }
 
+            logTaskEnd("automatizacionConsultarXml", threadName, started, facturas.size(), exitosas, fallidas);
         } catch (RuntimeException e) {
+            logTaskError("automatizacionConsultarXml", threadName, e);
             throw new RuntimeException(e);
         }
     }
@@ -232,7 +253,7 @@ public class EnvioSriBatchService {
         // 1) Releer y bloquear lógicamente
         Factura f = facturaR.findById(idFactura).orElseThrow();
         if (!"I".equals(f.getEstado())) {
-            System.out.println("ℹ️ Factura " + idFactura + " ya no está en estado I, actual: " + f.getEstado());
+            log.info("Factura ya no esta en estado I idfactura={} estadoActual={}", idFactura, f.getEstado());
             return;
         }
         f.setEstado("P");
@@ -362,13 +383,12 @@ public class EnvioSriBatchService {
                 String errores = erroresRecepcion(recepcion);
                 f.setErrores(trunc(errores, 1500));
                 facturaR.save(f);
-                System.out.println("🟠 DEVUELTA (REC): " + f.getIdfactura() + " -> " + errores);
+                log.warn("Factura devuelta por recepcion SRI idfactura={} errores={}", f.getIdfactura(), errores);
             }
 
         } catch (Exception ex) {
             // Error inesperado → devolver a I y aumentar reintentos
-            System.err.println("❌ Error inesperado en factura " + idFactura + ": " + ex.getMessage());
-            ex.printStackTrace();
+            log.error("Error inesperado en factura idfactura={}", idFactura, ex);
 
             f.setEstado("I");
             facturaR.save(f);
@@ -381,7 +401,7 @@ public class EnvioSriBatchService {
         // 1) Releer y bloquear lógicamente
         Factura f = facturaR.findById(idFactura).orElseThrow();
         if (!"I".equals(f.getEstado())) {
-            System.out.println("ℹ️ Factura " + idFactura + " ya no está en estado I, actual: " + f.getEstado());
+            log.info("Factura ya no esta en estado I idfactura={} estadoActual={}", idFactura, f.getEstado());
             return;
         }
         f.setEstado("P");
@@ -525,8 +545,8 @@ public class EnvioSriBatchService {
                         enviarCorreo = false;
 
                         // IMPORTANTE: simplemente seguimos procesando la factura sin enviar correo
-                        System.out.println("⚠️ Correo bloqueado o inválido (" + correoComprador +
-                                ") → No se enviará correo para la factura " + f.getIdfactura());
+                        log.warn("Correo bloqueado o invalido correo={} idfactura={} accion=no_enviar_correo",
+                                correoComprador, f.getIdfactura());
                     }
 
                     List<String> cc  = Collections.emptyList();
@@ -639,7 +659,7 @@ public class EnvioSriBatchService {
                                 f.setErrores((f.getErrores() == null) ? err : (f.getErrores() + " | " + err));
                             }
                         } else {
-                            System.out.println("ℹ️ Saltando correo para factura " + f.getIdfactura());
+                            log.info("Saltando envio de correo idfactura={}", f.getIdfactura());
                         }
                     } catch (Exception mailEx) {
                         // si falla el correo, marca como "O" (opcional)
@@ -667,13 +687,12 @@ public class EnvioSriBatchService {
                 String errores = erroresRecepcion(recepcion);
                 f.setErrores(trunc(errores, 1500));
                 facturaR.save(f);
-                System.out.println("🟠 DEVUELTA (REC): " + f.getIdfactura() + " -> " + errores);
+                log.warn("Factura devuelta por recepcion SRI idfactura={} errores={}", f.getIdfactura(), errores);
             }
 
         } catch (Exception ex) {
             // Error inesperado → devolver a I y aumentar reintentos
-            System.err.println("❌ Error inesperado en factura " + idFactura + ": " + ex.getMessage());
-            ex.printStackTrace();
+            log.error("Error inesperado en factura idfactura={}", idFactura, ex);
 
             f.setEstado("I");
             f.setErrores(ex.getMessage());
@@ -764,6 +783,20 @@ public class EnvioSriBatchService {
         return (o == null) ? "" : o.toString().trim();
     }
 
+
+    private void logTaskStart(String taskName, String threadName) {
+        log.info("[SCHEDULER][{}] INICIO {} @ {}", threadName, taskName, LocalDateTime.now());
+    }
+
+    private void logTaskEnd(String taskName, String threadName, long started, int totalDetectado, int exitosas, int fallidas) {
+        long durationMs = System.currentTimeMillis() - started;
+        log.info("[SCHEDULER][{}] FIN {} | detectados={} | exitosas={} | fallidas={} | duracionMs={}",
+                threadName, taskName, totalDetectado, exitosas, fallidas, durationMs);
+    }
+
+    private void logTaskError(String taskName, String threadName, Exception e) {
+        log.error("[SCHEDULER][{}] ERROR {}", threadName, taskName, e);
+    }
 
     // helpers
         private static void requireNotBlank(String s, String msg) {
