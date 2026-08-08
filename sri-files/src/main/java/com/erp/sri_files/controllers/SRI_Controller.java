@@ -605,6 +605,7 @@ public class SRI_Controller {
             @RequestPart("xml") MultipartFile xmlFile,
             @RequestParam(value = "modo", required = false, defaultValue = "XADES_BES") String modo,
             @RequestParam(value = "ambiente", required = false) Integer ambienteForzado,
+            @RequestParam(value = "emailDestino", required = false) String emailDestino,
             @RequestParam(value = "download", required = false, defaultValue = "false") boolean download, // si quieres forzar descarga
             @RequestParam(value = "diagnostics", required = false, defaultValue = "false") boolean diagnostics
     ) {
@@ -656,6 +657,9 @@ public class SRI_Controller {
                     ambienteSolicitud,
                     10, 4000
             );
+            if (emailDestino != null && !emailDestino.isBlank()) {
+                return procesarRetencionAutorizadaConCorreo(rc, claveAccesoRetencion(validation, xmlFirmado), emailDestino.trim());
+            }
             // 8) Extraer solo el XML autorizado del SRI
             String xmlAutorizado = extraerXmlAutorizado(rc);
             if (xmlAutorizado != null) {
@@ -699,6 +703,7 @@ public class SRI_Controller {
             @RequestBody String xmlPlanoBody,
             @RequestParam(value = "modo", required = false, defaultValue = "XADES_BES") String modo,
             @RequestParam(value = "ambiente", required = false) Integer ambienteForzado,
+            @RequestParam(value = "emailDestino", required = false) String emailDestino,
             @RequestParam(value = "download", required = false, defaultValue = "false") boolean download,
             @RequestParam(value = "diagnostics", required = false, defaultValue = "false") boolean diagnostics
     ) {
@@ -757,6 +762,9 @@ public class SRI_Controller {
                     30,   // intentos
                     4000  // ms entre intentos
             );
+            if (emailDestino != null && !emailDestino.isBlank()) {
+                return procesarRetencionAutorizadaConCorreo(rc, claveAccesoRetencion(validation, xmlFirmado), emailDestino.trim());
+            }
 
             // 8) Extraer XML autorizado
             String xmlAutorizado = extraerXmlAutorizado(rc);
@@ -778,6 +786,90 @@ public class SRI_Controller {
             log.error("Error al procesar retencion", e);
             return ResponseEntity.status(500).body(Map.of(
                     "error", "Error al firmar/enviar comprobante de retenciÃƒÆ’Ã‚Â³n",
+                    "detalle", e.getMessage(),
+                    "requestId", requestId,
+                    "tiempoProcesoMs", System.currentTimeMillis() - started
+            ));
+        } finally {
+            MDC.clear();
+        }
+    }
+
+    @PostMapping(
+            path = "/retencion/procesar",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE,
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<?> procesarRetencion(
+            @RequestPart("xml") MultipartFile xmlFile,
+            @RequestParam(value = "modo", required = false, defaultValue = "XADES_BES") String modo,
+            @RequestParam(value = "ambiente", required = false) Integer ambienteForzado,
+            @RequestParam(value = "emailDestino", required = false) String emailDestino,
+            @RequestParam(value = "attempts", required = false, defaultValue = "30") int attempts,
+            @RequestParam(value = "sleepMillis", required = false, defaultValue = "4000") long sleepMillis
+    ) {
+        long started = System.currentTimeMillis();
+        String requestId = UUID.randomUUID().toString();
+        try {
+            MDC.put("requestId", requestId);
+            MDC.put("tipoDocumento", "RETENCION");
+            MDC.put("etapaActual", "RECEPCION_XML");
+
+            String xmlPlano = toUtf8String(xmlFile);
+            var validation = retencionValidationService.validate(xmlPlano);
+            putIfPresent("claveAcceso", validation.claveAcceso());
+            if (!validation.valid()) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "ok", false,
+                        "estado", "VALIDACION_PREVIA_FALLIDA",
+                        "requestId", requestId,
+                        "errores", validation.errors(),
+                        "warnings", validation.warnings()
+                ));
+            }
+
+            ModoFirma mf = "XMLDSIG".equalsIgnoreCase(modo) ? ModoFirma.XMLDSIG : ModoFirma.XADES_BES;
+
+            MDC.put("etapaActual", "FIRMA");
+            String xmlFirmado = firmaService.firmarFactura(xmlPlano, mf);
+
+            int ambienteSolicitud = ambienteForzado != null
+                    ? (ambienteForzado == 2 ? 2 : 1)
+                    : sendXmlToSriService.inferAmbienteFromXml(xmlFirmado);
+            MDC.put("ambiente", String.valueOf(ambienteSolicitud));
+
+            MDC.put("etapaActual", "RECEPCION_SRI");
+            RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado, ambienteSolicitud);
+            if (!"RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
+                Map<String, Object> body = new LinkedHashMap<>();
+                body.put("ok", false);
+                body.put("requestId", requestId);
+                body.put("recepcionEstado", recepcion.getEstado());
+                body.put("claveAcceso", claveAccesoRetencion(validation, xmlFirmado));
+                body.put("resultado", respuestaRecepcionDevuelta(requestId, validation, recepcion, xmlFirmado, true, started));
+                return ResponseEntity.badRequest().body(body);
+            }
+
+            MDC.put("etapaActual", "AUTORIZACION_SRI");
+            RespuestaComprobante rc = sendXmlToSriService.consultarAutorizacionConEspera(
+                    xmlFirmado,
+                    ambienteSolicitud,
+                    Math.max(attempts, 1),
+                    Math.max(sleepMillis, 500L)
+            );
+
+            return construirRespuestaRetencionProcesada(
+                    rc,
+                    claveAccesoRetencion(validation, xmlFirmado),
+                    emailDestino,
+                    requestId,
+                    started
+            );
+        } catch (Exception e) {
+            log.error("Error al procesar retencion con respuesta ampliada", e);
+            return ResponseEntity.status(500).body(Map.of(
+                    "ok", false,
+                    "error", "Error al procesar retencion",
                     "detalle", e.getMessage(),
                     "requestId", requestId,
                     "tiempoProcesoMs", System.currentTimeMillis() - started
@@ -1403,6 +1495,205 @@ public class SRI_Controller {
                     "error", "Error consultando autorizacion en SRI",
                     "detalle", e.getMessage()
             ));
+        }
+    }
+
+    private ResponseEntity<?> procesarRetencionAutorizadaConCorreo(
+            RespuestaComprobante rc,
+            String claveAcceso,
+            String emailDestino
+    ) throws Exception {
+        if (rc == null || rc.getAutorizaciones() == null
+                || rc.getAutorizaciones().getAutorizacion() == null
+                || rc.getAutorizaciones().getAutorizacion().isEmpty()) {
+            return ResponseEntity.status(202).body(Map.of(
+                    "estado", "SIN_AUTORIZACION_EN_SRI",
+                    "detalle", "Aun no hay autorizaciones disponibles para la clave.",
+                    "claveAcceso", claveAcceso,
+                    "email", emailDestino
+            ));
+        }
+
+        var autorizada = primeraAutorizacionAutorizada(rc.getAutorizaciones().getAutorizacion());
+        if (autorizada == null) {
+            var a0 = rc.getAutorizaciones().getAutorizacion().get(0);
+            return ResponseEntity.status(400).body(Map.of(
+                    "estadoAutorizacion", safeStr(a0.getEstado()),
+                    "numeroAutorizacion", safeStr(a0.getNumeroAutorizacion()),
+                    "fechaAutorizacion", (a0.getFechaAutorizacion() != null ? a0.getFechaAutorizacion().toString() : ""),
+                    "ambiente", safeStr(a0.getAmbiente()),
+                    "claveAcceso", claveAcceso,
+                    "email", emailDestino
+            ));
+        }
+
+        String xmlComprobante = cleanComprobanteXml(autorizada.getComprobante());
+        if (xmlComprobante.isBlank()) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "error", "La autorizacion no contiene XML de comprobante.",
+                    "claveAcceso", claveAcceso,
+                    "email", emailDestino
+            ));
+        }
+
+        String xmlAutorizacionCompleta = construirXmlAutorizacionCompleta(autorizada, xmlComprobante);
+        byte[] pdfBytes = retencionPdfService.generarPdfDesdeXmlAutorizado(xmlAutorizacionCompleta);
+
+        String baseName = "retencion_" + claveAcceso;
+        String subject = "Retencion electronica - " + claveAcceso;
+        String body = "Se adjunta la retencion electronica en formato XML y PDF.\n\nClave de acceso: " + claveAcceso;
+
+        try {
+            UUID emailQueueId = retencionEmailService.enviarRetencion(
+                    emailDestino,
+                    subject,
+                    body,
+                    baseName,
+                    xmlAutorizacionCompleta,
+                    pdfBytes
+            );
+
+            Map<String, Object> response = new LinkedHashMap<>();
+            response.put("ok", true);
+            response.put("estado", "AUTORIZADO");
+            response.put("mensaje", "Retencion autorizada y correo encolado correctamente");
+            response.put("email", emailDestino);
+            response.put("claveAcceso", claveAcceso);
+            response.put("numeroAutorizacion", safeStr(autorizada.getNumeroAutorizacion()));
+            response.put("fechaAutorizacion", autorizada.getFechaAutorizacion() != null ? autorizada.getFechaAutorizacion().toXMLFormat() : "");
+            response.put("emailQueueId", emailQueueId);
+            return ResponseEntity.ok(response);
+        } catch (Exception mailEx) {
+            return ResponseEntity.status(503).body(Map.of(
+                    "ok", false,
+                    "estado", "CORREO_NO_DISPONIBLE",
+                    "mensaje", "La retencion ya esta autorizada, pero el servicio de correo no respondio correctamente.",
+                    "detalle", mailEx.getMessage(),
+                    "email", emailDestino,
+                    "claveAcceso", claveAcceso
+            ));
+        }
+    }
+
+    private ResponseEntity<?> construirRespuestaRetencionProcesada(
+            RespuestaComprobante rc,
+            String claveAcceso,
+            String emailDestino,
+            String requestId,
+            long started
+    ) throws Exception {
+        if (rc == null || rc.getAutorizaciones() == null
+                || rc.getAutorizaciones().getAutorizacion() == null
+                || rc.getAutorizaciones().getAutorizacion().isEmpty()) {
+            return ResponseEntity.status(202).body(Map.of(
+                    "ok", false,
+                    "estado", "SIN_AUTORIZACION_EN_SRI",
+                    "detalle", "Aun no hay autorizaciones disponibles para la clave.",
+                    "requestId", requestId,
+                    "claveAcceso", claveAcceso,
+                    "tiempoProcesoMs", System.currentTimeMillis() - started
+            ));
+        }
+
+        var autorizada = primeraAutorizacionAutorizada(rc.getAutorizaciones().getAutorizacion());
+        if (autorizada == null) {
+            var a0 = rc.getAutorizaciones().getAutorizacion().get(0);
+            return ResponseEntity.status(202).body(Map.of(
+                    "ok", false,
+                    "estado", safeStr(a0.getEstado()),
+                    "numeroAutorizacion", safeStr(a0.getNumeroAutorizacion()),
+                    "fechaAutorizacion", a0.getFechaAutorizacion() != null ? a0.getFechaAutorizacion().toString() : "",
+                    "ambiente", safeStr(a0.getAmbiente()),
+                    "claveAcceso", claveAcceso,
+                    "requestId", requestId,
+                    "tiempoProcesoMs", System.currentTimeMillis() - started
+            ));
+        }
+
+        String xmlComprobante = cleanComprobanteXml(autorizada.getComprobante());
+        if (xmlComprobante.isBlank()) {
+            return ResponseEntity.status(500).body(Map.of(
+                    "ok", false,
+                    "error", "La autorizacion no contiene XML de comprobante.",
+                    "claveAcceso", claveAcceso,
+                    "requestId", requestId
+            ));
+        }
+
+        String xmlAutorizacionCompleta = construirXmlAutorizacionCompleta(autorizada, xmlComprobante);
+        byte[] pdfBytes = retencionPdfService.generarPdfDesdeXmlAutorizado(xmlAutorizacionCompleta);
+        String xmlBase64 = Base64.getEncoder().encodeToString(xmlAutorizacionCompleta.getBytes(StandardCharsets.UTF_8));
+        String pdfBase64 = Base64.getEncoder().encodeToString(pdfBytes);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("ok", true);
+        response.put("estado", "AUTORIZADO");
+        response.put("requestId", requestId);
+        response.put("claveAcceso", claveAcceso);
+        response.put("numeroAutorizacion", safeStr(autorizada.getNumeroAutorizacion()));
+        response.put("fechaAutorizacion", autorizada.getFechaAutorizacion() != null ? autorizada.getFechaAutorizacion().toXMLFormat() : "");
+        response.put("ambiente", safeStr(autorizada.getAmbiente()));
+        response.put("xmlAutorizado", xmlAutorizacionCompleta);
+        response.put("xmlAutorizadoBase64", xmlBase64);
+        response.put("pdfBase64", pdfBase64);
+        response.put("email", emailDestino);
+        response.put("emailEncolado", false);
+        response.put("emailQueueId", null);
+        response.put("tiempoProcesoMs", System.currentTimeMillis() - started);
+
+        if (emailDestino != null && !emailDestino.isBlank()) {
+            String baseName = "retencion_" + claveAcceso;
+            String subject = "Retencion electronica - " + claveAcceso;
+            String body = "Se adjunta la retencion electronica en formato XML y PDF.\n\nClave de acceso: " + claveAcceso;
+            UUID emailQueueId = retencionEmailService.enviarRetencion(
+                    emailDestino.trim(),
+                    subject,
+                    body,
+                    baseName,
+                    xmlAutorizacionCompleta,
+                    pdfBytes
+            );
+            response.put("email", emailDestino.trim());
+            response.put("emailEncolado", true);
+            response.put("emailQueueId", emailQueueId);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
+    private static String construirXmlAutorizacionCompleta(
+            ec.gob.sri.ws.autorizacion.Autorizacion autorizada,
+            String xmlComprobante
+    ) {
+        String estado = normEstado(autorizada.getEstado());
+        String numeroAutorizacion = safe(autorizada.getNumeroAutorizacion());
+        String fechaAutorizacion = autorizada.getFechaAutorizacion() != null
+                ? autorizada.getFechaAutorizacion().toXMLFormat()
+                : "";
+        String ambiente = safe(autorizada.getAmbiente());
+
+        return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                "<autorizacion>\n" +
+                "  <estado>" + estado + "</estado>\n" +
+                "  <numeroAutorizacion>" + numeroAutorizacion + "</numeroAutorizacion>\n" +
+                "  <fechaAutorizacion>" + fechaAutorizacion + "</fechaAutorizacion>\n" +
+                "  <ambiente>" + ambiente + "</ambiente>\n" +
+                "  <comprobante><![CDATA[" + xmlComprobante + "]]></comprobante>\n" +
+                "</autorizacion>";
+    }
+
+    private static String claveAccesoRetencion(
+            SriRetencionValidationService.RetencionValidationResult validation,
+            String xmlFirmado
+    ) {
+        if (validation != null && validation.claveAcceso() != null && !validation.claveAcceso().isBlank()) {
+            return validation.claveAcceso().trim();
+        }
+        try {
+            String clave = extraerTag(xmlFirmado, "claveAcceso");
+            return clave == null ? "" : clave.trim();
+        } catch (Exception e) {
+            return "";
         }
     }
     // ================== Helpers ==================
