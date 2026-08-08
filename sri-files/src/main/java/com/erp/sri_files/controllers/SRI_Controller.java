@@ -377,7 +377,57 @@ public class SRI_Controller {
         }
     }
 
-    // ===================== 8) CREAR XML FIRMAR Y ENVIAR =====================
+    // ===================== 8) XML PREVIO PARA REVISION =====================
+    @GetMapping(path = "/factura/xml-previo")
+    public ResponseEntity<?> generarXmlPrevioFactura(@RequestParam Long idfactura) {
+        Factura factura = fecFacturaR.findByIdfactura(idfactura);
+        try {
+            if (factura == null) {
+                Boolean request = facturasService.findByIdfactura(idfactura);
+                if (Boolean.TRUE.equals(request)) {
+                    String url = backendBaseUrl + "/fec_factura/createFacElectro?idfactura=" + idfactura;
+                    restTemplate.getForObject(url, Void.class);
+
+                    for (int i = 0; i < 5; i++) {
+                        Thread.sleep(2000);
+                        factura = fecFacturaR.findByIdfactura(idfactura);
+                        if (factura != null) break;
+                    }
+                }
+            }
+
+            if (factura == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
+                        "error", "No se encontro la fec_factura para generar el XML previo",
+                        "idfactura", idfactura
+                ));
+            }
+
+            String xmlPrevio = facturaXmlGeneratorService.generarXmlFactura(factura);
+            if (xmlPrevio != null && !xmlPrevio.isEmpty() && xmlPrevio.charAt(0) == '\uFEFF') {
+                xmlPrevio = xmlPrevio.substring(1);
+            }
+
+            Map<String, Object> resumen = resumirImpuestosFacturaXml(xmlPrevio);
+            log.info("XML previo generado idfactura={} resumen={}", idfactura, resumen);
+
+            return ResponseEntity.ok(Map.of(
+                    "idfactura", idfactura,
+                    "estado", safeStr(factura.getEstado()),
+                    "xml", xmlPrevio,
+                    "resumen", resumen
+            ));
+        } catch (Exception e) {
+            log.error("Error generando XML previo idfactura={}", idfactura, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                    "error", "Error generando XML previo",
+                    "detalle", e.getMessage(),
+                    "idfactura", idfactura
+            ));
+        }
+    }
+
+    // ===================== 9) CREAR XML FIRMAR Y ENVIAR =====================
     @GetMapping(path = "/factura_electronica")
     public ResponseEntity<?> crear_firmar_enviarFactura(@RequestParam Long idfactura) {
         //crear variable de respuesta estado y detalla
@@ -1441,6 +1491,66 @@ public class SRI_Controller {
     // helper simple si no lo tienes:
     private String safeStr(Object o) {
         return (o == null) ? "" : o.toString().trim();
+    }
+
+    private Map<String, Object> resumirImpuestosFacturaXml(String xml) throws Exception {
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setNamespaceAware(true);
+        Document doc = dbf.newDocumentBuilder().parse(new InputSource(new StringReader(xml)));
+
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("totalSinImpuestos", safe(extraerTexto(doc, "totalSinImpuestos")));
+        out.put("importeTotal", safe(extraerTexto(doc, "importeTotal")));
+
+        List<Map<String, Object>> detalles = new ArrayList<>();
+        NodeList detalleNodes = doc.getElementsByTagName("detalle");
+        for (int i = 0; i < detalleNodes.getLength(); i++) {
+            org.w3c.dom.Element detalle = (org.w3c.dom.Element) detalleNodes.item(i);
+            Map<String, Object> item = new LinkedHashMap<>();
+            item.put("codigoPrincipal", getChildText(detalle, "codigoPrincipal"));
+            item.put("descripcion", getChildText(detalle, "descripcion"));
+            item.put("precioTotalSinImpuesto", getChildText(detalle, "precioTotalSinImpuesto"));
+
+            List<Map<String, Object>> impuestos = new ArrayList<>();
+            NodeList impuestosNodes = detalle.getElementsByTagName("impuesto");
+            for (int j = 0; j < impuestosNodes.getLength(); j++) {
+                org.w3c.dom.Element imp = (org.w3c.dom.Element) impuestosNodes.item(j);
+                Map<String, Object> impuesto = new LinkedHashMap<>();
+                impuesto.put("codigo", getChildText(imp, "codigo"));
+                impuesto.put("codigoPorcentaje", getChildText(imp, "codigoPorcentaje"));
+                impuesto.put("tarifa", getChildText(imp, "tarifa"));
+                impuesto.put("baseImponible", getChildText(imp, "baseImponible"));
+                impuesto.put("valor", getChildText(imp, "valor"));
+                impuestos.add(impuesto);
+            }
+            item.put("impuestos", impuestos);
+            detalles.add(item);
+        }
+        out.put("detalles", detalles);
+
+        List<Map<String, Object>> totales = new ArrayList<>();
+        NodeList totalImpuestoNodes = doc.getElementsByTagName("totalImpuesto");
+        for (int i = 0; i < totalImpuestoNodes.getLength(); i++) {
+            org.w3c.dom.Element imp = (org.w3c.dom.Element) totalImpuestoNodes.item(i);
+            Map<String, Object> total = new LinkedHashMap<>();
+            total.put("codigo", getChildText(imp, "codigo"));
+            total.put("codigoPorcentaje", getChildText(imp, "codigoPorcentaje"));
+            total.put("baseImponible", getChildText(imp, "baseImponible"));
+            total.put("valor", getChildText(imp, "valor"));
+            totales.add(total);
+        }
+        out.put("totalConImpuestos", totales);
+        return out;
+    }
+
+    private static String extraerTexto(Document doc, String tagName) {
+        NodeList list = doc.getElementsByTagName(tagName);
+        return list.getLength() == 0 ? "" : safe(list.item(0).getTextContent());
+    }
+
+    private static String getChildText(org.w3c.dom.Element element, String tagName) {
+        NodeList list = element.getElementsByTagName(tagName);
+        return list.getLength() == 0 ? "" : safe(list.item(0).getTextContent());
     }
 
     // ========== 2) Consultar por XML (extrae <claveAcceso>) ==========

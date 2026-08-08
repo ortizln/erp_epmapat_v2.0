@@ -21,7 +21,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.print.Pageable;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -227,8 +226,15 @@ public class FacturaXmlGeneratorService {
      * ========================================================== */
     private InfoFactura crearInfoFactura(Factura factura) {
         TotalSinImpuestos tSiRepo = fDetalleR.getTotalSinImpuestos(factura.getIdfactura());
-        BigDecimal totalSinImp = nvl(tSiRepo.getTotalsinimpuestos()).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal descuento   = nvl(tSiRepo.getDescuento()).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal subtotalBruto = nvl(tSiRepo.getTotalsinimpuestos()).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal descuento = nvl(tSiRepo.getDescuento()).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal totalSinImp = subtotalBruto.subtract(descuento).setScale(2, RoundingMode.HALF_UP);
+        if (totalSinImp.compareTo(BigDecimal.ZERO) < 0) {
+            totalSinImp = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
+        }
+
+        List<FacturaDetalle> detallesFactura = obtenerDetallesFactura(factura);
+        factura.setDetalles(detallesFactura);
 
         InfoFactura info = new InfoFactura();
         info.setFechaEmision(formatForXml(factura.getFechaemision()));
@@ -253,9 +259,8 @@ public class FacturaXmlGeneratorService {
 
         info.setPropina(BigDecimal.ZERO);
 
-        // importeTotal = totalSinImpuestos - totalDescuento + Σimpuestos + propina
+        // importeTotal = totalSinImpuestos + Σimpuestos + propina
         BigDecimal importeTotal = totalSinImp
-                .subtract(descuento)
                 .add(sumaImpuestos)
                 .setScale(2, RoundingMode.HALF_UP);
 
@@ -291,9 +296,11 @@ public class FacturaXmlGeneratorService {
 
         TotalConImpuestos tci = new TotalConImpuestos();
 
+        List<FacturaDetalle> detallesFactura = obtenerDetallesFactura(factura);
+
         Map<String, TotalesAcumulados> agrupado =
-                factura.getDetalles() == null ? Map.of() :
-                        factura.getDetalles().stream()
+                detallesFactura == null ? Map.of() :
+                        detallesFactura.stream()
                                 .filter(Objects::nonNull)
                                 .map(FacturaDetalle::getImpuestos)
                                 .filter(Objects::nonNull)
@@ -364,7 +371,10 @@ public class FacturaXmlGeneratorService {
                 case "0": return BigDecimal.ZERO;
                 case "2": return new BigDecimal("12"); // histórico 12%
                 case "3": return new BigDecimal("14"); // histórico 14%
-                case "6": return new BigDecimal("15"); // ej. 15% (ajusta si cambió)
+                case "4": return new BigDecimal("15"); // IVA vigente 15%
+                case "5": return new BigDecimal("5");  // tarifa especial 5%
+                case "6": return BigDecimal.ZERO;      // no objeto
+                case "7": return BigDecimal.ZERO;      // exento
                 default:  return BigDecimal.ZERO;
             }
         }
