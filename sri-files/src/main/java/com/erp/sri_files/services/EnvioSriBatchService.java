@@ -104,8 +104,14 @@ public class EnvioSriBatchService {
         System.out.println("Voy a consultar cada xml que aun no esta");
         try {
             var limit = PageRequest.of(0, LOTE);
-            var page = facturaR.findByEstado("C", limit);
-            List<Factura> facturas = page.getContent();
+            List<Factura> facturas = new ArrayList<>();
+            facturas.addAll(facturaR.findByEstado("C", limit).getContent());
+            facturas.addAll(facturaR.findByEstado("O", limit).getContent());
+            Map<Long, Factura> unicas = new LinkedHashMap<>();
+            for (Factura factura : facturas) {
+                unicas.put(factura.getIdfactura(), factura);
+            }
+            facturas = new ArrayList<>(unicas.values());
 
             if (facturas.isEmpty()) {
                 System.out.println("🟢 No hay facturas pendientes (I).");
@@ -115,18 +121,37 @@ public class EnvioSriBatchService {
             for (Factura f : facturas) {
                 try {
                     String claveAcceso = f.getClaveacceso();
-                    if(f.getXmlautorizado() != null || f.getXmlautorizado() != "")
-                    {
-                        f.setEstado("A");
-                        f.setErrores(null);
-                        facturaR.save(f);
-                        break;
+                    if (f.getXmlautorizado() != null && !f.getXmlautorizado().isBlank()) {
+                        if ("O".equalsIgnoreCase(safeStr(f.getEstado()))) {
+                            reintentarEnvioCorreoFactura(f);
+                        } else {
+                            f.setEstado("A");
+                            f.setErrores(null);
+                            facturaR.save(f);
+                        }
+                        continue;
                     }
-                    AutorizacionSriResult resultado =
-                            sendXmlToSriService.consultar_Autorizacion(claveAcceso);
+                    RespuestaComprobante rc = sendXmlToSriService.consultarAutorizacionHastaEncontrarXmlPorClave(
+                            claveAcceso,
+                            Math.max(pollIntentos, 20),
+                            Math.max(pollDelayMs, 4000L),
+                            Math.max(pollDelayMs * 4, 15000L),
+                            1.5
+                    );
+                    String xmlRecuperado = sendXmlToSriService.extraerXmlAutorizado(rc);
+                    AutorizacionSriResult resultado;
+                    if (xmlRecuperado != null && !xmlRecuperado.isBlank()) {
+                        resultado = new AutorizacionSriResult();
+                        resultado.setAutorizado(true);
+                        resultado.setXmlAutorizado(xmlRecuperado);
+                        resultado.setMensaje("AUTORIZADO");
+                    } else {
+                        resultado = sendXmlToSriService.consultar_Autorizacion(claveAcceso);
+                    }
 
                     if (resultado.isAutorizado()
-                            && resultado.getXmlAutorizado() != null) {
+                            && resultado.getXmlAutorizado() != null
+                            && !resultado.getXmlAutorizado().isBlank()) {
                         // 👉 Guardas el XML autorizado
                         f.setXmlautorizado(resultado.getXmlAutorizado());
 
@@ -657,6 +682,84 @@ public class EnvioSriBatchService {
     }
 
     // helper sencillo, igual al del controller
+    private void reintentarEnvioCorreoFactura(Factura f) {
+        try {
+            String xmlAutorizado = safeStr(f.getXmlautorizado());
+            if (xmlAutorizado.isBlank()) {
+                f.setEstado("C");
+                f.setErrores("No existe XML autorizado para reenviar correo");
+                facturaR.save(f);
+                return;
+            }
+
+            String correoComprador = safeStr(f.getEmailcomprador());
+            if (!esCorreoPermitido(correoComprador)) {
+                f.setEstado("A");
+                f.setErrores(null);
+                facturaR.save(f);
+                return;
+            }
+
+            ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF_v3(xmlAutorizado);
+            if (pdfStream == null || pdfStream.size() == 0) {
+                f.setEstado("O");
+                f.setErrores("Factura autorizada, pero no se pudo regenerar el PDF para reenviar correo");
+                facturaR.save(f);
+                return;
+            }
+
+            byte[] pdfBytes = pdfStream.toByteArray();
+            byte[] xmlBytes = xmlAutorizado.getBytes(StandardCharsets.UTF_8);
+
+            String pdfBase64 = Base64.getEncoder().encodeToString(pdfBytes);
+            String xmlBase64 = Base64.getEncoder().encodeToString(xmlBytes);
+
+            String nombrePdf = "factura_" + f.getIdfactura() + ".pdf";
+            String nombreXml = "factura_" + f.getIdfactura() + ".xml";
+
+            List<AttachmentDTO> attachments = List.of(
+                    new AttachmentDTO(nombrePdf, "application/pdf", pdfBase64),
+                    new AttachmentDTO(nombreXml, "application/xml", xmlBase64)
+            );
+
+            List<String> to = List.of(correoComprador.trim());
+            List<String> cc = Collections.emptyList();
+            List<String> bcc = Collections.emptyList();
+            String from = null;
+
+            String subject = "Factura electrónica #"
+                    + safeStr(f.getEstablecimiento()) + "-"
+                    + safeStr(f.getPuntoemision()) + "-"
+                    + safeStr(f.getSecuencial());
+
+            String htmlBody = "<p>Estimado/a " + (f.getRazonsocialcomprador() != null ? f.getRazonsocialcomprador() : "cliente") + ",</p>"
+                    + "<p>Su factura electrónica fue autorizada por el SRI. Adjuntamos nuevamente el PDF y el XML.</p>"
+                    + "<p><strong>Clave de acceso:</strong> " + safeStr(f.getClaveacceso()) + "</p>"
+                    + "<p>Este es un mensaje automático de EPMAPA-T.</p>";
+
+            Map<String, String> inlineImages = Collections.emptyMap();
+            SendMailRequest mailReq = new SendMailRequest(
+                    from,
+                    to,
+                    cc,
+                    bcc,
+                    subject,
+                    htmlBody,
+                    attachments,
+                    inlineImages
+            );
+
+            mailService.send(mailReq);
+            f.setEstado("A");
+            f.setErrores(null);
+            facturaR.save(f);
+        } catch (Exception ex) {
+            f.setEstado("O");
+            f.setErrores(trunc("Error reenviando correo: " + ex.getMessage(), 1500));
+            facturaR.save(f);
+        }
+    }
+
     private String safeStr(Object o) {
         return (o == null) ? "" : o.toString().trim();
     }

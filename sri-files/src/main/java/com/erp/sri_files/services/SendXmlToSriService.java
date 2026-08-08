@@ -388,6 +388,42 @@ public class SendXmlToSriService {
 
 
     // ---- Helper: obtener la primera autorización “útil” ----
+    /**
+     * Variante más persistente: sigue consultando hasta encontrar una autorización
+     * AUTORIZADO que además contenga el XML del comprobante.
+     */
+    public RespuestaComprobante consultarAutorizacionHastaEncontrarXmlPorClave(
+            String claveAcceso,
+            int maxIntentos,
+            long sleepInicialMs,
+            long sleepMaxMs,
+            double factorBackoff
+    ) throws Exception {
+
+        long sleep = Math.max(500L, sleepInicialMs);
+        RespuestaComprobante ultimo = null;
+
+        for (int intento = 1; intento <= Math.max(1, maxIntentos); intento++) {
+            try {
+                ultimo = consultarAutorizacion(claveAcceso);
+                if (findAutorizacionAutorizada(ultimo) != null) {
+                    return ultimo;
+                }
+            } catch (Exception ex) {
+                // seguimos reintentando ante errores transitorios
+            }
+
+            if (intento < maxIntentos) {
+                long jitter = (long) (Math.random() * 500);
+                long delay = Math.min(sleep, Math.max(sleepMaxMs, sleep)) + jitter;
+                Thread.sleep(delay);
+                sleep = Math.max((long) (sleep * factorBackoff), sleep + 1000L);
+            }
+        }
+
+        return ultimo;
+    }
+
     private ec.gob.sri.ws.autorizacion.Autorizacion getFirstAuth(RespuestaComprobante rc) {
         if (rc == null || rc.getAutorizaciones() == null || rc.getAutorizaciones().getAutorizacion() == null) return null;
         return rc.getAutorizaciones().getAutorizacion().stream().findFirst().orElse(null);
