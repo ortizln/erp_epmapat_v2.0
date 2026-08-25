@@ -1,13 +1,19 @@
 spring:
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${SPRING_DATASOURCE_URL:${DB_URL:}}
-    username: ${SPRING_DATASOURCE_USERNAME:${DB_USER:}}
-    password: ${SPRING_DATASOURCE_PASSWORD:${DB_PASS:}}
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASS}
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: none
+    show-sql: false
+  cloud:
+    config:
+      enabled: true
 
 server:
   port: ${SERVER_PORT:9090}

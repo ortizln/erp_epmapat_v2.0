@@ -191,12 +191,18 @@ public class Fec_facturaService {
 
     public Optional<Fec_factura> recuperarXmlAutorizado(Fec_factura factura) {
         try {
-            String url = gatewayBaseUrl + "/api/singsend/autorizacion?claveAcceso=" + factura.getClaveacceso();
-            String xml = restTemplate.getForObject(url, String.class);
-            if (xml == null || xml.isBlank()) {
+            String url = gatewayBaseUrl + "/api/v1/autorizacion/" + factura.getClaveacceso() + "/xml";
+            java.util.Map<?, ?> response = restTemplate.getForObject(url, java.util.Map.class);
+            if (response == null) {
                 marcarPendienteAutorizacion(factura, "SRI sin XML autorizado disponible todavia");
                 return Optional.empty();
             }
+            Object xmlObj = response.get("xmlAutorizado");
+            if (xmlObj == null || xmlObj.toString().isBlank()) {
+                marcarPendienteAutorizacion(factura, "SRI sin XML autorizado disponible todavia");
+                return Optional.empty();
+            }
+            String xml = xmlObj.toString();
             return Optional.of(registrarAutorizacionRecuperada(factura, xml));
         } catch (Exception e) {
             incrementarIntentoAutorizacion(factura, "No fue posible recuperar XML autorizado: " + e.getMessage());

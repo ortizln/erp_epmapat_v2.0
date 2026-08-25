@@ -47,6 +47,7 @@ public class FacturaXmlGeneratorService {
     @Autowired private DefinirR definirR;
     @Autowired private FacturaDetalleR fDetalleR;
     @Autowired private FacturaR facturaR;
+    @Autowired private ClaveAccesoService claveAccesoService;
 
     //@Transactional
     //@Scheduled(cron = "${interes.tarea.cron}") // ej: 0 */5 * * * *
@@ -126,12 +127,20 @@ public class FacturaXmlGeneratorService {
         Definir def = getDefinir();
 
         String claveAcceso = (factura.getClaveacceso() == null || factura.getClaveacceso().isBlank())
-                ? generarClaveAcceso(factura, def)
+                ? null
                 : factura.getClaveacceso();
 
-        boolean ca = validarClaveAcceso(factura.getClaveacceso());
-        if(!ca){
-           claveAcceso = generarClaveAcceso(factura, def);
+        if (claveAcceso == null || !claveAccesoService.validarClaveAcceso(claveAcceso)
+                || !fechaClaveCoincideHoy(claveAcceso)) {
+            claveAcceso = claveAccesoService.generarClaveAcceso(
+                LocalDateTime.now(),
+                TIPO_COMPROBANTE_FACTURA,
+                def.getRuc(),
+                def.getTipoambiente(),
+                factura.getEstablecimiento(),
+                factura.getPuntoemision(),
+                factura.getSecuencial()
+            );
         }
         InfoTributaria it = new InfoTributaria();
         it.setAmbiente(String.valueOf(def.getTipoambiente()));       // 1=pruebas, 2=producción
@@ -146,79 +155,6 @@ public class FacturaXmlGeneratorService {
         it.setSecuencial(factura.getSecuencial());
         it.setDirMatriz(factura.getDireccionestablecimiento()); // ajusta si quieres usar la matriz del emisor
         return it;
-    }
-
-    /* Genera clave de acceso (48 base + DV = 49) */
-    private String generarClaveAcceso(Factura factura, Definir definir) {
-        Objects.requireNonNull(factura, "Factura no puede ser nula");
-        Objects.requireNonNull(definir, "Definir no puede ser nulo");
-
-        String fechaEmision = formatForClave(factura.getFechaemision());                 // 8
-        String tipoComprobante = TIPO_COMPROBANTE_FACTURA;                               // 2
-        String ruc = leftPadDigits(requireDigits(definir.getRuc(), "RUC"), 13);         // 13
-        String ambiente = requireDigits(
-                definir.getTipoambiente() == null ? null : definir.getTipoambiente().toString(),
-                "Tipo de ambiente");                                                     // 1
-        if (!(ambiente.equals("1") || ambiente.equals("2")))
-            throw new IllegalArgumentException("Ambiente debe ser '1' o '2'");
-
-        String estab = leftPadDigits(requireDigits(factura.getEstablecimiento(), "Establecimiento"), 3);
-        String ptoEmi = leftPadDigits(requireDigits(factura.getPuntoemision(), "Punto de emisión"), 3);
-        String serie = estab + ptoEmi;                                                   // 6
-
-        String secuencial = leftPadDigits(requireDigits(factura.getSecuencial(), "Secuencial"), 9); // 9
-        String codigoNumerico = generarCodigoNumerico8();                                 // 8
-        String tipoEmision = "1";                                                         // 1
-
-        String base48 = fechaEmision + tipoComprobante + ruc + ambiente + serie + secuencial + codigoNumerico + tipoEmision;
-        if (base48.length() != 48 || !base48.chars().allMatch(Character::isDigit))
-            throw new IllegalStateException("Base de claveAcceso inválida");
-
-        char dv = calcularDigitoVerificadorModulo11(base48); // 1
-        return base48 + dv;                                  // 49
-    }
-
-    private static String formatForClave(LocalDateTime dt) {
-        if (dt == null) throw new IllegalArgumentException("La fecha no puede ser nula");
-        return dt.format(DDMMYYYY_CLAVE);
-    }
-
-    private static char calcularDigitoVerificadorModulo11(String base48) {
-        final int[] pesos = {2, 3, 4, 5, 6, 7};
-        int suma = 0, idx = 0;
-        for (int i = base48.length() - 1; i >= 0; i--) {
-            int digito = base48.charAt(i) - '0';
-            suma += digito * pesos[idx];
-            idx = (idx + 1) % pesos.length;
-        }
-        int mod = suma % 11;
-        int dv = 11 - mod;
-        if (dv == 11) dv = 0;
-        else if (dv == 10) dv = 1;
-        return (char) ('0' + dv);
-    }
-
-    /**
-     * Valida una clave de acceso SRI (49 dígitos).
-     * Verifica longitud, solo números y dígito verificador módulo 11.
-     */
-    private boolean validarClaveAcceso(String clave) {
-        if (clave == null || !clave.matches("\\d{49}")) {
-            return false; // longitud o formato incorrecto
-        }
-
-        String base48 = clave.substring(0, 48);  // primeros 48 dígitos
-        char dvEsperado = clave.charAt(48);      // dígito verificador provisto
-
-        char dvCalculado = calcularDigitoVerificadorModulo11(base48);
-
-        return dvEsperado == dvCalculado;
-    }
-
-
-    private static String generarCodigoNumerico8() {
-        int n = ThreadLocalRandom.current().nextInt(0, 100_000_000);
-        return String.format("%08d", n);
     }
 
     /* ==========================================================
@@ -237,7 +173,7 @@ public class FacturaXmlGeneratorService {
         factura.setDetalles(detallesFactura);
 
         InfoFactura info = new InfoFactura();
-        info.setFechaEmision(formatForXml(factura.getFechaemision()));
+        info.setFechaEmision(formatForXml(LocalDateTime.now()));
         info.setObligadoContabilidad("SI");
         info.setTipoIdentificacionComprador(factura.getTipoidentificacioncomprador());
         info.setRazonSocialComprador(factura.getRazonsocialcomprador());
@@ -282,6 +218,13 @@ public class FacturaXmlGeneratorService {
         return info;
     }
 
+
+    private boolean fechaClaveCoincideHoy(String claveAcceso) {
+        if (claveAcceso == null || claveAcceso.length() < 8) return false;
+        String ddmmyyyy = claveAcceso.substring(0, 8);
+        String hoy = LocalDateTime.now().format(DDMMYYYY_CLAVE);
+        return ddmmyyyy.equals(hoy);
+    }
 
     private static String formatForXml(LocalDateTime dt) {
         if (dt == null) throw new IllegalArgumentException("La fecha no puede ser nula");
@@ -593,9 +536,7 @@ public class FacturaXmlGeneratorService {
         // Si tienes email y teléfono en tu entidad:
          putCampo(candidatos, "e-mail",        safe(factura.getEmailcomprador(), 300));
         putCampo(candidatos, "Teléfono",      safe(factura.getTelefonocomprador(), 300));
-        // por tu dominio (ej. cuenta/medidor, etc.)
-        // putCampo(candidatos, "Cuenta",        safe(factura.getCuentaContrato(), 300));
-        putCampo(candidatos, "Fecha emisión", safe(formatForXml(factura.getFechaemision()), 300));
+        putCampo(candidatos, "Fecha de cobro", safe(formatForXml(factura.getFechaemision()), 300));
         putCampo(candidatos, "Recaudador", safe(factura.getRecaudador(), 300));
         putCampo(candidatos, "Cuenta", safe(factura.getReferencia(), 300));
         putCampo(candidatos, "Concepto", safe(factura.getConcepto(), 300));

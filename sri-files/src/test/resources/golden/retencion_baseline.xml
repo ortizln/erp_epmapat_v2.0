@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<comprobanteRetencion id="comprobante" version="1.0.0">
+    <infoTributaria>
+        <ambiente>2</ambiente>
+        <tipoEmision>1</tipoEmision>
+        <razonSocial>EMPRESA PUBLICA MUNICIPAL DE ALCANTARILLADO Y AGUA POTABLE DE TULCAN</razonSocial>
+        <nombreComercial>EPMAPA-T</nombreComercial>
+        <ruc>1792238694001</ruc>
+        <claveAcceso>2108202607179223869400120010010000000172345678913</claveAcceso>
+        <codDoc>07</codDoc>
+        <estab>001</estab>
+        <ptoEmi>001</ptoEmi>
+        <secuencial>000000017</secuencial>
+        <dirMatriz>Tulcan</dirMatriz>
+    </infoTributaria>
+    <infoCompRetencion>
+        <fechaEmision>21/08/2026</fechaEmision>
+        <dirEstablecimiento>Tulcan</dirEstablecimiento>
+        <contribuyenteEspecial>0000000000</contribuyenteEspecial>
+        <obligadoContabilidad>SI</obligadoContabilidad>
+        <tipoIdentificacionSujetoRetenido>05</tipoIdentificacionSujetoRetenido>
+        <identificacionSujetoRetenido>9999999999999</identificacionSujetoRetenido>
+        <razonSocialSujetoRetenido>PROVEEDOR EJEMPLO</razonSocialSujetoRetenido>
+        <periodoFiscal>08/2026</periodoFiscal>
+    </infoCompRetencion>
+    <docsSustento>
+        <docSustento>
+            <codDocSustento>01</codDocSustento>
+            <numDocSustento>001001000000001</numDocSustento>
+            <fechaEmisionDocSustento>21/08/2026</fechaEmisionDocSustento>
+            <numeroAutorizacionDocSustento>210820260117922386940012001001000000017234567891</numeroAutorizacionDocSustento>
+            <impuestosDocSustento>
+                <impuestoDocSustento>
+                    <codigoImpuesto>1</codigoImpuesto>
+                    <codigoPorcentaje>1</codigoPorcentaje>
+                    <baseImponible>100.00</baseImponible>
+                    <tarifa>10.00</tarifa>
+                    <valorRetenido>10.00</valorRetenido>
+                </impuestoDocSustento>
+            </impuestosDocSustento>
+            <valorRetenido>10.00</valorRetenido>
+            <valorRetenidoMasAnticipo>10.00</valorRetenidoMasAnticipo>
+        </docSustento>
+    </docsSustento>
+</comprobanteRetencion>

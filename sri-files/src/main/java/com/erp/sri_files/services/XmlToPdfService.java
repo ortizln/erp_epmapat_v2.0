@@ -462,7 +462,15 @@ public class XmlToPdfService {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             factory.setNamespaceAware(true);
             DocumentBuilder builder = factory.newDocumentBuilder();
-            InputSource inputSource = new InputSource(new StringReader(xmlAutorizado));
+            
+            // Limpiar XML: eliminar BOM y contenido antes de <?xml
+            String xmlLimpio = xmlAutorizado
+                .replaceAll("^\\xEF\\xBB\\xBF", "")   // BOM UTF-8
+                .replaceAll("^\\xFEFF", "")             // BOM UTF-16
+                .replaceAll("^(?s)<\\?xml.*?\\?>\\s*", "$0")  // asegurar que <?xml sea primero
+                .replaceAll("^(?s).*?(<\\?xml)", "$1");  // cortar todo antes de <?xml
+            
+            InputSource inputSource = new InputSource(new StringReader(xmlLimpio));
             inputSource.setEncoding("UTF-8");
             Document originalDoc = builder.parse(inputSource);
 

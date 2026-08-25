@@ -40,6 +40,12 @@ public class Factura {
     private String referencia;
     private String direccioncomprador;
     
+    // Seguimiento de autorización SRI (migración 2026-05-14)
+    private Integer intentos_autorizacion;
+    private LocalDateTime fecha_ultimo_intento;
+    private LocalDateTime fecha_autorizacion;
+    private Boolean mail_enviado;
+    
     @OneToMany(mappedBy = "factura", cascade = CascadeType.ALL)
     private List<FacturaDetalle> detalles = new ArrayList<>();
     

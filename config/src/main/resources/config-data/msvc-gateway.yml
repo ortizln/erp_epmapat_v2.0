@@ -194,7 +194,7 @@ spring:
         - id: msvc-sri
           uri: ${services.urls.sri}
           predicates:
-            - Path=/api/sri/**, /api/singsend/**
+            - Path=/api/sri/**
 
         - id: msvc-reportesjr
           uri: ${services.urls.reportesjr}

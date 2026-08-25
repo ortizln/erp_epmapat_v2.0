@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<guiaRemision id="comprobante" version="1.0.0">
+    <infoTributaria>
+        <ambiente>2</ambiente>
+        <tipoEmision>1</tipoEmision>
+        <razonSocial>EMPRESA PUBLICA MUNICIPAL DE ALCANTARILLADO Y AGUA POTABLE DE TULCAN</razonSocial>
+        <nombreComercial>EPMAPA-T</nombreComercial>
+        <ruc>1792238694001</ruc>
+        <claveAcceso>2108202606179223869400120010010000000012345678913</claveAcceso>
+        <codDoc>06</codDoc>
+        <estab>001</estab>
+        <ptoEmi>001</ptoEmi>
+        <secuencial>000000001</secuencial>
+        <dirMatriz>Tulcan</dirMatriz>
+    </infoTributaria>
+    <infoGuiaRemision>
+        <dirEstablecimiento>Tulcan</dirEstablecimiento>
+        <razonSocialTransportista>TRANSPORTISTA EJEMPLO</razonSocialTransportista>
+        <tipoIdentificacionTransportista>05</tipoIdentificacionTransportista>
+        <rucTransportista>1792238694001</rucTransportista>
+        <fechaInicioTransporte>21/08/2026</fechaInicioTransporte>
+        <fechaFinTransporte>21/08/2026</fechaFinTransporte>
+        <direccionOrigen>Tulcan - Uribe</direccionOrigen>
+        <direccionDestino>Tulcan - Centro</direccionDestino>
+        <motivoTraslado>Traslado de mercadería</motivoTraslado>
+    </infoGuiaRemision>
+    <destinatarios>
+        <destinatario>
+            <identificacionDestinatario>9999999999999</identificacionDestinatario>
+            <razonSocialDestinatario>DESTINATARIO EJEMPLO</razonSocialDestinatario>
+            <motivoTraslado>Entrega de mercadería</motivoTraslado>
+            <direccionDestino>Tulcan - Centro</direccionDestino>
+            <codDocSustento>01</codDocSustento>
+            <numDocSustento>001001000000001</numDocSustento>
+            <numAutorizacionDocSustento>210820260117922386940012001001000000017234567891</numAutorizacionDocSustento>
+            <fechaEmisionDocSustento>20/08/2026</fechaEmisionDocSustento>
+        </destinatario>
+    </destinatarios>
+    <detalles>
+        <detalle>
+            <codigoPrincipal>001</codigoPrincipal>
+            <descripcion>Material de construcción</descripcion>
+            <cantidad>5.00</cantidad>
+        </detalle>
+    </detalles>
+</guiaRemision>

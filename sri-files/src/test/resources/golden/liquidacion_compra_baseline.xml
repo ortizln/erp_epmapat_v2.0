@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<liquidacionCompra id="comprobante" version="1.0.0">
+    <infoTributaria>
+        <ambiente>2</ambiente>
+        <tipoEmision>1</tipoEmision>
+        <razonSocial>EMPRESA PUBLICA MUNICIPAL DE ALCANTARILLADO Y AGUA POTABLE DE TULCAN</razonSocial>
+        <nombreComercial>EPMAPA-T</nombreComercial>
+        <ruc>1792238694001</ruc>
+        <claveAcceso>2108202603179223869400120010010000000012345678914</claveAcceso>
+        <codDoc>03</codDoc>
+        <estab>001</estab>
+        <ptoEmi>001</ptoEmi>
+        <secuencial>000000001</secuencial>
+        <dirMatriz>Tulcan</dirMatriz>
+    </infoTributaria>
+    <infoLiquidacionCompra>
+        <fechaEmision>21/08/2026</fechaEmision>
+        <dirEstablecimiento>Tulcan</dirEstablecimiento>
+        <contribuyenteEspecial>0000000000</contribuyenteEspecial>
+        <obligadoContabilidad>SI</obligadoContabilidad>
+        <tipoIdentificacionProveedor>05</tipoIdentificacionProveedor>
+        <identificacionProveedor>9999999999999</identificacionProveedor>
+        <razonSocialProveedor>PROVEEDOR EJEMPLO</razonSocialProveedor>
+        <totalSinImpuestos>100.00</totalSinImpuestos>
+        <totalDescuento>0.00</totalDescuento>
+        <totalImpuestos>12.00</totalImpuestos>
+        <totalConImpuestos>
+            <totalImpuesto>
+                <codigo>2</codigo>
+                <codigoPorcentaje>4</codigoPorcentaje>
+                <baseImponible>100.00</baseImponible>
+                <valor>12.00</valor>
+            </totalImpuesto>
+        </totalConImpuestos>
+        <importeTotal>112.00</importeTotal>
+        <moneda>DOLAR</moneda>
+        <pagos>
+            <pago>
+                <formaPago>20</formaPago>
+                <total>112.00</total>
+            </pago>
+        </pagos>
+    </infoLiquidacionCompra>
+    <detalles>
+        <detalle>
+            <codigoPrincipal>001</codigoPrincipal>
+            <descripcion>Materiales de oficina</descripcion>
+            <cantidad>10.00</cantidad>
+            <precioUnitario>10.00</precioUnitario>
+            <descuento>0.00</descuento>
+            <precioTotalSinImpuesto>100.00</precioTotalSinImpuesto>
+            <impuestos>
+                <impuesto>
+                    <codigo>2</codigo>
+                    <codigoPorcentaje>4</codigoPorcentaje>
+                    <baseImponible>100.00</baseImponible>
+                    <valor>12.00</valor>
+                </impuesto>
+            </impuestos>
+        </detalle>
+    </detalles>
+</liquidacionCompra>

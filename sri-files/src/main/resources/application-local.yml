@@ -1,0 +1,40 @@
+spring:
+  config:
+    import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/ErpEpmapaT}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASS:12345}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  cloud:
+    config:
+      enabled: false
+
+server:
+  port: ${SERVER_PORT:9096}
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+sri:
+  ambiente: 2
+
+logging:
+  level:
+    root: INFO
+    com.erp.sri_files: DEBUG
+    org.springframework.jdbc: DEBUG
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
