@@ -1213,3 +1213,78 @@ Caused by: java.security.cert.CertificateException: No subject alternative names
 2026-08-25 10:51:29.062 [SpringApplicationShutdownHook] [] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
 2026-08-25 10:51:29.063 [SpringApplicationShutdownHook] [] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
 2026-08-25 10:51:29.064 [SpringApplicationShutdownHook] [] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.
+2026-08-25 11:39:41.330 [main] [] INFO  o.s.c.c.c.ConfigServicePropertySourceLocator - Fetching config from server at : http://localhost:8888
+2026-08-25 11:39:41.336 [main] [] INFO  o.s.c.c.c.ConfigServicePropertySourceLocator - Exception on Url - http://localhost:8888:org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://localhost:8888/msvc-sri/default": Connection refused: getsockopt. Will be trying the next url if available
+2026-08-25 11:39:41.336 [main] [] WARN  o.s.c.c.c.ConfigServicePropertySourceLocator - Could not locate PropertySource: I/O error on GET request for "http://localhost:8888/msvc-sri/default": Connection refused: getsockopt
+2026-08-25 11:39:41.339 [main] [] INFO  c.erp.sri_files.SriFilesApplication - The following 1 profile is active: "local"
+2026-08-25 11:39:41.347 [main] [] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Fetching config from server at : http://config-server:8888
+2026-08-25 11:39:41.347 [main] [] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Exception on Url - http://config-server:8888:org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://config-server:8888/msvc-sri/default": config-server. Will be trying the next url if available
+2026-08-25 11:39:41.347 [main] [] WARN  o.s.c.c.c.ConfigServerConfigDataLoader - Could not locate PropertySource ([ConfigServerConfigDataResource@46c3a14d uris = array<String>['http://config-server:8888'], optional = true, profiles = 'default']): I/O error on GET request for "http://config-server:8888/msvc-sri/default": config-server
+2026-08-25 11:39:41.347 [main] [] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Fetching config from server at : http://config-server:8888
+2026-08-25 11:39:41.347 [main] [] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Exception on Url - http://config-server:8888:org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://config-server:8888/msvc-sri/local": config-server. Will be trying the next url if available
+2026-08-25 11:39:41.347 [main] [] WARN  o.s.c.c.c.ConfigServerConfigDataLoader - Could not locate PropertySource ([ConfigServerConfigDataResource@64968732 uris = array<String>['http://config-server:8888'], optional = true, profiles = 'local']): I/O error on GET request for "http://config-server:8888/msvc-sri/local": config-server
+2026-08-25 11:39:41.347 [main] [] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Fetching config from server at : http://config-server:8888
+2026-08-25 11:39:41.347 [main] [] INFO  o.s.c.c.c.ConfigServerConfigDataLoader - Exception on Url - http://config-server:8888:org.springframework.web.client.ResourceAccessException: I/O error on GET request for "http://config-server:8888/msvc-sri/default": config-server. Will be trying the next url if available
+2026-08-25 11:39:41.347 [main] [] WARN  o.s.c.c.c.ConfigServerConfigDataLoader - Could not locate PropertySource ([ConfigServerConfigDataResource@3e1a3801 uris = array<String>['http://config-server:8888'], optional = true, profiles = 'default']): I/O error on GET request for "http://config-server:8888/msvc-sri/default": config-server
+2026-08-25 11:39:41.797 [main] [] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-08-25 11:39:41.880 [main] [] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 79 ms. Found 8 JPA repository interfaces.
+2026-08-25 11:39:42.007 [main] [] INFO  o.s.cloud.context.scope.GenericScope - BeanFactory id=114f5d9c-b720-3a0a-9e22-960bd85ad97d
+2026-08-25 11:39:42.211 [main] [] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 9096 (http)
+2026-08-25 11:39:42.218 [main] [] INFO  o.a.coyote.http11.Http11NioProtocol - Initializing ProtocolHandler ["http-nio-9096"]
+2026-08-25 11:39:42.220 [main] [] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2026-08-25 11:39:42.220 [main] [] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.34]
+2026-08-25 11:39:42.262 [main] [] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2026-08-25 11:39:42.264 [main] [] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 915 ms
+2026-08-25 11:39:42.300 [main] [] DEBUG c.e.sri_files.config.RateLimitFilter - Filter 'rateLimitFilter' configured for use
+2026-08-25 11:39:42.300 [main] [] DEBUG c.e.sri_files.config.RequestIdFilter - Filter 'requestIdFilter' configured for use
+2026-08-25 11:39:42.300 [main] [] DEBUG c.erp.sri_files.config.ApiKeyFilter - Filter 'apiKeyFilter' configured for use
+2026-08-25 11:39:42.300 [main] [] DEBUG c.e.s.config.SecurityHeadersFilter - Filter 'securityHeadersFilter' configured for use
+2026-08-25 11:39:42.535 [main] [] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-08-25 11:39:42.551 [main] [] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2026-08-25 11:39:42.633 [main] [] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@782143e8
+2026-08-25 11:39:42.634 [main] [] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2026-08-25 11:39:42.652 [main] [] WARN  org.hibernate.orm.deprecation - HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-08-25 11:39:43.320 [main] [] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-08-25 11:39:43.472 [main] [] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-08-25 11:39:44.428 [main] [] WARN  o.s.b.a.t.ThymeleafAutoConfiguration$DefaultTemplateResolverConfiguration - Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2026-08-25 11:39:44.528 [main] [] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-08-25 11:39:45.766 [main] [] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname
+2026-08-25 11:39:45.773 [main] [] INFO  o.s.c.n.e.c.DiscoveryClientOptionalArgsConfiguration - Eureka HTTP Client uses RestTemplate.
+2026-08-25 11:39:45.798 [main] [] WARN  o.s.c.l.c.LoadBalancerCacheAutoConfiguration$LoadBalancerCaffeineWarnLogger - Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-08-25 11:39:45.808 [main] [] INFO  o.a.coyote.http11.Http11NioProtocol - Starting ProtocolHandler ["http-nio-9096"]
+2026-08-25 11:39:45.818 [main] [] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 9096 (http) with context path '/'
+2026-08-25 11:39:46.828 [main] [] INFO  o.s.cloud.commons.util.InetUtils - Cannot determine local hostname
+2026-08-25 11:39:46.838 [main] [] INFO  c.erp.sri_files.SriFilesApplication - Started SriFilesApplication in 10.984 seconds (process running for 11.411)
+2026-08-25 11:39:48.199 [http-nio-9096-exec-2] [] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-08-25 11:39:48.199 [http-nio-9096-exec-2] [] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2026-08-25 11:39:48.200 [http-nio-9096-exec-2] [] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 1 ms
+2026-08-25 11:39:48.677 [http-nio-9096-exec-9] [6da09342-3ac5-440a-9f61-6b8f32cc0059] INFO  o.s.api.AbstractOpenApiResource - Init duration for springdoc-openapi is: 311 ms
+2026-08-25 11:40:00.009 [sri-files-scheduler-2] [] INFO  c.e.s.s.NuevoDocumentoScheduler - [SCHEDULER][V1] INICIO envío pendientes @ 2026-08-25T11:40:00.009905200
+2026-08-25 11:40:00.014 [sri-files-scheduler-4] [] INFO  c.e.s.services.EnvioSriBatchService - [SCHEDULER][sri-files-scheduler-4] INICIO automatizacionEnvioFacturasElectonicas @ 2026-08-25T11:40:00.014147900
+2026-08-25 11:40:00.014 [sri-files-scheduler-4] [] INFO  c.e.s.services.EnvioSriBatchService - Ejecutando envio de facturas at=2026-08-25T11:40:00.014147900
+2026-08-25 11:40:00.074 [sri-files-scheduler-2] [] INFO  c.e.s.s.NuevoDocumentoScheduler - [SCHEDULER][V1] FIN envío | detectados=0 | exitosos=0 | fallidos=0 | duracionMs=65
+2026-08-25 11:40:00.108 [sri-files-scheduler-1] [] INFO  c.e.s.batch.BatchJobScheduler - Batch automático ejecutado: tipo=ENVIAR_CORREO uuid=3a60ad13-700e-41a6-b656-893784a34625
+2026-08-25 11:40:00.108 [sri-files-scheduler-3] [] INFO  c.e.s.batch.BatchJobScheduler - Batch automático ejecutado: tipo=REINTENTAR_FALLIDOS uuid=46af6564-fbee-4e88-b8cd-207d646b8197
+2026-08-25 11:40:00.108 [sri-files-scheduler-2] [] INFO  c.e.s.batch.BatchJobScheduler - Batch automático ejecutado: tipo=ENVIAR_SRI uuid=9738229b-fe97-4765-86df-9308ce1f066f
+2026-08-25 11:40:00.115 [task-2] [9738229b-fe97-4765-86df-9308ce1f066f] INFO  c.e.s.batch.BatchProcessorService - Iniciando batch job 9738229b-fe97-4765-86df-9308ce1f066f tipo=ENVIAR_SRI [batchJob=9738229b-fe97-4765-86df-9308ce1f066f]
+2026-08-25 11:40:00.115 [task-1] [3a60ad13-700e-41a6-b656-893784a34625] INFO  c.e.s.batch.BatchProcessorService - Iniciando batch job 3a60ad13-700e-41a6-b656-893784a34625 tipo=ENVIAR_CORREO [batchJob=3a60ad13-700e-41a6-b656-893784a34625]
+2026-08-25 11:40:00.115 [task-3] [46af6564-fbee-4e88-b8cd-207d646b8197] INFO  c.e.s.batch.BatchProcessorService - Iniciando batch job 46af6564-fbee-4e88-b8cd-207d646b8197 tipo=REINTENTAR_FALLIDOS [batchJob=46af6564-fbee-4e88-b8cd-207d646b8197]
+2026-08-25 11:40:00.126 [task-3] [46af6564-fbee-4e88-b8cd-207d646b8197] INFO  c.e.s.batch.BatchProcessorService - Documentos encontrados: 0 [batchJob=46af6564-fbee-4e88-b8cd-207d646b8197]
+2026-08-25 11:40:00.126 [task-2] [9738229b-fe97-4765-86df-9308ce1f066f] INFO  c.e.s.batch.BatchProcessorService - Documentos encontrados: 0 [batchJob=9738229b-fe97-4765-86df-9308ce1f066f]
+2026-08-25 11:40:00.127 [task-3] [46af6564-fbee-4e88-b8cd-207d646b8197] INFO  c.e.s.batch.BatchProcessorService - Batch job 46af6564-fbee-4e88-b8cd-207d646b8197 completado: Procesados: 0, Exitosos: 0, Fallidos: 0 [batchJob=46af6564-fbee-4e88-b8cd-207d646b8197]
+2026-08-25 11:40:00.127 [task-2] [9738229b-fe97-4765-86df-9308ce1f066f] INFO  c.e.s.batch.BatchProcessorService - Batch job 9738229b-fe97-4765-86df-9308ce1f066f completado: Procesados: 0, Exitosos: 0, Fallidos: 0 [batchJob=9738229b-fe97-4765-86df-9308ce1f066f]
+2026-08-25 11:40:00.129 [task-1] [3a60ad13-700e-41a6-b656-893784a34625] INFO  c.e.s.batch.BatchProcessorService - Documentos encontrados: 0 [batchJob=3a60ad13-700e-41a6-b656-893784a34625]
+2026-08-25 11:40:00.129 [task-1] [3a60ad13-700e-41a6-b656-893784a34625] INFO  c.e.s.batch.BatchProcessorService - Batch job 3a60ad13-700e-41a6-b656-893784a34625 completado: Procesados: 0, Exitosos: 0, Fallidos: 0 [batchJob=3a60ad13-700e-41a6-b656-893784a34625]
+2026-08-25 11:40:01.703 [sri-files-scheduler-4] [] INFO  c.e.s.services.EnvioSriBatchService - No hay facturas pendientes estado=I
+2026-08-25 11:40:01.703 [sri-files-scheduler-4] [] INFO  c.e.s.services.EnvioSriBatchService - [SCHEDULER][sri-files-scheduler-4] FIN automatizacionEnvioFacturasElectonicas | detectados=0 | exitosas=0 | fallidas=0 | duracionMs=1689
+2026-08-25 11:41:00.011 [sri-files-scheduler-3] [] INFO  c.e.s.s.NuevoDocumentoScheduler - [SCHEDULER][V1] INICIO envío pendientes @ 2026-08-25T11:41:00.011185
+2026-08-25 11:41:00.011 [sri-files-scheduler-4] [] INFO  c.e.s.services.EnvioSriBatchService - [SCHEDULER][sri-files-scheduler-4] INICIO automatizacionEnvioFacturasElectonicas @ 2026-08-25T11:41:00.011185
+2026-08-25 11:41:00.011 [sri-files-scheduler-4] [] INFO  c.e.s.services.EnvioSriBatchService - Ejecutando envio de facturas at=2026-08-25T11:41:00.011185
+2026-08-25 11:41:00.016 [sri-files-scheduler-3] [] INFO  c.e.s.s.NuevoDocumentoScheduler - [SCHEDULER][V1] FIN envío | detectados=0 | exitosos=0 | fallidos=0 | duracionMs=5
+2026-08-25 11:41:01.154 [sri-files-scheduler-4] [] INFO  c.e.s.services.EnvioSriBatchService - No hay facturas pendientes estado=I
+2026-08-25 11:41:01.155 [sri-files-scheduler-4] [] INFO  c.e.s.services.EnvioSriBatchService - [SCHEDULER][sri-files-scheduler-4] FIN automatizacionEnvioFacturasElectonicas | detectados=0 | exitosas=0 | fallidas=0 | duracionMs=1144
+2026-08-25 11:41:06.917 [SpringApplicationShutdownHook] [] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Commencing graceful shutdown. Waiting for active requests to complete
+2026-08-25 11:41:06.929 [tomcat-shutdown] [] INFO  o.s.b.w.e.tomcat.GracefulShutdown - Graceful shutdown complete
+2026-08-25 11:41:06.933 [SpringApplicationShutdownHook] [] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-08-25 11:41:06.934 [SpringApplicationShutdownHook] [] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown initiated...
+2026-08-25 11:41:06.936 [SpringApplicationShutdownHook] [] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Shutdown completed.

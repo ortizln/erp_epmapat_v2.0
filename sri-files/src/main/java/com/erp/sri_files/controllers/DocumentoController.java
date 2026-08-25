@@ -1,11 +1,16 @@
 package com.erp.sri_files.controllers;
 
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.UUID;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +19,7 @@ import com.erp.sri_files.models.DocumentoElectronico;
 import com.erp.sri_files.monitoring.MetricsService;
 import com.erp.sri_files.repositories.DocumentoElectronicoR;
 import com.erp.sri_files.services.DocumentoProcessManager;
+import com.erp.sri_files.services.XmlToPdfService;
 import com.erp.sri_files.validation.*;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,6 +40,7 @@ public class DocumentoController {
     private final DocumentoProcessManager processManager;
     private final DocumentoElectronicoR documentoR;
     private final MetricsService metricsService;
+    private final XmlToPdfService xmlToPdfService;
     private final SriLiquidacionCompraValidationService liquidacionValidationService;
     private final SriGuiaRemisionValidationService guiaRemisionValidationService;
     private final com.erp.sri_files.validation.SriRetencionValidationService retencionValidationService;
@@ -255,6 +262,114 @@ public class DocumentoController {
             ));
         } finally {
             MDC.clear();
+        }
+    }
+
+    @Operation(summary = "Descargar RIDE (PDF) de un comprobante", description = "Genera y retorna el PDF del comprobante autorizado",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "PDF generado correctamente"),
+            @ApiResponse(responseCode = "404", description = "Documento no encontrado o sin XML autorizado")
+        })
+    @GetMapping("/{uuid}/ride")
+    public ResponseEntity<?> descargarRide(
+            @Parameter(description = "UUID del documento", required = true)
+            @PathVariable String uuid) {
+        try {
+            var docOpt = documentoR.findByUuid(uuid);
+            if (docOpt.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("error", "Documento no encontrado"));
+            }
+            DocumentoElectronico doc = docOpt.get();
+            if (doc.getXmlAutorizado() == null || doc.getXmlAutorizado().isBlank()) {
+                return ResponseEntity.status(404).body(Map.of(
+                    "error", "Documento sin XML autorizado",
+                    "estado", doc.getEstado()
+                ));
+            }
+            ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF_v3(doc.getXmlAutorizado());
+            byte[] pdfBytes = pdfStream.toByteArray();
+            String nombrePdf = doc.getTipoDocumento() + "_" + doc.getSecuencial() + ".pdf";
+            return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nombrePdf + "\"")
+                .contentType(MediaType.APPLICATION_PDF)
+                .body(pdfBytes);
+        } catch (Exception e) {
+            log.error("Error generando RIDE para uuid={}", uuid, e);
+            return ResponseEntity.status(500).body(Map.of("error", "Error generando RIDE", "detalle", e.getMessage()));
+        }
+    }
+
+    @Operation(summary = "Descargar XML autorizado", description = "Retorna el XML autorizado del comprobante",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "XML retornado"),
+            @ApiResponse(responseCode = "404", description = "Documento no encontrado o sin XML autorizado")
+        })
+    @GetMapping("/{uuid}/xml")
+    public ResponseEntity<?> descargarXml(
+            @Parameter(description = "UUID del documento", required = true)
+            @PathVariable String uuid) {
+        try {
+            var docOpt = documentoR.findByUuid(uuid);
+            if (docOpt.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("error", "Documento no encontrado"));
+            }
+            DocumentoElectronico doc = docOpt.get();
+            if (doc.getXmlAutorizado() == null || doc.getXmlAutorizado().isBlank()) {
+                return ResponseEntity.status(404).body(Map.of(
+                    "error", "Documento sin XML autorizado",
+                    "estado", doc.getEstado()
+                ));
+            }
+            String nombreXml = doc.getTipoDocumento() + "_" + doc.getSecuencial() + ".xml";
+            return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + nombreXml + "\"")
+                .contentType(MediaType.APPLICATION_XML)
+                .body(doc.getXmlAutorizado().getBytes(StandardCharsets.UTF_8));
+        } catch (Exception e) {
+            log.error("Error descargando XML para uuid={}", uuid, e);
+            return ResponseEntity.status(500).body(Map.of("error", "Error descargando XML", "detalle", e.getMessage()));
+        }
+    }
+
+    @Operation(summary = "Descargar ZIP con XML + RIDE", description = "Descarga un archivo ZIP conteniendo el XML autorizado y el PDF (RIDE)",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "ZIP generado correctamente"),
+            @ApiResponse(responseCode = "404", description = "Documento no encontrado o sin XML autorizado")
+        })
+    @GetMapping("/{uuid}/zip")
+    public ResponseEntity<?> descargarZip(
+            @Parameter(description = "UUID del documento", required = true)
+            @PathVariable String uuid) {
+        try {
+            var docOpt = documentoR.findByUuid(uuid);
+            if (docOpt.isEmpty()) {
+                return ResponseEntity.status(404).body(Map.of("error", "Documento no encontrado"));
+            }
+            DocumentoElectronico doc = docOpt.get();
+            if (doc.getXmlAutorizado() == null || doc.getXmlAutorizado().isBlank()) {
+                return ResponseEntity.status(404).body(Map.of(
+                    "error", "Documento sin XML autorizado",
+                    "estado", doc.getEstado()
+                ));
+            }
+            ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF_v3(doc.getXmlAutorizado());
+            String baseName = doc.getTipoDocumento() + "_" + doc.getSecuencial();
+            ByteArrayOutputStream zipBaos = new ByteArrayOutputStream();
+            try (ZipOutputStream zos = new ZipOutputStream(zipBaos)) {
+                zos.putNextEntry(new ZipEntry(baseName + ".xml"));
+                zos.write(doc.getXmlAutorizado().getBytes(StandardCharsets.UTF_8));
+                zos.closeEntry();
+                zos.putNextEntry(new ZipEntry(baseName + ".pdf"));
+                zos.write(pdfStream.toByteArray());
+                zos.closeEntry();
+            }
+            return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + baseName + ".zip\"")
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(zipBaos.toByteArray());
+        } catch (Exception e) {
+            log.error("Error generando ZIP para uuid={}", uuid, e);
+            return ResponseEntity.status(500).body(Map.of("error", "Error generando ZIP", "detalle", e.getMessage()));
         }
     }
 
