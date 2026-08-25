@@ -50,4 +50,15 @@ public interface DocumentoElectronicoR extends JpaRepository<DocumentoElectronic
 
     @Query("SELECT d FROM DocumentoElectronico d WHERE d.estado = :estado AND (d.intentosEnvio < :maxIntentos OR d.intentosEnvio IS NULL) ORDER BY d.id ASC")
     List<DocumentoElectronico> findByEstadoConIntentosLimit(@Param("estado") String estado, @Param("maxIntentos") int maxIntentos);
+
+    @Query("SELECT d FROM DocumentoElectronico d WHERE " +
+           "(:tipo IS NULL OR :tipo = '' OR d.tipoDocumento = :tipo) AND " +
+           "(:estado IS NULL OR :estado = '' OR d.estado = :estado) AND " +
+           "(:busqueda IS NULL OR :busqueda = '' OR " +
+           "LOWER(d.claveAcceso) LIKE LOWER(CONCAT('%', :busqueda, '%')) OR " +
+           "LOWER(d.uuid) LIKE LOWER(CONCAT('%', :busqueda, '%')) OR " +
+           "LOWER(d.numeroAutorizacion) LIKE LOWER(CONCAT('%', :busqueda, '%'))) " +
+           "ORDER BY d.id DESC")
+    Page<DocumentoElectronico> buscar(@Param("tipo") String tipo, @Param("estado") String estado,
+                                       @Param("busqueda") String busqueda, Pageable pageable);
 }

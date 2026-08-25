@@ -235,7 +235,7 @@ public class DocumentoController {
         }
     }
 
-    @Operation(summary = "Listar comprobantes electrónicos", description = "Lista comprobantes electrónicos con paginación y filtros opcionales por tipo y estado",
+    @Operation(summary = "Listar comprobantes electrónicos", description = "Lista comprobantes electrónicos con paginación y filtros opcionales por tipo, estado y búsqueda",
         responses = {
             @ApiResponse(responseCode = "200", description = "Listado de comprobantes"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
@@ -249,19 +249,83 @@ public class DocumentoController {
             @Parameter(description = "Filtrar por tipo de documento", example = "FACTURA")
             @RequestParam(required = false) String tipo,
             @Parameter(description = "Filtrar por estado del documento", example = "AUTORIZADO")
-            @RequestParam(required = false) String estado) {
+            @RequestParam(required = false) String estado,
+            @Parameter(description = "Búsqueda por clave acceso, UUID o número autorización")
+            @RequestParam(required = false) String busqueda) {
         String requestId = UUID.randomUUID().toString();
         MDC.put("requestId", requestId);
 
         try {
+            var pageable = org.springframework.data.domain.PageRequest.of(page, size);
+            var resultado = documentoR.buscar(tipo, estado, busqueda, pageable);
+
+            var documentos = resultado.getContent().stream().map(d -> Map.<String, Object>of(
+                "id", d.getId(),
+                "uuid", d.getUuid(),
+                "tipoDocumento", d.getTipoDocumento(),
+                "estado", d.getEstado(),
+                "subestado", d.getSubestado() != null ? d.getSubestado() : "",
+                "claveAcceso", d.getClaveAcceso() != null ? d.getClaveAcceso() : "",
+                "numeroAutorizacion", d.getNumeroAutorizacion() != null ? d.getNumeroAutorizacion() : "",
+                "ambiente", d.getAmbiente() != null ? d.getAmbiente() : "",
+                "fechaRecepcion", d.getFechaRecepcionJson() != null ? d.getFechaRecepcionJson().toString() : "",
+                "fechaAutorizacion", d.getFechaAutorizacionSri() != null ? d.getFechaAutorizacionSri().toString() : ""
+            )).toList();
+
             return ResponseEntity.ok(Map.of(
-                "page", page,
+                "content", documentos,
+                "totalElements", resultado.getTotalElements(),
+                "totalPages", resultado.getTotalPages(),
+                "currentPage", page,
                 "size", size,
-                "requestId", requestId,
-                "mensaje", "Endpoint de listado pendiente de implementación completa"
+                "requestId", requestId
             ));
         } finally {
             MDC.clear();
+        }
+    }
+
+    @Operation(summary = "Exportar documentos a CSV", description = "Exporta documentos filtrados a formato CSV para descarga",
+        responses = {
+            @ApiResponse(responseCode = "200", description = "CSV generado correctamente"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+        })
+    @GetMapping("/export")
+    public ResponseEntity<?> exportarCsv(
+            @Parameter(description = "Filtrar por tipo de documento")
+            @RequestParam(required = false) String tipo,
+            @Parameter(description = "Filtrar por estado del documento")
+            @RequestParam(required = false) String estado,
+            @Parameter(description = "Búsqueda por clave acceso, UUID o número autorización")
+            @RequestParam(required = false) String busqueda) {
+        try {
+            var pageable = org.springframework.data.domain.PageRequest.of(0, 10000);
+            var resultado = documentoR.buscar(tipo, estado, busqueda, pageable);
+
+            StringBuilder csv = new StringBuilder();
+            csv.append("UUID,Tipo,Estado,ClaveAcceso,NumeroAutorizacion,Ambiente,FechaRecepcion,FechaAutorizacion\n");
+
+            for (var d : resultado.getContent()) {
+                csv.append(String.format("%s,%s,%s,%s,%s,%s,%s,%s\n",
+                    d.getUuid(),
+                    d.getTipoDocumento(),
+                    d.getEstado(),
+                    d.getClaveAcceso() != null ? d.getClaveAcceso() : "",
+                    d.getNumeroAutorizacion() != null ? d.getNumeroAutorizacion() : "",
+                    d.getAmbiente() != null ? d.getAmbiente() : "",
+                    d.getFechaRecepcionJson() != null ? d.getFechaRecepcionJson() : "",
+                    d.getFechaAutorizacionSri() != null ? d.getFechaAutorizacionSri() : ""
+                ));
+            }
+
+            byte[] csvBytes = csv.toString().getBytes(StandardCharsets.UTF_8);
+            return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"documentos.csv\"")
+                .contentType(MediaType.parseMediaType("text/csv"))
+                .body(csvBytes);
+        } catch (Exception e) {
+            log.error("Error exportando documentos", e);
+            return ResponseEntity.status(500).body(Map.of("error", "Error exportando documentos"));
         }
     }
 
