@@ -28,6 +28,11 @@ import java.util.function.Function;
 @Service
 public class SendXmlToSriService {
 
+    // Static initializer: fuerza carga de SriSslConfig ANTES de cualquier conexión
+    static {
+        try { Class.forName(SriSslConfig.class.getName()); } catch (Exception ignored) {}
+    }
+
     /** 1 = PRUEBAS, 2 = PRODUCCIÓN */
     private int ambiente = 2;
 
@@ -90,13 +95,17 @@ public class SendXmlToSriService {
         SSLContext sslCtx = SriSslConfig.getSslContext();
         HostnameVerifier hv = SriSslConfig.getHostnameVerifier();
         if (sslCtx != null) {
+            // Todas las variantes de propiedad que Metro puede usar
             ctx.put("com.sun.xml.ws.transport.http.client.ssl.socket.factory",
                     sslCtx.getSocketFactory());
             ctx.put("com.sun.xml.ws.transport.http.client.ssl.context", sslCtx);
             ctx.put("javax.net.ssl.SSLSocketFactory", sslCtx.getSocketFactory());
+            ctx.put("com.sun.xml.ws.transport.https.ssl.socket.factory",
+                    sslCtx.getSocketFactory());
         }
         if (hv != null) {
             ctx.put("com.sun.xml.ws.transport.http.client.hostname.verifier", hv);
+            ctx.put("com.sun.xml.ws.transport.https.hostname.verifier", hv);
         }
     }
 
