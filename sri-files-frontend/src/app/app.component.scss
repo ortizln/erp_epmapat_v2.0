@@ -1,0 +1,29 @@
+:host { display: block; }
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-main {
+  flex: 1;
+  margin-left: 260px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+
+  .sidebar-collapsed & {
+    margin-left: 72px;
+  }
+}
+
+.app-content {
+  flex: 1;
+  padding: 24px 28px;
+  background: #f4f6f9;
+}
+
+@media (max-width: 768px) {
+  .app-main { margin-left: 0 !important; }
+}

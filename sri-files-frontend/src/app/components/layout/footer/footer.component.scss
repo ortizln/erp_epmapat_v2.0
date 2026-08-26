@@ -1,0 +1,32 @@
+:host { display: block; }
+
+.app-footer {
+  height: 48px;
+  background: white;
+  border-top: 1px solid #e8ecf1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  font-size: 0.78rem;
+  color: #636e72;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-brand {
+  font-weight: 600;
+  color: #2d3436;
+
+  i { color: #4361ee; }
+}
+
+.footer-separator { color: #dee2e6; }
+
+.footer-right {
+  color: #adb5bd;
+}

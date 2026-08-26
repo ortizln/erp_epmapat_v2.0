@@ -1,0 +1,32 @@
+<header class="app-header" [class.sidebar-collapsed]="sidebarCollapsed">
+  <div class="header-left">
+    <div class="breadcrumb-area">
+      <i class="bi bi-house-door"></i>
+      <span class="separator">/</span>
+      <span>SRI Files</span>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <div class="header-info">
+      <i class="bi bi-geo-alt text-primary"></i>
+      <span class="ambiente-badge">PRODUCCIÓN</span>
+    </div>
+
+    <div class="header-divider"></div>
+
+    <div class="header-info">
+      <i class="bi bi-clock text-muted"></i>
+      <span>{{ fechaActual | date:'dd/MM/yyyy HH:mm' }}</span>
+    </div>
+
+    <div class="header-divider"></div>
+
+    <div class="user-area">
+      <div class="user-avatar">
+        <i class="bi bi-person-circle"></i>
+      </div>
+      <span class="user-name">{{ nombreUsuario }}</span>
+    </div>
+  </div>
+</header>

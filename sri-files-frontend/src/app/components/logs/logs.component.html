@@ -1,0 +1,159 @@
+<div class="page-header">
+  <h4><i class="bi bi-terminal"></i> Logs del Sistema</h4>
+  <div class="d-flex gap-2">
+    <button class="btn btn-sm" [ngClass]="autoRefresh ? 'btn-success' : 'btn-outline-success'" (click)="toggleAutoRefresh()">
+      <i class="bi" [ngClass]="autoRefresh ? 'bi-pause-circle' : 'bi-play-circle'"></i>
+      {{ autoRefresh ? 'Pausar' : 'Auto-refresh' }}
+    </button>
+    <button class="btn btn-outline-secondary btn-sm" (click)="exportar()">
+      <i class="bi bi-download"></i> Exportar
+    </button>
+    <button class="btn btn-outline-secondary btn-sm" (click)="cargarLogs()" [disabled]="cargando">
+      <i class="bi bi-arrow-clockwise" [class.spin]="cargando"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  <div class="col-md-3">
+    <div class="stat-mini">
+      <i class="bi bi-file-text" style="color: var(--primary)"></i>
+      <div>
+        <span class="stat-mini-value">{{ total }}</span>
+        <span class="stat-mini-label">Total líneas</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-mini">
+      <i class="bi bi-info-circle-fill" style="color: var(--info)"></i>
+      <div>
+        <span class="stat-mini-value">{{ contarPorNivel('INFO') }}</span>
+        <span class="stat-mini-label">INFO</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-mini">
+      <i class="bi bi-exclamation-triangle-fill" style="color: var(--warning)"></i>
+      <div>
+        <span class="stat-mini-value">{{ contarPorNivel('WARN') }}</span>
+        <span class="stat-mini-label">WARN</span>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-mini">
+      <i class="bi bi-x-circle-fill" style="color: var(--danger)"></i>
+      <div>
+        <span class="stat-mini-value">{{ contarPorNivel('ERROR') }}</span>
+        <span class="stat-mini-label">ERROR</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="filters-bar">
+  <div class="row g-3 align-items-end">
+    <div class="col-md-3">
+      <label class="form-label">Nivel</label>
+      <select class="form-select form-select-sm" [(ngModel)]="filtroLevel" (change)="cargarLogs()">
+        <option value="">Todos</option>
+        <option value="ERROR">ERROR</option>
+        <option value="WARN">WARN</option>
+        <option value="INFO">INFO</option>
+        <option value="DEBUG">DEBUG</option>
+      </select>
+    </div>
+    <div class="col-md-4">
+      <label class="form-label">Buscar texto</label>
+      <div class="input-group input-group-sm">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" class="form-control" [(ngModel)]="busqueda"
+          placeholder="Buscar en logs..." (keyup.enter)="cargarLogs()">
+      </div>
+    </div>
+    <div class="col-md-3">
+      <label class="form-label">Request ID</label>
+      <input type="text" class="form-control form-control-sm" [(ngModel)]="filtroRequestId"
+        placeholder="UUID del request..." (keyup.enter)="cargarLogs()">
+    </div>
+    <div class="col-md-2 d-flex gap-2">
+      <button class="btn btn-primary btn-sm flex-grow-1" (click)="cargarLogs()">
+        <i class="bi bi-search"></i> Filtrar
+      </button>
+      <button class="btn btn-outline-secondary btn-sm" (click)="limpiarFiltros()">
+        <i class="bi bi-x-circle"></i>
+      </button>
+    </div>
+  </div>
+  <div class="d-flex justify-content-between align-items-center mt-2">
+    <small class="text-muted">
+      Mostrando <strong>{{ filtered }}</strong> de <strong>{{ total }}</strong> líneas
+      <span *ngIf="timestamp"> | Última actualización: {{ timestamp | date:'HH:mm:ss' }}</span>
+    </small>
+    <select class="form-select form-select-sm" style="width: auto" [(ngModel)]="maxLineas" (change)="cargarLogs()">
+      <option [value]="100">100 líneas</option>
+      <option [value]="200">200 líneas</option>
+      <option [value]="500">500 líneas</option>
+      <option [value]="1000">1000 líneas</option>
+    </select>
+  </div>
+</div>
+
+<!-- Log Content -->
+<div class="log-viewer" [class.loading]="cargando">
+  <div class="log-toolbar">
+    <span class="log-file"><i class="bi bi-file-earmark-text"></i> {{ archivo }}</span>
+    <span class="badge badge-secondary" *ngIf="autoRefresh">
+      <i class="bi bi-broadcast"></i> LIVE
+    </span>
+  </div>
+
+  <div class="log-content">
+    <div *ngIf="cargando && lineas.length === 0" class="log-loading">
+      <div class="spinner-border text-primary" role="status"></div>
+    </div>
+
+    <div *ngIf="!cargando && lineas.length === 0" class="log-empty">
+      <i class="bi bi-terminal" style="font-size: 2.5rem; opacity: 0.3;"></i>
+      <p>No hay logs disponibles</p>
+    </div>
+
+    <div *ngFor="let linea of lineas; let i = index"
+         class="log-line" [ngClass]="getLevelClass(linea)">
+      <span class="log-line-num">{{ i + 1 }}</span>
+      <span class="log-level-badge">
+        <i class="bi" [ngClass]="getLevelIcon(linea)"></i>
+      </span>
+      <span class="log-text">{{ linea }}</span>
+    </div>
+  </div>
+</div>
+
+<!-- Archivos disponibles -->
+<div class="card mt-4" *ngIf="archivos.length > 0">
+  <div class="card-header">
+    <i class="bi bi-folder2" style="color: var(--primary)"></i> Archivos de Log
+  </div>
+  <div class="card-body p-0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Tamaño</th>
+          <th>Última modificación</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let f of archivos">
+          <td><code>{{ f.name }}</code></td>
+          <td>{{ formatSize(f.size) }}</td>
+          <td><small class="text-muted">{{ f.lastModified | date:'dd/MM/yyyy HH:mm' }}</small></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

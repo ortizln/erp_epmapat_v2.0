@@ -1,0 +1,248 @@
+<div class="page-header">
+  <h4><i class="bi bi-file-earmark-text"></i> Documentos Electrónicos</h4>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-success btn-sm" (click)="exportarCsv()">
+      <i class="bi bi-file-earmark-excel"></i> CSV
+    </button>
+    <button class="btn btn-primary btn-sm" (click)="mostrarFormulario = true">
+      <i class="bi bi-cloud-upload"></i> Enviar XML
+    </button>
+    <button class="btn btn-outline-secondary btn-sm" (click)="cargarDocumentos()">
+      <i class="bi bi-arrow-clockwise"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Formulario envío -->
+<div class="card mb-4" *ngIf="mostrarFormulario">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span><i class="bi bi-cloud-upload" style="color: var(--primary)"></i> Enviar Documento Electrónico</span>
+    <button class="btn btn-icon btn-outline-secondary" (click)="mostrarFormulario = false">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+  <div class="card-body">
+    <ul class="nav nav-pills mb-4">
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="modoInput === 'texto'" (click)="modoInput = 'texto'" style="cursor:pointer">
+          <i class="bi bi-code-slash"></i> Pegar XML
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" [class.active]="modoInput === 'archivo'" (click)="modoInput = 'archivo'" style="cursor:pointer">
+          <i class="bi bi-upload"></i> Subir archivo
+        </a>
+      </li>
+    </ul>
+
+    <div *ngIf="modoInput === 'texto'" class="mb-3">
+      <label class="form-label">XML del comprobante</label>
+      <textarea class="form-control xml-input" rows="12" [(ngModel)]="xmlInput"
+        (ngModelChange)="onXmlChange($event)"
+        placeholder="Pega aquí el XML del comprobante electrónico..."></textarea>
+    </div>
+
+    <div *ngIf="modoInput === 'archivo'" class="mb-3">
+      <label class="form-label">Seleccionar archivo XML</label>
+      <div class="upload-zone" (click)="fileInput.click()" (dragover)="onDragOver($event)"
+        (dragleave)="arrastrando = false" (drop)="onDrop($event)" [class.dragging]="arrastrando">
+        <input #fileInput type="file" accept=".xml" (change)="onFileSelected($event)" style="display:none">
+        <div *ngIf="!nombreArchivo" class="text-center py-4">
+          <i class="bi bi-cloud-arrow-up" style="font-size: 3rem; color: var(--primary);"></i>
+          <p class="mt-2 mb-1 fw-semibold">Arrastra un archivo XML aquí</p>
+          <small class="text-muted">o haz clic para seleccionar</small>
+        </div>
+        <div *ngIf="nombreArchivo" class="text-center py-3">
+          <i class="bi bi-file-earmark-check" style="font-size: 2rem; color: var(--success);"></i>
+          <p class="mt-2 mb-1 fw-semibold">{{ nombreArchivo }}</p>
+          <small class="text-muted">{{ tamanoArchivo }}</small>
+          <button class="btn btn-sm btn-outline-danger mt-2" (click)="limpiarArchivo(); $event.stopPropagation()">
+            <i class="bi bi-trash"></i> Quitar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="resultadoValidacion" class="alert" [ngClass]="resultadoValidacion.valido ? 'alert-success' : 'alert-warning'">
+      <div class="d-flex align-items-start gap-2">
+        <i class="bi" [ngClass]="resultadoValidacion.valido ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'" style="font-size: 1.2rem;"></i>
+        <div class="flex-grow-1">
+          <strong>{{ resultadoValidacion.valido ? 'XML Válido' : 'XML con observaciones' }}</strong>
+          <div *ngIf="resultadoValidacion.tipoDetectado" class="mt-1">
+            <span class="badge badge-info">Tipo detectado: {{ resultadoValidacion.tipoDetectado }}</span>
+          </div>
+          <div *ngIf="resultadoValidacion.errores?.length > 0" class="mt-2">
+            <div *ngFor="let err of resultadoValidacion.errores" class="small">
+              <i class="bi bi-x-circle" style="color: var(--danger)"></i> {{ err }}
+            </div>
+          </div>
+          <div *ngIf="resultadoValidacion.warnings?.length > 0" class="mt-2">
+            <div *ngFor="let warn of resultadoValidacion.warnings" class="small">
+              <i class="bi bi-exclamation-circle" style="color: var(--warning)"></i> {{ warn }}
+            </div>
+          </div>
+          <div *ngIf="resultadoValidacion.campos" class="mt-2 small">
+            <span class="text-muted">RUC:</span> {{ resultadoValidacion.campos.ruc }}
+            <span class="text-muted ms-2">Clave:</span> {{ resultadoValidacion.campos.claveAcceso | slice:0:25 }}...
+            <span class="text-muted ms-2">Ambiente:</span> {{ resultadoValidacion.campos.ambiente === '2' ? 'PRODUCCIÓN' : 'PRUEBAS' }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Tipo de documento</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-file-earmark"></i></span>
+        <select class="form-select" [(ngModel)]="tipoDocumentoSeleccionado">
+          <option value="auto">Auto-detectar desde XML</option>
+          <option value="FACTURA">Factura</option>
+          <option value="RETENCION">Retención</option>
+          <option value="NOTA_CREDITO">Nota Crédito</option>
+          <option value="NOTA_DEBITO">Nota Débito</option>
+          <option value="LIQUIDACION_COMPRA">Liquidación Compra</option>
+          <option value="GUIA_REMISION">Guía Remisión</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary" (click)="validarXml()" [disabled]="!xmlInput.trim()">
+        <i class="bi bi-check2-circle"></i> Validar
+      </button>
+      <button class="btn btn-primary" (click)="enviarDocumento()" [disabled]="enviando || !xmlInput.trim()">
+        <span *ngIf="enviando" class="spinner-border spinner-border-sm"></span>
+        <i *ngIf="!enviando" class="bi bi-send"></i>
+        {{ enviando ? 'Procesando...' : 'Enviar al SRI' }}
+      </button>
+      <button class="btn btn-outline-secondary" (click)="mostrarFormulario = false">Cancelar</button>
+    </div>
+    <div *ngIf="resultadoEnvio" class="alert mt-3" [ngClass]="resultadoEnvio.exito ? 'alert-success' : 'alert-danger'">
+      <i class="bi" [ngClass]="resultadoEnvio.exito ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
+      {{ resultadoEnvio.mensaje }}
+    </div>
+  </div>
+</div>
+
+<!-- Filtros -->
+<div class="filters-bar">
+  <div class="row g-3 align-items-end">
+    <div class="col-md-4">
+      <label class="form-label">Búsqueda</label>
+      <div class="input-group input-group-sm">
+        <span class="input-group-text"><i class="bi bi-search"></i></span>
+        <input type="text" class="form-control" [(ngModel)]="busqueda"
+          placeholder="Clave acceso, UUID, Nro autorización..."
+          (keyup.enter)="cargarDocumentos()">
+      </div>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Tipo</label>
+      <select class="form-select form-select-sm" [(ngModel)]="filtroTipo" (change)="cargarDocumentos()">
+        <option value="">Todos</option>
+        <option value="FACTURA">Factura</option>
+        <option value="RETENCION">Retención</option>
+        <option value="NOTA_CREDITO">Nota Crédito</option>
+        <option value="NOTA_DEBITO">Nota Débito</option>
+        <option value="LIQUIDACION_COMPRA">Liq. Compra</option>
+        <option value="GUIA_REMISION">Guía Remisión</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Estado</label>
+      <select class="form-select form-select-sm" [(ngModel)]="filtroEstado" (change)="cargarDocumentos()">
+        <option value="">Todos</option>
+        <option value="AUTORIZADO">Autorizado</option>
+        <option value="PENDIENTE_AUTORIZACION">Pendiente</option>
+        <option value="ERROR">Error</option>
+        <option value="NO_AUTORIZADO">No Autorizado</option>
+      </select>
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-outline-secondary btn-sm w-100" (click)="limpiarFiltros()">
+        <i class="bi bi-x-circle"></i> Limpiar
+      </button>
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-primary btn-sm w-100" (click)="cargarDocumentos()">
+        <i class="bi bi-search"></i> Buscar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- DataTable -->
+<app-data-table
+  [columns]="columnas"
+  [data]="documentos"
+  [totalItems]="totalElementos"
+  [currentPage]="paginaActual"
+  [pageSize]="tamanoPagina"
+  [actions]="acciones"
+  [loading]="cargando"
+  emptyMessage="No se encontraron documentos"
+  emptyIcon="bi-inbox"
+  (pageChange)="onPageChange($event)"
+  (pageSizeChange)="onPageSizeChange($event)"
+  (sortChange)="onSortChange($event)">
+</app-data-table>
+
+<!-- Modal detalle -->
+<div class="modal-overlay" *ngIf="documentoDetalle" (click)="documentoDetalle = null">
+  <div class="modal-custom" (click)="$event.stopPropagation()">
+    <div class="modal-custom-header">
+      <h5><i class="bi bi-file-earmark-text"></i> Detalle del Documento</h5>
+      <button class="btn btn-icon btn-outline-secondary" (click)="documentoDetalle = null">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="modal-custom-body">
+      <div class="info-grid">
+        <div class="info-row">
+          <span class="label">UUID</span>
+          <span><code>{{ documentoDetalle.uuid }}</code></span>
+        </div>
+        <div class="info-row">
+          <span class="label">Tipo</span>
+          <span class="badge badge-secondary">{{ documentoDetalle.tipoDocumento }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Estado</span>
+          <span class="badge-status" [ngClass]="getBadgeClass(documentoDetalle.estado)">{{ documentoDetalle.estado }}</span>
+        </div>
+        <div class="info-row" *ngIf="documentoDetalle.subestado">
+          <span class="label">Subestado</span>
+          <span>{{ documentoDetalle.subestado }}</span>
+        </div>
+        <div class="info-row" *ngIf="documentoDetalle.claveAcceso">
+          <span class="label">Clave Acceso</span>
+          <span><code>{{ documentoDetalle.claveAcceso }}</code></span>
+        </div>
+        <div class="info-row" *ngIf="documentoDetalle.numeroAutorizacion">
+          <span class="label">Nro Autorización</span>
+          <span><code>{{ documentoDetalle.numeroAutorizacion }}</code></span>
+        </div>
+        <div class="info-row">
+          <span class="label">Ambiente</span>
+          <span class="badge-status" [ngClass]="documentoDetalle.ambiente === 1 ? 'badge-warning' : 'badge-success'">
+            {{ documentoDetalle.ambiente === 1 ? 'PRUEBAS' : 'PRODUCCIÓN' }}
+          </span>
+        </div>
+      </div>
+      <div class="mt-4 d-flex gap-2">
+        <button class="btn btn-success btn-sm" (click)="descargarRide(documentoDetalle)"
+          [disabled]="documentoDetalle.estado !== 'AUTORIZADO'">
+          <i class="bi bi-file-earmark-pdf"></i> RIDE
+        </button>
+        <button class="btn btn-info btn-sm" (click)="descargarXml(documentoDetalle)"
+          [disabled]="documentoDetalle.estado !== 'AUTORIZADO'">
+          <i class="bi bi-file-earmark-code"></i> XML
+        </button>
+        <button class="btn btn-secondary btn-sm" (click)="descargarZip(documentoDetalle)"
+          [disabled]="documentoDetalle.estado !== 'AUTORIZADO'">
+          <i class="bi bi-file-earmark-zip"></i> ZIP
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

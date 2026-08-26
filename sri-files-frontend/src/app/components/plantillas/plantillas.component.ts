@@ -1,115 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { ApiService } from '../../services/api.service';
 import { Plantilla } from '../../models/sri.models';
+import { TableColumn, TableAction } from '../shared/data-table/data-table.component';
 
 @Component({
   selector: 'app-plantillas',
-  template: `
-    <div class="page-header">
-      <h4><i class="bi bi-filetype-jrxml"></i> Plantillas JRXML</h4>
-      <button class="btn btn-primary btn-sm rounded-pill" (click)="nuevaPlantilla()">
-        <i class="bi bi-plus-lg"></i> Nueva Plantilla
-      </button>
-    </div>
-
-    <!-- Formulario crear/editar -->
-    <div class="card mb-4" *ngIf="mostrarFormulario">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <span>
-          <i class="bi" [ngClass]="plantillaEditando ? 'bi-pencil-square text-warning' : 'bi-plus-circle text-primary'"></i>
-          {{ plantillaEditando ? 'Editar' : 'Crear' }} Plantilla
-        </span>
-        <button class="btn btn-sm btn-outline-secondary rounded-circle" (click)="mostrarFormulario = false">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
-      <div class="card-body">
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Nombre del archivo</label>
-          <div class="input-group">
-            <span class="input-group-text"><i class="bi bi-file-earmark-code"></i></span>
-            <input type="text" class="form-control" [(ngModel)]="nombreNuevo"
-              [disabled]="!!plantillaEditando"
-              placeholder="ejemplo_template.jrxml">
-          </div>
-        </div>
-        <div class="mb-3">
-          <label class="form-label fw-semibold">Contenido JRXML</label>
-          <textarea class="form-control xml-input" rows="18" [(ngModel)]="contenidoNuevo"
-            placeholder="Contenido XML del archivo .jrxml"></textarea>
-        </div>
-        <div class="d-flex gap-2">
-          <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando">
-            <span *ngIf="guardando" class="spinner-border spinner-border-sm me-1"></span>
-            <i *ngIf="!guardando" class="bi" [ngClass]="plantillaEditando ? 'bi-check-lg' : 'bi-plus-lg'"></i>
-            {{ guardando ? 'Guardando...' : (plantillaEditando ? 'Actualizar' : 'Crear') }}
-          </button>
-          <button class="btn btn-outline-secondary" (click)="mostrarFormulario = false">Cancelar</button>
-        </div>
-        <div *ngIf="mensaje" class="alert mt-3" [ngClass]="mensajeExito ? 'alert-success' : 'alert-danger'">
-          <i class="bi" [ngClass]="mensajeExito ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
-          {{ mensaje }}
-        </div>
-      </div>
-    </div>
-
-    <!-- Lista plantillas -->
-    <div class="table-modern">
-      <table class="table table-hover">
-        <thead>
-          <tr>
-            <th><i class="bi bi-file-earmark-code"></i> Nombre</th>
-            <th><i class="bi bi-hdd"></i> Tamaño</th>
-            <th><i class="bi bi-calendar"></i> Última Modificación</th>
-            <th><i class="bi bi-gear"></i> Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let p of plantillas">
-            <td>
-              <code>{{ p.nombre }}</code>
-            </td>
-            <td>{{ formatSize(p.tamanio) }}</td>
-            <td><small class="text-muted">{{ p.ultimaModificacion | date:'dd/MM/yyyy HH:mm' }}</small></td>
-            <td>
-              <div class="btn-group btn-group-sm">
-                <button class="btn btn-outline-primary" title="Ver contenido" (click)="verContenido(p)">
-                  <i class="bi bi-eye"></i>
-                </button>
-                <button class="btn btn-outline-warning" title="Editar" (click)="editar(p)">
-                  <i class="bi bi-pencil"></i>
-                </button>
-                <button class="btn btn-outline-danger" title="Eliminar" (click)="eliminar(p)">
-                  <i class="bi bi-trash"></i>
-                </button>
-              </div>
-            </td>
-          </tr>
-          <tr *ngIf="plantillas.length === 0">
-            <td colspan="4" class="text-center text-muted py-5">
-              <i class="bi bi-folder2-open" style="font-size: 2.5rem;"></i>
-              <p class="mt-2 mb-0">No hay plantillas registradas</p>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- Modal contenido -->
-    <div class="modal-overlay" *ngIf="contenidoVisualizando" (click)="contenidoVisualizando = null">
-      <div class="modal-custom" style="max-width: 900px;" (click)="$event.stopPropagation()">
-        <div class="modal-custom-header">
-          <h5 class="mb-0"><i class="bi bi-file-earmark-code text-primary"></i> {{ nombreVisualizando }}</h5>
-          <button class="btn btn-sm btn-outline-secondary rounded-circle" (click)="contenidoVisualizando = null">
-            <i class="bi bi-x-lg"></i>
-          </button>
-        </div>
-        <div class="modal-custom-body">
-          <pre class="xml-viewer">{{ contenidoVisualizando }}</pre>
-        </div>
-      </div>
-    </div>
-  `
+  templateUrl: './plantillas.component.html',
+  styleUrls: ['./plantillas.component.scss']
 })
 export class PlantillasComponent implements OnInit {
   plantillas: Plantilla[] = [];
@@ -122,6 +19,23 @@ export class PlantillasComponent implements OnInit {
   mensajeExito = false;
   contenidoVisualizando: string | null = null;
   nombreVisualizando = '';
+
+  sortKey = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
+  columnas: TableColumn[] = [
+    { key: 'nombre', label: 'Nombre', sortable: true, type: 'code' },
+    { key: 'tamanio', label: 'Tamaño', sortable: true, type: 'text',
+      format: (v) => this.formatSize(v) },
+    { key: 'ultimaModificacion', label: 'Última Modificación', sortable: true, type: 'date',
+      format: (v) => v ? new Date(v).toLocaleString('es-EC') : '' },
+  ];
+
+  acciones: TableAction[] = [
+    { icon: 'bi-eye', label: 'Ver contenido', class: 'btn-outline-primary', click: (r) => this.verContenido(r) },
+    { icon: 'bi-pencil', label: 'Editar', class: 'btn-outline-warning', click: (r) => this.editar(r) },
+    { icon: 'bi-trash', label: 'Eliminar', class: 'btn-outline-danger', click: (r) => this.eliminar(r) },
+  ];
 
   constructor(private api: ApiService) {}
 
@@ -167,7 +81,7 @@ export class PlantillasComponent implements OnInit {
 
     obs.subscribe({
       next: () => {
-        this.mensaje = this.plantillaEditando ? 'Plantilla actualizada correctamente' : 'Plantilla creada correctamente';
+        this.mensaje = this.plantillaEditando ? 'Plantilla actualizada' : 'Plantilla creada';
         this.mensajeExito = true;
         this.guardando = false;
         this.mostrarFormulario = false;
@@ -189,9 +103,18 @@ export class PlantillasComponent implements OnInit {
     });
   }
 
+  onSortChange(event: { key: string; direction: 'asc' | 'desc' }) {
+    this.plantillas.sort((a, b) => {
+      const va = (a as any)[event.key] ?? '';
+      const vb = (b as any)[event.key] ?? '';
+      const cmp = String(va).localeCompare(String(vb), 'es');
+      return event.direction === 'asc' ? cmp : -cmp;
+    });
+  }
+
   formatSize(bytes: number): string {
     if (bytes < 1024) return bytes + ' B';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
   }
 }

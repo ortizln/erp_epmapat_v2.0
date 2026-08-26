@@ -27,6 +27,10 @@ eureka:
 sri:
   ambiente: 2
 
+app:
+  reports:
+    path: C:/Users/Alexi/Documents/PROYECTOS_EPMAPA-T/microservicesEpmapa-T/sri-files/src/main/resources/reports
+
 logging:
   level:
     root: INFO

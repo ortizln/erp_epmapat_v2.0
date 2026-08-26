@@ -1,0 +1,145 @@
+<div class="page-header">
+  <h4><i class="bi bi-activity"></i> Monitoreo</h4>
+  <button class="btn btn-outline-secondary btn-sm" (click)="cargar()">
+    <i class="bi bi-arrow-clockwise"></i> Actualizar
+  </button>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <i class="bi bi-heart-pulse" style="color: var(--danger)"></i> Health Check
+      </div>
+      <div class="card-body">
+        <div *ngIf="health">
+          <div class="d-flex align-items-center gap-2 mb-3 p-3 rounded"
+            [ngClass]="health.status === 'UP' ? 'bg-success bg-opacity-10' : 'bg-danger bg-opacity-10'">
+            <span class="dot" [class.dot-up]="health.status === 'UP'" [class.dot-down]="health.status !== 'UP'"></span>
+            <span class="fw-semibold">App: {{ health.status }}</span>
+          </div>
+          <div class="d-flex align-items-center gap-2 mb-3 p-3 rounded"
+            [ngClass]="health.database === 'UP' ? 'bg-success bg-opacity-10' : 'bg-danger bg-opacity-10'">
+            <span class="dot" [class.dot-up]="health.database === 'UP'" [class.dot-down]="health.database !== 'UP'"></span>
+            <span class="fw-semibold">Database: {{ health.database }}</span>
+          </div>
+          <div class="text-muted mt-2">
+            <i class="bi bi-clock"></i> {{ health.timestamp }}
+          </div>
+        </div>
+        <div *ngIf="!health" class="loading-spinner">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <i class="bi bi-info-circle" style="color: var(--info)"></i> Info Servicio
+      </div>
+      <div class="card-body">
+        <div *ngIf="info" class="info-grid">
+          <div class="info-row">
+            <span class="label">Servicio</span>
+            <span><strong>{{ info.service }}</strong></span>
+          </div>
+          <div class="info-row">
+            <span class="label">Versión</span>
+            <span class="badge badge-secondary">{{ info.version }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Ambiente</span>
+            <span class="badge-status" [ngClass]="info.ambiente === 'PRODUCCIÓN' ? 'badge-success' : 'badge-warning'">
+              {{ info.ambiente }}
+            </span>
+          </div>
+          <div class="info-row">
+            <span class="label">Profile</span>
+            <span class="badge-status" [ngClass]="info.profile === 'prod' ? 'badge-success' : 'badge-info'">{{ info.profile }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Java</span>
+            <span>{{ info.javaVersion }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Memoria</span>
+            <span>{{ info.totalMemoryMB }}MB / {{ info.maxMemoryMB }}MB</span>
+          </div>
+          <div class="info-row">
+            <span class="label">CPU</span>
+            <span>{{ info.availableProcessors }} cores</span>
+          </div>
+        </div>
+        <div *ngIf="!info" class="loading-spinner">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-4" *ngIf="metricas">
+  <div class="card-header">
+    <i class="bi bi-bar-chart" style="color: var(--primary)"></i> Métricas
+  </div>
+  <div class="card-body">
+    <div class="metrics-grid">
+      <div class="metric-item">
+        <i class="bi bi-file-earmark-text" style="font-size: 1.5rem; color: var(--primary)"></i>
+        <span class="metric-value">{{ metricas.totalRecibidos }}</span>
+        <span class="metric-label">Recibidos</span>
+      </div>
+      <div class="metric-item">
+        <i class="bi bi-check-circle" style="font-size: 1.5rem; color: var(--success)"></i>
+        <span class="metric-value" style="color: var(--success)">{{ metricas.totalAutorizados }}</span>
+        <span class="metric-label">Autorizados</span>
+      </div>
+      <div class="metric-item">
+        <i class="bi bi-send" style="font-size: 1.5rem; color: var(--primary)"></i>
+        <span class="metric-value" style="color: var(--primary)">{{ metricas.totalEnviosSri }}</span>
+        <span class="metric-label">Envíos SRI</span>
+      </div>
+      <div class="metric-item">
+        <i class="bi bi-exclamation-triangle" style="font-size: 1.5rem; color: var(--danger)"></i>
+        <span class="metric-value" style="color: var(--danger)">{{ metricas.totalFallidos }}</span>
+        <span class="metric-label">Fallidos</span>
+      </div>
+    </div>
+    <div class="mt-3 text-center text-muted" *ngIf="metricas.uptime">
+      <i class="bi bi-clock-history"></i> Uptime: {{ metricas.uptime }}
+    </div>
+  </div>
+</div>
+
+<div class="card mt-4">
+  <div class="card-header">
+    <i class="bi bi-search" style="color: var(--primary)"></i> Consultar SRI
+  </div>
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-8">
+        <label class="form-label">Clave de Acceso</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="bi bi-key"></i></span>
+          <input type="text" class="form-control" [(ngModel)]="claveAcceso"
+            placeholder="01012024011792148581001100100100001234567890001">
+        </div>
+      </div>
+      <div class="col-md-4 d-flex align-items-end gap-2">
+        <button class="btn btn-primary" (click)="consultarSri()" [disabled]="consultando || !claveAcceso.trim()">
+          <span *ngIf="consultando" class="spinner-border spinner-border-sm"></span>
+          <i *ngIf="!consultando" class="bi bi-search"></i>
+          {{ consultando ? 'Consultando...' : 'Consultar' }}
+        </button>
+        <button class="btn btn-outline-success" (click)="obtenerXml()" [disabled]="consultando || !claveAcceso.trim()">
+          <i class="bi bi-file-earmark-code"></i> XML
+        </button>
+      </div>
+    </div>
+    <div *ngIf="resultadoSri" class="mt-4">
+      <pre class="xml-viewer">{{ resultadoSri | json }}</pre>
+    </div>
+  </div>
+</div>

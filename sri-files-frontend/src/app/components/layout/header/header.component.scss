@@ -1,0 +1,98 @@
+:host { display: block; }
+
+.app-header {
+  height: 60px;
+  background: white;
+  border-bottom: 1px solid #e8ecf1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  margin-left: 260px;
+  transition: margin-left 0.3s ease;
+
+  &.sidebar-collapsed {
+    margin-left: 72px;
+  }
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.breadcrumb-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #636e72;
+  font-size: 0.85rem;
+
+  i { font-size: 1rem; }
+  .separator { color: #dee2e6; }
+  span:last-child { color: #2d3436; font-weight: 600; }
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: #636e72;
+}
+
+.ambiente-badge {
+  background: #d4edda;
+  color: #155724;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.header-divider {
+  width: 1px;
+  height: 24px;
+  background: #e8ecf1;
+}
+
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+
+  &:hover { background: #f8f9fa; }
+}
+
+.user-avatar {
+  font-size: 1.5rem;
+  color: #4361ee;
+}
+
+.user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #2d3436;
+}
+
+@media (max-width: 768px) {
+  .app-header { margin-left: 0 !important; }
+  .header-info, .header-divider, .breadcrumb-area { display: none; }
+}

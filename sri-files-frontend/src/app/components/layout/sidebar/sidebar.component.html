@@ -1,0 +1,28 @@
+<nav class="sidebar" [class.collapsed]="collapsed">
+  <div class="sidebar-brand">
+    <div class="brand-icon">
+      <i class="bi bi-file-earmark-code"></i>
+    </div>
+    <div class="brand-text" *ngIf="!collapsed">
+      <h5>SRI Files</h5>
+      <small>Panel de Administración</small>
+    </div>
+  </div>
+
+  <div class="sidebar-menu">
+    <a *ngFor="let item of menuItems"
+       class="nav-link"
+       [routerLink]="item.route"
+       routerLinkActive="active"
+       [title]="collapsed ? item.label : ''">
+      <i class="bi" [ngClass]="item.icon"></i>
+      <span class="nav-label" *ngIf="!collapsed">{{ item.label }}</span>
+    </a>
+  </div>
+
+  <div class="sidebar-footer">
+    <button class="toggle-btn" (click)="onToggle()" [title]="collapsed ? 'Expandir' : 'Colapsar'">
+      <i class="bi" [ngClass]="collapsed ? 'bi-chevron-right' : 'bi-chevron-left'"></i>
+    </button>
+  </div>
+</nav>

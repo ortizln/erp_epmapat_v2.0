@@ -1,0 +1,70 @@
+<div class="page-header">
+  <h4><i class="bi bi-filetype-jrxml"></i> Plantillas JRXML</h4>
+  <button class="btn btn-primary btn-sm" (click)="nuevaPlantilla()">
+    <i class="bi bi-plus-lg"></i> Nueva Plantilla
+  </button>
+</div>
+
+<div class="card mb-4" *ngIf="mostrarFormulario">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <span>
+      <i class="bi" [ngClass]="plantillaEditando ? 'bi-pencil-square' : 'bi-plus-circle'" [style.color]="plantillaEditando ? 'var(--warning)' : 'var(--primary)'"></i>
+      {{ plantillaEditando ? 'Editar' : 'Crear' }} Plantilla
+    </span>
+    <button class="btn btn-icon btn-outline-secondary" (click)="mostrarFormulario = false">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
+  <div class="card-body">
+    <div class="mb-3">
+      <label class="form-label">Nombre del archivo</label>
+      <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-file-earmark-code"></i></span>
+        <input type="text" class="form-control" [(ngModel)]="nombreNuevo"
+          [disabled]="!!plantillaEditando" placeholder="ejemplo_template.jrxml">
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Contenido JRXML</label>
+      <textarea class="form-control xml-input" rows="18" [(ngModel)]="contenidoNuevo"
+        placeholder="Contenido XML del archivo .jrxml"></textarea>
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary" (click)="guardar()" [disabled]="guardando">
+        <span *ngIf="guardando" class="spinner-border spinner-border-sm"></span>
+        <i *ngIf="!guardando" class="bi" [ngClass]="plantillaEditando ? 'bi-check-lg' : 'bi-plus-lg'"></i>
+        {{ guardando ? 'Guardando...' : (plantillaEditando ? 'Actualizar' : 'Crear') }}
+      </button>
+      <button class="btn btn-outline-secondary" (click)="mostrarFormulario = false">Cancelar</button>
+    </div>
+    <div *ngIf="mensaje" class="alert mt-3" [ngClass]="mensajeExito ? 'alert-success' : 'alert-danger'">
+      <i class="bi" [ngClass]="mensajeExito ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
+      {{ mensaje }}
+    </div>
+  </div>
+</div>
+
+<app-data-table
+  [columns]="columnas"
+  [data]="plantillas"
+  [totalItems]="plantillas.length"
+  [actions]="acciones"
+  [pageSize]="plantillas.length"
+  emptyMessage="No hay plantillas registradas"
+  emptyIcon="bi-folder2-open"
+  (sortChange)="onSortChange($event)">
+</app-data-table>
+
+<div class="modal-overlay" *ngIf="contenidoVisualizando" (click)="contenidoVisualizando = null">
+  <div class="modal-custom" style="max-width: 900px;" (click)="$event.stopPropagation()">
+    <div class="modal-custom-header">
+      <h5><i class="bi bi-file-earmark-code"></i> {{ nombreVisualizando }}</h5>
+      <button class="btn btn-icon btn-outline-secondary" (click)="contenidoVisualizando = null">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div class="modal-custom-body">
+      <pre class="xml-viewer">{{ contenidoVisualizando }}</pre>
+    </div>
+  </div>
+</div>

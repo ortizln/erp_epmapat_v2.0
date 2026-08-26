@@ -1,0 +1,139 @@
+<div class="page-header">
+  <h4><i class="bi bi-speedometer2"></i> Dashboard</h4>
+  <button class="btn btn-outline-secondary btn-sm" (click)="cargarDatos()">
+    <i class="bi bi-arrow-clockwise"></i> Actualizar
+  </button>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-4 mb-4">
+  <div class="col-xl-3 col-md-6" *ngFor="let stat of statsCards">
+    <div class="stat-card">
+      <div class="d-flex align-items-center gap-3">
+        <div class="stat-icon" [ngClass]="stat.gradient">
+          <i class="bi" [ngClass]="stat.icon"></i>
+        </div>
+        <div>
+          <h3>{{ stat.value }}</h3>
+          <p class="mb-0">{{ stat.label }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <!-- Health -->
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <i class="bi bi-heart-pulse" style="color: var(--danger)"></i> Estado del Sistema
+      </div>
+      <div class="card-body">
+        <div *ngIf="health" class="info-grid">
+          <div class="info-row">
+            <span class="dot" [class.dot-up]="health.status === 'UP'" [class.dot-down]="health.status !== 'UP'"></span>
+            <span>Aplicación: <strong>{{ health.status }}</strong></span>
+          </div>
+          <div class="info-row">
+            <span class="dot" [class.dot-up]="health.database === 'UP'" [class.dot-down]="health.database !== 'UP'"></span>
+            <span>Base de Datos: <strong>{{ health.database }}</strong></span>
+          </div>
+          <div class="info-row">
+            <i class="bi bi-geo-alt" style="color: var(--primary)"></i>
+            <span>Ambiente: <strong>{{ health.ambiente }}</strong></span>
+          </div>
+          <div class="info-row">
+            <i class="bi bi-clock" style="color: var(--text-muted)"></i>
+            <span>{{ health.timestamp }}</span>
+          </div>
+        </div>
+        <div *ngIf="!health" class="loading-spinner">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Servicio -->
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <i class="bi bi-info-circle" style="color: var(--info)"></i> Información del Servicio
+      </div>
+      <div class="card-body">
+        <div *ngIf="info" class="info-grid">
+          <div class="info-row">
+            <span class="label">Servicio</span>
+            <span><strong>{{ info.service }}</strong></span>
+          </div>
+          <div class="info-row">
+            <span class="label">Versión</span>
+            <span class="badge badge-secondary">{{ info.version }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Profile</span>
+            <span class="badge-status" [ngClass]="info.profile === 'prod' ? 'badge-success' : 'badge-info'">{{ info.profile }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Java</span>
+            <span>{{ info.javaVersion }}</span>
+          </div>
+          <div class="info-row">
+            <span class="label">Memoria</span>
+            <div class="d-flex align-items-center gap-2 flex-grow-1">
+              <div class="progress flex-grow-1" style="height: 8px;">
+                <div class="progress-bar" [style.width.%]="info.totalMemoryMB / info.maxMemoryMB * 100"></div>
+              </div>
+              <small class="text-muted">{{ info.totalMemoryMB }}MB / {{ info.maxMemoryMB }}MB</small>
+            </div>
+          </div>
+          <div class="info-row">
+            <span class="label">Procesadores</span>
+            <span>{{ info.availableProcessors }} cores</span>
+          </div>
+        </div>
+        <div *ngIf="!info" class="loading-spinner">
+          <div class="spinner-border text-primary" role="status"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Documentos por Estado -->
+<div class="card mt-4" *ngIf="dashboard">
+  <div class="card-header">
+    <i class="bi bi-bar-chart" style="color: var(--primary)"></i> Documentos por Estado
+  </div>
+  <div class="card-body">
+    <div class="estados-grid">
+      <div class="estado-item" *ngFor="let item of dashboardEstados"
+        [ngClass]="{
+          'autorizado': item.estado === 'AUTORIZADO',
+          'pendiente': item.estado === 'PENDIENTE_AUTORIZACION',
+          'error': item.estado === 'ERROR' || item.estado === 'NO_AUTORIZADO'
+        }">
+        <span>
+          <i class="bi" [ngClass]="{
+            'bi-check-circle-fill': item.estado === 'AUTORIZADO',
+            'bi-clock-fill': item.estado === 'PENDIENTE_AUTORIZACION',
+            'bi-x-circle-fill': item.estado === 'ERROR' || item.estado === 'NO_AUTORIZADO',
+            'bi-info-circle-fill': item.estado !== 'AUTORIZADO' && item.estado !== 'PENDIENTE_AUTORIZACION' && item.estado !== 'ERROR' && item.estado !== 'NO_AUTORIZADO'
+          }" [style.color]="item.estado === 'AUTORIZADO' ? 'var(--success)' : item.estado === 'PENDIENTE_AUTORIZACION' ? 'var(--warning)' : item.estado === 'ERROR' || item.estado === 'NO_AUTORIZADO' ? 'var(--danger)' : 'var(--info)'"></i>
+          {{ item.estado }}
+        </span>
+        <span class="badge-status" [ngClass]="{
+          'badge-success': item.estado === 'AUTORIZADO',
+          'badge-warning': item.estado === 'PENDIENTE_AUTORIZACION',
+          'badge-danger': item.estado === 'ERROR' || item.estado === 'NO_AUTORIZADO',
+          'badge-info': item.estado !== 'AUTORIZADO' && item.estado !== 'PENDIENTE_AUTORIZACION' && item.estado !== 'ERROR' && item.estado !== 'NO_AUTORIZADO'
+        }">{{ item.count }}</span>
+      </div>
+    </div>
+    <div *ngIf="dashboardEstados.length === 0" class="table-empty">
+      <i class="bi bi-inbox"></i>
+      <p>No hay documentos registrados</p>
+    </div>
+  </div>
+</div>
