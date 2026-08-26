@@ -13,7 +13,8 @@
     align-items: center;
     gap: 10px;
 
-    i { color: var(--primary); }
+    i { color: var(--primary); transition: transform 0.3s; }
+    &:hover i { transform: scale(1.1) rotate(-5deg); }
   }
 }
 
@@ -26,8 +27,16 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 14px 18px;
+  transition: all 0.3s;
 
-  i { font-size: 1.3rem; }
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+
+    i { animation: icon-bounce 0.4s ease; }
+  }
+
+  i { font-size: 1.3rem; transition: transform 0.3s; }
 
   .stat-mini-value {
     display: block;
@@ -77,13 +86,7 @@
   .badge {
     font-size: 0.68rem;
     padding: 3px 8px;
-    animation: pulse-live 2s infinite;
   }
-}
-
-@keyframes pulse-live {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
 }
 
 .log-content {
@@ -100,14 +103,13 @@
   align-items: flex-start;
   padding: 2px 16px;
   border-bottom: 1px solid rgba(255,255,255,0.03);
-  transition: background 0.1s;
+  transition: all 0.15s;
 
-  &:hover { background: rgba(255,255,255,0.04); }
+  &:hover { background: rgba(255,255,255,0.06); }
 
   &.log-error {
     background: rgba(239, 68, 68, 0.08);
     border-left: 3px solid #ef4444;
-
     .log-text { color: #fca5a5; }
     .log-level-badge i { color: #ef4444; }
   }
@@ -115,7 +117,6 @@
   &.log-warn {
     background: rgba(245, 158, 11, 0.06);
     border-left: 3px solid #f59e0b;
-
     .log-text { color: #fcd34d; }
     .log-level-badge i { color: #f59e0b; }
   }
@@ -143,7 +144,6 @@
 .log-level-badge {
   min-width: 20px;
   padding-right: 8px;
-
   i { font-size: 0.75rem; }
 }
 
@@ -163,7 +163,3 @@
 }
 
 .log-empty p { margin: 12px 0 0; }
-
-/* Spin animation */
-.spin { animation: spin 1s linear infinite; }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

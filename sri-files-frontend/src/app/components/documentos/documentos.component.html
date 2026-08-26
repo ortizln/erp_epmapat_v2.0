@@ -5,18 +5,18 @@
       <i class="bi bi-file-earmark-excel"></i> CSV
     </button>
     <button class="btn btn-primary btn-sm" (click)="mostrarFormulario = true">
-      <i class="bi bi-cloud-upload"></i> Enviar XML
+      <i class="bi bi-cloud-upload anim-float"></i> Enviar XML
     </button>
-    <button class="btn btn-outline-secondary btn-sm" (click)="cargarDocumentos()">
-      <i class="bi bi-arrow-clockwise"></i>
+    <button class="btn btn-outline-secondary btn-sm" (click)="cargarDocumentos()" [class.btn-loading]="cargando">
+      <i class="bi" [ngClass]="cargando ? 'bi-arrow-clockwise anim-spin' : 'bi-arrow-clockwise'"></i>
     </button>
   </div>
 </div>
 
 <!-- Formulario envío -->
-<div class="card mb-4" *ngIf="mostrarFormulario">
+<div class="card mb-4 animate-in" *ngIf="mostrarFormulario">
   <div class="card-header d-flex justify-content-between align-items-center">
-    <span><i class="bi bi-cloud-upload" style="color: var(--primary)"></i> Enviar Documento Electrónico</span>
+    <span class="icon-hover-bounce"><i class="bi bi-cloud-upload" style="color: var(--primary)"></i> Enviar Documento Electrónico</span>
     <button class="btn btn-icon btn-outline-secondary" (click)="mostrarFormulario = false">
       <i class="bi bi-x-lg"></i>
     </button>
@@ -53,7 +53,7 @@
           <small class="text-muted">o haz clic para seleccionar</small>
         </div>
         <div *ngIf="nombreArchivo" class="text-center py-3">
-          <i class="bi bi-file-earmark-check" style="font-size: 2rem; color: var(--success);"></i>
+          <i class="bi bi-file-earmark-check anim-zoom" style="font-size: 2rem; color: var(--success);"></i>
           <p class="mt-2 mb-1 fw-semibold">{{ nombreArchivo }}</p>
           <small class="text-muted">{{ tamanoArchivo }}</small>
           <button class="btn btn-sm btn-outline-danger mt-2" (click)="limpiarArchivo(); $event.stopPropagation()">
@@ -63,7 +63,7 @@
       </div>
     </div>
 
-    <div *ngIf="resultadoValidacion" class="alert" [ngClass]="resultadoValidacion.valido ? 'alert-success' : 'alert-warning'">
+    <div *ngIf="resultadoValidacion" class="alert animate-in" [ngClass]="resultadoValidacion.valido ? 'alert-success' : 'alert-warning'">
       <div class="d-flex align-items-start gap-2">
         <i class="bi" [ngClass]="resultadoValidacion.valido ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'" style="font-size: 1.2rem;"></i>
         <div class="flex-grow-1">
@@ -117,7 +117,7 @@
       </button>
       <button class="btn btn-outline-secondary" (click)="mostrarFormulario = false">Cancelar</button>
     </div>
-    <div *ngIf="resultadoEnvio" class="alert mt-3" [ngClass]="resultadoEnvio.exito ? 'alert-success' : 'alert-danger'">
+    <div *ngIf="resultadoEnvio" class="alert mt-3 animate-in" [ngClass]="resultadoEnvio.exito ? 'alert-success' : 'alert-danger'">
       <i class="bi" [ngClass]="resultadoEnvio.exito ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
       {{ resultadoEnvio.mensaje }}
     </div>
@@ -159,12 +159,12 @@
       </select>
     </div>
     <div class="col-md-2">
-      <button class="btn btn-outline-secondary btn-sm w-100" (click)="limpiarFiltros()">
+      <button class="btn btn-outline-secondary btn-sm w-100 icon-hover-wiggle" (click)="limpiarFiltros()">
         <i class="bi bi-x-circle"></i> Limpiar
       </button>
     </div>
     <div class="col-md-2">
-      <button class="btn btn-primary btn-sm w-100" (click)="cargarDocumentos()">
+      <button class="btn btn-primary btn-sm w-100 icon-hover-bounce" (click)="cargarDocumentos()">
         <i class="bi bi-search"></i> Buscar
       </button>
     </div>
@@ -230,15 +230,15 @@
         </div>
       </div>
       <div class="mt-4 d-flex gap-2">
-        <button class="btn btn-success btn-sm" (click)="descargarRide(documentoDetalle)"
+        <button class="btn btn-success btn-sm icon-hover-bounce" (click)="descargarRide(documentoDetalle)"
           [disabled]="documentoDetalle.estado !== 'AUTORIZADO'">
           <i class="bi bi-file-earmark-pdf"></i> RIDE
         </button>
-        <button class="btn btn-info btn-sm" (click)="descargarXml(documentoDetalle)"
+        <button class="btn btn-info btn-sm icon-hover-bounce" (click)="descargarXml(documentoDetalle)"
           [disabled]="documentoDetalle.estado !== 'AUTORIZADO'">
           <i class="bi bi-file-earmark-code"></i> XML
         </button>
-        <button class="btn btn-secondary btn-sm" (click)="descargarZip(documentoDetalle)"
+        <button class="btn btn-secondary btn-sm icon-hover-bounce" (click)="descargarZip(documentoDetalle)"
           [disabled]="documentoDetalle.estado !== 'AUTORIZADO'">
           <i class="bi bi-file-earmark-zip"></i> ZIP
         </button>

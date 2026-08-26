@@ -1,14 +1,14 @@
 <div class="page-header">
   <h4><i class="bi bi-activity"></i> Monitoreo</h4>
-  <button class="btn btn-outline-secondary btn-sm" (click)="cargar()">
-    <i class="bi bi-arrow-clockwise"></i> Actualizar
+  <button class="btn btn-outline-secondary btn-sm" (click)="cargar()" [class.btn-loading]="loading">
+    <i class="bi" [ngClass]="loading ? 'bi-arrow-clockwise anim-spin' : 'bi-arrow-clockwise'"></i> Actualizar
   </button>
 </div>
 
 <div class="row g-4">
   <div class="col-lg-6">
     <div class="card h-100">
-      <div class="card-header">
+      <div class="card-header icon-hover-pulse">
         <i class="bi bi-heart-pulse" style="color: var(--danger)"></i> Health Check
       </div>
       <div class="card-body">
@@ -36,7 +36,7 @@
 
   <div class="col-lg-6">
     <div class="card h-100">
-      <div class="card-header">
+      <div class="card-header icon-hover-wiggle">
         <i class="bi bi-info-circle" style="color: var(--info)"></i> Info Servicio
       </div>
       <div class="card-body">
@@ -81,7 +81,7 @@
 </div>
 
 <div class="card mt-4" *ngIf="metricas">
-  <div class="card-header">
+  <div class="card-header icon-hover-bounce">
     <i class="bi bi-bar-chart" style="color: var(--primary)"></i> Métricas
   </div>
   <div class="card-body">
@@ -114,7 +114,7 @@
 </div>
 
 <div class="card mt-4">
-  <div class="card-header">
+  <div class="card-header icon-hover-spin">
     <i class="bi bi-search" style="color: var(--primary)"></i> Consultar SRI
   </div>
   <div class="card-body">
@@ -133,12 +133,12 @@
           <i *ngIf="!consultando" class="bi bi-search"></i>
           {{ consultando ? 'Consultando...' : 'Consultar' }}
         </button>
-        <button class="btn btn-outline-success" (click)="obtenerXml()" [disabled]="consultando || !claveAcceso.trim()">
+        <button class="btn btn-outline-success icon-hover-bounce" (click)="obtenerXml()" [disabled]="consultando || !claveAcceso.trim()">
           <i class="bi bi-file-earmark-code"></i> XML
         </button>
       </div>
     </div>
-    <div *ngIf="resultadoSri" class="mt-4">
+    <div *ngIf="resultadoSri" class="mt-4 animate-in">
       <pre class="xml-viewer">{{ resultadoSri | json }}</pre>
     </div>
   </div>

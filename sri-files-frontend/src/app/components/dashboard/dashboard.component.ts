@@ -14,13 +14,15 @@ export class DashboardComponent implements OnInit {
   dashboard: DashboardResponse | null = null;
   dashboardEstados: { estado: string; count: number }[] = [];
   statsCards: any[] = [];
+  loading = false;
 
   constructor(private api: ApiService) {}
 
   ngOnInit() { this.cargarDatos(); }
 
   cargarDatos() {
-    this.api.health().subscribe(r => this.health = r);
+    this.loading = true;
+    this.api.health().subscribe(r => { this.health = r; this.loading = false; });
     this.api.info().subscribe(r => this.info = r);
     this.api.metrics().subscribe(r => {
       this.metricas = r;

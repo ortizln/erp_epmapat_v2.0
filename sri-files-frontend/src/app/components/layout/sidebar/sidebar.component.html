@@ -1,7 +1,7 @@
 <nav class="sidebar" [class.collapsed]="collapsed">
   <div class="sidebar-brand">
     <div class="brand-icon">
-      <i class="bi bi-file-earmark-code"></i>
+      <i class="bi bi-file-earmark-code anim-pulse"></i>
     </div>
     <div class="brand-text" *ngIf="!collapsed">
       <h5>SRI Files</h5>
@@ -10,13 +10,15 @@
   </div>
 
   <div class="sidebar-menu">
-    <a *ngFor="let item of menuItems"
+    <a *ngFor="let item of menuItems; let i = index"
        class="nav-link"
        [routerLink]="item.route"
        routerLinkActive="active"
-       [title]="collapsed ? item.label : ''">
+       [title]="collapsed ? item.label : ''"
+       [style.animation-delay]="(i * 0.05) + 's'">
       <i class="bi" [ngClass]="item.icon"></i>
       <span class="nav-label" *ngIf="!collapsed">{{ item.label }}</span>
+      <span class="nav-indicator" *ngIf="!collapsed"></span>
     </a>
   </div>
 

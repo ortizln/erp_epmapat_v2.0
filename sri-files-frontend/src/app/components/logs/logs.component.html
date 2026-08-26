@@ -2,14 +2,14 @@
   <h4><i class="bi bi-terminal"></i> Logs del Sistema</h4>
   <div class="d-flex gap-2">
     <button class="btn btn-sm" [ngClass]="autoRefresh ? 'btn-success' : 'btn-outline-success'" (click)="toggleAutoRefresh()">
-      <i class="bi" [ngClass]="autoRefresh ? 'bi-pause-circle' : 'bi-play-circle'"></i>
+      <i class="bi" [ngClass]="autoRefresh ? 'bi-pause-circle' : 'bi-play-circle'" [class.anim-pulse]="autoRefresh"></i>
       {{ autoRefresh ? 'Pausar' : 'Auto-refresh' }}
     </button>
-    <button class="btn btn-outline-secondary btn-sm" (click)="exportar()">
+    <button class="btn btn-outline-secondary btn-sm icon-hover-download" (click)="exportar()">
       <i class="bi bi-download"></i> Exportar
     </button>
     <button class="btn btn-outline-secondary btn-sm" (click)="cargarLogs()" [disabled]="cargando">
-      <i class="bi bi-arrow-clockwise" [class.spin]="cargando"></i>
+      <i class="bi" [ngClass]="cargando ? 'bi-arrow-clockwise anim-spin' : 'bi-arrow-clockwise'"></i>
     </button>
   </div>
 </div>
@@ -17,7 +17,7 @@
 <!-- Stats -->
 <div class="row g-3 mb-4">
   <div class="col-md-3">
-    <div class="stat-mini">
+    <div class="stat-mini animate-in stagger-1">
       <i class="bi bi-file-text" style="color: var(--primary)"></i>
       <div>
         <span class="stat-mini-value">{{ total }}</span>
@@ -26,7 +26,7 @@
     </div>
   </div>
   <div class="col-md-3">
-    <div class="stat-mini">
+    <div class="stat-mini animate-in stagger-2">
       <i class="bi bi-info-circle-fill" style="color: var(--info)"></i>
       <div>
         <span class="stat-mini-value">{{ contarPorNivel('INFO') }}</span>
@@ -35,7 +35,7 @@
     </div>
   </div>
   <div class="col-md-3">
-    <div class="stat-mini">
+    <div class="stat-mini animate-in stagger-3">
       <i class="bi bi-exclamation-triangle-fill" style="color: var(--warning)"></i>
       <div>
         <span class="stat-mini-value">{{ contarPorNivel('WARN') }}</span>
@@ -44,7 +44,7 @@
     </div>
   </div>
   <div class="col-md-3">
-    <div class="stat-mini">
+    <div class="stat-mini animate-in stagger-4">
       <i class="bi bi-x-circle-fill" style="color: var(--danger)"></i>
       <div>
         <span class="stat-mini-value">{{ contarPorNivel('ERROR') }}</span>
@@ -81,10 +81,10 @@
         placeholder="UUID del request..." (keyup.enter)="cargarLogs()">
     </div>
     <div class="col-md-2 d-flex gap-2">
-      <button class="btn btn-primary btn-sm flex-grow-1" (click)="cargarLogs()">
+      <button class="btn btn-primary btn-sm flex-grow-1 icon-hover-bounce" (click)="cargarLogs()">
         <i class="bi bi-search"></i> Filtrar
       </button>
-      <button class="btn btn-outline-secondary btn-sm" (click)="limpiarFiltros()">
+      <button class="btn btn-outline-secondary btn-sm icon-hover-wiggle" (click)="limpiarFiltros()">
         <i class="bi bi-x-circle"></i>
       </button>
     </div>
@@ -107,8 +107,8 @@
 <div class="log-viewer" [class.loading]="cargando">
   <div class="log-toolbar">
     <span class="log-file"><i class="bi bi-file-earmark-text"></i> {{ archivo }}</span>
-    <span class="badge badge-secondary" *ngIf="autoRefresh">
-      <i class="bi bi-broadcast"></i> LIVE
+    <span class="badge badge-success" *ngIf="autoRefresh">
+      <i class="bi bi-broadcast anim-pulse"></i> LIVE
     </span>
   </div>
 
@@ -135,7 +135,7 @@
 
 <!-- Archivos disponibles -->
 <div class="card mt-4" *ngIf="archivos.length > 0">
-  <div class="card-header">
+  <div class="card-header icon-hover-bounce">
     <i class="bi bi-folder2" style="color: var(--primary)"></i> Archivos de Log
   </div>
   <div class="card-body p-0">

@@ -1,14 +1,14 @@
 <div class="page-header">
   <h4><i class="bi bi-speedometer2"></i> Dashboard</h4>
-  <button class="btn btn-outline-secondary btn-sm" (click)="cargarDatos()">
-    <i class="bi bi-arrow-clockwise"></i> Actualizar
+  <button class="btn btn-outline-secondary btn-sm" (click)="cargarDatos()" [class.btn-loading]="loading">
+    <i class="bi" [ngClass]="loading ? 'bi-arrow-clockwise anim-spin' : 'bi-arrow-clockwise'"></i> Actualizar
   </button>
 </div>
 
 <!-- Stats Cards -->
 <div class="row g-4 mb-4">
-  <div class="col-xl-3 col-md-6" *ngFor="let stat of statsCards">
-    <div class="stat-card">
+  <div class="col-xl-3 col-md-6" *ngFor="let stat of statsCards; let i = index">
+    <div class="stat-card" [style.animation-delay]="(i * 0.1) + 's'">
       <div class="d-flex align-items-center gap-3">
         <div class="stat-icon" [ngClass]="stat.gradient">
           <i class="bi" [ngClass]="stat.icon"></i>
@@ -26,7 +26,7 @@
   <!-- Health -->
   <div class="col-lg-6">
     <div class="card h-100">
-      <div class="card-header">
+      <div class="card-header icon-hover-pulse">
         <i class="bi bi-heart-pulse" style="color: var(--danger)"></i> Estado del Sistema
       </div>
       <div class="card-body">
@@ -58,7 +58,7 @@
   <!-- Info Servicio -->
   <div class="col-lg-6">
     <div class="card h-100">
-      <div class="card-header">
+      <div class="card-header icon-hover-wiggle">
         <i class="bi bi-info-circle" style="color: var(--info)"></i> Información del Servicio
       </div>
       <div class="card-body">
@@ -103,7 +103,7 @@
 
 <!-- Documentos por Estado -->
 <div class="card mt-4" *ngIf="dashboard">
-  <div class="card-header">
+  <div class="card-header icon-hover-bounce">
     <i class="bi bi-bar-chart" style="color: var(--primary)"></i> Documentos por Estado
   </div>
   <div class="card-body">

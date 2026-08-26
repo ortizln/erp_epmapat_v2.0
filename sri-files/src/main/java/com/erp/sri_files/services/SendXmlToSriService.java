@@ -8,11 +8,15 @@ import ec.gob.sri.ws.autorizacion.RespuestaComprobante;
 import ec.gob.sri.ws.recepcion.RecepcionComprobantesOffline;
 import ec.gob.sri.ws.recepcion.RecepcionComprobantesOfflineService;
 import ec.gob.sri.ws.recepcion.RespuestaSolicitud;
+import com.erp.sri_files.config.SriSslConfig;
 import jakarta.annotation.PostConstruct;
 import jakarta.xml.ws.BindingProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.HostnameVerifier;
 import javax.xml.namespace.QName;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -56,6 +60,9 @@ public class SendXmlToSriService {
     void init() {
         // Fuerza TLS 1.2 (necesario para SRI)
         System.setProperty("https.protocols", "TLSv1.2");
+        System.setProperty("jdk.tls.client.protocols", "TLSv1.2");
+        // Deshabilitar verificación de hostname en el sistema (fallback)
+        System.setProperty("com.sun.xml.ws.transport.http.client.allowF FILE URI", "false");
     }
 
     // ======================================================
@@ -78,6 +85,19 @@ public class SendXmlToSriService {
         // Estándar
         ctx.put("javax.xml.ws.client.connectionTimeout", "15000");
         ctx.put("javax.xml.ws.client.receiveTimeout", "30000");
+
+        // Aplicar SSL context para SRI (bypass hostname verification en IPs)
+        SSLContext sslCtx = SriSslConfig.getSslContext();
+        HostnameVerifier hv = SriSslConfig.getHostnameVerifier();
+        if (sslCtx != null) {
+            ctx.put("com.sun.xml.ws.transport.http.client.ssl.socket.factory",
+                    sslCtx.getSocketFactory());
+            ctx.put("com.sun.xml.ws.transport.http.client.ssl.context", sslCtx);
+            ctx.put("javax.net.ssl.SSLSocketFactory", sslCtx.getSocketFactory());
+        }
+        if (hv != null) {
+            ctx.put("com.sun.xml.ws.transport.http.client.hostname.verifier", hv);
+        }
     }
 
     /** Aplica el endpoint real (celcer/cel), NO el WSDL local */

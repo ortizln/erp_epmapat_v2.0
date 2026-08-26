@@ -13,13 +13,15 @@ export class MonitoreoComponent implements OnInit {
   claveAcceso = '';
   consultando = false;
   resultadoSri: any = null;
+  loading = false;
 
   constructor(private api: ApiService) {}
 
   ngOnInit() { this.cargar(); }
 
   cargar() {
-    this.api.health().subscribe(r => this.health = r);
+    this.loading = true;
+    this.api.health().subscribe(r => { this.health = r; this.loading = false; });
     this.api.info().subscribe(r => this.info = r);
     this.api.metrics().subscribe(r => this.metricas = r);
   }

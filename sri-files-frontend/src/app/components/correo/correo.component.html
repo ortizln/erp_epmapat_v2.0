@@ -5,16 +5,16 @@
 <div class="row g-4">
   <div class="col-lg-6">
     <div class="card h-100">
-      <div class="card-header">
+      <div class="card-header icon-hover-pulse">
         <i class="bi bi-heart-pulse" style="color: var(--danger)"></i> Estado SMTP
       </div>
       <div class="card-body">
         <button class="btn btn-outline-primary" (click)="verificarSmtp()" [disabled]="verificando">
           <span *ngIf="verificando" class="spinner-border spinner-border-sm"></span>
-          <i *ngIf="!verificando" class="bi bi-arrow-clockwise"></i>
+          <i *ngIf="!verificando" class="bi" [ngClass]="verificando ? 'bi-arrow-clockwise anim-spin' : 'bi-arrow-clockwise'"></i>
           {{ verificando ? 'Verificando...' : 'Verificar Conectividad' }}
         </button>
-        <div *ngIf="smtpStatus" class="mt-4">
+        <div *ngIf="smtpStatus" class="mt-4 animate-in">
           <div class="d-flex align-items-center gap-2 mb-3 p-3 rounded"
             [ngClass]="smtpStatus.smtp === 'UP' ? 'bg-success bg-opacity-10' : 'bg-danger bg-opacity-10'">
             <span class="dot" [class.dot-up]="smtpStatus.smtp === 'UP'" [class.dot-down]="smtpStatus.smtp !== 'UP'"></span>
@@ -30,7 +30,7 @@
 
   <div class="col-lg-6">
     <div class="card h-100">
-      <div class="card-header">
+      <div class="card-header icon-hover-wiggle">
         <i class="bi bi-send" style="color: var(--primary)"></i> Enviar Correo de Prueba
       </div>
       <div class="card-body">
@@ -47,7 +47,7 @@
           <i *ngIf="!enviando" class="bi bi-send"></i>
           {{ enviando ? 'Enviando...' : 'Enviar Prueba' }}
         </button>
-        <div *ngIf="resultado" class="alert mt-3" [ngClass]="resultado.exito ? 'alert-success' : 'alert-danger'">
+        <div *ngIf="resultado" class="alert mt-3 animate-in" [ngClass]="resultado.exito ? 'alert-success' : 'alert-danger'">
           <i class="bi" [ngClass]="resultado.exito ? 'bi-check-circle-fill' : 'bi-exclamation-triangle-fill'"></i>
           {{ resultado.mensaje }}
         </div>

@@ -25,7 +25,7 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let row of data">
+        <tr *ngFor="let row of data; let i = index" [style.animation-delay]="(i * 0.03) + 's'">
           <td *ngFor="let col of columns"
               [style.text-align]="col.align || 'left'">
 
@@ -120,7 +120,7 @@
       </button>
 
       <select class="page-size-select" [value]="pageSize" (change)="onPageSizeChange($event)">
-        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }} / pág</option>
+        <option *ngFor="let size of pageSizeOptions" [value]="size">{{ size }} / pag</option>
       </select>
     </div>
   </div>

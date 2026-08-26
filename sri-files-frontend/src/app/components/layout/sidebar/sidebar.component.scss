@@ -7,17 +7,17 @@
   height: 100vh;
   overflow-y: auto;
   z-index: 100;
-  transition: width 0.3s ease;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
 
   &.collapsed {
     width: 72px;
-
     .sidebar-brand { padding: 20px 8px; }
     .brand-icon { margin: 0; }
     .nav-link { justify-content: center; padding: 12px; }
     .nav-label { display: none; }
+    .nav-indicator { display: none; }
     .sidebar-footer .toggle-btn i { transform: rotate(180deg); }
   }
 }
@@ -33,8 +33,7 @@
 }
 
 .brand-icon {
-  width: 42px;
-  height: 42px;
+  width: 42px; height: 42px;
   background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
   border-radius: 12px;
   display: flex;
@@ -43,6 +42,12 @@
   font-size: 1.3rem;
   color: white;
   flex-shrink: 0;
+  transition: transform 0.3s, box-shadow 0.3s;
+
+  &:hover {
+    transform: scale(1.1) rotate(-5deg);
+    box-shadow: 0 0 20px rgba(67, 97, 238, 0.4);
+  }
 }
 
 .brand-text {
@@ -79,26 +84,31 @@
   padding: 12px 22px;
   color: rgba(255,255,255,0.55);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   border-left: 3px solid transparent;
   font-size: 0.88rem;
   font-weight: 500;
   border-radius: 0 8px 8px 0;
   margin-right: 8px;
+  position: relative;
+  animation: icon-slide-in-left 0.3s ease-out both;
 
   i {
     font-size: 1.15rem;
     width: 24px;
     text-align: center;
     flex-shrink: 0;
-    transition: color 0.2s;
+    transition: transform 0.3s, color 0.2s;
   }
 
   &:hover {
     background: rgba(255,255,255,0.06);
     color: white;
 
-    i { color: #4361ee; }
+    i {
+      color: #4361ee;
+      animation: icon-bounce 0.4s ease;
+    }
   }
 
   &.active {
@@ -106,7 +116,26 @@
     color: white;
     border-left-color: #4361ee;
 
-    i { color: #4361ee; }
+    i {
+      color: #4361ee;
+      animation: icon-pulse 0.6s ease;
+    }
+
+    .nav-indicator {
+      opacity: 1;
+      transform: scaleX(1);
+    }
+  }
+
+  .nav-indicator {
+    position: absolute;
+    right: 12px;
+    width: 6px; height: 6px;
+    background: #4361ee;
+    border-radius: 50%;
+    opacity: 0;
+    transform: scaleX(0);
+    transition: all 0.3s;
   }
 }
 
@@ -123,15 +152,16 @@
   padding: 8px;
   border-radius: 8px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s;
 
   &:hover {
     background: rgba(255,255,255,0.12);
     color: white;
+    transform: scale(1.02);
   }
 
   i {
-    transition: transform 0.3s;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-size: 1rem;
   }
 }
