@@ -120,6 +120,7 @@ public class EnvioSriBatchService {
             List<Factura> facturas = new ArrayList<>();
             facturas.addAll(facturaR.findByEstadoNormalizado("C", limit).getContent());
             facturas.addAll(facturaR.findByEstadoNormalizado("O", limit).getContent());
+            facturas.addAll(facturaR.findAutorizadasSinXml(limit).getContent());
             int exitosas = 0;
             int fallidas = 0;
             Map<Long, Factura> unicas = new LinkedHashMap<>();

@@ -179,11 +179,13 @@ public class AutorizacionController {
                 if (docOpt.isPresent()) {
                     DocumentoElectronico doc = docOpt.get();
                     if (doc.getXmlAutorizado() != null && !doc.getXmlAutorizado().isBlank()) {
+                        boolean actualizado = guardarXmlAutorizadoEnFactura(claveAcceso, doc.getXmlAutorizado());
                         return ResponseEntity.ok(Map.of(
                             "fuente", "BD_documento_electronico",
                             "claveAcceso", claveAcceso,
                             "estado", doc.getEstado(),
                             "numeroAutorizacion", doc.getNumeroAutorizacion() != null ? doc.getNumeroAutorizacion() : "",
+                            "actualizadoEnFecFactura", actualizado,
                             "xmlAutorizado", doc.getXmlAutorizado()
                         ));
                     }
@@ -213,9 +215,11 @@ public class AutorizacionController {
                     "requestId", requestId
                 ));
             }
+            boolean actualizado = guardarXmlAutorizadoEnFactura(claveAcceso, xmlAutorizado);
             return ResponseEntity.ok(Map.of(
                 "fuente", "SRI",
                 "claveAcceso", claveAcceso,
+                "actualizadoEnFecFactura", actualizado,
                 "xmlAutorizado", xmlAutorizado
             ));
         } catch (Exception e) {
@@ -228,5 +232,19 @@ public class AutorizacionController {
         } finally {
             MDC.clear();
         }
+    }
+
+    private boolean guardarXmlAutorizadoEnFactura(String claveAcceso, String xmlAutorizado) {
+        return facturaR.findByClaveacceso(claveAcceso)
+            .map(factura -> {
+                factura.setXmlautorizado(xmlAutorizado);
+                facturaR.save(factura);
+                log.info("XML autorizado actualizado en fec_factura idfactura={}", factura.getIdfactura());
+                return true;
+            })
+            .orElseGet(() -> {
+                log.warn("No existe fec_factura para guardar XML. claveAcceso={}", claveAcceso);
+                return false;
+            });
     }
 }

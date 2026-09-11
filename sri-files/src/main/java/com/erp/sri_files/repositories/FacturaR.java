@@ -28,6 +28,10 @@ public interface FacturaR extends JpaRepository<Factura, Long> {
     
     @Query("SELECT f FROM Factura f WHERE f.estado IN ('C', 'O') AND (f.intentos_autorizacion < 5 OR f.intentos_autorizacion IS NULL) ORDER BY f.idfactura ASC")
     List<Factura> findPendientesAutorizacion(Pageable pageable);
+
+    @Query("SELECT f FROM Factura f WHERE UPPER(TRIM(COALESCE(f.estado, ''))) = 'A' "
+            + "AND (f.xmlautorizado IS NULL OR TRIM(f.xmlautorizado) = '') ORDER BY f.idfactura ASC")
+    Page<Factura> findAutorizadasSinXml(Pageable pageable);
     
     @Query("SELECT f FROM Factura f WHERE f.fecha_autorizacion IS NULL AND f.fechaemision IS NOT NULL")
     List<Factura> findSinFechaAutorizacion();

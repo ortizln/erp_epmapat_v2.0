@@ -141,17 +141,11 @@ public class SriGateway {
             .findFirst()
             .orElse(lista.get(0));
         
-        boolean autorizado = "AUTORIZADO".equalsIgnoreCase(autorizada.getEstado());
-        String xmlAutorizado = null;
-        
-        if (autorizado && autorizada.getComprobante() != null) {
-            try {
-                byte[] decoded = java.util.Base64.getDecoder().decode(autorizada.getComprobante().trim());
-                xmlAutorizado = new String(decoded, java.nio.charset.StandardCharsets.UTF_8);
-            } catch (Exception e) {
-                log.warn("Error decodificando XML autorizado: {}", e.getMessage());
-            }
-        }
+        boolean estadoAutorizado = "AUTORIZADO".equalsIgnoreCase(autorizada.getEstado());
+        String xmlAutorizado = estadoAutorizado
+            ? extraerComprobanteXml(autorizada.getComprobante())
+            : null;
+        boolean autorizado = estadoAutorizado && xmlAutorizado != null && !xmlAutorizado.isBlank();
         
         String numeroAutorizacion = autorizada.getNumeroAutorizacion();
         String fechaAutorizacion = autorizada.getFechaAutorizacion() != null 
@@ -160,6 +154,8 @@ public class SriGateway {
         
         if (autorizado) {
             log.info("Comprobante AUTORIZADO: nro={} fecha={}", numeroAutorizacion, fechaAutorizacion);
+        } else if (estadoAutorizado) {
+            log.warn("SRI autorizo el comprobante nro={}, pero no devolvio un XML valido", numeroAutorizacion);
         } else {
             log.warn("Comprobante NO AUTORIZADO: estado={}", autorizada.getEstado());
         }
@@ -169,8 +165,33 @@ public class SriGateway {
             xmlAutorizado,
             numeroAutorizacion,
             fechaAutorizacion,
-            autorizada.getEstado(),
+            autorizado ? "AUTORIZADO" : estadoAutorizado
+                ? "SRI autorizo el comprobante, pero no devolvio XML autorizado"
+                : autorizada.getEstado(),
             rc
         );
+    }
+
+    private String extraerComprobanteXml(String comprobante) {
+        if (comprobante == null || comprobante.isBlank()) {
+            return null;
+        }
+
+        String valor = comprobante.trim();
+        // JAXB ya entrega como texto el contenido que el SRI envia en CDATA.
+        if (valor.startsWith("<")) {
+            return valor;
+        }
+
+        try {
+            String decodificado = new String(
+                java.util.Base64.getDecoder().decode(valor),
+                java.nio.charset.StandardCharsets.UTF_8
+            ).trim();
+            return decodificado.startsWith("<") ? decodificado : null;
+        } catch (IllegalArgumentException e) {
+            log.warn("El comprobante autorizado no contiene XML ni Base64 valido");
+            return null;
+        }
     }
 }
