@@ -58,6 +58,11 @@ public class SendXmlToSriService {
     @Value("${sri.endpoint.autorizacion.produccion:https://cel.sri.gob.ec/comprobantes-electronicos-ws/AutorizacionComprobantesOffline}")
     private String epAutorizacionProd;
 
+    @Value("${sri.ws.connect-timeout-ms:15000}")
+    private int connectTimeoutMs = 15000;
+    @Value("${sri.ws.read-timeout-ms:30000}")
+    private int readTimeoutMs = 30000;
+
     // Ambiente por properties (1|2)
     @Value("${sri.ambiente:2}")
     public void setAmbiente(int ambiente) { this.ambiente = (ambiente == 2) ? 2 : 1; }
@@ -65,6 +70,8 @@ public class SendXmlToSriService {
 
     @PostConstruct
     void init() {
+        if (connectTimeoutMs <= 0 || readTimeoutMs <= 0)
+            throw new IllegalArgumentException("Los timeouts SRI deben ser mayores a cero");
         // Fuerza TLS 1.2 (necesario para SRI)
         System.setProperty("https.protocols", "TLSv1.2");
         System.setProperty("jdk.tls.client.protocols", "TLSv1.2");
@@ -84,14 +91,14 @@ public class SendXmlToSriService {
     private void applyTimeouts(Object port) {
         Map<String, Object> ctx = ((BindingProvider) port).getRequestContext();
         // Metro
-        ctx.put("com.sun.xml.ws.connect.timeout", 15000);
-        ctx.put("com.sun.xml.ws.request.timeout", 30000);
+        ctx.put("com.sun.xml.ws.connect.timeout", connectTimeoutMs);
+        ctx.put("com.sun.xml.ws.request.timeout", readTimeoutMs);
         // JAX-WS interno (por compatibilidad)
-        ctx.put("com.sun.xml.internal.ws.connect.timeout", 15000);
-        ctx.put("com.sun.xml.internal.ws.request.timeout", 30000);
+        ctx.put("com.sun.xml.internal.ws.connect.timeout", connectTimeoutMs);
+        ctx.put("com.sun.xml.internal.ws.request.timeout", readTimeoutMs);
         // Estándar
-        ctx.put("javax.xml.ws.client.connectionTimeout", "15000");
-        ctx.put("javax.xml.ws.client.receiveTimeout", "30000");
+        ctx.put("javax.xml.ws.client.connectionTimeout", String.valueOf(connectTimeoutMs));
+        ctx.put("javax.xml.ws.client.receiveTimeout", String.valueOf(readTimeoutMs));
 
         // Aplicar SSL context para SRI (bypass hostname verification en IPs)
         SSLContext sslCtx = SriSslConfig.getSslContext();

@@ -8,12 +8,10 @@ import com.erp.sri_files.models.Factura;
 import com.erp.sri_files.repositories.FacturaR;
 import com.erp.sri_files.utils.FirmaComprobantesService;
 import com.erp.sri_files.utils.SriAutorizacionAdapter;
-import ec.gob.sri.ws.autorizacion.RespuestaComprobante;
 import ec.gob.sri.ws.recepcion.RespuestaSolicitud;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -38,6 +36,7 @@ public class EnvioSriBatchService {
     private final SendXmlToSriService sendXmlToSriService;
     private final XmlToPdfService xmlToPdfService;
     private final MailService mailService;
+    private final SriAutorizacionRetryPolicy retryPolicy;
     // private final StorageService storageService; // opcional, para guardar XMLs
 
 
@@ -48,12 +47,6 @@ public class EnvioSriBatchService {
 
     @Value("${sri.ambiente:0}") // 0 = deducir del XML, 1 = pruebas, 2 = producción
     private int ambienteForzado;
-
-    @Value("${sri.poll.intentos:10}")
-    private int pollIntentos;
-
-    @Value("${sri.poll.delay-ms:4000}")
-    private long pollDelayMs;
 
         @Scheduled(cron = "${sri.scheduler.envio-facturas.cron}") // ej: 0 */2 * * * *
         public void automatizacionEnvioFacturasElectonicas() {
@@ -115,119 +108,65 @@ public class EnvioSriBatchService {
             // agrega más: "hotmail.com", "yahoo.com", etc.
     );
 //Este servicio sirve para conultar las facturas en estado C y volver a buscar el xml auotizado en el sri
-    @Transactional
     @Scheduled(cron = "${sri.scheduler.recuperacion-xml.cron}")
     public void automatizacionConsultarXml() {
         long started = System.currentTimeMillis();
         String threadName = Thread.currentThread().getName();
         logTaskStart("automatizacionConsultarXml", threadName);
-        log.info("Iniciando consulta de XML pendientes");
-        try {
-            var limit = PageRequest.of(0, LOTE);
-            List<Factura> facturas = new ArrayList<>();
-            facturas.addAll(facturaR.findByEstadoNormalizado("C", limit).getContent());
-            facturas.addAll(facturaR.findByEstadoNormalizado("O", limit).getContent());
-            facturas.addAll(facturaR.findAutorizadasSinXml(limit).getContent());
-            int exitosas = 0;
-            int fallidas = 0;
-            Map<Long, Factura> unicas = new LinkedHashMap<>();
-            for (Factura factura : facturas) {
-                unicas.put(factura.getIdfactura(), factura);
+        var candidatas = new ArrayList<>(facturaR.findConsultasSriVencidas(LocalDateTime.now(),
+                retryPolicy.getBaseMs(), retryPolicy.getMaxMs(), LOTE));
+        // Los correos pendientes no deben ocupar el cupo de consultas de autorización.
+        candidatas.addAll(facturaR.findCorreosConXmlPendientes(PageRequest.of(0, LOTE)));
+        int autorizadas = 0;
+        int pendientes = 0;
+        for (Factura candidata : candidatas) {
+            try {
+                var tx = new org.springframework.transaction.support.TransactionTemplate(transactionManager);
+                tx.setPropagationBehavior(Propagation.REQUIRES_NEW.value());
+                Boolean autorizada = tx.execute(status -> consultarPendiente(candidata.getIdfactura()));
+                if (Boolean.TRUE.equals(autorizada)) autorizadas++;
+                else pendientes++;
+            } catch (Exception ex) {
+                pendientes++;
+                log.error("Error procesando consulta SRI idfactura={}", candidata.getIdfactura(), ex);
             }
-            facturas = new ArrayList<>(unicas.values());
-
-            if (facturas.isEmpty()) {
-                log.info("No hay facturas pendientes para recuperacion de XML");
-                logTaskEnd("automatizacionConsultarXml", threadName, started, 0, 0, 0);
-                return;
-            }
-
-            for (Factura f : facturas) {
-                try {
-                    String claveAcceso = f.getClaveacceso();
-                    if (f.getXmlautorizado() != null && !f.getXmlautorizado().isBlank()) {
-                        if ("O".equalsIgnoreCase(safeStr(f.getEstado()))) {
-                            reintentarEnvioCorreoFactura(f);
-                        } else {
-                            f.setEstado("A");
-                            f.setErrores(null);
-                            facturaR.save(f);
-                        }
-                        exitosas++;
-                        continue;
-                    }
-                    RespuestaComprobante rc = sendXmlToSriService.consultarAutorizacionHastaEncontrarXmlPorClave(
-                            claveAcceso,
-                            Math.max(pollIntentos, 20),
-                            Math.max(pollDelayMs, 4000L),
-                            Math.max(pollDelayMs * 4, 15000L),
-                            1.5
-                    );
-                    String xmlRecuperado = sendXmlToSriService.extraerXmlAutorizado(rc);
-                    AutorizacionSriResult resultado;
-                    if (xmlRecuperado != null && !xmlRecuperado.isBlank()) {
-                        resultado = new AutorizacionSriResult();
-                        resultado.setAutorizado(true);
-                        resultado.setXmlAutorizado(xmlRecuperado);
-                        resultado.setMensaje("AUTORIZADO");
-                    } else {
-                        resultado = sendXmlToSriService.consultar_Autorizacion(claveAcceso);
-                    }
-
-                    if (resultado.isAutorizado()
-                            && resultado.getXmlAutorizado() != null
-                            && !resultado.getXmlAutorizado().isBlank()) {
-                        // 👉 Guardas el XML autorizado
-                        f.setXmlautorizado(resultado.getXmlAutorizado());
-
-                        // 👉 Campo autorizado (ajusta según tu tipo de dato)
-                        // Si es Boolean:
-                       // f.set(true);
-                        // Si es String tipo 'S'/'N': f.setAutorizado("S");
-
-                        // 👉 Si manejas estado de factura
-                        f.setEstado("A"); // Autorizada
-
-                        // 👉 Si tienes fecha de autorización en la entidad
-                        if (resultado.getFechaAutorizacion() != null) {
-                            f.setErrores(String.valueOf(resultado.getFechaAutorizacion()));
-                        }
-
-                        // Limpia errores si los hubiera
-                        f.setErrores(null);
-
-                        log.info("Factura autorizada y XML guardado idfactura={}", f.getIdfactura());
-                    } else {
-                        // No autorizado, en proceso o error
-                        String msg = resultado.getMensaje() != null
-                                ? resultado.getMensaje()
-                                : "No autorizado / sin XML";
-
-                        f.setEstado("C"); // o "N"
-                        f.setErrores(msg);
-
-                        log.warn("Factura no autorizada idfactura={} motivo={}", f.getIdfactura(), msg);
-                    }
-
-                    facturaR.save(f);
-                    if ("A".equalsIgnoreCase(safeStr(f.getEstado()))) {
-                        exitosas++;
-                    } else {
-                        fallidas++;
-                    }
-
-                } catch (Exception ex) {
-                    fallidas++;
-                    log.error("Error procesando factura idfactura={}", f.getIdfactura(), ex);
-                }
-            }
-
-            logTaskEnd("automatizacionConsultarXml", threadName, started, facturas.size(), exitosas, fallidas);
-        } catch (RuntimeException e) {
-            logTaskError("automatizacionConsultarXml", threadName, e);
-            throw new RuntimeException(e);
         }
+        log.info("[SCHEDULER] FIN automatizacionConsultarXml | detectados={} | autorizadas={} | pendientes={} | duracionMs={}",
+                candidatas.size(), autorizadas, pendientes, System.currentTimeMillis() - started);
     }
+
+    boolean consultarPendiente(Long idFactura) {
+        Factura f = facturaR.findParaProcesar(idFactura).orElseThrow();
+        if (!Set.of("C", "O", "A").contains(safeStr(f.getEstado()).toUpperCase(Locale.ROOT))
+                || !retryPolicy.corresponde(f, LocalDateTime.now())) return false;
+        if (f.getXmlautorizado() != null && !f.getXmlautorizado().isBlank()) {
+            if ("O".equalsIgnoreCase(safeStr(f.getEstado()))) reintentarEnvioCorreoFactura(f);
+            else { f.setEstado("A"); f.setErrores(null); facturaR.save(f); }
+            return true;
+        }
+        try {
+            var resultado = sendXmlToSriService.consultar_Autorizacion(f.getClaveacceso());
+            if (resultado != null && resultado.isAutorizado()
+                    && resultado.getXmlAutorizado() != null && !resultado.getXmlAutorizado().isBlank()) {
+                f.setXmlautorizado(resultado.getXmlAutorizado());
+                f.setFecha_autorizacion(resultado.getFechaAutorizacion());
+                f.setEstado("A");
+                retryPolicy.autorizada(f);
+            } else if (resultado != null && "NO AUTORIZADO".equalsIgnoreCase(resultado.getMensaje())) {
+                f.setEstado("N");
+                f.setErrores("NO AUTORIZADO: revisar respuesta SRI antes de reenviar");
+            } else {
+                retryPolicy.pendiente(f, resultado == null ? "Sin respuesta de autorizacion" : resultado.getMensaje());
+            }
+        } catch (Exception ex) {
+            retryPolicy.pendiente(f, ex.getMessage());
+            log.warn("Consulta SRI pendiente idfactura={} intento={} esperaMs={} causa={}",
+                    idFactura, f.getIntentos_autorizacion(), retryPolicy.demoraMs(idFactura, f.getIntentos_autorizacion()), ex.toString());
+        }
+        facturaR.save(f);
+        return "A".equals(f.getEstado());
+    }
+
     private boolean esCorreoPermitido(String email) {
         if (email == null) return false;
 
@@ -301,26 +240,18 @@ public class EnvioSriBatchService {
             RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado, ambienteXml);
             if (recepcion == null) throw new IllegalStateException("Respuesta de recepción nula");
 
-            if ("RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
-                // 7) Polling de autorización
-                var rc = sendXmlToSriService.consultar_AutorizacionConEspera(
-                        xmlFirmado,
-                        clave -> {
-                            try {
-                                return sendXmlToSriService.consultar_Autorizacion(clave);
-                            } catch (Exception e) {
-                                throw new RuntimeException(e);
-                            }
-                        },
-                        pollIntentos,
-                        pollDelayMs
-                );
-
+            if ("RECIBIDA".equalsIgnoreCase(recepcion.getEstado()) || esClaveRegistrada(recepcion)) {
+                f.setEstado("C");
+                if (esClaveRegistrada(recepcion))
+                    log.info("Clave registrada en SRI idfactura={}; se consulta autorizacion sin reenviar", idFactura);
+                // 7) Consulta de autorización
+                // Una sola consulta. Si no termina, el scheduler aplica backoff persistido.
+                var rc = sendXmlToSriService.consultar_Autorizacion(f.getClaveacceso());
 
                 var info = SriAutorizacionAdapter.from_Resultado(rc)
                         .orElse(new AutorizacionInfo(false, null, null, null, "Sin autorizaciones"));
 
-                if (info.autorizado()) {
+                if (info.autorizado() && info.xmlAutorizado() != null && info.xmlAutorizado().length > 0) {
 
                     // ============================
                     // AUTORIZADA: armar XML completo + guardar fecha/hora
@@ -340,7 +271,7 @@ public class EnvioSriBatchService {
                     String fechaAutStr = (fa != null ? fa.toString() : "");
 
                     // Ambiente real → tomado de tu clase
-                    String ambienteStr = (ambienteForzado == 2 ? "PRODUCCIÓN" : "PRUEBAS");
+                    String ambienteStr = (ambienteXml == 2 ? "PRODUCCIÓN" : "PRUEBAS");
 
                     // Armar XML COMPLETO de autorización
                     String xmlAutorizacionCompleta =
@@ -356,6 +287,8 @@ public class EnvioSriBatchService {
                     // ✅ AUTORIZADO
                     // ==========================
                     f.setEstado("A");
+                    retryPolicy.autorizada(f);
+                    f.setFecha_autorizacion(info.fechaAutorizacion());
 
                     String xmlAutorizado = new String(info.xmlAutorizado(), StandardCharsets.UTF_8);
                     f.setXmlautorizado(xmlAutorizacionCompleta);   // guardar XML legible
@@ -528,9 +461,12 @@ public class EnvioSriBatchService {
                     // ==========================
                     // ❌ NO AUTORIZADO
                     // ==========================
-                    f.setEstado("C");
-                    // Puedes guardar XML de error o solo mensajes:
-                    f.setErrores(trunc(info.mensajesConcatenados(), 1500));
+                    if (rc != null && "NO AUTORIZADO".equalsIgnoreCase(rc.getMensaje())) {
+                        f.setEstado("N");
+                        f.setErrores(trunc(rc.getMensaje(), 1500));
+                    } else {
+                        retryPolicy.pendiente(f, info.mensajesConcatenados());
+                    }
                     facturaR.save(f);
                 }
 
@@ -550,13 +486,15 @@ public class EnvioSriBatchService {
             log.warn("Factura bloqueada antes del envío idfactura={} errores={}", idFactura, ex.getMessage());
         } catch (Exception ex) {
             // Conservar el estado según la etapa alcanzada.
-            log.error("Error inesperado en factura idfactura={}", idFactura, ex);
+            if (recepcionIntentada) log.warn("Factura pendiente de consulta SRI idfactura={} causa={}", idFactura, ex.toString());
+            else log.error("Error inesperado en factura idfactura={}", idFactura, ex);
 
             // Una conexión interrumpida puede ocurrir después de recibir el documento.
             // Si ya existe autorización, el fallo posterior no debe provocar otro envío.
             f.setEstado(f.getXmlautorizado() != null && !f.getXmlautorizado().isBlank()
                     ? "O" : recepcionIntentada ? "C" : "E");
             f.setErrores(trunc(ex.getMessage(), 1500));
+            if ("C".equals(f.getEstado())) retryPolicy.pendiente(f, ex.getMessage());
             facturaR.save(f);
         }
     }

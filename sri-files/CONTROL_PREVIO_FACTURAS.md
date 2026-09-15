@@ -150,3 +150,40 @@ También acepta DB_URL, DB_USER y DB_PASS del entorno sin --compose. Todas las
 consultas se ejecutan en modo de solo lectura y tienen límite de duración.
 El JSON contiene identificadores y errores: guardarlo en una ubicación interna,
 no en un repositorio público.
+
+Consultas de autorización con backoff (15/09/2026)
+-------------------------------------------------
+
+El envío batch trata RECIBIDA y los códigos 43/70 como entrada al flujo de
+autorización, con la misma clave. Realiza una sola consulta inmediata. Si no
+obtiene autorización con XML, queda C para otra ejecución; no vuelve a recepción.
+Una respuesta definitiva NO AUTORIZADO queda N para revisión.
+
+La recuperación de C consulta una vez por factura y ejecución. Guarda el contador
+y fecha de último intento en los campos ya existentes, por lo que el backoff
+persiste tras reiniciar el servicio y no requiere una migración.
+Un fallo de transporte no agota un contador que lleve la factura a E.
+
+Propiedades configurables (valores predeterminados):
+
+    sri.ws.connect-timeout-ms=15000
+    sri.ws.read-timeout-ms=30000
+    sri.autorizacion.retry.base-ms=60000
+    sri.autorizacion.retry.max-ms=1800000
+
+Después del primer intento: espera entre 30 y 60 segundos; después del segundo,
+entre 60 y 120; continúa aumentando hasta un rango de 15 a 30 minutos.
+El jitter se calcula por identificador e intento y se mantiene al reiniciar.
+La ejecución efectiva ocurre en la siguiente activación del cron de recuperación
+posterior al vencimiento, no exactamente al cumplirse ese número de segundos.
+
+La selección SQL filtra los vencimientos antes de limitar el lote; una factura
+que aún debe esperar no bloquea las siguientes. El lote de correos con XML
+autorizado se selecciona aparte. Se mantiene una transacción y bloqueo por factura.
+Estos cambios se aplican a EnvioSriBatchService; los endpoints que usan otros
+métodos de polling y schedulers de otros servicios conservan sus políticas.
+
+El log incluye Consulta SRI programada con idfactura, intento y esperaMs.
+Los timeouts limitan cuánto espera el cliente; no garantizan evitar resets
+causados por el servidor o por la red. El stack trace no identifica por sí solo
+qué equipo cortó la conexión.
