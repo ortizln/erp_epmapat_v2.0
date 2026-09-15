@@ -45,6 +45,7 @@ public class FacturaController {
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
         })
     @PostMapping
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> crear(
             @Parameter(description = "Cuerpo de la solicitud con el ID de la factura", required = true)
             @RequestBody Map<String, Object> body) {
@@ -52,6 +53,8 @@ public class FacturaController {
         MDC.put("requestId", requestId);
         MDC.put("tipoDocumento", "FACTURA");
         
+        com.erp.sri_files.models.Factura factura = null;
+        boolean recepcionIntentada = false;
         try {
             Long idfactura = body.get("idfactura") != null 
                 ? Long.valueOf(body.get("idfactura").toString()) 
@@ -64,13 +67,21 @@ public class FacturaController {
                 ));
             }
 
-            var factura = fecFacturaR.findByIdfactura(idfactura);
+            factura = fecFacturaR.findParaProcesar(idfactura).orElse(null);
             if (factura == null) {
                 return ResponseEntity.status(404).body(Map.of(
                     "error", "Factura no encontrada: " + idfactura,
                     "requestId", requestId
                 ));
             }
+
+            if ((factura.getXmlautorizado() != null && !factura.getXmlautorizado().isBlank())
+                    || !"I".equalsIgnoreCase(SriControllerHelper.safeStr(factura.getEstado()).trim())) {
+                return ResponseEntity.status(409).body(Map.of("error", "Factura no pendiente de envío; utilizar validacion y recuperar para estados E/M/N", "requestId", requestId));
+            }
+            facturaXmlGeneratorService.validarFactura(factura).exigirValido();
+            factura.setEstado("P");
+            fecFacturaR.save(factura);
 
             MDC.put("idFactura", String.valueOf(idfactura));
             log.info("Procesando factura {} via API V1", idfactura);
@@ -81,6 +92,9 @@ public class FacturaController {
             
             var firmaResult = signService.firmar(xmlPlano);
             if (!firmaResult.exitoso()) {
+                factura.setEstado("E");
+                factura.setErrores(firmaResult.mensaje());
+                fecFacturaR.save(factura);
                 historialService.registrarError(factura, "FIRMA", firmaResult.mensaje());
                 return ResponseEntity.badRequest().body(Map.of(
                     "error", "Error firmando comprobante",
@@ -89,13 +103,20 @@ public class FacturaController {
                 ));
             }
             
+            recepcionIntentada = true;
+            factura.setEstado("C");
             var recepcionResult = sriGateway.enviarRecepcion(firmaResult.xmlFirmado());
             
             if (recepcionResult.resultado() != SriGateway.ResultadoRecepcion.RECIBIDA) {
-                historialService.registrarError(factura, "RECEPCION_SRI", "No recibida: " + recepcionResult.mensaje());
-                return ResponseEntity.badRequest().body(Map.of(
-                    "error", "SRI no recibio el comprobante",
-                    "detalle", recepcionResult.mensaje(),
+                String mensaje = recepcionResult.mensaje();
+                boolean registrada = mensaje != null && (mensaje.contains("[43]") || mensaje.contains("[70]"));
+                factura.setEstado(recepcionResult.resultado() == SriGateway.ResultadoRecepcion.ERROR || registrada ? "C" : "M");
+                factura.setErrores(mensaje);
+                fecFacturaR.save(factura);
+                historialService.registrarError(factura, "RECEPCION_SRI", "No recibida: " + mensaje);
+                return ResponseEntity.status("C".equals(factura.getEstado()) ? 202 : 400).body(Map.of(
+                    "estado", "C".equals(factura.getEstado()) ? "PENDIENTE_CONSULTA_SRI" : "DEVUELTA",
+                    "detalle", java.util.Objects.toString(recepcionResult.mensaje(), "Sin detalle"),
                     "requestId", requestId
                 ));
             }
@@ -107,6 +128,7 @@ public class FacturaController {
             if (authResult.autorizado()) {
                 factura.setXmlautorizado(authResult.xmlAutorizado());
                 factura.setEstado("A");
+                factura.setErrores(null);
                 fecFacturaR.save(factura);
                 
                 historialService.registrarCambioEstado(factura, "ENVIADO_SRI", "AUTORIZADO", "Autorizada por SRI");
@@ -125,7 +147,22 @@ public class FacturaController {
                 "requestId", requestId
             ));
 
+        } catch (com.erp.sri_files.validation.FacturaPrevalidacionException e) {
+            if (factura != null) {
+                factura.setEstado("E");
+                factura.setErrores(e.getMessage().substring(0, Math.min(1500, e.getMessage().length())));
+                fecFacturaR.save(factura);
+                historialService.registrarError(factura, "VALIDACION_PREVIA", factura.getErrores());
+            }
+            return ResponseEntity.unprocessableEntity().body(Map.of("estado", "VALIDACION_PREVIA_FALLIDA", "errores", e.getErrores(), "requestId", requestId));
         } catch (Exception e) {
+            if (factura != null) {
+                factura.setEstado(factura.getXmlautorizado() != null && !factura.getXmlautorizado().isBlank()
+                        ? "O" : recepcionIntentada ? "C" : "E");
+                String mensaje = String.valueOf(e.getMessage());
+                factura.setErrores(mensaje.substring(0, Math.min(1500, mensaje.length())));
+                fecFacturaR.save(factura);
+            }
             log.error("Error procesando factura via V1", e);
             return ResponseEntity.status(500).body(Map.of(
                 "error", "Error interno",

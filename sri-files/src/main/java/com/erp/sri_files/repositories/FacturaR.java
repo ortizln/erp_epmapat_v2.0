@@ -12,6 +12,16 @@ import org.springframework.data.repository.query.Param;
 import com.erp.sri_files.models.Factura;
 
 public interface FacturaR extends JpaRepository<Factura, Long> {
+    boolean existsByClaveaccesoAndIdfacturaNot(String claveacceso, Long idfactura);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT f FROM Factura f WHERE f.idfactura = :id")
+    Optional<Factura> findParaProcesar(@Param("id") Long id);
+
+    @Query("SELECT f FROM Factura f WHERE f.fechaemision >= :desde AND f.fechaemision < :hasta "
+            + "AND UPPER(TRIM(COALESCE(f.estado, ''))) = UPPER(TRIM(:estado)) ORDER BY f.idfactura")
+    Page<Factura> findParaDiagnostico(@Param("desde") java.time.LocalDateTime desde,
+            @Param("hasta") java.time.LocalDateTime hasta, @Param("estado") String estado, Pageable pageable);
     
     Factura findByIdfactura(Long idfactura);
     

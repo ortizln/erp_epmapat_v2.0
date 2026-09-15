@@ -32,6 +32,7 @@ public class EnvioSriBatchService {
     private static final int LOTE = 10;
 
     private final FacturaR facturaR;
+    private final org.springframework.transaction.PlatformTransactionManager transactionManager;
     private final FacturaXmlGeneratorService xmlFacturaService;
     private final FirmaComprobantesService firmaService;
     private final SendXmlToSriService sendXmlToSriService;
@@ -54,7 +55,6 @@ public class EnvioSriBatchService {
     @Value("${sri.poll.delay-ms:4000}")
     private long pollDelayMs;
 
-        @Transactional
         @Scheduled(cron = "${sri.scheduler.envio-facturas.cron}") // ej: 0 */2 * * * *
         public void automatizacionEnvioFacturasElectonicas() {
             long started = System.currentTimeMillis();
@@ -76,8 +76,15 @@ public class EnvioSriBatchService {
 
                 for (Factura f : facturas) {
                     try {
-                        procesarFacturaEnNuevaTx(f.getIdfactura());
-                        exitosas++;
+                        var tx = new org.springframework.transaction.support.TransactionTemplate(transactionManager);
+                        tx.setPropagationBehavior(Propagation.REQUIRES_NEW.value());
+                        Boolean autorizada = tx.execute(status -> {
+                            procesarFacturaEnNuevaTx(f.getIdfactura());
+                            Factura resultado = facturaR.findById(f.getIdfactura()).orElseThrow();
+                            return resultado.getXmlautorizado() != null && !resultado.getXmlautorizado().isBlank();
+                        });
+                        if (Boolean.TRUE.equals(autorizada)) exitosas++;
+                        else fallidas++;
                     } catch (Exception ex) {
                         fallidas++;
                         log.error("Error procesando factura idfactura={}", f.getIdfactura(), ex);
@@ -254,14 +261,16 @@ public class EnvioSriBatchService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void procesarFacturaEnNuevaTx(Long idFactura) {
         // 1) Releer y bloquear lógicamente
-        Factura f = facturaR.findById(idFactura).orElseThrow();
-        if (!"I".equals(f.getEstado())) {
+        Factura f = facturaR.findParaProcesar(idFactura).orElseThrow();
+        if (!"I".equalsIgnoreCase(safeStr(f.getEstado()))
+                || (f.getXmlautorizado() != null && !f.getXmlautorizado().isBlank())) {
             log.info("Factura ya no esta en estado I idfactura={} estadoActual={}", idFactura, f.getEstado());
             return;
         }
         f.setEstado("P");
         facturaR.saveAndFlush(f);
 
+        boolean recepcionIntentada = false;
         try {
             // 2) Generar XML desde la entidad
             String xmlPlano = xmlFacturaService.generarXmlFactura(f);
@@ -284,7 +293,12 @@ public class EnvioSriBatchService {
             }
 
             // 6) Enviar a recepción
-            RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
+            int ambienteXml = sendXmlToSriService.inferAmbienteFromXml(xmlFirmado);
+            if ((ambienteForzado == 1 || ambienteForzado == 2) && ambienteForzado != ambienteXml) {
+                throw new com.erp.sri_files.validation.FacturaPrevalidacionException(List.of("Ambiente configurado no coincide con la factura"));
+            }
+            recepcionIntentada = true;
+            RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado, ambienteXml);
             if (recepcion == null) throw new IllegalStateException("Respuesta de recepción nula");
 
             if ("RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
@@ -514,8 +528,7 @@ public class EnvioSriBatchService {
                     // ==========================
                     // ❌ NO AUTORIZADO
                     // ==========================
-                    f.setEstado("N");
-                    String xml = new String(info.xmlAutorizado(), StandardCharsets.UTF_8);
+                    f.setEstado("C");
                     // Puedes guardar XML de error o solo mensajes:
                     f.setErrores(trunc(info.mensajesConcatenados(), 1500));
                     facturaR.save(f);
@@ -523,21 +536,37 @@ public class EnvioSriBatchService {
 
             } else {
                 // DEVUELTA en recepción
-                f.setEstado("M"); // tu estado para devuelta/observada
                 String errores = erroresRecepcion(recepcion);
+                f.setEstado(esClaveRegistrada(recepcion) ? "C" : "M");
                 f.setErrores(trunc(errores, 1500));
                 facturaR.save(f);
                 log.warn("Factura devuelta por recepcion SRI idfactura={} errores={}", f.getIdfactura(), errores);
             }
 
+        } catch (com.erp.sri_files.validation.FacturaPrevalidacionException ex) {
+            f.setEstado("E");
+            f.setErrores(trunc(ex.getMessage(), 1500));
+            facturaR.save(f);
+            log.warn("Factura bloqueada antes del envío idfactura={} errores={}", idFactura, ex.getMessage());
         } catch (Exception ex) {
-            // Error inesperado → devolver a I y aumentar reintentos
+            // Conservar el estado según la etapa alcanzada.
             log.error("Error inesperado en factura idfactura={}", idFactura, ex);
 
-            f.setEstado("I");
-            f.setErrores(ex.getMessage());
+            // Una conexión interrumpida puede ocurrir después de recibir el documento.
+            // Si ya existe autorización, el fallo posterior no debe provocar otro envío.
+            f.setEstado(f.getXmlautorizado() != null && !f.getXmlautorizado().isBlank()
+                    ? "O" : recepcionIntentada ? "C" : "E");
+            f.setErrores(trunc(ex.getMessage(), 1500));
             facturaR.save(f);
         }
+    }
+
+    private static boolean esClaveRegistrada(RespuestaSolicitud rs) {
+        if (rs.getComprobantes() == null) return false;
+        return rs.getComprobantes().getComprobante().stream()
+                .filter(c -> c.getMensajes() != null)
+                .flatMap(c -> c.getMensajes().getMensaje().stream())
+                .anyMatch(m -> "43".equals(m.getIdentificador()) || "70".equals(m.getIdentificador()));
     }
 
     // helper sencillo, igual al del controller

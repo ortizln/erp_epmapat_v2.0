@@ -10,6 +10,8 @@ import java.nio.charset.StandardCharsets;
 
 @Service
 public class FirmaComprobantesService {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.erp.sri_files.validation.SriFacturaValidationService facturaValidation;
 
     public enum ModoFirma { XMLDSIG, XADES_BES }
 
@@ -28,6 +30,7 @@ public class FirmaComprobantesService {
     // Firmar desde String
     @Transactional
     public String firmarFactura(String xmlPlano, ModoFirma modo) throws Exception {
+        facturaValidation.exigirSiFactura(xmlPlano);
         Definir cert = certRepo.findById(1L)
                 .orElseThrow(() -> new IllegalStateException("Certificado no encontrado id=" ));
 
@@ -47,6 +50,7 @@ public class FirmaComprobantesService {
     // Firmar desde byte[] (más robusto contra BOM / encoding)
     @Transactional
     public String firmarFactura(byte[] xmlBytes, ModoFirma modo) throws Exception {
+        facturaValidation.exigirSiFactura(new String(xmlBytes, StandardCharsets.UTF_8));
         Definir cert = certRepo.findById(1L)
                 .orElseThrow(() -> new IllegalStateException("Certificado no encontrado id="));
 

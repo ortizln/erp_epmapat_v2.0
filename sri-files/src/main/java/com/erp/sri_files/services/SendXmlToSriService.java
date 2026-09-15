@@ -27,6 +27,8 @@ import java.util.function.Function;
 
 @Service
 public class SendXmlToSriService {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.erp.sri_files.validation.SriFacturaValidationService facturaValidation;
 
     // Static initializer: fuerza carga de SriSslConfig ANTES de cualquier conexión
     static {
@@ -173,10 +175,15 @@ public class SendXmlToSriService {
     // ======================================================
     /** Enviar XML firmado como bytes a Recepción */
     public RespuestaSolicitud enviarFacturaFirmada(byte[] xmlBytes) throws Exception {
-        return enviarFacturaFirmada(xmlBytes, ambiente);
+        return enviarFacturaFirmada(xmlBytes, inferAmbienteFromXml(new String(xmlBytes, StandardCharsets.UTF_8)));
     }
 
     public RespuestaSolicitud enviarFacturaFirmada(byte[] xmlBytes, int ambienteSolicitud) throws Exception {
+        String xml = new String(xmlBytes, StandardCharsets.UTF_8);
+        facturaValidation.exigirSiFactura(xml);
+        if (ambienteSolicitud != inferAmbienteFromXml(xml)) {
+            throw new IllegalArgumentException("Ambiente de envío no coincide con el XML");
+        }
         // Construcción del Service con WSDL local
         URL wsdlURL = classpathUrl(wsdlLocalRecepcion);
         QName qname = new QName("http://ec.gob.sri.ws.recepcion", "RecepcionComprobantesOfflineService");
@@ -206,7 +213,10 @@ public class SendXmlToSriService {
     // ======================================================
     /** Consultar autorización por clave de acceso */
     public RespuestaComprobante consultarAutorizacion(String claveAcceso) throws Exception {
-        return consultarAutorizacion(claveAcceso, ambiente);
+        if (claveAcceso == null || !claveAcceso.matches("[0-9]{49}") || !claveAcceso.substring(23, 24).matches("[12]")) {
+            throw new IllegalArgumentException("Clave de acceso inválida para consultar autorización");
+        }
+        return consultarAutorizacion(claveAcceso, Integer.parseInt(claveAcceso.substring(23, 24)));
     }
 
     public RespuestaComprobante consultarAutorizacion(String claveAcceso, int ambienteSolicitud) throws Exception {

@@ -76,7 +76,8 @@ public class SriGateway {
                 sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
             }
 
-            RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado);
+            int ambienteSolicitud = ambienteForzado != null ? ambienteForzado : sendXmlToSriService.inferAmbienteFromXml(xmlFirmado);
+            RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado, ambienteSolicitud);
             
             if ("RECIBIDA".equalsIgnoreCase(recepcion.getEstado())) {
                 log.info("Comprobante RECIBIDO por SRI [requestId={}]", requestId);
@@ -84,12 +85,21 @@ public class SriGateway {
             } else {
                 log.warn("Comprobante NO recibido: {} [requestId={}]", recepcion.getEstado(), requestId);
                 return new SriRecepcionResult(ResultadoRecepcion.NO_RECIBIDA, recepcion, 
-                    "Estado: " + recepcion.getEstado());
+                    "Estado: " + recepcion.getEstado() + " | " + mensajesRecepcion(recepcion));
             }
         } catch (Exception e) {
             log.error("Error enviando a Recepción SRI [requestId={}]", requestId, e);
             return new SriRecepcionResult(ResultadoRecepcion.ERROR, null, e.getMessage());
         }
+    }
+
+    private String mensajesRecepcion(RespuestaSolicitud rs) {
+        if (rs.getComprobantes() == null) return "Sin mensajes";
+        return rs.getComprobantes().getComprobante().stream().filter(c -> c.getMensajes() != null)
+                .flatMap(c -> c.getMensajes().getMensaje().stream())
+                .map(m -> "[" + m.getIdentificador() + "] " + m.getMensaje() + " "
+                        + java.util.Objects.toString(m.getInformacionAdicional(), ""))
+                .collect(java.util.stream.Collectors.joining(" | "));
     }
 
     public SriAutorizacionResult consultarAutorizacion(String claveAcceso) {

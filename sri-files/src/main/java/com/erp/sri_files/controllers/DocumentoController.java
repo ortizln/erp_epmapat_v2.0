@@ -34,6 +34,7 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/documentos")
 @Tag(name = "Documentos", description = "Endpoint genérico para los 6 tipos de comprobantes electrónicos SRI")
 public class DocumentoController {
+    private final com.erp.sri_files.validation.SriFacturaValidationService facturaValidation;
 
     private static final Logger log = LoggerFactory.getLogger(DocumentoController.class);
 
@@ -469,7 +470,10 @@ public class DocumentoController {
                 var r = notaDebitoValidationService.validate(xml);
                 yield new ValidacionGenerico(r.valid(), r.errors(), r.warnings(), r.claveAcceso(), r.ambiente(), r.codDoc());
             }
-            case "FACTURA" -> new ValidacionGenerico(true, java.util.List.of(), java.util.List.of(), ExtraerCampo.extraer(xml, "claveAcceso"), ExtraerCampo.extraer(xml, "ambiente"), ExtraerCampo.extraer(xml, "codDoc"));
+            case "FACTURA" -> {
+                var r = facturaValidation.validate(xml);
+                yield new ValidacionGenerico(r.valid(), r.errors(), java.util.List.of(), r.claveAcceso(), r.ambiente(), r.codDoc());
+            }
             default -> new ValidacionGenerico(false, java.util.List.of("Tipo no soportado"), java.util.List.of(), null, null, null);
         };
     }

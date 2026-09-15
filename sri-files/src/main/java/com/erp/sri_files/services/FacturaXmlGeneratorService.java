@@ -48,6 +48,26 @@ public class FacturaXmlGeneratorService {
     @Autowired private FacturaDetalleR fDetalleR;
     @Autowired private FacturaR facturaR;
     @Autowired private ClaveAccesoService claveAccesoService;
+    @Autowired private com.erp.sri_files.validation.FacturaPrevalidacionService prevalidacion;
+    @Autowired private com.erp.sri_files.validation.SriFacturaValidationService xmlValidation;
+    @Autowired private FacturasR facturasOrigenR;
+
+    public com.erp.sri_files.validation.FacturaPrevalidacionService.Resultado validarFactura(Factura factura) {
+        if (factura.getDetalles() == null || factura.getDetalles().isEmpty()) {
+            factura.setDetalles(fDetalleR.findByFacturaIdWithImpuestos(factura.getIdfactura()));
+        }
+        var resultado = prevalidacion.validar(factura, definirR.findById(1L).orElse(null),
+                facturasOrigenR.findByIdfactura(factura.getIdfactura()));
+        if (factura.getClaveacceso() != null && facturaR.existsByClaveaccesoAndIdfacturaNot(
+                factura.getClaveacceso(), factura.getIdfactura())) {
+            var errores = new ArrayList<>(resultado.errores());
+            errores.add("claveacceso: ya pertenece a otra factura local");
+            return new com.erp.sri_files.validation.FacturaPrevalidacionService.Resultado(false, errores,
+                    resultado.advertencias(), resultado.subtotal(), resultado.descuento(), resultado.iva(),
+                    resultado.total(), resultado.pagos(), resultado.intereses());
+        }
+        return resultado;
+    }
 
     //@Transactional
     //@Scheduled(cron = "${interes.tarea.cron}") // ej: 0 */5 * * * *
@@ -75,6 +95,7 @@ public class FacturaXmlGeneratorService {
      * API PRINCIPAL
      * ========================================================== */
     public String generarXmlFactura(Factura factura) throws FacturaElectronicaException {
+        validarFactura(factura).exigirValido();
         try {
 
             // 1) Raíz
@@ -100,8 +121,12 @@ public class FacturaXmlGeneratorService {
             upsertInfoAdicional(comp, factura, extras);
 
             // 5) Marshal a XML
-            return convertirObjetoAXml(comp);
+            String xml = convertirObjetoAXml(comp);
+            xmlValidation.validate(xml).exigirValido();
+            return xml;
 
+        } catch (com.erp.sri_files.validation.FacturaPrevalidacionException e) {
+            throw e;
         } catch (Exception e) {
             log.error("Error generando XML de factura", e);
             throw new FacturaElectronicaException("Error al generar XML para el SRI: " + e.getMessage(), e);
@@ -130,18 +155,6 @@ public class FacturaXmlGeneratorService {
                 ? null
                 : factura.getClaveacceso();
 
-        if (claveAcceso == null || !claveAccesoService.validarClaveAcceso(claveAcceso)
-                || !fechaClaveCoincideHoy(claveAcceso)) {
-            claveAcceso = claveAccesoService.generarClaveAcceso(
-                LocalDateTime.now(),
-                TIPO_COMPROBANTE_FACTURA,
-                def.getRuc(),
-                def.getTipoambiente(),
-                factura.getEstablecimiento(),
-                factura.getPuntoemision(),
-                factura.getSecuencial()
-            );
-        }
         InfoTributaria it = new InfoTributaria();
         it.setAmbiente(String.valueOf(def.getTipoambiente()));       // 1=pruebas, 2=producción
         it.setTipoEmision(String.valueOf((byte) 1));                 // normal
@@ -161,19 +174,13 @@ public class FacturaXmlGeneratorService {
      * BLOQUE: infoFactura + totales
      * ========================================================== */
     private InfoFactura crearInfoFactura(Factura factura) {
-        TotalSinImpuestos tSiRepo = fDetalleR.getTotalSinImpuestos(factura.getIdfactura());
-        BigDecimal subtotalBruto = nvl(tSiRepo.getTotalsinimpuestos()).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal descuento = nvl(tSiRepo.getDescuento()).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal totalSinImp = subtotalBruto.subtract(descuento).setScale(2, RoundingMode.HALF_UP);
-        if (totalSinImp.compareTo(BigDecimal.ZERO) < 0) {
-            totalSinImp = BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP);
-        }
-
-        List<FacturaDetalle> detallesFactura = obtenerDetallesFactura(factura);
-        factura.setDetalles(detallesFactura);
+        var validacion = validarFactura(factura);
+        validacion.exigirValido();
+        BigDecimal descuento = validacion.descuento();
+        BigDecimal totalSinImp = validacion.subtotal();
 
         InfoFactura info = new InfoFactura();
-        info.setFechaEmision(formatForXml(LocalDateTime.now()));
+        info.setFechaEmision(formatForXml(factura.getFechaemision()));
         info.setObligadoContabilidad("SI");
         info.setTipoIdentificacionComprador(factura.getTipoidentificacioncomprador());
         info.setRazonSocialComprador(factura.getRazonsocialcomprador());
@@ -203,28 +210,20 @@ public class FacturaXmlGeneratorService {
         info.setImporteTotal(importeTotal);
         info.setMoneda("DOLAR");
 
-        // === PAGOS ===
-        // Si no tienes detalle de pagos, agrega uno único por el importe total
-        InfoFactura.Pago pago = new InfoFactura.Pago();
-        pago.setFormaPago("20");            // 20 = otros medios/efectivo (ajusta según catálogo SRI)
-        pago.setTotal(importeTotal);        // Debe coincidir con el importeTotal
-
-        // Si tu factura maneja crédito puedes agregar plazo y unidadTiempo:
-        // pago.setPlazo(new BigDecimal("30"));
-        // pago.setUnidadTiempo("dias");
-
-        info.setPagos(List.of(pago));       // se asigna la lista con el pago
+        info.setPagos(factura.getPagos().stream().map(origen -> {
+            InfoFactura.Pago pago = new InfoFactura.Pago();
+            pago.setFormaPago(origen.getFormapago());
+            pago.setTotal(origen.getTotal());
+            if (origen.getPlazo() != null) {
+                pago.setPlazo(origen.getPlazo().toString());
+                pago.setUnidadTiempo(origen.getUnidadtiempo());
+            }
+            return pago;
+        }).toList());
 
         return info;
     }
 
-
-    private boolean fechaClaveCoincideHoy(String claveAcceso) {
-        if (claveAcceso == null || claveAcceso.length() < 8) return false;
-        String ddmmyyyy = claveAcceso.substring(0, 8);
-        String hoy = LocalDateTime.now().format(DDMMYYYY_CLAVE);
-        return ddmmyyyy.equals(hoy);
-    }
 
     private static String formatForXml(LocalDateTime dt) {
         if (dt == null) throw new IllegalArgumentException("La fecha no puede ser nula");
@@ -277,7 +276,7 @@ public class FacturaXmlGeneratorService {
 
         // Fallback: al menos un totalImpuesto IVA 0%
         if (totales.isEmpty()) {
-            BigDecimal baseNeta = totalSinImp.subtract(descuento);
+            BigDecimal baseNeta = totalSinImp;
             if (baseNeta.compareTo(BigDecimal.ZERO) < 0) baseNeta = BigDecimal.ZERO;
 
             TotalImpuesto ti0 = new TotalImpuesto();
@@ -426,7 +425,11 @@ public class FacturaXmlGeneratorService {
             baseLinea = baseLinea.setScale(2, RoundingMode.HALF_UP);
 
             // ✅ Si es 1006 o 1007, SOLO acumula y NO lo agregues a la lista
-            if ("1006".equals(codPrin) || "1007".equals(codPrin)) {
+            if (("1006".equals(codPrin) || "1007".equals(codPrin))
+                    && desc.signum() == 0
+                    && d.getImpuestos() != null && d.getImpuestos().size() == 1
+                    && "2".equals(d.getImpuestos().get(0).getCodigoimpuesto())
+                    && "0".equals(d.getImpuestos().get(0).getCodigoporcentaje())) {
                 baseConsFuentes = baseConsFuentes.add(baseLinea);
                 huboConsFuentes = true;
                 continue;
