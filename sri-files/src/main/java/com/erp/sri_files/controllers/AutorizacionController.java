@@ -173,9 +173,15 @@ public class AutorizacionController {
         try {
             var resultado = xmlRecovery.recuperarConEspera(claveAcceso, forzarSri);
             if (!resultado.recuperado()) {
-                return ResponseEntity.accepted().header("Retry-After", "5").body(Map.of(
+                boolean historica = resultado.requiereRecuperacionHistorica();
+                var respuesta = ResponseEntity.accepted();
+                if (!historica) respuesta.header("Retry-After", "5");
+                return respuesta.body(Map.of(
                     "estado", "PENDIENTE_CONSULTA", "xmlAutorizado", "",
-                    "mensaje", "La consulta no permite confirmar aun el XML autorizado. Reintenta.",
+                    "mensaje", historica
+                            ? "El SRI limita la consulta por fecha. Recupera el XML historico del portal o del archivo autorizado."
+                            : "La consulta no permite confirmar aun el XML autorizado. Reintenta.",
+                    "requiereRecuperacionHistorica", historica, "reintentable", !historica,
                     "detalleUltimaConsulta", resultado.mensaje() != null ? resultado.mensaje() : "Sin XML disponible",
                     "claveAcceso", claveAcceso.trim(), "requestId", requestId
                 ));

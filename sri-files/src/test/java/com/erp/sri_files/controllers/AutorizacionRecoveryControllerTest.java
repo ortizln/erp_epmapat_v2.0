@@ -57,4 +57,15 @@ class AutorizacionRecoveryControllerTest {
         assertEquals(400, controller.obtenerXmlAutorizado("123", false).getStatusCode().value());
         verifyNoInteractions(invoices);
     }
+    @Test void historicalDateLimitIsExplainedWithoutAdvisingAnImmediateRetry() {
+        var recovery = mock(XmlAutorizadoRecoveryService.class);
+        var controller = new AutorizacionController(mock(SendXmlToSriService.class), mock(FacturaR.class), recovery);
+        when(recovery.recuperarConEspera("key", false)).thenReturn(new XmlAutorizadoRecoveryService.Resultado(
+                null, "SRI", "PENDIENTE_CONSULTA", null, null, "RECHAZADA | [80] fecha fuera del rango permitido"));
+        var response = controller.obtenerXmlAutorizado("key", false);
+        assertEquals(202, response.getStatusCode().value());
+        assertNull(response.getHeaders().getFirst("Retry-After"));
+        assertEquals(true, ((Map<?, ?>) response.getBody()).get("requiereRecuperacionHistorica"));
+        assertEquals(false, ((Map<?, ?>) response.getBody()).get("reintentable"));
+    }
 }

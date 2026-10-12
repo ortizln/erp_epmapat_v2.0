@@ -40,6 +40,13 @@ public class XmlAutorizadoRecoveryService {
     public record Resultado(String xml, String fuente, String estado, String numeroAutorizacion,
                             LocalDateTime fechaAutorizacion, String mensaje) {
         public boolean recuperado() { return xml != null && !xml.isBlank(); }
+        public boolean requiereRecuperacionHistorica() {
+            if (recuperado() || mensaje == null) return false;
+            String normalizado = java.text.Normalizer.normalize(mensaje, java.text.Normalizer.Form.NFD)
+                    .replaceAll("\\p{M}+", "").toLowerCase(java.util.Locale.ROOT);
+            return normalizado.contains("[80]") && normalizado.contains("fecha")
+                    && normalizado.contains("fuera del rango permitido");
+        }
     }
 
     public Resultado recuperar(String clave, boolean forzarSri) {
@@ -127,7 +134,7 @@ public class XmlAutorizadoRecoveryService {
             if (restante < 2) break;
             ultimo = resultadoSri(gateway.consultarAutorizacionAcotada(key,
                     (int) Math.min(attemptTimeoutMs, restante)), key);
-            if (ultimo.recuperado()) return ultimo;
+            if (ultimo.recuperado() || ultimo.requiereRecuperacionHistorica()) return ultimo;
             if (intento < maxAttempts) {
                 restante = java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(deadline - System.nanoTime());
                 long espera = retryDelayMs * intento;
@@ -175,17 +182,49 @@ public class XmlAutorizadoRecoveryService {
             var builder = factory.newDocumentBuilder();
             builder.setErrorHandler(new org.xml.sax.helpers.DefaultHandler());
             var document = builder.parse(new InputSource(new StringReader(xml.trim())));
-            if (!java.util.Set.of("factura", "autorizacion", "notaCredito", "notaDebito",
-                    "comprobanteRetencion", "liquidacionCompra", "guiaRemision")
-                    .contains(document.getDocumentElement().getLocalName())) return false;
-            if ("autorizacion".equals(document.getDocumentElement().getLocalName())) {
-                var estados = document.getElementsByTagNameNS("*", "estado");
-                if (estados.getLength() == 0 || !"AUTORIZADO".equalsIgnoreCase(estados.item(0).getTextContent().trim())) return false;
-            }
-            var claves = document.getElementsByTagNameNS("*", "claveAcceso");
-            if (claves.getLength() > 0) return key.equals(claves.item(0).getTextContent().trim());
-            var comprobantes = document.getElementsByTagName("comprobante");
-            return comprobantes.getLength() > 0 && xmlValido(comprobantes.item(0).getTextContent(), key);
+            return elementoValido(document.getDocumentElement(), key);
         } catch (Exception invalid) { return false; }
     }
+    private boolean elementoValido(org.w3c.dom.Element root, String key) {
+        String name = root.getLocalName();
+        if (java.util.Set.of("factura", "notaCredito", "notaDebito", "comprobanteRetencion",
+                "liquidacionCompra", "guiaRemision").contains(name)) {
+            var claves = root.getElementsByTagNameNS("*", "claveAcceso");
+            return claves.getLength() > 0 && key.equals(claves.item(0).getTextContent().trim());
+        }
+        if ("autorizacion".equals(name)) return autorizacionValida(root, key);
+        if ("Envelope".equals(name) && java.util.Set.of(
+                "http://schemas.xmlsoap.org/soap/envelope/", "http://www.w3.org/2003/05/soap-envelope")
+                .contains(root.getNamespaceURI())) {
+            var bodies = root.getElementsByTagNameNS(root.getNamespaceURI(), "Body");
+            if (bodies.getLength() == 0) return false;
+            var autorizaciones = ((org.w3c.dom.Element) bodies.item(0)).getElementsByTagNameNS("*", "autorizacion");
+            for (int i = 0; i < autorizaciones.getLength(); i++) {
+                if (autorizacionValida((org.w3c.dom.Element) autorizaciones.item(i), key)) return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean autorizacionValida(org.w3c.dom.Element auth, String key) {
+        org.w3c.dom.Element comprobante = null;
+        boolean autorizado = false;
+        for (var child = auth.getFirstChild(); child != null; child = child.getNextSibling()) {
+            if (!(child instanceof org.w3c.dom.Element element)) continue;
+            if ("estado".equals(element.getLocalName()))
+                autorizado = "AUTORIZADO".equalsIgnoreCase(element.getTextContent().trim());
+            if ("comprobante".equals(element.getLocalName())) comprobante = element;
+        }
+        if (!autorizado || comprobante == null) return false;
+        for (var child = comprobante.getFirstChild(); child != null; child = child.getNextSibling()) {
+            if (child instanceof org.w3c.dom.Element element) return elementoValido(element, key);
+        }
+        String text = comprobante.getTextContent().trim();
+        if (!text.startsWith("<")) {
+            try { text = new String(java.util.Base64.getDecoder().decode(text), java.nio.charset.StandardCharsets.UTF_8); }
+            catch (IllegalArgumentException invalid) { return false; }
+        }
+        return xmlValido(text, key);
+    }
+
 }

@@ -45,3 +45,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Evidencia local de consultas y XML de facturas reales
+diagnosticos/

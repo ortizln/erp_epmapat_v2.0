@@ -80,12 +80,51 @@ class XmlAutorizadoRecoveryServiceTest {
     private SriGateway.SriAutorizacionResult pending(String message) {
         return new SriGateway.SriAutorizacionResult(false, null, null, null, message, null);
     }
+    private String soap(String authorizations) {
+        return "<s:Envelope xmlns:s='http://schemas.xmlsoap.org/soap/envelope/'><s:Body>"
+                + "<RespuestaAutorizacionComprobante><autorizaciones>" + authorizations
+                + "</autorizaciones></RespuestaAutorizacionComprobante></s:Body></s:Envelope>";
+    }
+    private String auth(String state, String xml) {
+        return "<autorizacion><estado>" + state + "</estado><comprobante>" + xml
+                + "</comprobante></autorizacion>";
+    }
+    @Test void acceptsStoredAuthorizedSoapWithoutChangingItOrConsultingSri() {
+        var invoice = new Factura(); invoice.setEstado("M");
+        String envelope = soap(auth("AUTORIZADO", XML)); invoice.setXmlautorizado(envelope);
+        when(invoices.findByClaveacceso(KEY)).thenReturn(Optional.of(invoice));
+        var result = service.recuperarConEspera(KEY, false);
+        assertEquals(envelope, result.xml()); assertEquals("AUTORIZADO", result.estado());
+        verifyNoInteractions(gateway);
+    }
+    @Test void acceptsSoapCdataAndBase64() {
+        var invoice = new Factura(); invoice.setXmlautorizado(soap(auth("AUTORIZADO", "<![CDATA[" + XML + "]]>")));
+        when(invoices.findByClaveacceso(KEY)).thenReturn(Optional.of(invoice));
+        assertTrue(service.recuperarConEspera(KEY, false).recuperado());
+        invoice.setXmlautorizado(soap(auth("AUTORIZADO", java.util.Base64.getEncoder()
+                .encodeToString(XML.getBytes(java.nio.charset.StandardCharsets.UTF_8)))));
+        assertTrue(service.recuperarConEspera(KEY, false).recuperado());
+    }
+    @Test void rejectedAuthorizationWithMatchingKeyCannotBorrowAnotherAuthorizationState() {
+        var invoice = new Factura(); invoice.setXmlautorizado(soap(auth("RECHAZADA", XML)
+                + auth("AUTORIZADO", XML.replace(KEY, "otra-clave"))));
+        when(invoices.findByClaveacceso(KEY)).thenReturn(Optional.of(invoice));
+        when(gateway.consultarAutorizacionAcotada(eq(KEY), anyInt())).thenReturn(pending("Sin XML"));
+        assertFalse(service.recuperarConEspera(KEY, false).recuperado());
+    }
     @Test void pollingContinuesAfterNegativeAndEmptyResultsUntilXmlArrives() {
         when(gateway.consultarAutorizacionAcotada(eq(KEY), anyInt()))
                 .thenReturn(pending("NO AUTORIZADO"), pending("Sin autorizaciones"), authorized(XML));
         var result = service.recuperarConEspera(KEY, false);
         assertEquals(XML, result.xml()); assertEquals("AUTORIZADO", result.estado());
         verify(gateway, times(3)).consultarAutorizacionAcotada(eq(KEY), anyInt());
+    }
+    @Test void historicalDateLimitDoesNotWasteAdditionalRetries() {
+        when(gateway.consultarAutorizacionAcotada(eq(KEY), anyInt())).thenReturn(pending(
+                "RECHAZADA | [80] ERROR EN LA ESTRUCTURA DE LA CLAVE DE ACCESO: fecha de emision fuera del rango permitido"));
+        var result = service.recuperarConEspera(KEY, true);
+        assertTrue(result.requiereRecuperacionHistorica()); assertFalse(result.recuperado());
+        verify(gateway, times(1)).consultarAutorizacionAcotada(eq(KEY), anyInt());
     }
     @Test void exhaustedPollingIsInconclusiveAndDoesNotLoopForever() {
         when(gateway.consultarAutorizacionAcotada(eq(KEY), anyInt())).thenReturn(pending("Connect timed out"));

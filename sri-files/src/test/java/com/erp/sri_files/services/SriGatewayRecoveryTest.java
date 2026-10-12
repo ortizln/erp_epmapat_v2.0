@@ -41,4 +41,17 @@ class SriGatewayRecoveryTest {
         assertFalse(result.autorizado()); assertNull(result.respuestaCompleta()); assertNull(result.xmlAutorizado());
         assertEquals("Connect timed out", result.mensaje());
     }
+    @Test void preservesSriIdentifierAndDateRangeExplanation() throws Exception {
+        var response = response("");
+        var auth = response.getAutorizaciones().getAutorizacion().get(0); auth.setEstado("RECHAZADA");
+        var messages = new Autorizacion.Mensajes();
+        var message = new ec.gob.sri.ws.autorizacion.Mensaje(); message.setIdentificador("80");
+        message.setMensaje("ERROR EN LA ESTRUCTURA DE LA CLAVE DE ACCESO");
+        message.setInformacionAdicional("La fecha de emision esta fuera del rango permitido");
+        messages.getMensaje().add(message); auth.setMensajes(messages);
+        when(soap.consultarAutorizacion(KEY, 2, 3500)).thenReturn(response);
+        var result = gateway.consultarAutorizacionAcotada(KEY, 3500);
+        assertFalse(result.autorizado()); assertTrue(result.mensaje().contains("[80]"));
+        assertTrue(result.mensaje().contains("fuera del rango permitido"));
+    }
 }

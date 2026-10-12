@@ -189,9 +189,20 @@ public class SriGateway {
             fechaAutorizacion,
             autorizado ? "AUTORIZADO" : estadoAutorizado
                 ? "SRI autorizo el comprobante, pero no devolvio XML autorizado"
-                : autorizada.getEstado(),
+                : detalleAutorizacion(autorizada),
             rc
         );
+    }
+
+    private String detalleAutorizacion(ec.gob.sri.ws.autorizacion.Autorizacion auth) {
+        String estado = auth.getEstado() == null ? "Sin estado SRI" : auth.getEstado();
+        if (auth.getMensajes() == null) return estado;
+        String detalle = auth.getMensajes().getMensaje().stream()
+                .map(m -> "[" + java.util.Objects.toString(m.getIdentificador(), "") + "] "
+                        + java.util.Objects.toString(m.getMensaje(), "") + " "
+                        + java.util.Objects.toString(m.getInformacionAdicional(), ""))
+                .collect(java.util.stream.Collectors.joining(" | "));
+        return detalle.isBlank() ? estado : estado + " | " + detalle;
     }
 
     private String extraerComprobanteXml(String comprobante) {
