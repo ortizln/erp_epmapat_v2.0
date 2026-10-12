@@ -57,6 +57,11 @@ interes:
   tarea:
     cron: 0 */1 * * * *
 sri:
+  xml-recovery:
+    max-attempts: ${SRI_XML_RECOVERY_MAX_ATTEMPTS:3}
+    wait-budget-ms: ${SRI_XML_RECOVERY_WAIT_BUDGET_MS:12000}
+    attempt-timeout-ms: ${SRI_XML_RECOVERY_ATTEMPT_TIMEOUT_MS:3500}
+    retry-delay-ms: ${SRI_XML_RECOVERY_RETRY_DELAY_MS:250}
   scheduler:
     envio-facturas:
       cron: ${SRI_SCHEDULER_ENVIO_FACTURAS_CRON:0 */1 * * * *}

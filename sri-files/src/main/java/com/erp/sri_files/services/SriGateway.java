@@ -115,6 +115,16 @@ public class SriGateway {
         }
     }
 
+    public SriAutorizacionResult consultarAutorizacionAcotada(String claveAcceso, int presupuestoMs) {
+        try {
+            int ambiente = Integer.parseInt(claveAcceso.substring(23, 24));
+            return procesarRespuestaAutorizacion(sendXmlToSriService.consultarAutorizacion(claveAcceso, ambiente, presupuestoMs));
+        } catch (Exception error) {
+            log.warn("Consulta SRI inconclusa: {}", error.getMessage());
+            return new SriAutorizacionResult(false, null, null, null, error.getMessage(), null);
+        }
+    }
+
     public SriAutorizacionResult consultarAutorizacionConPolling(String xmlFirmado, int maxIntentos, long sleepMs) {
         String requestId = MDC.get("requestId");
         log.info("Consultando autorización con polling (max={} intentos) [requestId={}]", maxIntentos, requestId);
@@ -147,9 +157,11 @@ public class SriGateway {
         }
         
         var autorizada = lista.stream()
-            .filter(a -> "AUTORIZADO".equalsIgnoreCase(a.getEstado()))
+            .filter(a -> "AUTORIZADO".equalsIgnoreCase(a.getEstado())
+                && extraerComprobanteXml(a.getComprobante()) != null)
             .findFirst()
-            .orElse(lista.get(0));
+            .orElseGet(() -> lista.stream().filter(a -> "AUTORIZADO".equalsIgnoreCase(a.getEstado()))
+                .findFirst().orElse(lista.get(0)));
         
         boolean estadoAutorizado = "AUTORIZADO".equalsIgnoreCase(autorizada.getEstado());
         String xmlAutorizado = estadoAutorizado
@@ -188,6 +200,10 @@ public class SriGateway {
         }
 
         String valor = comprobante.trim();
+        if (valor.startsWith("<![CDATA[") && valor.endsWith("]]>")) {
+            valor = valor.substring(9, valor.length() - 3).trim();
+        }
+        if (valor.startsWith("\uFEFF")) valor = valor.substring(1).trim();
         // JAXB ya entrega como texto el contenido que el SRI envia en CDATA.
         if (valor.startsWith("<")) {
             return valor;

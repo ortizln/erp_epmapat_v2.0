@@ -155,10 +155,11 @@ public class AutorizacionController {
     @Operation(summary = "Obtener XML autorizado", description = "Retorna el XML autorizado. Primero busca en la BD; si no existe, consulta el SRI",
         responses = {
             @ApiResponse(responseCode = "200", description = "XML autorizado retornado"),
-            @ApiResponse(responseCode = "404", description = "No se encontró autorización"),
+            @ApiResponse(responseCode = "202", description = "Consulta inconclusa; reintentar sin asumir rechazo"),
+            @ApiResponse(responseCode = "400", description = "Clave de acceso invalida"),
             @ApiResponse(responseCode = "500", description = "Error al obtener XML autorizado")
         })
-    @GetMapping("/{claveAcceso}/xml")
+    @GetMapping(value = "/{claveAcceso}/xml", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> obtenerXmlAutorizado(
             @Parameter(description = "Clave de acceso del comprobante", required = true)
             @PathVariable String claveAcceso,
@@ -170,20 +171,33 @@ public class AutorizacionController {
         MDC.put("claveAcceso", claveAcceso);
 
         try {
-            var resultado = xmlRecovery.recuperar(claveAcceso, forzarSri);
+            var resultado = xmlRecovery.recuperarConEspera(claveAcceso, forzarSri);
             if (!resultado.recuperado()) {
-                return ResponseEntity.status(404).body(Map.of(
-                    "error", resultado.mensaje() != null ? resultado.mensaje() : "Sin XML autorizado disponible",
-                    "claveAcceso", claveAcceso, "requestId", requestId
+                return ResponseEntity.accepted().header("Retry-After", "5").body(Map.of(
+                    "estado", "PENDIENTE_CONSULTA", "xmlAutorizado", "",
+                    "mensaje", "La consulta no permite confirmar aun el XML autorizado. Reintenta.",
+                    "detalleUltimaConsulta", resultado.mensaje() != null ? resultado.mensaje() : "Sin XML disponible",
+                    "claveAcceso", claveAcceso.trim(), "requestId", requestId
                 ));
             }
-            boolean actualizado = guardarXmlAutorizadoEnFactura(claveAcceso.trim(), resultado.xml());
+            boolean actualizado = false;
+            String advertencia = "";
+            try {
+                actualizado = guardarXmlAutorizadoEnFactura(claveAcceso.trim(), resultado.xml());
+            } catch (org.springframework.dao.DataAccessException persistencia) {
+                log.error("XML recuperado, pero no se pudo guardar en fec_factura", persistencia);
+                advertencia = "XML recuperado; pendiente de guardar en la base de datos";
+            }
             return ResponseEntity.ok(Map.of(
                 "fuente", resultado.fuente(), "claveAcceso", claveAcceso.trim(),
-                "estado", resultado.estado() != null ? resultado.estado() : "",
+                "estado", "AUTORIZADO",
                 "numeroAutorizacion", resultado.numeroAutorizacion() != null ? resultado.numeroAutorizacion() : "",
-                "actualizadoEnFecFactura", actualizado, "xmlAutorizado", resultado.xml()
+                "actualizadoEnFecFactura", actualizado, "xmlAutorizado", resultado.xml(),
+                "mensaje", resultado.mensaje() != null ? resultado.mensaje() : "",
+                "advertencia", advertencia
             ));
+        } catch (IllegalArgumentException invalida) {
+            return ResponseEntity.badRequest().body(Map.of("error", invalida.getMessage(), "requestId", requestId));
         } catch (Exception e) {
             log.error("Error obteniendo XML autorizado", e);
             return ResponseEntity.status(500).body(Map.of(

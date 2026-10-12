@@ -25,4 +25,16 @@ class SriSoapTimeoutTest {
         ReflectionTestUtils.setField(service, "readTimeoutMs", 0);
         assertThrows(IllegalArgumentException.class, service::init);
     }
+    @Test void recoveryTimeoutBudgetDoesNotChangeTimeoutsForOtherRequests() {
+        var service = new SendXmlToSriService();
+        var port = mock(BindingProvider.class);
+        var context = new HashMap<String, Object>();
+        when(port.getRequestContext()).thenReturn(context);
+        ReflectionTestUtils.invokeMethod(service, "applyRecoveryTimeouts", port, 3500);
+        assertEquals(3500, (int) context.get("com.sun.xml.ws.connect.timeout")
+                + (int) context.get("com.sun.xml.ws.request.timeout"));
+        ReflectionTestUtils.invokeMethod(service, "applyTimeouts", port);
+        assertEquals(15000, context.get("com.sun.xml.ws.connect.timeout"));
+        assertEquals(30000, context.get("com.sun.xml.ws.request.timeout"));
+    }
 }

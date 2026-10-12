@@ -20,6 +20,7 @@ class XmlAutorizadoRecoveryServiceTest {
     private final XmlAutorizadoRecoveryService service = new XmlAutorizadoRecoveryService(documents, invoices, gateway);
 
     @BeforeEach void setup() {
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "retryDelayMs", 0L);
         when(documents.findByClaveAcceso(KEY)).thenReturn(Optional.empty());
         when(invoices.findByClaveacceso(KEY)).thenReturn(Optional.empty());
     }
@@ -38,6 +39,7 @@ class XmlAutorizadoRecoveryServiceTest {
         when(invoices.findByClaveacceso(KEY)).thenReturn(Optional.of(invoice));
         var result = service.recuperar(KEY, false);
         assertTrue(result.recuperado()); assertEquals("BD_fec_factura", result.fuente());
+        assertEquals("AUTORIZADO", result.estado());
         verifyNoInteractions(gateway);
     }
     @Test void missingCacheQueriesSriAndUsesRealAuthorizationDate() {
@@ -74,5 +76,65 @@ class XmlAutorizadoRecoveryServiceTest {
         assertFalse(service.recuperar(KEY, true).recuperado());
         when(gateway.consultarAutorizacion(KEY)).thenReturn(authorized("<factura>"));
         assertFalse(service.recuperar(KEY, true).recuperado());
+    }
+    private SriGateway.SriAutorizacionResult pending(String message) {
+        return new SriGateway.SriAutorizacionResult(false, null, null, null, message, null);
+    }
+    @Test void pollingContinuesAfterNegativeAndEmptyResultsUntilXmlArrives() {
+        when(gateway.consultarAutorizacionAcotada(eq(KEY), anyInt()))
+                .thenReturn(pending("NO AUTORIZADO"), pending("Sin autorizaciones"), authorized(XML));
+        var result = service.recuperarConEspera(KEY, false);
+        assertEquals(XML, result.xml()); assertEquals("AUTORIZADO", result.estado());
+        verify(gateway, times(3)).consultarAutorizacionAcotada(eq(KEY), anyInt());
+    }
+    @Test void exhaustedPollingIsInconclusiveAndDoesNotLoopForever() {
+        when(gateway.consultarAutorizacionAcotada(eq(KEY), anyInt())).thenReturn(pending("Connect timed out"));
+        var result = service.recuperarConEspera(KEY, false);
+        assertFalse(result.recuperado()); assertEquals("PENDIENTE_CONSULTA", result.estado());
+        verify(gateway, times(3)).consultarAutorizacionAcotada(eq(KEY), intThat(value -> value > 0 && value <= 3500));
+    }
+    @Test void forceSriFailurePreservesKnownAuthorizedXml() {
+        var invoice = new Factura(); invoice.setXmlautorizado(XML); invoice.setEstado("C");
+        when(invoices.findByClaveacceso(KEY)).thenReturn(Optional.of(invoice));
+        when(gateway.consultarAutorizacionAcotada(eq(KEY), anyInt())).thenReturn(pending("Connect timed out"));
+        var result = service.recuperarConEspera(KEY, true);
+        assertEquals(XML, result.xml()); assertEquals("AUTORIZADO", result.estado());
+        assertEquals("BD_fec_factura", result.fuente()); assertNotNull(result.mensaje());
+    }
+    @Test void cacheDatabaseFailureDoesNotHideAnXmlReturnedBySri() {
+        when(documents.findByClaveAcceso(KEY)).thenThrow(new org.springframework.dao.DataAccessResourceFailureException("offline"));
+        when(invoices.findByClaveacceso(KEY)).thenThrow(new org.springframework.dao.DataAccessResourceFailureException("offline"));
+        when(gateway.consultarAutorizacionAcotada(eq(KEY), anyInt())).thenReturn(authorized(XML));
+        assertEquals(XML, service.recuperarConEspera(KEY, false).xml());
+    }
+    @Test void successfulFirstAttemptDoesNotPollAgain() {
+        when(gateway.consultarAutorizacionAcotada(eq(KEY), anyInt())).thenReturn(authorized(XML));
+        assertTrue(service.recuperarConEspera(KEY, true).recuperado());
+        verify(gateway, times(1)).consultarAutorizacionAcotada(eq(KEY), anyInt());
+    }
+    @Test void simultaneousRequestsShareTheSameSriQuery() throws Exception {
+        var entered = new java.util.concurrent.CountDownLatch(1);
+        var release = new java.util.concurrent.CountDownLatch(1);
+        when(gateway.consultarAutorizacionAcotada(eq(KEY), anyInt())).thenAnswer(call -> {
+            entered.countDown();
+            assertTrue(release.await(3, java.util.concurrent.TimeUnit.SECONDS));
+            return authorized(XML);
+        });
+        var executor = java.util.concurrent.Executors.newFixedThreadPool(2);
+        try {
+            var leader = executor.submit(() -> service.recuperarConEspera(KEY, true));
+            assertTrue(entered.await(2, java.util.concurrent.TimeUnit.SECONDS));
+            var follower = executor.submit(() -> service.recuperarConEspera(KEY, true));
+            @SuppressWarnings("unchecked")
+            var running = (java.util.Map<String, java.util.concurrent.CompletableFuture<?>>)
+                    org.springframework.test.util.ReflectionTestUtils.getField(service, "enCurso");
+            long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(2);
+            while (running.get(KEY).getNumberOfDependents() == 0 && System.nanoTime() < deadline) Thread.sleep(1);
+            assertTrue(running.get(KEY).getNumberOfDependents() > 0);
+            release.countDown();
+            assertEquals(XML, leader.get(2, java.util.concurrent.TimeUnit.SECONDS).xml());
+            assertEquals(XML, follower.get(2, java.util.concurrent.TimeUnit.SECONDS).xml());
+            verify(gateway, times(1)).consultarAutorizacionAcotada(eq(KEY), anyInt());
+        } finally { release.countDown(); executor.shutdownNow(); }
     }
 }

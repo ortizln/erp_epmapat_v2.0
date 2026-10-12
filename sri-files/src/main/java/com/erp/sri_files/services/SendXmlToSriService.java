@@ -89,6 +89,10 @@ public class SendXmlToSriService {
     }
 
     private void applyTimeouts(Object port) {
+        applyTimeouts(port, connectTimeoutMs, readTimeoutMs);
+    }
+
+    private void applyTimeouts(Object port, int connectTimeoutMs, int readTimeoutMs) {
         Map<String, Object> ctx = ((BindingProvider) port).getRequestContext();
         // Metro
         ctx.put("com.sun.xml.ws.connect.timeout", connectTimeoutMs);
@@ -227,6 +231,17 @@ public class SendXmlToSriService {
     }
 
     public RespuestaComprobante consultarAutorizacion(String claveAcceso, int ambienteSolicitud) throws Exception {
+        return consultarAutorizacion(claveAcceso, ambienteSolicitud, null);
+    }
+
+    private void applyRecoveryTimeouts(Object port, int presupuestoMs) {
+        if (presupuestoMs < 2) throw new IllegalArgumentException("Presupuesto SOAP insuficiente");
+        int conexion = Math.min(connectTimeoutMs, Math.max(1, presupuestoMs / 3));
+        int lectura = Math.min(readTimeoutMs, presupuestoMs - conexion);
+        applyTimeouts(port, conexion, lectura);
+    }
+
+    public RespuestaComprobante consultarAutorizacion(String claveAcceso, int ambienteSolicitud, Integer presupuestoMs) throws Exception {
         URL wsdlURL = classpathUrl(wsdlLocalAutorizacion);
 
         QName qname = new QName("http://ec.gob.sri.ws.autorizacion", "AutorizacionComprobantesOfflineService");
@@ -236,7 +251,11 @@ public class SendXmlToSriService {
         AutorizacionComprobantesOffline port =
                 service.getAutorizacionComprobantesOfflinePort();
 
-        applyTimeouts(port);
+        if (presupuestoMs == null) {
+            applyTimeouts(port);
+        } else {
+            applyRecoveryTimeouts(port, presupuestoMs);
+        }
         overrideEndpoint(port, /* autorizacion */ true, ambienteSolicitud);
 
         return port.autorizacionComprobante(claveAcceso.trim());

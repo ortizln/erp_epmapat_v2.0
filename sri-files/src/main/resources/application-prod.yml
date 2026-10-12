@@ -32,6 +32,11 @@ app:
     reply-to: ${APP_MAIL_REPLY_TO:facturacion@epmapatulcan.gob.ec}
 
 sri:
+  xml-recovery:
+    max-attempts: ${SRI_XML_RECOVERY_MAX_ATTEMPTS:3}
+    wait-budget-ms: ${SRI_XML_RECOVERY_WAIT_BUDGET_MS:12000}
+    attempt-timeout-ms: ${SRI_XML_RECOVERY_ATTEMPT_TIMEOUT_MS:3500}
+    retry-delay-ms: ${SRI_XML_RECOVERY_RETRY_DELAY_MS:250}
   ambiente: ${SRI_AMBIENTE:2}
   scheduler:
     envio-facturas:
