@@ -1,7 +1,6 @@
 package com.erp.sri_files.controllers;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -11,9 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.erp.sri_files.models.DocumentoElectronico;
-import com.erp.sri_files.models.Factura;
-import com.erp.sri_files.repositories.DocumentoElectronicoR;
 import com.erp.sri_files.repositories.FacturaR;
 import com.erp.sri_files.services.SendXmlToSriService;
 
@@ -33,8 +29,8 @@ public class AutorizacionController {
     private static final Logger log = LoggerFactory.getLogger(AutorizacionController.class);
 
     private final SendXmlToSriService sendXmlToSriService;
-    private final DocumentoElectronicoR documentoR;
     private final FacturaR facturaR;
+    private final com.erp.sri_files.services.XmlAutorizadoRecoveryService xmlRecovery;
 
     @Operation(summary = "Consultar autorización SRI por clave de acceso", description = "Consulta el estado de autorización de un comprobante en el SRI utilizando su clave de acceso",
         responses = {
@@ -174,53 +170,19 @@ public class AutorizacionController {
         MDC.put("claveAcceso", claveAcceso);
 
         try {
-            if (!forzarSri) {
-                Optional<DocumentoElectronico> docOpt = documentoR.findByClaveAcceso(claveAcceso);
-                if (docOpt.isPresent()) {
-                    DocumentoElectronico doc = docOpt.get();
-                    if (doc.getXmlAutorizado() != null && !doc.getXmlAutorizado().isBlank()) {
-                        boolean actualizado = guardarXmlAutorizadoEnFactura(claveAcceso, doc.getXmlAutorizado());
-                        return ResponseEntity.ok(Map.of(
-                            "fuente", "BD_documento_electronico",
-                            "claveAcceso", claveAcceso,
-                            "estado", doc.getEstado(),
-                            "numeroAutorizacion", doc.getNumeroAutorizacion() != null ? doc.getNumeroAutorizacion() : "",
-                            "actualizadoEnFecFactura", actualizado,
-                            "xmlAutorizado", doc.getXmlAutorizado()
-                        ));
-                    }
-                }
-
-                Optional<Factura> facOpt = facturaR.findByClaveacceso(claveAcceso);
-                if (facOpt.isPresent()) {
-                    Factura fac = facOpt.get();
-                    if (fac.getXmlautorizado() != null && !fac.getXmlautorizado().isBlank()) {
-                        return ResponseEntity.ok(Map.of(
-                            "fuente", "BD_fec_factura",
-                            "claveAcceso", claveAcceso,
-                            "estado", fac.getEstado() != null ? fac.getEstado() : "",
-                            "xmlAutorizado", fac.getXmlautorizado()
-                        ));
-                    }
-                }
-            }
-
-            log.info("XML no encontrado en BD, consultando SRI...");
-            RespuestaComprobante rc = sendXmlToSriService.consultarAutorizacion(claveAcceso);
-            String xmlAutorizado = SriControllerHelper.extraerXmlAutorizado(rc);
-            if (xmlAutorizado == null) {
+            var resultado = xmlRecovery.recuperar(claveAcceso, forzarSri);
+            if (!resultado.recuperado()) {
                 return ResponseEntity.status(404).body(Map.of(
-                    "error", "No se encontró autorización en SRI para esta clave de acceso",
-                    "claveAcceso", claveAcceso,
-                    "requestId", requestId
+                    "error", resultado.mensaje() != null ? resultado.mensaje() : "Sin XML autorizado disponible",
+                    "claveAcceso", claveAcceso, "requestId", requestId
                 ));
             }
-            boolean actualizado = guardarXmlAutorizadoEnFactura(claveAcceso, xmlAutorizado);
+            boolean actualizado = guardarXmlAutorizadoEnFactura(claveAcceso.trim(), resultado.xml());
             return ResponseEntity.ok(Map.of(
-                "fuente", "SRI",
-                "claveAcceso", claveAcceso,
-                "actualizadoEnFecFactura", actualizado,
-                "xmlAutorizado", xmlAutorizado
+                "fuente", resultado.fuente(), "claveAcceso", claveAcceso.trim(),
+                "estado", resultado.estado() != null ? resultado.estado() : "",
+                "numeroAutorizacion", resultado.numeroAutorizacion() != null ? resultado.numeroAutorizacion() : "",
+                "actualizadoEnFecFactura", actualizado, "xmlAutorizado", resultado.xml()
             ));
         } catch (Exception e) {
             log.error("Error obteniendo XML autorizado", e);
@@ -235,16 +197,8 @@ public class AutorizacionController {
     }
 
     private boolean guardarXmlAutorizadoEnFactura(String claveAcceso, String xmlAutorizado) {
-        return facturaR.findByClaveacceso(claveAcceso)
-            .map(factura -> {
-                factura.setXmlautorizado(xmlAutorizado);
-                facturaR.save(factura);
-                log.info("XML autorizado actualizado en fec_factura idfactura={}", factura.getIdfactura());
-                return true;
-            })
-            .orElseGet(() -> {
-                log.warn("No existe fec_factura para guardar XML. claveAcceso={}", claveAcceso);
-                return false;
-            });
+        int actualizadas = facturaR.actualizarXmlAutorizadoPorClave(claveAcceso, xmlAutorizado);
+        log.info("XML autorizado actualizado en fec_factura filas={}", actualizadas);
+        return actualizadas > 0;
     }
 }

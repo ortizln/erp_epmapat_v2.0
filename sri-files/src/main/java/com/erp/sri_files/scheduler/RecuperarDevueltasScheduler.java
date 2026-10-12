@@ -1,106 +1,80 @@
 package com.erp.sri_files.scheduler;
 
 import java.time.LocalDateTime;
-import java.util.List;
-
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
-import org.springframework.data.domain.PageRequest;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
 import com.erp.sri_files.models.Factura;
 import com.erp.sri_files.repositories.FacturaR;
-import com.erp.sri_files.services.SriGateway;
-
+import com.erp.sri_files.services.XmlAutorizadoRecoveryService;
+import com.erp.sri_files.services.SriAutorizacionRetryPolicy;
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
 public class RecuperarDevueltasScheduler {
-
     private static final Logger log = LoggerFactory.getLogger(RecuperarDevueltasScheduler.class);
-
     private final FacturaR facturaR;
-    private final SriGateway sriGateway;
+    private final XmlAutorizadoRecoveryService recovery;
+    private final SriAutorizacionRetryPolicy retry;
+    private final AtomicBoolean ejecutando = new AtomicBoolean();
+    @Value("${sri.scheduler.recuperar-devueltas.lote:20}")
+    private int lote = 20;
 
-    private static final int MAX_INTENTOS = 5;
-    private static final int LOTE = 20;
-
-    @Scheduled(cron = "${sri.scheduler.recuperar-devueltas:0 */5 * * * *}")
+    @Scheduled(cron = "${sri.scheduler.recuperar-devueltas.cron:0 */5 * * * *}")
     public void recuperarFacturasDevueltas() {
+        if (!ejecutando.compareAndSet(false, true)) return;
+        var contextoAnterior = MDC.getCopyOfContextMap();
         MDC.put("scheduler", "recuperar-devueltas");
-
         long inicio = System.currentTimeMillis();
-        int detectadas = 0;
-        int recuperadas = 0;
-        int pendientes = 0;
-        int fallidas = 0;
-
+        int detectadas = 0, recuperadas = 0, pendientes = 0, fallidas = 0;
         try {
-            log.info("[SCHEDULER] INICIO recuperación facturas estado M @ {}", LocalDateTime.now());
-
-            List<Factura> devueltas = facturaR.findDevueltas(PageRequest.of(0, LOTE));
+            var devueltas = facturaR.findDevueltasVencidas(LocalDateTime.now(),
+                    retry.getBaseMs(), retry.getMaxMs(), Math.max(1, Math.min(lote, 200)));
             detectadas = devueltas.size();
-
-            for (Factura f : devueltas) {
+            for (Factura factura : devueltas) {
+                String clave = factura.getClaveacceso() == null ? "" : factura.getClaveacceso().trim();
+                MDC.put("idFactura", String.valueOf(factura.getIdfactura()));
                 try {
-                    MDC.put("idFactura", String.valueOf(f.getIdfactura()));
-                    MDC.put("claveAcceso", f.getClaveacceso());
-
-                    if (f.getClaveacceso() == null || f.getClaveacceso().isBlank()) {
-                        log.warn("Factura {} sin clave de acceso, saltando", f.getIdfactura());
-                        f.setEstado("E");
-                        f.setErrores("Sin clave de acceso para recuperar del SRI");
-                        facturaR.save(f);
-                        fallidas++;
-                        continue;
-                    }
-
-                    var authResult = sriGateway.consultarAutorizacion(f.getClaveacceso());
-
-                    if (authResult.autorizado()) {
-                        f.setXmlautorizado(authResult.xmlAutorizado());
-                        f.setEstado("A");
-                        f.setErrores(null);
-                        f.setFecha_autorizacion(LocalDateTime.now());
-                        f.setIntentos_autorizacion(f.getIntentos_autorizacion() != null ? f.getIntentos_autorizacion() + 1 : 1);
-                        facturaR.save(f);
-                        recuperadas++;
-                        log.info("Factura {} recuperada del SRI: nro={}", f.getIdfactura(), authResult.numeroAutorizacion());
+                    var resultado = recovery.recuperar(clave, false);
+                    if (resultado.recuperado()) {
+                        int actualizadas = facturaR.guardarXmlRecuperadoDevuelta(factura.getIdfactura(), clave,
+                                resultado.xml(), resultado.fechaAutorizacion() != null
+                                    ? resultado.fechaAutorizacion() : LocalDateTime.now());
+                        recuperadas += actualizadas;
+                        log.info("Recuperacion XML idfactura={} fuente={} filasActualizadas={}",
+                                factura.getIdfactura(), resultado.fuente(), actualizadas);
                     } else {
-                        int intentos = f.getIntentos_autorizacion() != null ? f.getIntentos_autorizacion() + 1 : 1;
-                        f.setIntentos_autorizacion(intentos);
-                        f.setFecha_ultimo_intento(LocalDateTime.now());
-                        f.setErrores(authResult.mensaje() != null ? authResult.mensaje() : "No autorizada aún");
-                        facturaR.save(f);
+                        registrarPendiente(factura, clave, resultado.mensaje());
                         pendientes++;
-
-                        if (intentos >= MAX_INTENTOS) {
-                            log.warn("Factura {} superó máximo de intentos ({})", f.getIdfactura(), MAX_INTENTOS);
-                            f.setEstado("E");
-                            f.setErrores("Máximo de intentos alcanzado: " + authResult.mensaje());
-                            facturaR.save(f);
-                        }
                     }
-
-                } catch (Exception e) {
-                    log.error("Error recuperando factura {}", f.getIdfactura(), e);
+                } catch (Exception error) {
                     fallidas++;
-                } finally {
-                    MDC.remove("idFactura");
-                    MDC.remove("claveAcceso");
-                }
+                    log.warn("Consulta XML pendiente idfactura={}: {}", factura.getIdfactura(), error.getMessage());
+                    try { registrarPendiente(factura, clave, "Error recuperando XML: " + error.getMessage()); }
+                    catch (Exception persistencia) {
+                        log.error("No se pudo registrar el intento idfactura={}", factura.getIdfactura(), persistencia);
+                    }
+                } finally { MDC.remove("idFactura"); }
             }
-
-        } catch (Exception e) {
-            log.error("[SCHEDULER] Error en ciclo de recuperación de devueltas", e);
+        } catch (Exception error) {
+            log.error("Error en ciclo de recuperacion de devueltas", error);
         } finally {
-            long duracion = System.currentTimeMillis() - inicio;
-            log.info("[SCHEDULER] FIN recuperación devueltas | detectadas={} | recuperadas={} | pendientes={} | fallidas={} | duracionMs={}",
-                detectadas, recuperadas, pendientes, fallidas, duracion);
-            MDC.clear();
+            log.info("Recuperacion devueltas detectadas={} recuperadas={} pendientes={} fallidas={} duracionMs={}",
+                    detectadas, recuperadas, pendientes, fallidas, System.currentTimeMillis() - inicio);
+            if (contextoAnterior == null) MDC.clear(); else MDC.setContextMap(contextoAnterior);
+            ejecutando.set(false);
         }
+    }
+
+    private void registrarPendiente(Factura factura, String clave, String detalle) {
+        String mensaje = detalle == null || detalle.isBlank() ? "SRI sin XML autorizado disponible" : detalle;
+        facturaR.registrarRecuperacionPendiente(factura.getIdfactura(), clave,
+                mensaje.substring(0, Math.min(1500, mensaje.length())), LocalDateTime.now());
+        // Conservar M: la ausencia temporal de XML no equivale a un rechazo definitivo.
     }
 }

@@ -14,6 +14,21 @@ import com.erp.sri_files.models.Factura;
 public interface FacturaR extends JpaRepository<Factura, Long> {
     @Query(value = """
             SELECT f.* FROM fec_factura f
+            WHERE UPPER(TRIM(f.estado)) = 'M'
+              AND (f.fecha_ultimo_intento IS NULL OR f.fecha_ultimo_intento <=
+                CAST(:ahora AS timestamp) - INTERVAL '1 millisecond' * FLOOR(
+                  LEAST(:maxMs, :baseMs * POWER(2.0,
+                    LEAST(20, GREATEST(0, COALESCE(f.intentos_autorizacion, 0) - 1))))
+                  * (0.5 + MOD(MOD(f.idfactura, 1000) +
+                    CAST(GREATEST(0, COALESCE(f.intentos_autorizacion, 0)) AS bigint) * 37, 1000) / 2000.0)))
+            ORDER BY f.fecha_ultimo_intento ASC NULLS FIRST, f.idfactura
+            LIMIT :limite
+            """, nativeQuery = true)
+    List<Factura> findDevueltasVencidas(@Param("ahora") java.time.LocalDateTime ahora,
+            @Param("baseMs") long baseMs, @Param("maxMs") long maxMs, @Param("limite") int limite);
+
+    @Query(value = """
+            SELECT f.* FROM fec_factura f
             WHERE (UPPER(TRIM(f.estado)) = 'C'
                 OR (UPPER(TRIM(f.estado)) IN ('A', 'O') AND NULLIF(TRIM(f.xmlautorizado), '') IS NULL))
               AND (f.fecha_ultimo_intento IS NULL OR f.fecha_ultimo_intento <=
@@ -68,4 +83,28 @@ public interface FacturaR extends JpaRepository<Factura, Long> {
 
     @Query("SELECT f FROM Factura f WHERE UPPER(TRIM(COALESCE(f.estado, ''))) = 'M' ORDER BY f.idfactura ASC")
     List<Factura> findDevueltas(Pageable pageable);
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true)
+    @Query("UPDATE Factura f SET f.xmlautorizado = :xml, f.estado = 'A', f.errores = null, "
+            + "f.fecha_autorizacion = COALESCE(f.fecha_autorizacion, :fecha), "
+            + "f.fecha_ultimo_intento = null, f.intentos_autorizacion = 0 "
+            + "WHERE f.idfactura = :id AND TRIM(f.claveacceso) = :clave AND UPPER(TRIM(f.estado)) = 'M'")
+    int guardarXmlRecuperadoDevuelta(@Param("id") Long id, @Param("clave") String clave,
+            @Param("xml") String xml, @Param("fecha") java.time.LocalDateTime fecha);
+
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true)
+    @Query("UPDATE Factura f SET f.errores = :mensaje, f.fecha_ultimo_intento = :ahora, "
+            + "f.intentos_autorizacion = CASE WHEN COALESCE(f.intentos_autorizacion, 0) < 2147483647 "
+            + "THEN COALESCE(f.intentos_autorizacion, 0) + 1 ELSE f.intentos_autorizacion END "
+            + "WHERE f.idfactura = :id AND UPPER(TRIM(f.estado)) = 'M' "
+            + "AND COALESCE(TRIM(f.claveacceso), '') = :clave")
+    int registrarRecuperacionPendiente(@Param("id") Long id, @Param("clave") String clave,
+            @Param("mensaje") String mensaje, @Param("ahora") java.time.LocalDateTime ahora);
+
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true)
+    @Query("UPDATE Factura f SET f.xmlautorizado = :xml WHERE TRIM(f.claveacceso) = :clave")
+    int actualizarXmlAutorizadoPorClave(@Param("clave") String clave, @Param("xml") String xml);
+
 }

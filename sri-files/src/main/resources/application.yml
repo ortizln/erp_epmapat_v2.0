@@ -64,6 +64,7 @@ sri:
       cron: ${SRI_SCHEDULER_RECUPERACION_XML_CRON:30 */3 * * * *}
     recuperar-devueltas:
       cron: ${SRI_SCHEDULER_RECUPERAR_DEVUELTAS_CRON:0 */5 * * * *}
+      lote: ${SRI_SCHEDULER_RECUPERAR_DEVUELTAS_LOTE:20}
   ambiente: 2
   polling:
     attempts: 40

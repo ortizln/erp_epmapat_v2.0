@@ -38,6 +38,9 @@ sri:
       cron: ${SRI_SCHEDULER_ENVIO_FACTURAS_CRON:0 */1 * * * *}
     recuperacion-xml:
       cron: ${SRI_SCHEDULER_RECUPERACION_XML_CRON:30 */3 * * * *}
+    recuperar-devueltas:
+      cron: ${SRI_SCHEDULER_RECUPERAR_DEVUELTAS_CRON:0 */5 * * * *}
+      lote: ${SRI_SCHEDULER_RECUPERAR_DEVUELTAS_LOTE:20}
 
 eureka:
   client:
