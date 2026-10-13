@@ -28,6 +28,26 @@ class FacturaPdfXmlTest {
     @Test void rechazaClaveAusente() {
         assertThrows(IllegalArgumentException.class,()->FacturaPdfXml.parse(FACTURA.replace(CLAVE,"")));
     }
+    @Test void soportaComprobanteBase64ConservandoAutorizacion() throws Exception {
+        String encoded = java.util.Base64.getMimeEncoder().encodeToString(
+                ("\uFEFF" + FACTURA).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        FacturaPdfXml xml = FacturaPdfXml.parse(sobre(encoded));
+        assertEquals("AUTORIZACION-PRUEBA", xml.numeroAutorizacion);
+        assertEquals("2026-09-15T12:00:00", xml.fechaAutorizacion);
+        assertEquals(CLAVE, FacturaPdfXml.text(xml.factura, "claveAcceso"));
+    }
+    @Test void soportaSobreBase64() throws Exception {
+        String encoded = java.util.Base64.getEncoder().encodeToString(
+                sobre("<![CDATA[" + FACTURA + "]]>").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        FacturaPdfXml xml = FacturaPdfXml.parse(encoded);
+        assertEquals("AUTORIZACION-PRUEBA", xml.numeroAutorizacion);
+        assertEquals(CLAVE, FacturaPdfXml.text(xml.factura, "claveAcceso"));
+    }
+    @Test void rechazaTextoQueNoContieneXml() {
+        assertThrows(IllegalArgumentException.class, () -> FacturaPdfXml.parse("contenido invalido"));
+        String encoded = java.util.Base64.getEncoder().encodeToString("no es XML".getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        assertThrows(IllegalArgumentException.class, () -> FacturaPdfXml.parse(encoded));
+    }
     @Test void pdfImprimeClaveAutorizacionFechaYDetalle() throws Exception {
         XmlToPdfService service = new XmlToPdfService();
         Tabla15R tabla = mock(Tabla15R.class); when(tabla.getNombre("01")).thenReturn("SIN SISTEMA FINANCIERO");

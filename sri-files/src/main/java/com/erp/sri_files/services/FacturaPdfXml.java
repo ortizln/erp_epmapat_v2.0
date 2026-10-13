@@ -1,6 +1,8 @@
 package com.erp.sri_files.services;
 
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.*;
 import org.xml.sax.InputSource;
@@ -60,6 +62,17 @@ final class FacturaPdfXml {
     private static Document document(String xml) throws Exception {
         if (xml == null || xml.isBlank()) throw new IllegalArgumentException("XML vacio");
         String value = xml.replace("\uFEFF", "").trim();
+        if (!value.startsWith("<") && !value.startsWith("&lt;")) {
+            try {
+                value = new String(Base64.getDecoder().decode(value.replaceAll("\\s", "")),
+                        StandardCharsets.UTF_8).replace("\uFEFF", "").trim();
+            } catch (IllegalArgumentException invalid) {
+                throw new IllegalArgumentException("El contenido no es XML ni XML codificado en Base64", invalid);
+            }
+            if (!value.startsWith("<") && !value.startsWith("&lt;")) {
+                throw new IllegalArgumentException("El contenido Base64 no contiene XML");
+            }
+        }
         if (value.startsWith("&lt;")) value = value.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&");
         return factory().newDocumentBuilder().parse(new InputSource(new StringReader(value)));
     }
