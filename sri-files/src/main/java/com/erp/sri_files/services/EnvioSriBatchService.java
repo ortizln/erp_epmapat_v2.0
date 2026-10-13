@@ -115,8 +115,6 @@ public class EnvioSriBatchService {
         logTaskStart("automatizacionConsultarXml", threadName);
         var candidatas = new ArrayList<>(facturaR.findConsultasSriVencidas(LocalDateTime.now(),
                 retryPolicy.getBaseMs(), retryPolicy.getMaxMs(), LOTE));
-        // Los correos pendientes no deben ocupar el cupo de consultas de autorización.
-        candidatas.addAll(facturaR.findCorreosConXmlPendientes(PageRequest.of(0, LOTE)));
         int autorizadas = 0;
         int pendientes = 0;
         for (Factura candidata : candidatas) {
@@ -176,8 +174,12 @@ public class EnvioSriBatchService {
         // Normalizamos en minúsculas
         e = e.toLowerCase(Locale.ROOT);
 
+        if ("no@gmail.com".equals(e)) return false; // Direccion de relleno usada en facturas sin correo.
+
+        if (e.length() > 254 || !e.matches("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+")) return false;
+
         int atIndex = e.lastIndexOf('@');
-        if (atIndex <= 0 || atIndex == e.length() - 1) {
+        if (atIndex <= 0 || atIndex > 64 || atIndex == e.length() - 1) {
             // no tiene @ o está mal formado
             return false;
         }
@@ -185,7 +187,7 @@ public class EnvioSriBatchService {
         String dominio = e.substring(atIndex + 1); // todo lo que está después del @
 
         // Si el dominio está en la lista negra → NO permitir
-        if (DOMINIOS_BLOQUEADOS.contains(dominio)) {
+        if (DOMINIOS_BLOQUEADOS.stream().anyMatch(d -> d.equalsIgnoreCase(dominio))) {
             return false;
         }
 
@@ -508,6 +510,15 @@ public class EnvioSriBatchService {
     }
 
     // helper sencillo, igual al del controller
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public boolean reintentarCorreoPendiente(Long idFactura) {
+        Factura f = facturaR.findParaProcesar(idFactura).orElse(null);
+        if (f == null || !"O".equalsIgnoreCase(safeStr(f.getEstado()))
+                || safeStr(f.getXmlautorizado()).isBlank()) return false;
+        reintentarEnvioCorreoFactura(f);
+        return "A".equals(f.getEstado());
+    }
+
     private void reintentarEnvioCorreoFactura(Factura f) {
         try {
             String xmlAutorizado = safeStr(f.getXmlautorizado());
@@ -520,8 +531,8 @@ public class EnvioSriBatchService {
 
             String correoComprador = safeStr(f.getEmailcomprador());
             if (!esCorreoPermitido(correoComprador)) {
-                f.setEstado("A");
-                f.setErrores(null);
+                f.setEstado("O");
+                f.setErrores("Correo comprador invalido o bloqueado; corregir para reenviar");
                 facturaR.save(f);
                 return;
             }

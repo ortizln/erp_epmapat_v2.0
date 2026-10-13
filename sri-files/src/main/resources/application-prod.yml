@@ -39,6 +39,9 @@ sri:
     retry-delay-ms: ${SRI_XML_RECOVERY_RETRY_DELAY_MS:250}
   ambiente: ${SRI_AMBIENTE:2}
   scheduler:
+    reenvio-correos:
+      cron: ${SRI_SCHEDULER_REENVIO_CORREOS_CRON:0 */5 * * * *}
+      lote: ${SRI_SCHEDULER_REENVIO_CORREOS_LOTE:20}
     envio-facturas:
       cron: ${SRI_SCHEDULER_ENVIO_FACTURAS_CRON:0 */1 * * * *}
     recuperacion-xml:

@@ -26,6 +26,9 @@ class FacturaRecoveryQueryTest {
                 if (annotation != null && annotation.value().startsWith("UPDATE Factura")) {
                     assertDoesNotThrow(() -> session.createMutationQuery(annotation.value()), method.getName());
                 }
+                if (annotation != null && method.getName().equals("findCorreosPendientesDesde")) {
+                    assertDoesNotThrow(() -> session.createQuery(annotation.value(), Factura.class), method.getName());
+                }
             }
         } finally { StandardServiceRegistryBuilder.destroy(registry); }
     }

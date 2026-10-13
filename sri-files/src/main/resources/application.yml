@@ -63,6 +63,9 @@ sri:
     attempt-timeout-ms: ${SRI_XML_RECOVERY_ATTEMPT_TIMEOUT_MS:3500}
     retry-delay-ms: ${SRI_XML_RECOVERY_RETRY_DELAY_MS:250}
   scheduler:
+    reenvio-correos:
+      cron: ${SRI_SCHEDULER_REENVIO_CORREOS_CRON:0 */5 * * * *}
+      lote: ${SRI_SCHEDULER_REENVIO_CORREOS_LOTE:20}
     envio-facturas:
       cron: ${SRI_SCHEDULER_ENVIO_FACTURAS_CRON:0 */1 * * * *}
     recuperacion-xml:

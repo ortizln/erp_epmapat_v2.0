@@ -47,6 +47,10 @@ public interface FacturaR extends JpaRepository<Factura, Long> {
             + "AND f.xmlautorizado IS NOT NULL AND TRIM(f.xmlautorizado) <> '' ORDER BY f.idfactura")
     List<Factura> findCorreosConXmlPendientes(Pageable pageable);
 
+    @Query("SELECT f FROM Factura f WHERE UPPER(TRIM(f.estado)) = 'O' AND f.idfactura > :ultimoId "
+            + "AND f.xmlautorizado IS NOT NULL AND TRIM(f.xmlautorizado) <> '' ORDER BY f.idfactura")
+    List<Factura> findCorreosPendientesDesde(@Param("ultimoId") Long ultimoId, Pageable pageable);
+
     boolean existsByClaveaccesoAndIdfacturaNot(String claveacceso, Long idfactura);
 
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
