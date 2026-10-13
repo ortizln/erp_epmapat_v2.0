@@ -40,11 +40,10 @@ public class RecuperarDevueltasScheduler {
                 String clave = factura.getClaveacceso() == null ? "" : factura.getClaveacceso().trim();
                 MDC.put("idFactura", String.valueOf(factura.getIdfactura()));
                 try {
-                    var resultado = recovery.recuperar(clave, false);
+                    var resultado = recovery.recuperarFacturaParaRide(clave);
                     if (resultado.recuperado()) {
                         int actualizadas = facturaR.guardarXmlRecuperadoDevuelta(factura.getIdfactura(), clave,
-                                resultado.xml(), resultado.fechaAutorizacion() != null
-                                    ? resultado.fechaAutorizacion() : LocalDateTime.now());
+                                resultado.xml(), resultado.fechaAutorizacion());
                         recuperadas += actualizadas;
                         log.info("Recuperacion XML idfactura={} fuente={} filasActualizadas={}",
                                 factura.getIdfactura(), resultado.fuente(), actualizadas);

@@ -62,6 +62,57 @@ public class XmlAutorizadoRecoveryService {
         return resultadoSri(sri, key);
     }
 
+    /** A RIDE needs the authorization envelope, not just the signed invoice. */
+    public Resultado recuperarFacturaParaRide(String clave) {
+        String key = validarClave(clave);
+        var cache = consultarCache(key);
+        var completo = completarFactura(cache, key);
+        if (completo != null) return completo;
+        var sri = resultadoSri(gateway.consultarAutorizacion(key), key);
+        completo = completarFactura(sri, key);
+        return completo != null ? completo : pendiente(sri.recuperado()
+                ? "El XML recuperado no contiene numero y fecha de autorizacion SRI"
+                : sri.mensaje());
+    }
+
+    private Resultado completarFactura(Resultado resultado, String key) {
+        if (resultado == null || !resultado.recuperado()) return null;
+        try {
+            var parsed = FacturaPdfXml.parse(resultado.xml());
+            if (!key.equals(FacturaPdfXml.text(parsed.factura, "claveAcceso"))) return null;
+            if (!parsed.numeroAutorizacion.isBlank() && fechaSri(parsed.fechaAutorizacion) != null) {
+                return new Resultado(resultado.xml(), resultado.fuente(), "AUTORIZADO",
+                        parsed.numeroAutorizacion, fechaSri(parsed.fechaAutorizacion), null);
+            }
+            // Only use metadata supplied by SRI/document storage; never invent it from the key or current time.
+            if (resultado.numeroAutorizacion() == null || resultado.numeroAutorizacion().isBlank()
+                    || resultado.fechaAutorizacion() == null) return null;
+            String encabezado = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><autorizacion><estado>AUTORIZADO</estado>"
+                    + "<numeroAutorizacion>" + escaparXml(resultado.numeroAutorizacion()) + "</numeroAutorizacion>"
+                    + "<fechaAutorizacion>" + resultado.fechaAutorizacion() + "</fechaAutorizacion>";
+            // When storage already contains an envelope, keep only its invoice as the embedded document.
+            var transformer = javax.xml.transform.TransformerFactory.newInstance().newTransformer();
+            var writer = new java.io.StringWriter();
+            transformer.transform(new javax.xml.transform.dom.DOMSource(parsed.factura),
+                    new javax.xml.transform.stream.StreamResult(writer));
+            String comprobante = resultado.xml();
+            // Preserve the signed invoice bytes when the source is already a plain invoice.
+            if (comprobante.contains("<comprobante") || comprobante.contains(":comprobante")
+                    || !comprobante.stripLeading().startsWith("<")) comprobante = writer.toString();
+            String xml = encabezado + "<comprobante><![CDATA["
+                    + comprobante.replace("]]>", "]]]]><![CDATA[>") + "]]></comprobante></autorizacion>";
+            FacturaPdfXml.parse(xml);
+            return new Resultado(xml, resultado.fuente(), "AUTORIZADO", resultado.numeroAutorizacion(),
+                    resultado.fechaAutorizacion(), null);
+        } catch (Exception invalid) {
+            return null;
+        }
+    }
+
+    private static String escaparXml(String value) {
+        return value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
+    }
+
     private Resultado consultarCache(String key) {
         try {
             var documento = documentos.findByClaveAcceso(key).orElse(null);

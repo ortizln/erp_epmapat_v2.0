@@ -25,7 +25,7 @@ class RecuperarDevueltasSchedulerTest {
     }
     @Test void persistsRecoveredXmlUsingConditionalUpdateInsteadOfMergingInvoice() {
         var date = LocalDateTime.of(2026, 10, 8, 14, 0);
-        when(recovery.recuperar(KEY, false)).thenReturn(new XmlAutorizadoRecoveryService.Resultado(
+        when(recovery.recuperarFacturaParaRide(KEY)).thenReturn(new XmlAutorizadoRecoveryService.Resultado(
                 "<factura/>", "BD_documento_electronico", "AUTORIZADO", KEY, date, null));
         when(invoices.guardarXmlRecuperadoDevuelta(123L, KEY, "<factura/>", date)).thenReturn(1);
         scheduler.recuperarFacturasDevueltas();
@@ -34,7 +34,7 @@ class RecuperarDevueltasSchedulerTest {
         verify(invoices, never()).registrarRecuperacionPendiente(any(), any(), any(), any());
     }
     @Test void noXmlKeepsMDespiteMoreThanFiveAttempts() {
-        when(recovery.recuperar(KEY, false)).thenReturn(new XmlAutorizadoRecoveryService.Resultado(
+        when(recovery.recuperarFacturaParaRide(KEY)).thenReturn(new XmlAutorizadoRecoveryService.Resultado(
                 null, "SRI", null, null, null, "Sin autorizaciones"));
         scheduler.recuperarFacturasDevueltas();
         assertEquals("M", invoice.getEstado());
@@ -43,20 +43,20 @@ class RecuperarDevueltasSchedulerTest {
         verify(invoices, never()).save(any());
     }
     @Test void networkFailureIsPersistedForRetry() {
-        when(recovery.recuperar(KEY, false)).thenThrow(new RuntimeException("Connection reset"));
+        when(recovery.recuperarFacturaParaRide(KEY)).thenThrow(new RuntimeException("Connection reset"));
         scheduler.recuperarFacturasDevueltas();
         assertEquals("M", invoice.getEstado());
         verify(invoices).registrarRecuperacionPendiente(eq(123L), eq(KEY), contains("Connection reset"), any());
     }
     @Test void invalidKeyRemainsDiagnosableAndDoesNotDiscardOtherInvoices() {
         invoice.setClaveacceso(null);
-        when(recovery.recuperar("", false)).thenThrow(new IllegalArgumentException("Clave invalida"));
+        when(recovery.recuperarFacturaParaRide("")).thenThrow(new IllegalArgumentException("Clave invalida"));
         scheduler.recuperarFacturasDevueltas();
         verify(invoices).registrarRecuperacionPendiente(eq(123L), eq(""), contains("Clave invalida"), any());
         assertEquals("M", invoice.getEstado());
     }
     @Test void concurrentCycleCannotEnterAgain() {
-        when(recovery.recuperar(KEY, false)).thenAnswer(call -> {
+        when(recovery.recuperarFacturaParaRide(KEY)).thenAnswer(call -> {
             scheduler.recuperarFacturasDevueltas();
             return new XmlAutorizadoRecoveryService.Resultado(null, "SRI", null, null, null, "Pendiente");
         });
@@ -64,7 +64,7 @@ class RecuperarDevueltasSchedulerTest {
         verify(invoices, times(1)).findDevueltasVencidas(any(), anyLong(), anyLong(), anyInt());
     }
     @Test void changedStateDuringQueryDoesNotCauseAnEntitySave() {
-        when(recovery.recuperar(KEY, false)).thenReturn(new XmlAutorizadoRecoveryService.Resultado(
+        when(recovery.recuperarFacturaParaRide(KEY)).thenReturn(new XmlAutorizadoRecoveryService.Resultado(
                 "<factura/>", "SRI", "AUTORIZADO", KEY, null, null));
         when(invoices.guardarXmlRecuperadoDevuelta(anyLong(), anyString(), anyString(), any())).thenReturn(0);
         scheduler.recuperarFacturasDevueltas();

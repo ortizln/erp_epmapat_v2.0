@@ -27,6 +27,36 @@ class XmlAutorizadoRecoveryServiceTest {
     private SriGateway.SriAutorizacionResult authorized(String xml) {
         return new SriGateway.SriAutorizacionResult(true, xml, KEY, "2026-10-08T19:00:00Z", "AUTORIZADO", null);
     }
+    @Test void rideRecoveryRefreshesIncompleteInvoiceCacheAndStoresAuthorizationEnvelope() throws Exception {
+        var invoice = new Factura(); invoice.setEstado("M"); invoice.setXmlautorizado(XML);
+        when(invoices.findByClaveacceso(KEY)).thenReturn(Optional.of(invoice));
+        when(gateway.consultarAutorizacion(KEY)).thenReturn(authorized(XML));
+        var result = service.recuperarFacturaParaRide(KEY);
+        var parsed = FacturaPdfXml.parse(result.xml());
+        assertEquals(KEY, parsed.numeroAutorizacion);
+        assertEquals("2026-10-08T14:00", parsed.fechaAutorizacion);
+        assertEquals(KEY, FacturaPdfXml.text(parsed.factura, "claveAcceso"));
+        assertEquals("A & B", FacturaPdfXml.text(parsed.factura, "razonSocial"));
+        assertTrue(result.xml().contains(XML));
+        verify(gateway).consultarAutorizacion(KEY);
+    }
+    @Test void rideRecoveryReusesCompleteEnvelopeAndReadsItsDate() {
+        String xml = "<autorizacion><estado>AUTORIZADO</estado><numeroAutorizacion>" + KEY
+                + "</numeroAutorizacion><fechaAutorizacion>2026-10-08T19:00:00Z</fechaAutorizacion>"
+                + "<comprobante><![CDATA[" + XML + "]]></comprobante></autorizacion>";
+        var invoice = new Factura(); invoice.setXmlautorizado(xml);
+        when(invoices.findByClaveacceso(KEY)).thenReturn(Optional.of(invoice));
+        var result = service.recuperarFacturaParaRide(KEY);
+        assertEquals(xml, result.xml());
+        assertEquals(java.time.LocalDateTime.of(2026, 10, 8, 14, 0), result.fechaAutorizacion());
+        verifyNoInteractions(gateway);
+    }
+    @Test void rideRecoveryDoesNotAcceptMissingAuthorizationDateOrInventOne() {
+        when(gateway.consultarAutorizacion(KEY)).thenReturn(
+                new SriGateway.SriAutorizacionResult(true, XML, KEY, null, "AUTORIZADO", null));
+        var result = service.recuperarFacturaParaRide(KEY);
+        assertFalse(result.recuperado()); assertNull(result.fechaAutorizacion());
+    }
     @Test void usesDocumentCacheWithoutConsultingSriAndPreservesXml() {
         var doc = new DocumentoElectronico(); doc.setXmlAutorizado(XML); doc.setEstado("AUTORIZADO");
         when(documents.findByClaveAcceso(KEY)).thenReturn(Optional.of(doc));
