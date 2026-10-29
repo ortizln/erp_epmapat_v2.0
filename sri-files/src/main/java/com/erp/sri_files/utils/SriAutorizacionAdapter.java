@@ -44,10 +44,6 @@ public final class SriAutorizacionAdapter {
         boolean ok = rc.isAutorizado();
 // En el adapter, si no hay número de autorización en el DTO:
         String numAut = rc.getNumeroAutorizacion();
-        if ((numAut == null || numAut.isBlank()) && rc.getXmlAutorizado() != null) {
-            // ejemplo: extraer <claveAcceso>...</claveAcceso> del comprobante
-            numAut = extraerClaveDesdeXml(rc.getXmlAutorizado());
-        }
         LocalDateTime fecha = rc.getFechaAutorizacion();
 
         byte[] xmlAut = null;
@@ -61,20 +57,6 @@ public final class SriAutorizacionAdapter {
 
         return Optional.of(new AutorizacionInfo(ok, numAut, fecha, xmlAut, mensajes));
     }
-    private static String extraerClaveDesdeXml(String xml) {
-        try {
-            int i = xml.indexOf("<claveAcceso>");
-            int j = xml.indexOf("</claveAcceso>");
-            if (i >= 0 && j > i) {
-                return xml.substring(i + "<claveAcceso>".length(), j).trim();
-            }
-        } catch (Exception ignored) {}
-        return null;
-    }
-
-
-
-
     private static LocalDateTime parseFecha(Object raw) {
         try {
             if (raw instanceof XMLGregorianCalendar xgc) {

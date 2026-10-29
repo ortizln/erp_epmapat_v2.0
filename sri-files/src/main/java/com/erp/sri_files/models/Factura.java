@@ -45,6 +45,12 @@ public class Factura {
     private LocalDateTime fecha_ultimo_intento;
     private LocalDateTime fecha_autorizacion;
     private Boolean mail_enviado;
+    @Column(name = "xml_firmado_envio", columnDefinition = "text")
+    private String xmlFirmadoEnvio;
+    @Column(name = "recepcion_confirmada")
+    private Boolean recepcionConfirmada;
+    @Column(name = "email_message_id")
+    private java.util.UUID emailMessageId;
     
     @OneToMany(mappedBy = "factura", cascade = CascadeType.ALL)
     private List<FacturaDetalle> detalles = new ArrayList<>();

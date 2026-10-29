@@ -29,7 +29,7 @@ public interface FacturaR extends JpaRepository<Factura, Long> {
 
     @Query(value = """
             SELECT f.* FROM fec_factura f
-            WHERE (UPPER(TRIM(f.estado)) = 'C'
+            WHERE (UPPER(TRIM(f.estado)) IN ('C', 'P')
                 OR (UPPER(TRIM(f.estado)) IN ('A', 'O') AND NULLIF(TRIM(f.xmlautorizado), '') IS NULL))
               AND (f.fecha_ultimo_intento IS NULL OR f.fecha_ultimo_intento <=
                 CAST(:ahora AS timestamp) - INTERVAL '1 millisecond' * FLOOR(
@@ -41,6 +41,21 @@ public interface FacturaR extends JpaRepository<Factura, Long> {
             LIMIT :limite
             """, nativeQuery = true)
     List<Factura> findConsultasSriVencidas(@Param("ahora") java.time.LocalDateTime ahora,
+            @Param("baseMs") long baseMs, @Param("maxMs") long maxMs, @Param("limite") int limite);
+
+    @Query(value = """
+            SELECT f.* FROM fec_factura f
+            WHERE UPPER(TRIM(f.estado)) = 'I'
+              AND (f.fecha_ultimo_intento IS NULL OR f.fecha_ultimo_intento <=
+                CAST(:ahora AS timestamp) - INTERVAL '1 millisecond' * FLOOR(
+                  LEAST(:maxMs, :baseMs * POWER(2.0,
+                    LEAST(20, GREATEST(0, COALESCE(f.intentos_autorizacion, 0) - 1))))
+                  * (0.5 + MOD(MOD(f.idfactura, 1000) +
+                    CAST(GREATEST(0, COALESCE(f.intentos_autorizacion, 0)) AS bigint) * 37, 1000) / 2000.0)))
+            ORDER BY f.fecha_ultimo_intento ASC NULLS FIRST, f.idfactura
+            LIMIT :limite
+            """, nativeQuery = true)
+    List<Factura> findEnviosSriVencidos(@Param("ahora") java.time.LocalDateTime ahora,
             @Param("baseMs") long baseMs, @Param("maxMs") long maxMs, @Param("limite") int limite);
 
     @Query("SELECT f FROM Factura f WHERE UPPER(TRIM(f.estado)) = 'O' "
@@ -89,7 +104,7 @@ public interface FacturaR extends JpaRepository<Factura, Long> {
     List<Factura> findDevueltas(Pageable pageable);
     @org.springframework.transaction.annotation.Transactional
     @org.springframework.data.jpa.repository.Modifying(clearAutomatically = true)
-    @Query("UPDATE Factura f SET f.xmlautorizado = :xml, f.estado = 'A', f.errores = null, "
+    @Query("UPDATE Factura f SET f.xmlautorizado = :xml, f.estado = 'O', f.mail_enviado = false, f.errores = null, "
             + "f.fecha_autorizacion = COALESCE(f.fecha_autorizacion, :fecha), "
             + "f.fecha_ultimo_intento = null, f.intentos_autorizacion = 0 "
             + "WHERE f.idfactura = :id AND TRIM(f.claveacceso) = :clave AND UPPER(TRIM(f.estado)) = 'M'")

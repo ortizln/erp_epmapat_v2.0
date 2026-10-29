@@ -39,11 +39,16 @@ class FacturaRevisionServiceTest {
     @Test void recuperaAutorizadaSinGenerarNiReenviar() throws Exception {
         RespuestaComprobante r = new RespuestaComprobante(); r.setNumeroComprobantes("1");
         var lista = new RespuestaComprobante.Autorizaciones(); var a = new Autorizacion(); a.setEstado("AUTORIZADO");
+        a.setNumeroAutorizacion("real-sri");
+        a.setFechaAutorizacion(javax.xml.datatype.DatatypeFactory.newInstance().newXMLGregorianCalendar("2026-09-01T09:05:00-05:00"));
+        a.setComprobante("<factura><claveAcceso>" + factura.getClaveacceso() + "</claveAcceso></factura>");
         lista.getAutorizacion().add(a); r.setAutorizaciones(lista);
         when(sri.consultarAutorizacion(factura.getClaveacceso(), 2)).thenReturn(r);
         when(sri.extraerXmlAutorizado(r)).thenReturn("<factura>autorizada</factura>");
         assertEquals("AUTORIZADA_RECUPERADA", service.recuperar(10L, false).resultado());
-        assertEquals("A", factura.getEstado()); verifyNoInteractions(generator);
+        assertEquals("O", factura.getEstado()); assertFalse(factura.getMail_enviado());
+        assertTrue(factura.getXmlautorizado().contains("<numeroAutorizacion>real-sri</numeroAutorizacion>"));
+        verifyNoInteractions(generator);
         verify(sri, never()).enviarFacturaFirmadaTxt(anyString());
     }
     @Test void datosCompletosSinRegistroExigenConciliarClaveHistorica() throws Exception {

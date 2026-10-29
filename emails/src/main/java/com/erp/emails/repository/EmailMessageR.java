@@ -17,11 +17,15 @@ import java.util.UUID;
 
 public interface EmailMessageR extends JpaRepository<EmailMessage, UUID>,
         JpaSpecificationExecutor<EmailMessage> {
+    Optional<EmailMessage> findFirstByTypeAndCorrelationIdOrderByCreatedAtAsc(
+            com.erp.emails.model.EmailType type, String correlationId);
+
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
         select e from EmailMessage e
         where e.status = :status
-          and e.attempts < :maxAttempts
+          and (e.attempts < :maxAttempts or e.type = com.erp.emails.model.EmailType.DOC_ELECTRONICO)
+          and (e.nextAttemptAt is null or e.nextAttemptAt <= CURRENT_TIMESTAMP)
         order by e.createdAt asc
     """)
     List<EmailMessage> lockNextPending(@Param("status") EmailStatus status,
@@ -31,12 +35,18 @@ public interface EmailMessageR extends JpaRepository<EmailMessage, UUID>,
     @Query("""
         select e.id from EmailMessage e
         where e.status = :status
-          and e.attempts < :maxAttempts
+          and (e.attempts < :maxAttempts or e.type = com.erp.emails.model.EmailType.DOC_ELECTRONICO)
+          and (e.nextAttemptAt is null or e.nextAttemptAt <= CURRENT_TIMESTAMP)
         order by e.createdAt asc
     """)
     List<UUID> findNextPendingIds(@Param("status") EmailStatus status,
                                   @Param("maxAttempts") int maxAttempts,
                                   Pageable pageable);
+
+    @org.springframework.transaction.annotation.Transactional
+    @org.springframework.data.jpa.repository.Modifying
+    @Query("update EmailMessage e set e.status = com.erp.emails.model.EmailStatus.FAILED, e.nextAttemptAt = null, e.lastError = 'Reserva vencida con intentos agotados; verificar proveedor antes de reintentar' where e.status = com.erp.emails.model.EmailStatus.PENDING and e.type <> com.erp.emails.model.EmailType.DOC_ELECTRONICO and e.attempts >= :maxAttempts and (e.nextAttemptAt is null or e.nextAttemptAt <= CURRENT_TIMESTAMP)")
+    int failExhausted(@Param("maxAttempts") int maxAttempts);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select e from EmailMessage e where e.id = :id")

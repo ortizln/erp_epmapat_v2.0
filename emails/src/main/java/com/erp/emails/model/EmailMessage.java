@@ -65,6 +65,7 @@ public class EmailMessage {
 
     private OffsetDateTime createdAt;
     private OffsetDateTime sentAt;
+    private OffsetDateTime nextAttemptAt;
 
     // getters/setters
 

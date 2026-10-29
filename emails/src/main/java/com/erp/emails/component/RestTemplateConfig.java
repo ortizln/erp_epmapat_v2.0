@@ -9,6 +9,9 @@ public class RestTemplateConfig {
 
     @Bean
     RestTemplate restTemplate() {
-        return new RestTemplate();
+        var factory = new org.springframework.http.client.SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(5000);
+        factory.setReadTimeout(30000);
+        return new RestTemplate(factory);
     }
 }

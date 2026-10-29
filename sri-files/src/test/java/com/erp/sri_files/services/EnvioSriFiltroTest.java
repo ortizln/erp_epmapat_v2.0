@@ -83,10 +83,13 @@ class EnvioSriFiltroTest {
         f.setEstado("C"); f.setIntentos_autorizacion(12);
         f.setFecha_ultimo_intento(java.time.LocalDateTime.now().minusHours(1));
         var autorizada = new com.erp.sri_files.dto.AutorizacionSriResult();
-        autorizada.setAutorizado(true); autorizada.setXmlAutorizado("<factura/>");
+        autorizada.setAutorizado(true); autorizada.setXmlAutorizado("<factura><infoTributaria><claveAcceso>" + f.getClaveacceso() + "</claveAcceso></infoTributaria></factura>");
+        autorizada.setNumeroAutorizacion("numero-real-sri");
+        autorizada.setFechaAutorizacion(java.time.LocalDateTime.of(2026,9,1,9,2));
         when(sri.consultar_Autorizacion(f.getClaveacceso())).thenReturn(autorizada);
         assertTrue(service.consultarPendiente(10L));
-        assertEquals("A", f.getEstado()); assertEquals("<factura/>", f.getXmlautorizado());
+        assertEquals("O", f.getEstado()); assertTrue(f.getXmlautorizado().contains("<numeroAutorizacion>numero-real-sri</numeroAutorizacion>"));
+        assertFalse(f.getMail_enviado());
         assertEquals(0, f.getIntentos_autorizacion()); assertNull(f.getFecha_ultimo_intento());
         verifyNoInteractions(generator, firma);
     }
@@ -98,5 +101,46 @@ class EnvioSriFiltroTest {
         when(sri.consultar_Autorizacion(f.getClaveacceso())).thenReturn(rechazada);
         assertFalse(service.consultarPendiente(10L));
         assertEquals("N", f.getEstado());
+    }
+
+    @Test void uncertainReceptionResendsOnlyTheOriginalSignedXmlAfterEmptyQueries() throws Exception {
+        f.setEstado("C"); f.setXmlFirmadoEnvio("<signed-original/>");
+        f.setIntentos_autorizacion(3); f.setFecha_ultimo_intento(java.time.LocalDateTime.now().minusHours(1));
+        var empty = new com.erp.sri_files.dto.AutorizacionSriResult(); empty.setMensaje("Sin autorizaciones devueltas por el SRI");
+        when(sri.consultar_Autorizacion(f.getClaveacceso())).thenReturn(empty);
+        when(sri.inferAmbienteFromXml("<signed-original/>")).thenReturn(2);
+        var reception = new RespuestaSolicitud(); reception.setEstado("RECIBIDA");
+        when(sri.enviarFacturaFirmadaTxt("<signed-original/>", 2)).thenReturn(reception);
+        assertFalse(service.consultarPendiente(10L));
+        assertTrue(f.getRecepcionConfirmada()); assertEquals("C",f.getEstado());
+        verify(sri).enviarFacturaFirmadaTxt("<signed-original/>",2);
+        verifyNoInteractions(generator,firma);
+    }
+
+    @Test void confirmedReceptionNeverResendsEvenAfterManyEmptyQueries() throws Exception {
+        f.setEstado("C"); f.setXmlFirmadoEnvio("<signed-original/>"); f.setRecepcionConfirmada(true);
+        f.setIntentos_autorizacion(500); f.setFecha_ultimo_intento(java.time.LocalDateTime.now().minusHours(1));
+        var empty = new com.erp.sri_files.dto.AutorizacionSriResult(); empty.setMensaje("Sin autorizaciones devueltas por el SRI");
+        when(sri.consultar_Autorizacion(f.getClaveacceso())).thenReturn(empty);
+        assertFalse(service.consultarPendiente(10L));
+        verify(sri,never()).enviarFacturaFirmadaTxt(anyString(),anyInt());
+        assertEquals("C",f.getEstado());
+    }
+
+    @Test void authorizationWithAnotherKeyIsNotSavedAsSuccess() throws Exception {
+        f.setEstado("C");
+        var auth = new com.erp.sri_files.dto.AutorizacionSriResult(); auth.setAutorizado(true);
+        auth.setXmlAutorizado("<factura><claveAcceso>1009202601046002881000120010130004585995621446311</claveAcceso></factura>");
+        auth.setNumeroAutorizacion("real"); auth.setFechaAutorizacion(java.time.LocalDateTime.now());
+        when(sri.consultar_Autorizacion(f.getClaveacceso())).thenReturn(auth);
+        assertFalse(service.consultarPendiente(10L));
+        assertNull(f.getXmlautorizado()); assertEquals("C",f.getEstado());
+    }
+
+    @Test void temporarySigningFailureReturnsToDurableRetryInsteadOfAbandoningInvoice() throws Exception {
+        when(generator.generarXmlFactura(f)).thenThrow(new IllegalStateException("certificado temporalmente inaccesible"));
+        service.procesarFacturaEnNuevaTx(10L);
+        assertEquals("I",f.getEstado()); assertNotNull(f.getFecha_ultimo_intento());
+        assertEquals(1,f.getIntentos_autorizacion());
     }
 }

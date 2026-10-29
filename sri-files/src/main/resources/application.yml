@@ -102,6 +102,8 @@ eureka:
     enabled: ${EUREKA_CLIENT_ENABLED:true}
     register-with-eureka: ${EUREKA_REGISTER_WITH_EUREKA:true}
     fetch-registry: ${EUREKA_FETCH_REGISTRY:true}
+    service-url:
+      defaultZone: ${EUREKA_DEFAULT_ZONE:${EUREKA_SERVICEURL:http://msvc-eureka}:8761/eureka/}
 
 net:
   sf:

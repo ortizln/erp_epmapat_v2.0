@@ -27,7 +27,8 @@ public class SriFilesApplication {
 
     @Bean
     RestTemplate restTemplate(RestTemplateBuilder builder) {
-        return builder.build();
+        return builder.connectTimeout(java.time.Duration.ofSeconds(5))
+                .readTimeout(java.time.Duration.ofSeconds(30)).build();
     }
 
     static {

@@ -334,10 +334,11 @@ public class SendXmlToSriService {
 
 
     public AutorizacionSriResult consultar_Autorizacion(String claveAcceso) throws Exception {
-        AutorizacionSriResult result = new AutorizacionSriResult();
+        return interpretarAutorizacion(consultarAutorizacion(claveAcceso));
+    }
 
-        // Llamas a tu método actual
-        RespuestaComprobante resp = consultarAutorizacion(claveAcceso);
+    public static AutorizacionSriResult interpretarAutorizacion(RespuestaComprobante resp) {
+        AutorizacionSriResult result = new AutorizacionSriResult();
 
         if (resp == null || resp.getAutorizaciones() == null ||
                 resp.getAutorizaciones().getAutorizacion().isEmpty()) {
@@ -359,9 +360,8 @@ public class SendXmlToSriService {
             result.setAutorizado(true);
 
             // Número de autorización
-            //result.setNumeroAutorizacion(
-                 //   aut.getNumeroAutorizacion() == null ? "" : aut.getNumeroAutorizacion().trim()
-            //);
+            result.setNumeroAutorizacion(aut.getNumeroAutorizacion() == null
+                    ? null : aut.getNumeroAutorizacion().trim());
 
             // Fecha/hora de autorización
             if (aut.getFechaAutorizacion() != null) {
@@ -369,6 +369,7 @@ public class SendXmlToSriService {
                         aut.getFechaAutorizacion()
                                 .toGregorianCalendar()
                                 .toZonedDateTime()
+                                .withZoneSameInstant(java.time.ZoneId.of("America/Guayaquil"))
                                 .toLocalDateTime()
                 );
             }
@@ -547,7 +548,14 @@ public class SendXmlToSriService {
         if (!comp.isEmpty() && comp.charAt(0) == '\uFEFF') {
             comp = comp.substring(1);
         }
-        return comp.trim();
+        comp = comp.trim();
+        if (!comp.isBlank() && !comp.startsWith("<")) {
+            try {
+                String decoded = new String(java.util.Base64.getDecoder().decode(comp), StandardCharsets.UTF_8).trim();
+                if (decoded.startsWith("<")) comp = decoded;
+            } catch (IllegalArgumentException ignored) { /* La validacion XML posterior informa el error. */ }
+        }
+        return comp;
     }
 
     private static String normEstado(String estado) {

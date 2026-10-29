@@ -25,6 +25,7 @@ public class EmailComposerService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailComposerService.class);
 
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
     private final EmailMessageR emailRepo;
     private final EmailAttachmentR attachRepo;
     private final TemplateService templateService;
@@ -37,7 +38,9 @@ public class EmailComposerService {
                                 TemplateService templateService,
                                 AttachmentStorage storage,
                                 EmailAccountService accountService,
-                                EmailBlacklistService blacklistService) {
+                                EmailBlacklistService blacklistService,
+                                org.springframework.jdbc.core.JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
         this.emailRepo = emailRepo;
         this.attachRepo = attachRepo;
         this.templateService = templateService;
@@ -48,6 +51,14 @@ public class EmailComposerService {
 
     @Transactional
     public UUID enqueue(EmailType type, SendEmailRequest req) {
+        // La misma factura conserva su ID aunque SRI pierda la respuesta HTTP al encolar.
+        // El advisory lock dura hasta COMMIT y serializa encolamientos entre replicas.
+        if (type == EmailType.DOC_ELECTRONICO && req.correlationId != null
+                && req.correlationId.matches("factura:[0-9]+")) {
+            jdbc.queryForList("SELECT pg_advisory_xact_lock(hashtextextended(?, 0))", req.correlationId);
+            var existing = emailRepo.findFirstByTypeAndCorrelationIdOrderByCreatedAtAsc(type, req.correlationId);
+            if (existing.isPresent()) return existing.get().getId();
+        }
         blacklistService.validateRecipients(mergeRecipients(req.to, req.cc, req.bcc));
         EmailAccount account = accountService.resolveAccount(req.accountId, type);
 

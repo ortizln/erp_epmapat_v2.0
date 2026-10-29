@@ -70,6 +70,15 @@ public class EmailController {
         return enqueue(EmailType.CUSTOM, req);
     }
 
+    @GetMapping("/{id}/status")
+    public ResponseEntity<?> status(@PathVariable UUID id) {
+        return emailRepo.findById(id).map(e -> ResponseEntity.ok(new StatusResponse(
+                e.getId(), e.getStatus(), e.getLastError(), e.getAttempts(), e.getSentAt())))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    public record StatusResponse(UUID id, EmailStatus status, String lastError, int attempts, OffsetDateTime sentAt) {}
+
     @GetMapping("/{id}")
     public ResponseEntity<EmailResponse> getOne(@PathVariable UUID id) {
         return emailRepo.findById(id)
@@ -125,8 +134,13 @@ public class EmailController {
     }
 
     @PostMapping("/{id}/retry")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> retry(@PathVariable UUID id) {
-        return emailRepo.findById(id).map(e -> {
+        return emailRepo.lockById(id).map(e -> {
+            if (e.getStatus() != EmailStatus.FAILED) {
+                return ResponseEntity.status(409).body("Solo se puede reintentar si esta FAILED");
+            }
+            e.setNextAttemptAt(null);
             e.setAttempts(0);
             e.setStatus(EmailStatus.PENDING);
             e.setLastError(null);
@@ -137,9 +151,10 @@ public class EmailController {
     }
 
     @PostMapping("/{id}/cancel")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> cancel(@PathVariable UUID id) {
-        return emailRepo.findById(id).map(e -> {
-            if (e.getStatus() == EmailStatus.PENDING) {
+        return emailRepo.lockById(id).map(e -> {
+            if (e.getStatus() == EmailStatus.PENDING && (e.getNextAttemptAt() == null || e.getNextAttemptAt().isBefore(OffsetDateTime.now()))) {
                 e.setStatus(EmailStatus.CANCELLED);
                 emailRepo.save(e);
                 return ResponseEntity.ok().build();

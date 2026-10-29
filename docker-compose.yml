@@ -324,6 +324,7 @@ services:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
       - CONFIG_SERVER_URL=http://config-server:8888
       - EUREKA_SERVICEURL=http://msvc-eureka
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://msvc-eureka:8761/eureka/
       - EUREKA_INSTANCE=msvc-sri
       - PAGOSONLINE_API_BASE_URL=http://msvc-bandred:33
       - ERP_BACKEND_BASE_URL=http://192.168.0.165:8080/fec_factura
@@ -433,6 +434,10 @@ services:
     volumes:
       - ./data/attachments:/data/attachments
     environment:
+      - TELEGRAM_ALERTS_ENABLED=${TELEGRAM_ALERTS_ENABLED:-false}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
+      - TELEGRAM_ALERT_COOLDOWN_SECONDS=${TELEGRAM_ALERT_COOLDOWN_SECONDS:-300}
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}

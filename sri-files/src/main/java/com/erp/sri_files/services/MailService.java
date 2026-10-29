@@ -86,6 +86,10 @@ public class MailService {
         }
     }
 
+    public com.erp.sri_files.dto.EmailMsStatusResponse consultarEstado(java.util.UUID id) {
+        return emailMsClientService.consultarEstado(id);
+    }
+
     public boolean smtpHealth() {
         return emailMsClientService.health();
     }

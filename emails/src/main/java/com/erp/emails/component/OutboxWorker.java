@@ -27,6 +27,9 @@ public class OutboxWorker {
 
     @Scheduled(fixedDelayString = "${mailms.outbox.scheduler-fixed-delay-ms:15000}")
     public void process() {
+        int exhausted = emailRepo.failExhausted(maxAttempts);
+        if (exhausted > 0) org.slf4j.LoggerFactory.getLogger(OutboxWorker.class)
+                .error("Correos con reserva vencida e intentos agotados: {}", exhausted);
         var ids = emailRepo.findNextPendingIds(
                 EmailStatus.PENDING,
                 maxAttempts,
@@ -37,8 +40,7 @@ public class OutboxWorker {
             try {
                 emailProcessorService.procesarEmail(emailId, maxAttempts);
             } catch (Exception e) {
-                System.err.println("Error procesando email ID: " + emailId);
-                e.printStackTrace();
+                org.slf4j.LoggerFactory.getLogger(OutboxWorker.class).error("Error procesando email ID: {}", emailId, e);
             }
         }
     }

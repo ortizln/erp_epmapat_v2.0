@@ -28,7 +28,7 @@ spring:
       mail.smtp.connectiontimeout: 8000
       mail.smtp.timeout: 8000
       mail.smtp.writetimeout: 8000
-      mail.debug: true
+      mail.debug: false
 mailms:
   from: "EPMAPA-T <no-reply@epmapatulcan.gob.ec>"
   attachment-storage:

@@ -60,6 +60,14 @@ public class EmailMsClientService {
         }
     }
 
+    public com.erp.sri_files.dto.EmailMsStatusResponse consultarEstado(UUID id) {
+        var response = restTemplate.getForEntity(baseUrl + "/api/v1/emails/" + id + "/status",
+                com.erp.sri_files.dto.EmailMsStatusResponse.class);
+        if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null)
+            throw new IllegalStateException("No se pudo confirmar estado del correo " + id);
+        return response.getBody();
+    }
+
     public boolean health() {
         try {
             ResponseEntity<Map> response = restTemplate.getForEntity(baseUrl + "/actuator/health", Map.class);

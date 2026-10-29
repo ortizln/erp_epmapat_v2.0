@@ -72,8 +72,13 @@ public class FacturaRevisionService {
             String xml = sri.extraerXmlAutorizado(respuesta);
             if (autorizaciones.stream().anyMatch(a -> "AUTORIZADO".equalsIgnoreCase(a.getEstado()))) {
                 if (xml == null || xml.isBlank()) return resultado(f, "CONSULTA_INCONCLUSA", List.of("Autorizada sin XML recuperable"));
-                f.setXmlautorizado(xml);
-                cambiar(f, "A", "XML autorizado recuperado por revisión");
+                var evidencia = SendXmlToSriService.interpretarAutorizacion(respuesta);
+                f.setXmlautorizado(FacturaAutorizacionXml.completo(evidencia, clave));
+                f.setFecha_autorizacion(evidencia.getFechaAutorizacion());
+                f.setRecepcionConfirmada(true);
+                f.setMail_enviado(false);
+                f.setIntentos_autorizacion(0); f.setFecha_ultimo_intento(null);
+                cambiar(f, "O", "XML autorizado recuperado por revision; correo pendiente");
                 return resultado(f, "AUTORIZADA_RECUPERADA", List.of());
             }
             if (!autorizaciones.isEmpty() || !"0".equals(respuesta.getNumeroComprobantes()))
