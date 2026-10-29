@@ -66,7 +66,7 @@ services:
       - DB_PASS=086411421
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5
       - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
@@ -104,7 +104,7 @@ services:
       - DB_PASS=086411421
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5
       - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
@@ -142,7 +142,7 @@ services:
       - DB_PASS=086411421
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5
       - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
@@ -180,7 +180,7 @@ services:
       - DB_PASS=086411421
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5
       - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
@@ -218,7 +218,7 @@ services:
       - DB_PASS=086411421
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5
       - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
@@ -256,7 +256,7 @@ services:
       - DB_PASS=086411421
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5
       - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
@@ -294,7 +294,7 @@ services:
       - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5
       - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
@@ -333,7 +333,7 @@ services:
       - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5
       - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
@@ -371,7 +371,7 @@ services:
       - DB_PASS=086411421
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5
       - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
@@ -407,7 +407,7 @@ services:
       - DB_PASS=EpmapaT2025
       - HOST=http://172.30.10.4
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5
       - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
@@ -451,7 +451,7 @@ services:
       - DB_PASS=086411421
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5
       - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
@@ -489,7 +489,7 @@ services:
       - DB_PASS=086411421
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=79DB6F2BFA7FFED2E17F16CABA197D2063EB
+      - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5
       - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
