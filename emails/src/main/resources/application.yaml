@@ -5,6 +5,11 @@ spring:
     active: dev
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:sql/2026-10-29_email_retry.sql
+      continue-on-error: false
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${DB_URL}

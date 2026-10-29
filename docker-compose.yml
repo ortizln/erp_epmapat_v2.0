@@ -446,9 +446,9 @@ services:
       - EUREKA_INSTANCE=msvc-emails
       - PAGOSONLINE_API_BASE_URL=http://msvc-bandred:33
       - ERP_BACKEND_BASE_URL=http://192.168.0.165:8080/fec_factura
-      - DB_URL=jdbc:postgresql://192.168.100.215:5432/ErpEpmapaT
+      - DB_URL=jdbc:postgresql://192.168.0.46:5432/ErpEpmapaT
       - DB_USER=postgres
-      - DB_PASS=086411421
+      - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
       - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5

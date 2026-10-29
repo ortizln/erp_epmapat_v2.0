@@ -22,3 +22,13 @@ SMTP usa email_account en BD: corregir alli el rechazo 535 del log.
 SENT confirma aceptacion del proveedor y requiere seguimiento de rebotes para entrega final.
 
 Telegram API: https://core.telegram.org/bots/api#sendmessage
+
+## Migracion automatica de la cola
+
+Desde esta correccion, Spring SQL init ejecuta sql/2026-10-29_email_retry.sql
+sobre el DataSource efectivo antes de inicializar JPA y los schedulers. Crea
+next_attempt_at e indice si faltan. Si no tiene permisos o falta email_message,
+el arranque falla para impedir que se anuncie operativo con la cola bloqueada.
+El usuario de BD necesita permisos ALTER sobre email_message. No modifica filas.
+Si Config Server define spring.sql.init.*, conservar mode=always,
+continue-on-error=false y la ubicacion del script de esta version.
