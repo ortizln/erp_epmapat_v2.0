@@ -451,7 +451,7 @@ services:
       - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
       - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=4F83108BB3A6368F1A0FB0BB5367CA78FFA5
+      - MAIL_PASSWORD=${MAIL_PASSWORD:?Define MAIL_PASSWORD en el archivo .env del servidor}
       - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
