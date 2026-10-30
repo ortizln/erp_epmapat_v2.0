@@ -17,8 +17,10 @@ class RecuperarDevueltasSchedulerTest {
     private final FacturaR invoices = mock(FacturaR.class);
     private final XmlAutorizadoRecoveryService recovery = mock(XmlAutorizadoRecoveryService.class);
     private final RecuperarDevueltasScheduler scheduler = new RecuperarDevueltasScheduler(invoices, recovery, new SriAutorizacionRetryPolicy());
+    private final com.erp.sri_files.services.FacturaOutboxService outbox=mock(com.erp.sri_files.services.FacturaOutboxService.class);
     private Factura invoice;
     @BeforeEach void setup() {
+        org.springframework.test.util.ReflectionTestUtils.setField(scheduler,"outbox",outbox);
         invoice = new Factura(); invoice.setIdfactura(123L); invoice.setEstado("M");
         invoice.setClaveacceso(" " + KEY + " "); invoice.setIntentos_autorizacion(50);
         when(invoices.findDevueltasVencidas(any(), eq(60000L), eq(1800000L), eq(20))).thenReturn(List.of(invoice));
@@ -27,9 +29,9 @@ class RecuperarDevueltasSchedulerTest {
         var date = LocalDateTime.of(2026, 10, 8, 14, 0);
         when(recovery.recuperarFacturaParaRide(KEY)).thenReturn(new XmlAutorizadoRecoveryService.Resultado(
                 "<factura/>", "BD_documento_electronico", "AUTORIZADO", KEY, date, null));
-        when(invoices.guardarXmlRecuperadoDevuelta(123L, KEY, "<factura/>", date)).thenReturn(1);
+        when(outbox.recuperarDevuelta(123L, KEY, "<factura/>", date)).thenReturn(1);
         scheduler.recuperarFacturasDevueltas();
-        verify(invoices).guardarXmlRecuperadoDevuelta(123L, KEY, "<factura/>", date);
+        verify(outbox).recuperarDevuelta(123L, KEY, "<factura/>", date);
         verify(invoices, never()).save(any());
         verify(invoices, never()).registrarRecuperacionPendiente(any(), any(), any(), any());
     }
@@ -39,7 +41,7 @@ class RecuperarDevueltasSchedulerTest {
         scheduler.recuperarFacturasDevueltas();
         assertEquals("M", invoice.getEstado());
         verify(invoices).registrarRecuperacionPendiente(eq(123L), eq(KEY), eq("Sin autorizaciones"), any());
-        verify(invoices, never()).guardarXmlRecuperadoDevuelta(any(), any(), any(), any());
+        verify(outbox, never()).recuperarDevuelta(any(), any(), any(), any());
         verify(invoices, never()).save(any());
     }
     @Test void networkFailureIsPersistedForRetry() {
@@ -66,7 +68,7 @@ class RecuperarDevueltasSchedulerTest {
     @Test void changedStateDuringQueryDoesNotCauseAnEntitySave() {
         when(recovery.recuperarFacturaParaRide(KEY)).thenReturn(new XmlAutorizadoRecoveryService.Resultado(
                 "<factura/>", "SRI", "AUTORIZADO", KEY, null, null));
-        when(invoices.guardarXmlRecuperadoDevuelta(anyLong(), anyString(), anyString(), any())).thenReturn(0);
+        when(outbox.recuperarDevuelta(anyLong(), anyString(), anyString(), any())).thenReturn(0);
         scheduler.recuperarFacturasDevueltas();
         verify(invoices, never()).save(any());
         verify(invoices, never()).registrarRecuperacionPendiente(any(), any(), any(), any());

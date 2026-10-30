@@ -15,6 +15,10 @@ import java.util.List;
 @Service
 public class EmailAccountService {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private EmailAttemptService attempts;
+    @org.springframework.beans.factory.annotation.Autowired
+    private MailSenderService sender;
     private final EmailAccountR accountRepo;
 
     public EmailAccountService(EmailAccountR accountRepo) {
@@ -29,7 +33,7 @@ public class EmailAccountService {
 
     @Transactional(readOnly = true)
     public EmailAccountResponse get(Long id) {
-        return toResponse(getEntity(id), true);
+        return toResponse(getEntity(id), false);
     }
 
     @Transactional
@@ -55,10 +59,16 @@ public class EmailAccountService {
             throw new IllegalArgumentException("Ya existe una cuenta de correo con el codigo " + code);
         }
 
+        boolean transportChanged = (req.apiKey!=null && !req.apiKey.isBlank() && !req.apiKey.equals(account.getApiKey()))
+                || !java.util.Objects.equals(account.getApiUrl(),req.apiUrl)
+                || !java.util.Objects.equals(account.getHost(), req.host)
+                || !java.util.Objects.equals(account.getUsername(), req.username)
+                || (req.password != null && !req.password.isBlank() && !req.password.equals(account.getPassword()));
         apply(account, req, false);
         account.setCode(code);
         account = accountRepo.save(account);
         ensureSingleDefaults(account);
+        if(transportChanged) attempts.reactivarConfiguracion(id);
         return toResponse(account, false);
     }
 
@@ -68,6 +78,20 @@ public class EmailAccountService {
         account.setActive(active);
         account = accountRepo.save(account);
         return toResponse(account, false);
+    }
+
+    public record ConnectionResult(boolean success,String message) {}
+    @Transactional(propagation=org.springframework.transaction.annotation.Propagation.NOT_SUPPORTED)
+    public ConnectionResult testConnection(Long id) {
+        var account=getEntity(id);
+        boolean ok=false;String message;
+        try { sender.testConnection(account);ok=true;message="Autenticacion SMTP aceptada; no se envio ningun correo"; }
+        catch(Exception error) {
+            var kind=EmailFailureClassifier.smtp(error);
+            message=kind==EmailDeliveryException.Kind.CONFIGURATION?"El servidor rechazo la autenticacion SMTP (535)":"No se pudo completar la conexion SMTP: "+error.getClass().getSimpleName();
+        }
+        attempts.registrarPrueba(id,account.getUpdatedAt(),ok);
+        return new ConnectionResult(ok,message);
     }
 
     @Transactional(readOnly = true)
@@ -223,6 +247,8 @@ public class EmailAccountService {
         r.defaultForType = account.getDefaultForType();
         r.createdAt = account.getCreatedAt();
         r.updatedAt = account.getUpdatedAt();
+        r.lastConnectionCheck = account.getLastConnectionCheck();
+        r.lastConnectionSuccess = account.getLastConnectionSuccess();
         return r;
     }
 

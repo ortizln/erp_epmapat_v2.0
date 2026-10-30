@@ -1,3 +1,7 @@
+> Actualizacion: la arquitectura, reintentos y despliegue vigentes estan en
+> [PLAN_IMPLEMENTADO_FACTURAS_2026-10-30.md](../docs/PLAN_IMPLEMENTADO_FACTURAS_2026-10-30.md).
+> El contenido siguiente describe la version anterior del 29 de octubre.
+
 # Ciclo de facturas SRI / XML / correo
 
 Cambios del 29 de octubre de 2026. Alcance: facturas ERP en fec_factura y su cola

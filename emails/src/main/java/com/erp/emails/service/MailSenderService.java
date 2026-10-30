@@ -75,6 +75,7 @@ public class MailSenderService {
     private void sendBySmtp(EmailAccount account, EmailMessage msg, List<EmailAttachment> attachments) {
         JavaMailSenderImpl mailSender = buildSender(account);
         MimeMessage mime = mailSender.createMimeMessage();
+        boolean handoffStarted = false;
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mime, true, StandardCharsets.UTF_8.name());
             if (account.getFromName() != null && !account.getFromName().isBlank()) {
@@ -104,6 +105,9 @@ public class MailSenderService {
                 helper.addAttachment(att.getFilename(), buildAttachmentResource(att), att.getContentType());
             }
 
+            mime.setHeader("Message-ID", "<" + msg.getId() + "@epmapatulcan.gob.ec>");
+            mime.setHeader("X-EPMAPA-Email-ID", msg.getId().toString());
+            handoffStarted = true;
             mailSender.send(mime);
         } catch (Exception e) {
             EmailAccountSecurityType effectiveSecurityType = resolveSecurityType(account);
@@ -116,7 +120,8 @@ public class MailSenderService {
                     account.isAuthRequired(),
                     maskUsername(account.getUsername())
             );
-            throw new RuntimeException("Fallo envio SMTP (" + context + "): " + e.getMessage(), e);
+            var kind = handoffStarted ? EmailFailureClassifier.smtp(e) : EmailDeliveryException.Kind.PERMANENT;
+            throw new EmailDeliveryException(kind, "Fallo envio SMTP (" + context + "): " + e.getMessage(), e);
         }
     }
 
@@ -155,12 +160,22 @@ public class MailSenderService {
                 throw new RuntimeException("La API de correo respondio con estado " + response.getStatusCodeValue());
             }
         } catch (RestClientException e) {
-            throw new RuntimeException("Fallo envio por API HTTP: " + e.getMessage(), e);
+            var kind = e instanceof org.springframework.web.client.HttpClientErrorException h
+                    ? (h.getStatusCode().value()==429 ? EmailDeliveryException.Kind.TRANSIENT
+                            : (h.getStatusCode().value()==401 || h.getStatusCode().value()==403)?EmailDeliveryException.Kind.CONFIGURATION:EmailDeliveryException.Kind.PERMANENT)
+                    : EmailDeliveryException.Kind.UNCERTAIN;
+            throw new EmailDeliveryException(kind, "Fallo envio por API HTTP", e);
         } catch (IOException e) {
             throw new RuntimeException("No se pudo leer un adjunto para envio API: " + e.getMessage(), e);
         } catch (Exception e) {
             throw new RuntimeException("Fallo envio por API HTTP: " + e.getMessage(), e);
         }
+    }
+
+    public void testConnection(EmailAccount account) throws jakarta.mail.MessagingException {
+        if(account.getTransportType()!=EmailAccountTransportType.SMTP)
+            throw new IllegalArgumentException("La prueba de conexion aplica a SMTP");
+        buildSender(account).testConnection();
     }
 
     private JavaMailSenderImpl buildSender(EmailAccount account) {
@@ -169,8 +184,7 @@ public class MailSenderService {
         sender.setPort(account.getPort());
         sender.setProtocol(account.getProtocol());
         EmailAccountSecurityType effectiveSecurityType = resolveSecurityType(account);
-        boolean sslCompatibilityMode = effectiveSecurityType == EmailAccountSecurityType.SSL_TLS
-                && Integer.valueOf(465).equals(account.getPort());
+
 
         if (account.getUsername() != null && !account.getUsername().isBlank()) {
             sender.setUsername(account.getUsername());
@@ -182,7 +196,7 @@ public class MailSenderService {
         Properties props = sender.getJavaMailProperties();
         props.put("mail.transport.protocol", account.getProtocol());
         props.put("mail.smtp.auth", Boolean.toString(account.isAuthRequired()));
-        props.put("mail.smtp.starttls.enable", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.STARTTLS || sslCompatibilityMode));
+        props.put("mail.smtp.starttls.enable", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.STARTTLS));
         props.put("mail.smtp.starttls.required", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.STARTTLS));
         props.put("mail.smtp.ssl.enable", Boolean.toString(effectiveSecurityType == EmailAccountSecurityType.SSL_TLS));
         props.put("mail.smtp.ssl.checkserveridentity", "false");

@@ -17,6 +17,8 @@ public class ReenviarCorreosFacturasScheduler {
     private final FacturaR facturas;
     private final EnvioSriBatchService envio;
     private final AtomicBoolean ejecutando = new AtomicBoolean();
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.erp.sri_files.services.FacturaOutboxService outbox;
     private long ultimoId;
     @Value("${sri.scheduler.reenvio-correos.lote:20}")
     private int lote = 20;
@@ -34,8 +36,8 @@ public class ReenviarCorreosFacturasScheduler {
             }
             for (var factura : candidatas) {
                 try {
-                    if (envio.reintentarCorreoPendiente(factura.getIdfactura())) aceptadas++;
-                    else pendientes++;
+                    outbox.registrar(factura);
+                    aceptadas++;
                 } catch (Exception error) {
                     pendientes++;
                     log.warn("Reenvio correo pendiente idfactura={}", factura.getIdfactura(), error);

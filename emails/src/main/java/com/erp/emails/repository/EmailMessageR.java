@@ -24,6 +24,7 @@ public interface EmailMessageR extends JpaRepository<EmailMessage, UUID>,
     @Query("""
         select e from EmailMessage e
         where e.status = :status
+          and e.processingToken is null
           and (e.attempts < :maxAttempts or e.type = com.erp.emails.model.EmailType.DOC_ELECTRONICO)
           and (e.nextAttemptAt is null or e.nextAttemptAt <= CURRENT_TIMESTAMP)
         order by e.createdAt asc
@@ -35,6 +36,7 @@ public interface EmailMessageR extends JpaRepository<EmailMessage, UUID>,
     @Query("""
         select e.id from EmailMessage e
         where e.status = :status
+          and e.processingToken is null
           and (e.attempts < :maxAttempts or e.type = com.erp.emails.model.EmailType.DOC_ELECTRONICO)
           and (e.nextAttemptAt is null or e.nextAttemptAt <= CURRENT_TIMESTAMP)
         order by e.createdAt asc

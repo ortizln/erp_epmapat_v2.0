@@ -1,0 +1,3 @@
+
+# Credenciales Telegram: configurar por servidor, no versionar.
+.env.telegram.local

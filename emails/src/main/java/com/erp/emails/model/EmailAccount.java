@@ -30,6 +30,8 @@ import java.time.OffsetDateTime;
         }
 )
 public class EmailAccount {
+    private OffsetDateTime lastConnectionCheck;
+    private Boolean lastConnectionSuccess;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -13,6 +13,7 @@ import com.erp.emails.repository.EmailBlacklistR;
 import com.erp.emails.repository.EmailMessageR;
 import com.erp.emails.service.EmailComposerService;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -35,6 +36,10 @@ import java.util.UUID;
 @RequestMapping("/api/v1/emails")
 public class EmailController {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbc;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.erp.emails.config.OperationsGuard operations;
     private final EmailComposerService composer;
     private final EmailMessageR emailRepo;
     private final EmailAttachmentR attachmentRepo;
@@ -133,6 +138,31 @@ public class EmailController {
         return emailRepo.findAll(spec, pageable).map(this::toResponse);
     }
 
+    @GetMapping("/{id}/attempts")
+    public Object attempts(@PathVariable UUID id) {
+        return jdbc.queryForList("SELECT intento,resultado,iniciado,terminado,error FROM public.correo_intento WHERE email_id=? ORDER BY id",id);
+    }
+    public record Resolution(boolean accepted, boolean confirmDuplicateRisk, String evidence) {}
+    @PostMapping("/{id}/resolve")
+    @org.springframework.transaction.annotation.Transactional
+    public ResponseEntity<?> resolve(@PathVariable UUID id,@RequestBody Resolution req,
+            @RequestHeader(value="X-Operations-Key",required=false) String key,
+            @RequestHeader(value="X-Operations-Actor",required=false) String actor) {
+        operations.check(key,actor);
+        if(req.evidence()==null || req.evidence().isBlank() || req.evidence().length()>1000)
+            return ResponseEntity.badRequest().body("Se requiere evidencia de conciliacion (maximo 1000 caracteres)");
+        return emailRepo.lockById(id).map(e -> {
+            if(e.getStatus()!=EmailStatus.UNCERTAIN)return ResponseEntity.status(409).body("Solo se concilian correos UNCERTAIN");
+            if(!req.accepted() && !req.confirmDuplicateRisk())return ResponseEntity.badRequest().body("Debe confirmar el riesgo de duplicado");
+            e.setStatus(req.accepted()?EmailStatus.SENT:EmailStatus.PENDING);
+            e.setSentAt(req.accepted()?OffsetDateTime.now():null);e.setNextAttemptAt(null);e.setFailureKind(null);e.setLastError(null);
+            e.setProcessingToken(null);e.setProcessingUntil(null);emailRepo.saveAndFlush(e);
+            jdbc.update("INSERT INTO public.correo_operacion(email_id,actor,accion,detalle) VALUES (?,?,?,?)",
+                    id,actor,req.accepted()?"CONFIRMAR_ACEPTACION":"REINTENTO_CON_RIESGO",req.evidence());
+            return ResponseEntity.ok().build();
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @PostMapping("/{id}/retry")
     @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> retry(@PathVariable UUID id) {
@@ -141,7 +171,7 @@ public class EmailController {
                 return ResponseEntity.status(409).body("Solo se puede reintentar si esta FAILED");
             }
             e.setNextAttemptAt(null);
-            e.setAttempts(0);
+            e.setFailureKind(null);
             e.setStatus(EmailStatus.PENDING);
             e.setLastError(null);
             e.setSentAt(null);
@@ -154,7 +184,7 @@ public class EmailController {
     @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<?> cancel(@PathVariable UUID id) {
         return emailRepo.lockById(id).map(e -> {
-            if (e.getStatus() == EmailStatus.PENDING && (e.getNextAttemptAt() == null || e.getNextAttemptAt().isBefore(OffsetDateTime.now()))) {
+            if ((e.getStatus() == EmailStatus.PENDING || e.getStatus() == EmailStatus.FAILED) && e.getProcessingToken() == null) {
                 e.setStatus(EmailStatus.CANCELLED);
                 emailRepo.save(e);
                 return ResponseEntity.ok().build();

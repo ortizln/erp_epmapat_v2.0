@@ -7,6 +7,8 @@ import com.erp.emails.model.EmailType;
 import java.time.OffsetDateTime;
 
 public class EmailAccountResponse {
+    public java.time.OffsetDateTime lastConnectionCheck;
+    public Boolean lastConnectionSuccess;
     public Long id;
     public String code;
     public String name;

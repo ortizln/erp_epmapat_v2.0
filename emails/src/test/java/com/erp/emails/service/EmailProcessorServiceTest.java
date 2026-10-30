@@ -25,10 +25,11 @@ class EmailProcessorServiceTest {
         when(repo.lockById(message.getId())).thenReturn(Optional.of(message));
         when(repo.saveAndFlush(any())).thenAnswer(call -> call.getArgument(0));
         service = new EmailProcessorService(sender, repo, transactions);
+        org.springframework.test.util.ReflectionTestUtils.setField(service,"attempts",mock(EmailAttemptService.class));
     }
 
     @Test void failureSchedulesRetryAndPreservesAttachments() {
-        doThrow(new RuntimeException("Authentication failed")).when(sender).sendNow(message);
+        doThrow(new EmailDeliveryException(EmailDeliveryException.Kind.TRANSIENT,"421 temporary failure",null)).when(sender).sendNow(message);
         service.procesarEmail(message.getId(), 5);
         assertEquals(EmailStatus.PENDING, message.getStatus());
         assertEquals(1, message.getAttempts());
@@ -46,7 +47,8 @@ class EmailProcessorServiceTest {
     }
 
     @Test void activeReservationPreventsAnotherSend() {
-        message.setNextAttemptAt(OffsetDateTime.now().plusMinutes(10));
+        message.setProcessingToken(UUID.randomUUID());
+        message.setProcessingUntil(OffsetDateTime.now().plusMinutes(10));
         service.procesarEmail(message.getId(), 5);
         verifyNoInteractions(sender);
     }
@@ -61,7 +63,7 @@ class EmailProcessorServiceTest {
 
     @Test void invoiceContinuesRetryingAfterFiveFailures() {
         message.setType(EmailType.DOC_ELECTRONICO); message.setAttempts(50);
-        doThrow(new RuntimeException("Authentication failed")).when(sender).sendNow(message);
+        doThrow(new EmailDeliveryException(EmailDeliveryException.Kind.TRANSIENT,"421 temporary failure",null)).when(sender).sendNow(message);
         service.procesarEmail(message.getId(), 5);
         assertEquals(EmailStatus.PENDING, message.getStatus());
         assertEquals(51, message.getAttempts());

@@ -5,6 +5,11 @@ spring:
     active: ${SPRING_PROFILES_ACTIVE:local}
   config:
     import: optional:configserver:${CONFIG_SERVER_URL:http://config-server:8888}
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:sql/2026-10-30_flujo_persistente.sql
+      continue-on-error: false
   datasource:
     driver-class-name: org.postgresql.Driver
     url: ${DB_URL:jdbc:postgresql://localhost:5432/ErpEpmapaT}
@@ -57,6 +62,10 @@ interes:
   tarea:
     cron: 0 */1 * * * *
 sri:
+  autorizacion:
+    retry:
+      base-ms: ${SRI_AUTORIZACION_RETRY_BASE_MS:30000}
+      max-ms: ${SRI_AUTORIZACION_RETRY_MAX_MS:600000}
   xml-recovery:
     max-attempts: ${SRI_XML_RECOVERY_MAX_ATTEMPTS:3}
     wait-budget-ms: ${SRI_XML_RECOVERY_WAIT_BUDGET_MS:12000}
@@ -69,7 +78,7 @@ sri:
     envio-facturas:
       cron: ${SRI_SCHEDULER_ENVIO_FACTURAS_CRON:0 */1 * * * *}
     recuperacion-xml:
-      cron: ${SRI_SCHEDULER_RECUPERACION_XML_CRON:30 */3 * * * *}
+      cron: ${SRI_SCHEDULER_RECUPERACION_XML_CRON:*/15 * * * * *}
     recuperar-devueltas:
       cron: ${SRI_SCHEDULER_RECUPERAR_DEVUELTAS_CRON:0 */5 * * * *}
       lote: ${SRI_SCHEDULER_RECUPERAR_DEVUELTAS_LOTE:20}

@@ -22,6 +22,7 @@ class FacturaRevisionServiceTest {
         repo = mock(FacturaR.class); sri = mock(SendXmlToSriService.class);
         generator = mock(FacturaXmlGeneratorService.class);
         service = new FacturaRevisionService(repo, generator, new ClaveAccesoService(), sri, mock(FacturaHistorialService.class));
+        org.springframework.test.util.ReflectionTestUtils.setField(service,"outbox",mock(FacturaOutboxService.class));
         factura = factura(); factura.setEstado("E");
         when(repo.findParaProcesar(10L)).thenReturn(Optional.of(factura));
     }

@@ -16,6 +16,8 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class FacturaRevisionService {
+    @org.springframework.beans.factory.annotation.Autowired
+    private FacturaOutboxService outbox;
     private final FacturaR facturas;
     private final FacturaXmlGeneratorService generator;
     private final ClaveAccesoService claves;
@@ -79,6 +81,7 @@ public class FacturaRevisionService {
                 f.setMail_enviado(false);
                 f.setIntentos_autorizacion(0); f.setFecha_ultimo_intento(null);
                 cambiar(f, "O", "XML autorizado recuperado por revision; correo pendiente");
+                outbox.registrar(f);
                 return resultado(f, "AUTORIZADA_RECUPERADA", List.of());
             }
             if (!autorizaciones.isEmpty() || !"0".equals(respuesta.getNumeroComprobantes()))

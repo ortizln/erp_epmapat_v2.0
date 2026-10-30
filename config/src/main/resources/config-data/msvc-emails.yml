@@ -26,6 +26,5 @@ mailms:
   outbox:
     batch-size: 20
     max-attempts: 5
-    initial-backoff-seconds: 30
-    backoff-multiplier: 2
+    retry-delays-seconds: ${MAIL_RETRY_DELAYS_SECONDS:60,300,900,3600}
     scheduler-fixed-delay-ms: 15000

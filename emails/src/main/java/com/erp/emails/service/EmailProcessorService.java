@@ -18,12 +18,16 @@ public class EmailProcessorService {
 
     private static final Logger log = LoggerFactory.getLogger(EmailProcessorService.class);
 
-    @org.springframework.beans.factory.annotation.Value("${mailms.outbox.initial-backoff-seconds:30}")
-    private long initialBackoffSeconds = 30;
+    @org.springframework.beans.factory.annotation.Value("${mailms.outbox.retry-delays-seconds:60,300,900,3600}")
+    private long[] retryDelays={60,300,900,3600};
+    @jakarta.annotation.PostConstruct
+    void validarEsperas(){
+        if(retryDelays.length==0 || java.util.Arrays.stream(retryDelays).anyMatch(n->n<1 || n>86400))
+            throw new IllegalArgumentException("Esperas de correo deben estar entre 1 y 86400 segundos");
+    }
 
-    @org.springframework.beans.factory.annotation.Value("${mailms.outbox.backoff-multiplier:2}")
-    private double backoffMultiplier = 2;
-
+    @org.springframework.beans.factory.annotation.Autowired
+    private EmailAttemptService attempts;
     private final MailSenderService sender;
     private final EmailMessageR emailRepo;
     private final TransactionTemplate requiresNewTx;
@@ -43,17 +47,24 @@ public class EmailProcessorService {
 
         try {
             sender.sendNow(msg);
-            markSent(msg.getId());
-            cleanupIfTerminal(msg);
         } catch (EmailBlacklistViolationException e) {
-            markFailure(msg.getId(), e.getMessage(), true);
-            log.error("Correo bloqueado por lista negra emailId={}", msg.getId());
+            markFailure(msg, e.getMessage(), EmailDeliveryException.Kind.PERMANENT, true);
+            log.error("Correo bloqueado emailId={}", msg.getId());
+            return;
         } catch (Exception e) {
-            boolean terminalFailure = (msg.getType() != com.erp.emails.model.EmailType.DOC_ELECTRONICO
-                    && msg.getAttempts() >= maxAttempts) || isMissingAttachmentFailure(e);
-            markFailure(msg.getId(), e.getMessage(), terminalFailure);
-
+            var kind = e instanceof EmailDeliveryException d ? d.kind()
+                    : isMissingAttachmentFailure(e) ? EmailDeliveryException.Kind.PERMANENT : EmailDeliveryException.Kind.TRANSIENT;
+            boolean terminal = kind != EmailDeliveryException.Kind.TRANSIENT
+                    || (msg.getType() != com.erp.emails.model.EmailType.DOC_ELECTRONICO && msg.getAttempts() >= maxAttempts);
+            markFailure(msg, e.getMessage(), kind, terminal);
             log.error("Fallo procesando email {}: {}", msg.getId(), e.getMessage(), e);
+            return;
+        }
+        // Un fallo al persistir SENT no es un fallo SMTP: la reserva quedara UNCERTAIN.
+        try {
+            if(markSent(msg)) cleanupIfTerminal(msg);
+        } catch(Exception persistence) {
+            log.error("SMTP acepto email {}, pero no se pudo confirmar en BD; requiere conciliacion", msg.getId(), persistence);
         }
     }
 
@@ -83,47 +94,51 @@ public class EmailProcessorService {
             if (msg == null) {
                 return null;
             }
-            if (msg.getStatus() != EmailStatus.PENDING
+            if (msg.getProcessingToken() != null || msg.getStatus() != EmailStatus.PENDING
                     || (msg.getType() != com.erp.emails.model.EmailType.DOC_ELECTRONICO && msg.getAttempts() >= maxAttempts)
                     || (msg.getNextAttemptAt() != null && msg.getNextAttemptAt().isAfter(OffsetDateTime.now()))) {
                 return null;
             }
             msg.setAttempts(msg.getAttempts() == Integer.MAX_VALUE ? Integer.MAX_VALUE : msg.getAttempts() + 1);
             // Reserva temporal: otra instancia no debe tomar el mismo mensaje durante el envio.
-            msg.setNextAttemptAt(OffsetDateTime.now().plusMinutes(15));
+            msg.setProcessingToken(UUID.randomUUID());
+            msg.setProcessingUntil(OffsetDateTime.now().plusMinutes(15));
+            msg.setNextAttemptAt(null);
+            attempts.iniciar(msg);
             return emailRepo.saveAndFlush(msg);
         });
     }
 
-    private void markSent(UUID emailId) {
-        requiresNewTx.executeWithoutResult(status -> {
-            EmailMessage msg = emailRepo.lockById(emailId).orElse(null);
-            if (msg == null) {
-                return;
+    private boolean markSent(EmailMessage claimed) {
+        return Boolean.TRUE.equals(requiresNewTx.execute(status -> {
+            EmailMessage msg = emailRepo.lockById(claimed.getId()).orElse(null);
+            if (msg == null || !claimed.getProcessingToken().equals(msg.getProcessingToken())) {
+                return false;
             }
 
             msg.setStatus(EmailStatus.SENT);
             msg.setSentAt(OffsetDateTime.now());
+            attempts.finalizar(claimed.getProcessingToken(), "SENT", null);
+            msg.setProcessingToken(null); msg.setProcessingUntil(null); msg.setFailureKind(null);
             msg.setLastError(null);
             msg.setNextAttemptAt(null);
             emailRepo.saveAndFlush(msg);
-        });
+            return true;
+        }));
     }
 
-    private void markFailure(UUID emailId, String errorMessage, boolean terminalFailure) {
+    private void markFailure(EmailMessage claimed, String errorMessage, EmailDeliveryException.Kind kind, boolean terminalFailure) {
         requiresNewTx.executeWithoutResult(status -> {
-            EmailMessage msg = emailRepo.lockById(emailId).orElse(null);
-            if (msg == null) {
-                return;
-            }
-
-            msg.setLastError(truncate(errorMessage, 1900));
-            long delay = (long) Math.min(3600, Math.max(1, initialBackoffSeconds)
-                    * Math.pow(Math.max(1, backoffMultiplier), Math.max(0, msg.getAttempts() - 1)));
-            msg.setNextAttemptAt(terminalFailure ? null : OffsetDateTime.now().plusSeconds(delay));
-            if (terminalFailure) {
-                msg.setStatus(EmailStatus.FAILED);
-            }
+            EmailMessage msg = emailRepo.lockById(claimed.getId()).orElse(null);
+            if (msg == null || !claimed.getProcessingToken().equals(msg.getProcessingToken())) return;
+            String detail=truncate(errorMessage,1900);
+            msg.setLastError(detail); msg.setFailureKind(kind.name());
+            long delay=retryDelays[Math.min(retryDelays.length-1,Math.max(0,msg.getAttempts()-1))];
+            msg.setNextAttemptAt(terminalFailure?null:OffsetDateTime.now().plusSeconds(delay));
+            if (kind==EmailDeliveryException.Kind.UNCERTAIN) msg.setStatus(EmailStatus.UNCERTAIN);
+            else if(terminalFailure) msg.setStatus(EmailStatus.FAILED);
+            attempts.finalizar(claimed.getProcessingToken(),kind.name(),detail);
+            msg.setProcessingToken(null);msg.setProcessingUntil(null);
             emailRepo.saveAndFlush(msg);
         });
     }

@@ -55,6 +55,9 @@ public class EmailAccountController {
         }
     }
 
+    @PostMapping("/{id}/test-connection")
+    public Object testConnection(@PathVariable Long id) { return accountService.testConnection(id); }
+
     @PostMapping("/{id}/activate")
     public ResponseEntity<?> activate(@PathVariable Long id) {
         return updateActive(id, true);

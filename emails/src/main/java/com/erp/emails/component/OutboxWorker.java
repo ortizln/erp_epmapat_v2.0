@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class OutboxWorker {
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.erp.emails.service.EmailAttemptService attempts;
     private final EmailMessageR emailRepo;
     private final EmailProcessorService emailProcessorService;
 
@@ -27,6 +29,8 @@ public class OutboxWorker {
 
     @Scheduled(fixedDelayString = "${mailms.outbox.scheduler-fixed-delay-ms:15000}")
     public void process() {
+        int abandoned=attempts.recuperarAbandonados();
+        if(abandoned>0) org.slf4j.LoggerFactory.getLogger(getClass()).error("Envios interrumpidos requieren conciliacion: {}", abandoned);
         int exhausted = emailRepo.failExhausted(maxAttempts);
         if (exhausted > 0) org.slf4j.LoggerFactory.getLogger(OutboxWorker.class)
                 .error("Correos con reserva vencida e intentos agotados: {}", exhausted);

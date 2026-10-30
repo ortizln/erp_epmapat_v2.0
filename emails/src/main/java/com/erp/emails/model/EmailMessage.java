@@ -66,6 +66,9 @@ public class EmailMessage {
     private OffsetDateTime createdAt;
     private OffsetDateTime sentAt;
     private OffsetDateTime nextAttemptAt;
+    private UUID processingToken;
+    private OffsetDateTime processingUntil;
+    private String failureKind;
 
     // getters/setters
 

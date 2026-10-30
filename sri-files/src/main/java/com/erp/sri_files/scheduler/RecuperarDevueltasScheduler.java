@@ -21,6 +21,8 @@ public class RecuperarDevueltasScheduler {
     private final FacturaR facturaR;
     private final XmlAutorizadoRecoveryService recovery;
     private final SriAutorizacionRetryPolicy retry;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.erp.sri_files.services.FacturaOutboxService outbox;
     private final AtomicBoolean ejecutando = new AtomicBoolean();
     @Value("${sri.scheduler.recuperar-devueltas.lote:20}")
     private int lote = 20;
@@ -42,7 +44,7 @@ public class RecuperarDevueltasScheduler {
                 try {
                     var resultado = recovery.recuperarFacturaParaRide(clave);
                     if (resultado.recuperado()) {
-                        int actualizadas = facturaR.guardarXmlRecuperadoDevuelta(factura.getIdfactura(), clave,
+                        int actualizadas = outbox.recuperarDevuelta(factura.getIdfactura(), clave,
                                 resultado.xml(), resultado.fechaAutorizacion());
                         recuperadas += actualizadas;
                         log.info("Recuperacion XML idfactura={} fuente={} filasActualizadas={}",

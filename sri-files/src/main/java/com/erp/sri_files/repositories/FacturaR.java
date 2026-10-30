@@ -45,7 +45,7 @@ public interface FacturaR extends JpaRepository<Factura, Long> {
 
     @Query(value = """
             SELECT f.* FROM fec_factura f
-            WHERE UPPER(TRIM(f.estado)) = 'I'
+            WHERE UPPER(TRIM(f.estado)) IN ('I','G')
               AND (f.fecha_ultimo_intento IS NULL OR f.fecha_ultimo_intento <=
                 CAST(:ahora AS timestamp) - INTERVAL '1 millisecond' * FLOOR(
                   LEAST(:maxMs, :baseMs * POWER(2.0,
@@ -68,8 +68,7 @@ public interface FacturaR extends JpaRepository<Factura, Long> {
 
     boolean existsByClaveaccesoAndIdfacturaNot(String claveacceso, Long idfactura);
 
-    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
-    @Query("SELECT f FROM Factura f WHERE f.idfactura = :id")
+    @Query(value="SELECT f.* FROM public.fec_factura f WHERE f.idfactura=:id FOR UPDATE SKIP LOCKED",nativeQuery=true)
     Optional<Factura> findParaProcesar(@Param("id") Long id);
 
     @Query("SELECT f FROM Factura f WHERE f.fechaemision >= :desde AND f.fechaemision < :hasta "

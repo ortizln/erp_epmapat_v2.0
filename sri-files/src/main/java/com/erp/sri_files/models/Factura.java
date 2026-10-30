@@ -22,7 +22,9 @@ public class Factura {
     private Long idfactura;
     private String claveacceso;
     private String secuencial;
+    @Column(columnDefinition = "text")
     private String xmlautorizado;
+    @Column(columnDefinition = "text")
     private String errores;
     private String estado;
     private String establecimiento;
@@ -51,6 +53,8 @@ public class Factura {
     private Boolean recepcionConfirmada;
     @Column(name = "email_message_id")
     private java.util.UUID emailMessageId;
+    @Column(name = "notificacion_version", nullable = false)
+    private int notificacionVersion = 1;
     
     @OneToMany(mappedBy = "factura", cascade = CascadeType.ALL)
     private List<FacturaDetalle> detalles = new ArrayList<>();

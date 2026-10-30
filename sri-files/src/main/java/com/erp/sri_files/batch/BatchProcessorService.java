@@ -213,23 +213,10 @@ public class BatchProcessorService {
     }
 
     private boolean enviarCorreo(DocumentoElectronico doc) {
-        try {
-            if (doc.getXmlAutorizado() == null) {
-                log.warn("Doc id={} no tiene XML autorizado para enviar correo", doc.getId());
-                return false;
-            }
-
-            doc.setMailEnviado(true);
-            doc.setFechaEnvioCorreo(LocalDateTime.now());
-            documentoR.save(doc);
-
-            log.info("Correo enviado para doc id={} clave={}", doc.getId(), doc.getClaveAcceso());
-            return true;
-        } catch (Exception e) {
-            doc.setMailEnviado(false);
-            doc.setIntentosCorreo(doc.getIntentosCorreo() + 1);
-            documentoR.save(doc);
-            return false;
-        }
+        // Estos documentos v1 no tienen todavia un adaptador RIDE/correo. No inventar confirmacion SMTP.
+        doc.setMailEnviado(false);doc.setSubestado("NOTIFICACION_REQUIERE_ADAPTADOR");
+        doc.setMensajeSri("Notificacion no ejecutada: requiere adaptador de documentos v1; usar flujo de facturas ERP");
+        documentoR.save(doc);log.warn("Notificacion v1 no implementada doc id={}",doc.getId());return false;
     }
+
 }

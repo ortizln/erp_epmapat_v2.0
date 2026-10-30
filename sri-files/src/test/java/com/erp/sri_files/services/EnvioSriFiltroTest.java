@@ -26,6 +26,8 @@ class EnvioSriFiltroTest {
         repo = mock(FacturaR.class); generator = mock(FacturaXmlGeneratorService.class);
         firma = mock(FirmaComprobantesService.class); sri = mock(SendXmlToSriService.class);
         service = new EnvioSriBatchService(repo, mock(PlatformTransactionManager.class), generator, firma, sri, mock(XmlToPdfService.class), mock(MailService.class), new SriAutorizacionRetryPolicy());
+        org.springframework.test.util.ReflectionTestUtils.setField(service,"outbox",mock(FacturaOutboxService.class));
+        org.springframework.test.util.ReflectionTestUtils.setField(service,"preparation",new FacturaPreparationService(repo,generator,firma,new SriAutorizacionRetryPolicy(),mock(FacturaOutboxService.class)));
         f = factura(); when(repo.findParaProcesar(10L)).thenReturn(Optional.of(f));
     }
     @Test void incompletaQuedaEYNoSeFirmaNiEnvia() throws Exception {
@@ -66,7 +68,7 @@ class EnvioSriFiltroTest {
         assertNotNull(f.getFecha_ultimo_intento());
         service.procesarFacturaEnNuevaTx(10L);
         verify(sri, times(1)).enviarFacturaFirmadaTxt(anyString(), eq(2));
-        verify(sri, times(1)).consultar_Autorizacion(f.getClaveacceso());
+        verify(sri, never()).consultar_Autorizacion(f.getClaveacceso());
     }
 
     @Test void resetEnAutorizacionProgramaSiguienteConsulta() throws Exception {

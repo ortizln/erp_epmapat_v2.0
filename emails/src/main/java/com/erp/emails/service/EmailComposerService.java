@@ -54,7 +54,7 @@ public class EmailComposerService {
         // La misma factura conserva su ID aunque SRI pierda la respuesta HTTP al encolar.
         // El advisory lock dura hasta COMMIT y serializa encolamientos entre replicas.
         if (type == EmailType.DOC_ELECTRONICO && req.correlationId != null
-                && req.correlationId.matches("factura:[0-9]+")) {
+                && req.correlationId.matches("factura:[0-9]+(:v[0-9]+)?")) {
             jdbc.queryForList("SELECT pg_advisory_xact_lock(hashtextextended(?, 0))", req.correlationId);
             var existing = emailRepo.findFirstByTypeAndCorrelationIdOrderByCreatedAtAsc(type, req.correlationId);
             if (existing.isPresent()) return existing.get().getId();

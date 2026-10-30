@@ -319,6 +319,7 @@ services:
     ports:
       - "9096:9096"
     environment:
+      - OPERATIONS_API_KEY=${OPERATIONS_API_KEY:?Configura la clave interna compartida OPERATIONS_API_KEY}
       - TZ=America/Guayaquil
       - JAVA_TOOL_OPTIONS=-Duser.timezone=America/Guayaquil
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
@@ -434,6 +435,7 @@ services:
     volumes:
       - ./data/attachments:/data/attachments
     environment:
+      - OPERATIONS_API_KEY=${OPERATIONS_API_KEY:?Configura la clave interna compartida OPERATIONS_API_KEY}
       - TELEGRAM_ALERTS_ENABLED=${TELEGRAM_ALERTS_ENABLED:-false}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN:-}
       - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID:-}
@@ -450,9 +452,6 @@ services:
       - DB_USER=postgres
       - DB_PASS=3pmapaT24
       - HOST=http://192.168.0.165
-      - MAIL_USERNAME=facturacion@epmapatulcan.gob.ec
-      - MAIL_PASSWORD=${MAIL_PASSWORD:?Define MAIL_PASSWORD en el archivo .env del servidor}
-      - MAIL_HOST=smtp.elasticemail.com
     depends_on:
       config-server:
         condition: service_healthy

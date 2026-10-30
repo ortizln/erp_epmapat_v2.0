@@ -37,6 +37,10 @@ public class EnvioSriBatchService {
     private final XmlToPdfService xmlToPdfService;
     private final MailService mailService;
     private final SriAutorizacionRetryPolicy retryPolicy;
+    @org.springframework.beans.factory.annotation.Autowired
+    private FacturaOutboxService outbox;
+    @org.springframework.beans.factory.annotation.Autowired
+    private FacturaPreparationService preparation;
     // private final StorageService storageService; // opcional, para guardar XMLs
 
 
@@ -68,13 +72,9 @@ public class EnvioSriBatchService {
 
                 for (Factura f : facturas) {
                     try {
-                        var tx = new org.springframework.transaction.support.TransactionTemplate(transactionManager);
-                        tx.setPropagationBehavior(Propagation.REQUIRES_NEW.value());
-                        Boolean autorizada = tx.execute(status -> {
-                            procesarFacturaEnNuevaTx(f.getIdfactura());
-                            Factura resultado = facturaR.findById(f.getIdfactura()).orElseThrow();
-                            return resultado.getXmlautorizado() != null && !resultado.getXmlautorizado().isBlank();
-                        });
+                        procesarFacturaEnNuevaTx(f.getIdfactura());
+                        Factura resultado=facturaR.findById(f.getIdfactura()).orElseThrow();
+                        boolean autorizada=resultado.getXmlautorizado()!=null && !resultado.getXmlautorizado().isBlank();
                         if (Boolean.TRUE.equals(autorizada)) exitosas++;
                         else fallidas++;
                     } catch (Exception ex) {
@@ -137,8 +137,9 @@ public class EnvioSriBatchService {
         if (!Set.of("C", "O", "A", "P").contains(safeStr(f.getEstado()).toUpperCase(Locale.ROOT))
                 || !retryPolicy.corresponde(f, LocalDateTime.now())) return false;
         if (f.getXmlautorizado() != null && !f.getXmlautorizado().isBlank()) {
-            if ("O".equalsIgnoreCase(safeStr(f.getEstado()))) reintentarEnvioCorreoFactura(f);
-            else { f.setEstado(Boolean.TRUE.equals(f.getMail_enviado()) ? "A" : "O"); facturaR.save(f); }
+            f.setEstado(Boolean.TRUE.equals(f.getMail_enviado()) ? "A" : "O");
+            facturaR.save(f);
+            if (!Boolean.TRUE.equals(f.getMail_enviado())) outbox.registrar(f);
             return true;
         }
         try {
@@ -151,6 +152,8 @@ public class EnvioSriBatchService {
                 f.setMail_enviado(false);
                 f.setRecepcionConfirmada(true);
                 retryPolicy.autorizada(f);
+                facturaR.saveAndFlush(f);
+                outbox.registrar(f);
             } else if (resultado != null && "NO AUTORIZADO".equalsIgnoreCase(resultado.getMensaje())) {
                 f.setEstado("N");
                 f.setErrores("NO AUTORIZADO: revisar respuesta SRI antes de reenviar");
@@ -172,12 +175,15 @@ public class EnvioSriBatchService {
                 }
                 retryPolicy.pendiente(f, resultado == null ? "Sin respuesta de autorizacion" : resultado.getMensaje());
             }
+        } catch (org.springframework.dao.DataAccessException | jakarta.persistence.PersistenceException persistence) {
+            throw persistence;
         } catch (Exception ex) {
             retryPolicy.pendiente(f, ex.getMessage());
             log.warn("Consulta SRI pendiente idfactura={} intento={} esperaMs={} causa={}",
                     idFactura, f.getIntentos_autorizacion(), retryPolicy.demoraMs(idFactura, f.getIntentos_autorizacion()), ex.toString());
         }
-        facturaR.save(f);
+        facturaR.saveAndFlush(f);
+        outbox.estadoSri(f, "O".equals(f.getEstado()) ? "AUTORIZADO" : "N".equals(f.getEstado()) ? "RECHAZADO" : "ESPERANDO_AUTORIZACION");
         return f.getXmlautorizado() != null && !f.getXmlautorizado().isBlank();
     }
 
@@ -215,291 +221,42 @@ public class EnvioSriBatchService {
 
 
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void procesarFacturaEnNuevaTx(Long idFactura) {
-        // 1) Releer y bloquear lógicamente
-        Factura f = facturaR.findParaProcesar(idFactura).orElseThrow();
-        if ("I".equalsIgnoreCase(safeStr(f.getEstado())) && !safeStr(f.getXmlautorizado()).isBlank()) {
-            f.setEstado("O"); facturaR.save(f); return;
-        }
-        if (!"I".equalsIgnoreCase(safeStr(f.getEstado())) || !retryPolicy.corresponde(f, LocalDateTime.now())) {
-            log.info("Factura ya no esta en estado I idfactura={} estadoActual={}", idFactura, f.getEstado());
-            return;
-        }
-        f.setEstado("P");
-        facturaR.saveAndFlush(f);
-
-        boolean recepcionIntentada = false;
+        if(!preparation.preparar(idFactura))return;
+        var tx=new org.springframework.transaction.support.TransactionTemplate(transactionManager);
+        tx.setPropagationBehavior(Propagation.REQUIRES_NEW.value());
+        // El XML firmado ya esta confirmado en otra transaccion. Persistir la intencion ANTES de usar la red.
+        String firmado=tx.execute(status->{
+            var f=facturaR.findParaProcesar(idFactura).orElse(null);
+            if(f==null || !"G".equals(f.getEstado()))return null;
+            f.setEstado("P");f.setFecha_ultimo_intento(LocalDateTime.now());
+            facturaR.saveAndFlush(f);outbox.estadoSri(f,"ENVIANDO_RECEPCION");return f.getXmlFirmadoEnvio();
+        });
+        if(firmado==null)return;
+        RespuestaSolicitud recepcion=null;Exception error=null;
         try {
-            // 2) Generar XML desde la entidad
-            String xmlPlano = safeStr(f.getXmlFirmadoEnvio()).isBlank()
-                    ? xmlFacturaService.generarXmlFactura(f) : f.getXmlFirmadoEnvio();
-            requireNotBlank(xmlPlano, "XML generado vacío");
-
-            // 3) Modo de firma
-            var mf = "XMLDSIG".equalsIgnoreCase(modoFirmaCfg)
-                    ? FirmaComprobantesService.ModoFirma.XMLDSIG
-                    : FirmaComprobantesService.ModoFirma.XADES_BES;
-
-            // 4) Firmar
-            String xmlFirmado = safeStr(f.getXmlFirmadoEnvio()).isBlank()
-                    ? firmaService.firmarFactura(xmlPlano, mf) : f.getXmlFirmadoEnvio();
-            requireNotBlank(xmlFirmado, "XML firmado vacío");
-
-            // 5) Ambiente
-            if (ambienteForzado == 1 || ambienteForzado == 2) {
-                sendXmlToSriService.setAmbiente(ambienteForzado);
-            } else {
-                sendXmlToSriService.setAmbienteFromXml(xmlFirmado);
-            }
-
-            // 6) Enviar a recepción
-            int ambienteXml = sendXmlToSriService.inferAmbienteFromXml(xmlFirmado);
-            if ((ambienteForzado == 1 || ambienteForzado == 2) && ambienteForzado != ambienteXml) {
+            int ambiente=sendXmlToSriService.inferAmbienteFromXml(firmado);
+            if((ambienteForzado==1 || ambienteForzado==2) && ambienteForzado!=ambiente)
                 throw new com.erp.sri_files.validation.FacturaPrevalidacionException(List.of("Ambiente configurado no coincide con la factura"));
+            recepcion=sendXmlToSriService.enviarFacturaFirmadaTxt(firmado,ambiente);
+            if(recepcion==null)throw new IllegalStateException("Recepcion SRI sin respuesta");
+        }catch(Exception failure){error=failure;}
+        final var respuesta=recepcion;final var fallo=error;
+        tx.executeWithoutResult(status->{
+            var f=facturaR.findParaProcesar(idFactura).orElseThrow();
+            if(f.getXmlautorizado()!=null && !f.getXmlautorizado().isBlank())return;
+            if(fallo instanceof com.erp.sri_files.validation.FacturaPrevalidacionException){
+                f.setEstado("E");f.setErrores(trunc(fallo.getMessage(),1500));
+            }else if(fallo!=null){
+                retryPolicy.pendiente(f,fallo.getMessage());
+            }else if("RECIBIDA".equalsIgnoreCase(respuesta.getEstado()) || esClaveRegistrada(respuesta)){
+                f.setRecepcionConfirmada(true);retryPolicy.pendiente(f,"Recepcion confirmada; pendiente de autorizacion SRI");
+            }else{
+                f.setEstado("M");f.setErrores(trunc(erroresRecepcion(respuesta),1500));
             }
-            f.setXmlFirmadoEnvio(xmlFirmado);
             facturaR.saveAndFlush(f);
-            recepcionIntentada = true;
-            RespuestaSolicitud recepcion = sendXmlToSriService.enviarFacturaFirmadaTxt(xmlFirmado, ambienteXml);
-            if (recepcion == null) throw new IllegalStateException("Respuesta de recepción nula");
-
-            if ("RECIBIDA".equalsIgnoreCase(recepcion.getEstado()) || esClaveRegistrada(recepcion)) {
-                f.setEstado("C");
-                f.setRecepcionConfirmada(true);
-                if (esClaveRegistrada(recepcion))
-                    log.info("Clave registrada en SRI idfactura={}; se consulta autorizacion sin reenviar", idFactura);
-                // 7) Consulta de autorización
-                // Una sola consulta. Si no termina, el scheduler aplica backoff persistido.
-                var rc = sendXmlToSriService.consultar_Autorizacion(f.getClaveacceso());
-
-                var info = SriAutorizacionAdapter.from_Resultado(rc)
-                        .orElse(new AutorizacionInfo(false, null, null, null, "Sin autorizaciones"));
-
-                if (info.autorizado() && info.xmlAutorizado() != null && info.xmlAutorizado().length > 0) {
-
-                    // ============================
-                    // AUTORIZADA: armar XML completo + guardar fecha/hora
-                    // ============================
-
-                    String xmlAutorizacionCompleta = FacturaAutorizacionXml.completo(rc, f.getClaveacceso());
-                    retryPolicy.autorizada(f);
-                    f.setFecha_autorizacion(rc.getFechaAutorizacion());
-                    f.setXmlautorizado(xmlAutorizacionCompleta);
-                    f.setMail_enviado(false);
-                    f.setEstado("O");
-                    // Se conserva la autorizacion aunque falle el PDF o el correo.
-                    facturaR.saveAndFlush(f);
-
-                    // ---------- 1) Generar PDF ----------
-                    ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF_v3(xmlAutorizacionCompleta);
-                    if (pdfStream == null || pdfStream.size() == 0) {
-                        // si falla PDF, deja al menos la factura autorizada guardada
-                        f.setErrores("Factura autorizada, pero error generando PDF");
-                        f.setEstado("O");
-                        facturaR.save(f);
-                        return;
-                    }
-
-                    byte[] pdfBytes = pdfStream.toByteArray();
-                    byte[] xmlBytes = xmlAutorizacionCompleta.getBytes(StandardCharsets.UTF_8);
-
-                    String pdfBase64 = Base64.getEncoder().encodeToString(pdfBytes);
-                    String xmlBase64 = Base64.getEncoder().encodeToString(xmlBytes);
-
-                    String nombrePdf = "factura_" + f.getIdfactura() + ".pdf";
-                    String nombreXml = "factura_" + f.getIdfactura() + ".xml";
-
-                    List<AttachmentDTO> attachments = List.of(
-                            new AttachmentDTO(nombrePdf, "application/pdf", pdfBase64),
-                            new AttachmentDTO(nombreXml, "application/xml", xmlBase64)
-                    );
-
-                    // ---------- 2) Destinatarios ----------
-                    List<String> to = Collections.emptyList(); // por defecto: NO enviar a nadie
-                    boolean enviarCorreo = false;
-
-                    String correoComprador = f.getEmailcomprador();
-
-                    if (esCorreoPermitido(correoComprador)) {
-                        // Correo válido y permitido → enviar
-                        to = List.of(correoComprador.trim());
-                        enviarCorreo = true;
-                    } else {
-                        // Correo no permitido → NO enviar
-                        enviarCorreo = false;
-
-                        // IMPORTANTE: simplemente seguimos procesando la factura sin enviar correo
-                        log.warn("Correo bloqueado o invalido correo={} idfactura={} accion=no_enviar_correo",
-                                correoComprador, f.getIdfactura());
-                    }
-
-                    List<String> cc  = Collections.emptyList();
-                    List<String> bcc = Collections.emptyList();
-                    String from = null; // usa el app.mail.from
-
-
-                    // ---------- 3) Asunto y cuerpo ----------
-                    String subject = "Factura electrónica #"
-                            + safeStr(f.getEstablecimiento()) + "-"
-                            + safeStr(f.getPuntoemision()) + "-"
-                            + safeStr(f.getSecuencial());
-
-                    String htmlBody = "<div style='font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: auto; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: #f9f9f9;'>" +
-
-                            // Logo
-                            "<div style='text-align: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid #0b5394;'>" +
-                            "   <img src='https://epmapatulcan.gob.ec/wp/wp-content/uploads/2021/05/LOGO-HORIZONTAL.png' alt='EPMAPA-T' style='max-width: 200px;'/>" +
-                            "</div>" +
-
-                            // Título principal
-                            "<h2 style='color: #0b5394; text-align: center; margin-bottom: 10px;'>Factura Electrónica Autorizada</h2>" +
-                            "<p style='text-align: center; color: #666; font-size: 14px; margin-bottom: 25px;'>Comprobante electrónico generado automáticamente</p>" +
-
-                            // Saludo personalizado
-                            "<div style='background: #e8f4ff; padding: 15px; border-radius: 5px; margin-bottom: 20px;'>" +
-                            "   <p style='margin: 0;'>Estimado/a <strong>" + (f.getRazonsocialcomprador() != null ? f.getRazonsocialcomprador() : "cliente") + "</strong>,</p>" +
-                            "</div>" +
-
-                            // Mensaje principal
-                            "<p>Le informamos que su comprobante electrónico ha sido <strong>autorizado</strong> por el Servicio de Rentas Internas (SRI) y se encuentra disponible para su descarga.</p>" +
-
-                            // Estado SRI destacado
-                            "<div style='background: #f0f8f0; border: 1px solid #4caf50; border-radius: 5px; padding: 12px; margin: 20px 0;'>" +
-                            "   <p style='margin: 0; text-align: center;'><strong>Estado SRI:</strong> <span style='color: #2e7d32; font-weight: bold;'>✅ AUTORIZADO</span></p>" +
-                            "</div>" +
-
-                            // Información importante
-                            "<div style='background: #fff3cd; border: 1px solid #ffc107; border-radius: 5px; padding: 15px; margin: 20px 0;'>" +
-                            "   <h4 style='color: #856404; margin-top: 0;'>📎 Documentos Adjuntos</h4>" +
-                            "   <p style='margin: 5px 0;'>• <strong>Factura en formato PDF</strong> - Documento legible</p>" +
-                            "   <p style='margin: 5px 0;'>• <strong>Archivo XML</strong> - Comprobante electrónico oficial</p>" +
-                            "</div>" +
-
-                            // Separador
-                            "<hr style='border: none; border-top: 2px dashed #ccc; margin: 25px 0;'>" +
-
-                            // Información de la empresa
-                            "<h3 style='color: #0b5394; border-bottom: 1px solid #0b5394; padding-bottom: 8px;'>Información de Contacto</h3>" +
-                            "<div style='line-height: 1.6;'>" +
-                            "   <p><strong>🏢 EPMAPA-T</strong><br>" +
-                            "   Empresa Pública Municipal de Agua Potable y Alcantarillado de Tulcán</p>" +
-                            "   <p><strong>📍 Dirección:</strong> Ca. Juan Ramón Arellano y Bolívar, Tulcán – Ecuador<br>" +
-                            "   <strong>🕒 Horario de atención:</strong> Lunes a Viernes 07h30 - 16h30<br>" +
-                            "   <strong>📞 Teléfono:</strong> +(593) 06 298 0021<br>" +
-                            "   <strong>🌐 Portal web:</strong> <a href='https://epmapatulcan.gob.ec/wp/' target='_blank' style='color: #0b5394;'>epmapatulcan.gob.ec</a></p>" +
-                            "</div>" +
-
-                            // Redes sociales
-                            "<h4 style='color: #0b5394; margin-top: 25px;'>Síguenos en nuestras redes sociales:</h4>" +
-                            "<div style='background: #f8f9fa; padding: 12px; border-radius: 5px;'>" +
-                            "   <p style='margin: 5px 0;'>📘 Facebook: <a href='https://www.facebook.com/epmapat2023' target='_blank' style='color: #0b5394;'>facebook.com/epmapat2023</a></p>" +
-                            "   <p style='margin: 5px 0;'>📷 Instagram: <a href='https://www.instagram.com/epmapat_/' target='_blank' style='color: #0b5394;'>@epmapat_</a></p>" +
-                            "   <p style='margin: 5px 0;'>💬 WhatsApp: <a href='https://api.whatsapp.com/send?phone=593963967739' target='_blank' style='color: #0b5394;'>+593 963967739</a></p>" +
-                            "</div>" +
-
-                            // Mensaje importante - NO RESPONDER
-                            "<div style='background: #fff3f3; border: 1px solid #dc3545; border-radius: 5px; padding: 15px; margin: 25px 0;'>" +
-                            "   <h4 style='color: #dc3545; margin-top: 0; text-align: center;'>⚠️ IMPORTANTE</h4>" +
-                            "   <p style='margin: 10px 0; text-align: center; font-weight: bold;'>Este es un mensaje automático, por favor no responda a este correo.</p>" +
-                            "   <p style='margin: 10px 0; text-align: center; font-size: 14px;'>Si necesita contactarnos, utilice los canales oficiales mencionados anteriormente.</p>" +
-                            "   <p style='margin: 10px 0; text-align: center; font-size: 14px;'>El correo <strong>info@epmapatulcan.gob.ec</strong> no está monitoreado para respuestas.</p>" +
-                            "</div>" +
-
-                            // Despedida
-                            "<div style='text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;'>" +
-                            "   <p style='margin: 0; color: #666;'>Gracias por confiar en nuestros servicios</p>" +
-                            "   <p style='margin: 10px 0 0 0; font-weight: bold; color: #0b5394;'>Atentamente,<br>EPMAPA-T</p>" +
-                            "</div>" +
-
-                            // Pie de página
-                            "<div style='text-align: center; margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #999;'>" +
-                            "   <p style='margin: 0;'>© " + java.time.Year.now().getValue() + " EPMAPA-T. Todos los derechos reservados.</p>" +
-                            "   <p style='margin: 5px 0 0 0;'>Este correo electrónico fue generado automáticamente.</p>" +
-                            "</div>" +
-
-                            "</div>";
-
-                    Map<String,String> inlineImages = Collections.emptyMap();
-
-                    SendMailRequest mailReq = new SendMailRequest(
-                            from,
-                            to,
-                            cc,
-                            bcc,
-                            subject,
-                            htmlBody,
-                            attachments,
-                            inlineImages
-                    );
-
-                    try {
-                        // si tu MailService tiene send(...) como en el controller:
-                        if (enviarCorreo) {
-                            try {
-                                f.setEmailMessageId(mailService.send(mailReq, "factura:" + f.getIdfactura()));
-                                f.setEstado("O");
-                            } catch (Exception mailEx) {
-                                f.setEstado("O");
-                                String err = "Error enviando correo: " + mailEx.getMessage();
-                                f.setErrores((f.getErrores() == null) ? err : (f.getErrores() + " | " + err));
-                            }
-                        } else {
-                            f.setEstado("O");
-                            f.setErrores("Correo comprador invalido o bloqueado; corregir para reenviar");
-                            log.warn("Correo pendiente por destinatario idfactura={}", f.getIdfactura());
-                        }
-                    } catch (Exception mailEx) {
-                        // si falla el correo, marca como "O" (opcional)
-                        f.setEstado("O");
-                        String err = "Error enviando correo: " + mailEx.getMessage();
-                        f.setErrores((f.getErrores() == null) ? err : (f.getErrores() + " | " + err));
-                    }
-
-                    facturaR.save(f);
-
-                } else {
-                    // ==========================
-                    // ❌ NO AUTORIZADO
-                    // ==========================
-                    if (rc != null && "NO AUTORIZADO".equalsIgnoreCase(rc.getMensaje())) {
-                        f.setEstado("N");
-                        f.setErrores(trunc(rc.getMensaje(), 1500));
-                    } else {
-                        retryPolicy.pendiente(f, info.mensajesConcatenados());
-                    }
-                    facturaR.save(f);
-                }
-
-            } else {
-                // DEVUELTA en recepción
-                String errores = erroresRecepcion(recepcion);
-                f.setEstado(esClaveRegistrada(recepcion) ? "C" : "M");
-                f.setErrores(trunc(errores, 1500));
-                facturaR.save(f);
-                log.warn("Factura devuelta por recepcion SRI idfactura={} errores={}", f.getIdfactura(), errores);
-            }
-
-        } catch (com.erp.sri_files.validation.FacturaPrevalidacionException ex) {
-            f.setEstado("E");
-            f.setErrores(trunc(ex.getMessage(), 1500));
-            facturaR.save(f);
-            log.warn("Factura bloqueada antes del envío idfactura={} errores={}", idFactura, ex.getMessage());
-        } catch (Exception ex) {
-            // Conservar el estado según la etapa alcanzada.
-            if (recepcionIntentada) log.warn("Factura pendiente de consulta SRI idfactura={} causa={}", idFactura, ex.toString());
-            else log.error("Error inesperado en factura idfactura={}", idFactura, ex);
-
-            // Una conexión interrumpida puede ocurrir después de recibir el documento.
-            // Si ya existe autorización, el fallo posterior no debe provocar otro envío.
-            f.setEstado(f.getXmlautorizado() != null && !f.getXmlautorizado().isBlank()
-                    ? "O" : recepcionIntentada ? "C" : "I");
-            f.setErrores(trunc(ex.getMessage(), 1500));
-            if ("C".equals(f.getEstado()) || "I".equals(f.getEstado())) {
-                String estado = f.getEstado(); retryPolicy.pendiente(f, ex.getMessage()); f.setEstado(estado);
-            }
-            facturaR.save(f);
-        }
+            outbox.estadoSri(f, "C".equals(f.getEstado())?"ESPERANDO_AUTORIZACION":"M".equals(f.getEstado())?"DEVUELTA":"DATOS_INVALIDOS");
+        });
     }
 
     private static boolean esClaveRegistrada(RespuestaSolicitud rs) {
@@ -529,7 +286,8 @@ public class EnvioSriBatchService {
                 } else {
                     f.setMail_enviado(false); f.setEstado("O");
                     f.setErrores(trunc("Correo " + (correo == null ? "sin respuesta" : correo.status())
-                            + "; emailId=" + f.getEmailMessageId(), 1500));
+                            + "; emailId=" + f.getEmailMessageId()
+                            + (correo != null && correo.lastError()!=null ? "; " + correo.lastError() : ""), 1500));
                 }
                 facturaR.save(f); return;
             }
@@ -561,7 +319,11 @@ public class EnvioSriBatchService {
                 f.setXmlautorizado(xmlAutorizado); f.setFecha_autorizacion(evidencia.getFechaAutorizacion());
                 facturaR.saveAndFlush(f);
             }
-            ByteArrayOutputStream pdfStream = xmlToPdfService.generarFacturaPDF_v3(xmlAutorizado);
+            byte[] cache = outbox.ride(f.getIdfactura(), xmlAutorizado);
+            ByteArrayOutputStream pdfStream;
+            if (cache != null && cache.length > 0) {
+                pdfStream = new ByteArrayOutputStream(); pdfStream.writeBytes(cache);
+            } else pdfStream = xmlToPdfService.generarFacturaPDF_v3(xmlAutorizado);
             if (pdfStream == null || pdfStream.size() == 0) {
                 f.setEstado("O");
                 f.setErrores("Factura autorizada, pero no se pudo regenerar el PDF para reenviar correo");
@@ -570,6 +332,7 @@ public class EnvioSriBatchService {
             }
 
             byte[] pdfBytes = pdfStream.toByteArray();
+            outbox.guardarRide(f, pdfBytes);
             byte[] xmlBytes = xmlAutorizado.getBytes(StandardCharsets.UTF_8);
 
             String pdfBase64 = Base64.getEncoder().encodeToString(pdfBytes);
@@ -610,7 +373,7 @@ public class EnvioSriBatchService {
                     inlineImages
             );
 
-            f.setEmailMessageId(mailService.send(mailReq, "factura:" + f.getIdfactura()));
+            f.setEmailMessageId(mailService.send(mailReq, "factura:" + f.getIdfactura() + (f.getNotificacionVersion() > 1 ? ":v" + f.getNotificacionVersion() : "")));
             f.setMail_enviado(false);
             f.setEstado("O");
             f.setErrores("Correo encolado; pendiente confirmar envio SMTP/API");

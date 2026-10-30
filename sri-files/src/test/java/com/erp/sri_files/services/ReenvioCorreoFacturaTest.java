@@ -20,6 +20,7 @@ class ReenvioCorreoFacturaTest {
             mock(FirmaComprobantesService.class), sri, pdf, mail, new SriAutorizacionRetryPolicy());
 
     private Factura pendiente(String correo) {
+        org.springframework.test.util.ReflectionTestUtils.setField(service,"outbox",mock(FacturaOutboxService.class));
         var f = new Factura(); f.setIdfactura(1L); f.setEstado("O");
         f.setEmailcomprador(correo);
         f.setClaveacceso("1009202601046002881000120010130004585995621446311");

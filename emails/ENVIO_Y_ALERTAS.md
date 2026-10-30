@@ -1,3 +1,7 @@
+> Arquitectura y despliegue actualizados: [plan del 30 de octubre](../docs/PLAN_IMPLEMENTADO_FACTURAS_2026-10-30.md).
+> Las esperas activas ahora son MAIL_RETRY_DELAYS_SECONDS y los errores de autenticacion
+> quedan suspendidos; un resultado UNCERTAIN nunca se reintenta automaticamente.
+
 # Envio y alertas de emails
 
 El flujo completo y las instrucciones actualizadas estan en
@@ -32,3 +36,29 @@ el arranque falla para impedir que se anuncie operativo con la cola bloqueada.
 El usuario de BD necesita permisos ALTER sobre email_message. No modifica filas.
 Si Config Server define spring.sql.init.*, conservar mode=always,
 continue-on-error=false y la ubicacion del script de esta version.
+
+## Configuracion Telegram en el servidor
+
+.env.telegram.local contiene un secreto y esta excluido de Git. git pull no lo copia.
+El archivo versionable .env.telegram.example sirve de plantilla sin el token.
+En el servidor, desde la raiz del repositorio:
+
+```bash
+cp -n .env.telegram.example .env.telegram.local
+chmod 600 .env.telegram.local
+nano .env.telegram.local
+```
+
+Sustituir REEMPLAZAR_TOKEN_DEL_BOT por el token real. Alternativamente transferir el
+archivo local existente por SCP/SSH. No quitarlo de .gitignore ni agregarlo con git add -f.
+Despues recrear:
+
+```bash
+docker compose --env-file .env --env-file .env.telegram.local up -d --force-recreate msvc-emails
+```
+
+Comprobar variables sin mostrar el token:
+
+```bash
+docker compose exec msvc-emails sh -c 'printf "Alertas=%s\nChat=%s\n" "$TELEGRAM_ALERTS_ENABLED" "$TELEGRAM_CHAT_ID"; if [ -n "$TELEGRAM_BOT_TOKEN" ]; then echo "Token configurado"; else echo "Token ausente"; fi'
+```
